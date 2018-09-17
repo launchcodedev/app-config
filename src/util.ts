@@ -1,6 +1,6 @@
 export type KeyFormatter = (key: string, separator: string) => string;
 
-export const camelToUnderscore: KeyFormatter = (key: string, separator: string) => {
+export const camelToSeparator: KeyFormatter = (key: string, separator: string) => {
   return key.split(/(?=[A-Z])/).join(separator).toUpperCase();
 };
 
@@ -8,7 +8,7 @@ export const flattenObjectTree = (
   object: object,
   prefix: string = '',
   separator: string = '_',
-  keyFormatter: KeyFormatter = camelToUnderscore,
+  keyFormatter: KeyFormatter = camelToSeparator,
 ) => {
   return Object.entries(object).reduce(
     (merged, [key, value]) => {
