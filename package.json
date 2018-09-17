@@ -22,7 +22,8 @@
     "fix": "yarn fix:ts",
     "lint:ts": "tslint src/**/*.ts src/**/*.tsx",
     "fix:ts": "yarn lint:ts --fix",
-    "postinstall": "yarn build"
+    "postinstall": "yarn build",
+    "prepublish": "yarn build"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.0",
