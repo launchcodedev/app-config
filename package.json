@@ -1,0 +1,56 @@
+{
+  "name": "@servall/app-config",
+  "version": "0.1.0",
+  "description": "Configuration loader supporting types + validation + hierarchy + lists",
+  "license": "UNLICENSED",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "app-config": "lib/cli.js"
+  },
+  "author": {
+    "name": "Servall Development",
+    "email": "admin@servalldev.com",
+    "url": "https://www.servalldev.com"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "cli": "ts-node src/cli.ts",
+    "coverage": "jest --coverage",
+    "lint": "yarn lint:ts",
+    "fix": "yarn fix:ts",
+    "lint:ts": "tslint src/**/*.ts src/**/*.tsx",
+    "fix:ts": "yarn lint:ts --fix",
+    "postinstall": "yarn build"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.0",
+    "ajv": "^6.5.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^22.0.1",
+    "@types/node": "^10.3.4",
+    "jest": "^22.0.4",
+    "ts-jest": "^22.0.1",
+    "ts-node": "^3.3.0",
+    "tslint": "^5.11.0",
+    "tslint-config-airbnb": "^5.11.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "jest": {
+    "transform": {
+      ".(ts)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "testEnvironment": "node"
+  }
+}
