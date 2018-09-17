@@ -1,0 +1,14 @@
+stages:
+  - test
+
+cache:
+  untracked: true
+  paths:
+    - node_modules/
+
+test:
+  stage: test
+  image: node:8
+  script:
+    - yarn install
+    - yarn test

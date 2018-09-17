@@ -1,7 +1,12 @@
 export type KeyFormatter = (key: string, separator: string) => string;
 
 export const camelToSeparator: KeyFormatter = (key: string, separator: string) => {
-  return key.split(/(?=[A-Z])/).join(separator).toUpperCase();
+
+  // Splits on capital letters, joins with a separator, and converts to uppercase
+  return key
+    .split(/(?=[A-Z])/)
+    .join(separator)
+    .toUpperCase();
 };
 
 export const flattenObjectTree = (
@@ -16,7 +21,7 @@ export const flattenObjectTree = (
       let flattenedObject = {};
 
       if (typeof value === 'object') {
-        flattenedObject = flattenObjectTree(value, flattenedKey, separator);
+        flattenedObject = flattenObjectTree(value, flattenedKey, separator, keyFormatter);
       } else {
         flattenedObject = {
           [flattenedKey]: value,
