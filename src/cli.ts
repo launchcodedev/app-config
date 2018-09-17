@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import getConfig from '.';
-import { spawn } from 'child_process';
+import * as execa from 'execa';
 import { flattenObjectTree } from './util';
 import * as TOML from '@iarna/toml';
 
@@ -23,7 +23,7 @@ if (command === '--vars') {
   process.exit(0);
 }
 
-spawn(
+execa(
   command,
   args,
   {
