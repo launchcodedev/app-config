@@ -20,7 +20,7 @@
     "coverage": "jest --coverage",
     "lint": "yarn lint:ts",
     "fix": "yarn fix:ts",
-    "lint:ts": "tslint src/**/*.ts src/**/*.tsx",
+    "lint:ts": "tslint --project tsconfig.json src/**/*.ts src/**/*.tsx",
     "fix:ts": "yarn lint:ts --fix",
     "postinstall": "yarn build",
     "prepublish": "yarn build"

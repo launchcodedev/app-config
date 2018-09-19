@@ -1,7 +1,6 @@
 export type KeyFormatter = (key: string, separator: string) => string;
 
 export const camelToSeparator: KeyFormatter = (key: string, separator: string) => {
-
   // Splits on capital letters, joins with a separator, and converts to uppercase
   return key
     .split(/(?=[A-Z])/)
