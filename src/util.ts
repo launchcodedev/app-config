@@ -19,7 +19,7 @@ export const flattenObjectTree = (
       const flattenedKey = `${prefix}${prefix && separator}${keyFormatter(key, separator)}`;
       let flattenedObject = {};
 
-      if (typeof value === 'object') {
+      if (value !== undefined && value !== null && typeof value === 'object') {
         flattenedObject = flattenObjectTree(value, flattenedKey, separator, keyFormatter);
       } else {
         flattenedObject = {

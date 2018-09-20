@@ -18,6 +18,27 @@ const restaurant = {
   ],
 };
 
+const zoo = {
+  giraffe: {
+    name: 'Gerald',
+    legCount: 4,
+  },
+  elephant: {
+    name: 'Steve',
+    legCount: 4,
+  },
+  lion: {
+    name: 'Fredrick',
+    legCount: 4,
+  },
+  penguin: {
+    name: 'Todd',
+    legCount: 2,
+  },
+  stegosaurus: null,
+  unicorn: undefined,
+};
+
 describe('flattenObjectTree()', () => {
   test('Default arguments produces correct flattened tree', () => {
     const flattenedObject = flattenObjectTree(person);
@@ -78,6 +99,22 @@ describe('flattenObjectTree()', () => {
     expect(keys).toContain('fvrtfd');
     expect(keys).toContain('bstfrnd_nm');
     expect(keys).toContain('bstfrnd_fvrtfd');
+  });
+
+  test('Object with null property produces null flattened property', () => {
+    const flattenedObject = flattenObjectTree(zoo);
+
+    expect(flattenedObject).toMatchObject({
+      STEGOSAURUS: null,
+    });
+  });
+
+  test('Object with undefined property produces undefined flattened property', () => {
+    const flattenedObject = flattenObjectTree(zoo);
+
+    expect(flattenedObject).toMatchObject({
+      UNICORN: undefined,
+    });
   });
 });
 
