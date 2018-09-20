@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "description": "Configuration loader supporting types + validation + hierarchy + lists",
   "license": "UNLICENSED",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "app-config": "lib/cli.js"
+    "app-config": "dist/cli.js"
   },
   "author": {
     "name": "Servall Development",
@@ -22,8 +22,7 @@
     "fix": "yarn fix:ts",
     "lint:ts": "tslint --project tsconfig.json src/**/*.ts src/**/*.tsx",
     "fix:ts": "yarn lint:ts --fix",
-    "postinstall": "yarn build",
-    "prepublish": "yarn build"
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.0",
