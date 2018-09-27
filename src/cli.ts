@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import getConfig from '.';
+import config from '.';
 import * as execa from 'execa';
 import { flattenObjectTree } from './util';
 import * as TOML from '@iarna/toml';
@@ -44,7 +44,6 @@ if (!command && !argv.vars) {
   process.exit(1);
 }
 
-const config = getConfig();
 const prefix = 'APP_CONFIG';
 const flattenedConfig = flattenObjectTree(config, prefix);
 
@@ -62,7 +61,7 @@ execa(
   args,
   {
     env: {
-      [prefix]: TOML.stringify(config),
+      [prefix]: TOML.stringify(config as any),
       ...flattenedConfig,
     },
     stdio: 'inherit',

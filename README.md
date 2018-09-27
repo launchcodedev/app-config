@@ -74,19 +74,58 @@ The TOML is validated against standard [JSON schema](https://json-schema.org/) t
   4. Load the config in your app:
 
       ```javascript
-      import getConfig from '@servall/app-config';
+      import config from '@servall/app-config';
       import * as express from 'express';
 
       const app = express();
 
       app.get('/', (req, res) => res.send('Hello World!'))
 
-      const server = app.listen(getConfig().webServer.port, () => {
+      const server = app.listen(config.webServer.port, () => {
         console.log(`Example app listening on port ${server.address().port}!`);
       });
       ```
 
-      If anything in the configuration was incorrect, `getConfig()` would throw an error including details on what was incorrect.
+      If anything in the configuration was incorrect, `app-config` would throw an error on app load that includes details on what was incorrect.
+
+  5. (Optional) Define TypeScript `Config` interface:
+
+      If you are using TypeScript, you will likely want to create an interface that describes your config so that it can be type checked. We can augment the `Config` interface exported by `app-config` to include our own typings.
+
+      1. Create a `types/` directory under `src/` if it does not exist:
+
+          ```bash
+          mkdir -p ./src/types
+          ```
+
+      2. Create a `config.d.ts` definition file under `src/types/`:
+
+          ```typescript
+          import '@servall/app-config';
+          import { SomeOtherConfig } from '../some-other-lib'
+
+          // Augment app-config's 'Config' interface with this project's config
+          declare module '@servall/app-config' {
+
+            export interface WebServerConfig {
+              port: number;
+            }
+
+            export interface DatabaseConfig {
+              host: string;
+              port: number;
+              user: string;
+              password: string;
+              database: string;
+            }
+
+            export interface Config {
+              webServer: WebServerConfig;
+              database: DatabaseConfig;
+              somethingElse: SomeOtherConfig;
+            }
+          }
+          ```
 
 ## Environment variable generation
 

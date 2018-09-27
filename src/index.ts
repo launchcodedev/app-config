@@ -64,33 +64,23 @@ const loadSchema = () => {
   }
 };
 
-let validConfig: any;
+const config = loadConfig();
+const schema = loadSchema();
 
-const getConfig = <T = any>(): T => {
-  // If we've already loaded and validated the config, return it
-  if (validConfig !== undefined) {
-    return validConfig;
-  }
+const ajv = new Ajv();
+const valid = ajv.validate(schema, config);
 
-  const config = loadConfig();
-  const schema = loadSchema();
+if (!valid) {
+  const configError = new Error(
+    `Config is invalid: ${ajv.errorsText(null, { dataVar: 'config' })}`,
+  );
 
-  const ajv = new Ajv();
-  const valid = ajv.validate(schema, config);
+  configError.stack = undefined;
 
-  if (!valid) {
-    const configError = new Error(
-      `Config is invalid: ${ajv.errorsText(null, { dataVar: 'config' })}`,
-    );
+  throw configError;
+}
 
-    configError.stack = undefined;
+// Create empty 'Config' interface that can be augmented per project
+export interface Config {}
 
-    throw configError;
-  }
-
-  validConfig = config;
-
-  return validConfig as T;
-};
-
-export default getConfig;
+export default config as Config;
