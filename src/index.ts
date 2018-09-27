@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as Ajv from 'ajv';
 
@@ -21,51 +21,47 @@ const loadConfig = () => {
   }
 
   // Next try loading from file
-  let fileBuffer;
+  const fileExists = fs.pathExistsSync(configFileName);
 
-  try {
-    fileBuffer = fs.readFileSync(configFileName);
-  } catch (err) {}
-
-  if (fileBuffer) {
-    try {
-      return TOML.parse(fileBuffer.toString('utf8'));
-    } catch (err) {
-      throw new Error(
-        `Could not parse ${configFileName} file. Expecting valid TOML`,
-      );
-    }
+  if (!fileExists) {
+    throw new Error(
+      `Could not find app config. Expecting ${
+        configEnvVariableName
+      } environment variable or ${
+        configFileName
+      } file`,
+    );
   }
 
-  throw new Error(
-    `Could not find app config. Expecting ${
-      configEnvVariableName
-    } environment variable or ${
-      configFileName
-    } file`,
-  );
+  const fileBuffer = fs.readFileSync(configFileName);
+
+  try {
+    return TOML.parse(fileBuffer.toString('utf8'));
+  } catch (err) {
+    throw new Error(
+      `Could not parse ${configFileName} file. Expecting valid TOML`,
+    );
+  }
 };
 
 const loadSchema = () => {
-  let fileBuffer;
+  const fileExists = fs.pathExistsSync(schemaFileName);
 
-  try {
-    fileBuffer = fs.readFileSync(schemaFileName);
-  } catch (err) {}
-
-  if (fileBuffer) {
-    try {
-      return JSON.parse(fileBuffer.toString('utf8'));
-    } catch (err) {
-      throw new Error(
-        `Could not parse ${schemaFileName} file. Expecting valid JSON`,
-      );
-    }
+  if (!fileExists) {
+    throw new Error(
+      `Could not find ${schemaFileName} JSON schema file`,
+    );
   }
 
-  throw new Error(
-    `Could not find ${schemaFileName} JSON schema file`,
-  );
+  const fileBuffer = fs.readFileSync(schemaFileName);
+
+  try {
+    return JSON.parse(fileBuffer.toString('utf8'));
+  } catch (err) {
+    throw new Error(
+      `Could not parse ${schemaFileName} file. Expecting valid JSON`,
+    );
+  }
 };
 
 let validConfig: any;
