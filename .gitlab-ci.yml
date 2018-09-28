@@ -1,0 +1,22 @@
+stages:
+  - lint
+  - test
+
+cache:
+  untracked: true
+  paths:
+    - node_modules/
+
+lint:
+  image: node:8-alpine
+  stage: lint
+  script:
+    - yarn install
+    - yarn lint
+
+test:
+  stage: test
+  image: node:8
+  script:
+    - yarn install
+    - yarn test

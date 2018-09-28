@@ -1,0 +1,9 @@
+{
+  "extends": ["tslint-config-airbnb"],
+  "rulesDirectory": ["tslint-eslint-rules"],
+  "rules": {
+    "no-increment-decrement": false,
+    "import-name": false,
+    "ter-padded-blocks": [true, "never"]
+  }
+}
