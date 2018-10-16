@@ -1,17 +1,28 @@
 import * as fs from 'fs-extra';
 
+const testHarness = (config: string, schema: string, schemaType = 'json', expectErr = false) => {
+  fs.writeFileSync('.app-config.toml', config);
+  fs.writeFileSync(`.app-config.schema.${schemaType}`, schema);
+  if (expectErr) {
+    expect(() => require('./index').validate()).toThrow();
+  } else {
+    require('./index').validate();
+  }
+  fs.removeSync('.app-config.toml');
+  fs.removeSync(`.app-config.schema.${schemaType}`);
+};
+
 describe('config', () => {
   beforeAll(() => {
     process.chdir('/tmp');
   });
 
   test('loads json schema', () => {
-    fs.writeFileSync('.app-config.toml', `
+    testHarness(`
       firstName = "John"
       lastName = "Doe"
       age = 33
-    `);
-    fs.writeFileSync('.app-config.schema.json', `
+    `,          `
       {
         "$id": "https://example.com/person.schema.json",
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -35,29 +46,17 @@ describe('config', () => {
         }
       }
     `);
-
-    require('./index').validate();
-
-    fs.removeSync('.app-config.toml');
-    fs.removeSync('.app-config.schema.json');
   });
 
   test('loads toml schema', () => {
-    fs.writeFileSync('.app-config.toml', ``);
-    fs.writeFileSync('.app-config.schema.toml', ``);
-
-    require('./index').validate();
-
-    fs.removeSync('.app-config.toml');
-    fs.removeSync('.app-config.schema.toml');
+    testHarness('', '', 'toml');
   });
 
   test('rejects invalid toml schema', () => {
-    fs.writeFileSync('.app-config.toml', `
+    testHarness(`
       firstName = "John"
       age = 33
-    `);
-    fs.writeFileSync('.app-config.schema.toml', `
+    `,          `
       "$id" = "https://example.com/person.schema.json"
       "$schema" = "http://json-schema.org/draft-07/schema#"
       title = "Person"
@@ -76,11 +75,6 @@ describe('config', () => {
       description = "Age in years which must be equal to or greater than zero."
       type = "integer"
       minimum = 0
-    `);
-
-    expect(() => require('./index').validate()).toThrow();
-
-    fs.removeSync('.app-config.toml');
-    fs.removeSync('.app-config.schema.toml');
+    `,          'toml', true);
   });
 });
