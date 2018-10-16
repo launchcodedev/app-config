@@ -4,9 +4,9 @@ import * as Ajv from 'ajv';
 
 const configEnvVariableName = 'APP_CONFIG';
 const configFileName = '.app-config.toml';
-const schemaFileName = '.app-config.schema.json';
+const schemaFileName = '.app-config.schema';
 
-const loadConfig = () => {
+export const loadConfig = () => {
   // Try loading from environment variable first
   const envVariableString = process.env[configEnvVariableName];
 
@@ -44,41 +44,39 @@ const loadConfig = () => {
   }
 };
 
-const loadSchema = () => {
-  const fileExists = fs.pathExistsSync(schemaFileName);
-
-  if (!fileExists) {
-    throw new Error(
-      `Could not find ${schemaFileName} JSON schema file`,
-    );
+export const loadSchema = () => {
+  if (fs.pathExistsSync(`${schemaFileName}.json`)) {
+    return JSON.parse(fs.readFileSync(`${schemaFileName}.json`).toString('utf8'));
   }
 
-  const fileBuffer = fs.readFileSync(schemaFileName);
-
-  try {
-    return JSON.parse(fileBuffer.toString('utf8'));
-  } catch (err) {
-    throw new Error(
-      `Could not parse ${schemaFileName} file. Expecting valid JSON`,
-    );
+  if (fs.pathExistsSync(`${schemaFileName}.toml`)) {
+    return TOML.parse(fs.readFileSync(`${schemaFileName}.toml`).toString('utf8'));
   }
+
+  throw new Error(
+    `Could not find a valid JSON schema file (${schemaFileName}.{json,toml})`,
+  );
 };
 
-const config = loadConfig();
-const schema = loadSchema();
-
 const ajv = new Ajv();
-const valid = ajv.validate(schema, config);
 
-if (!valid) {
-  const configError = new Error(
-    `Config is invalid: ${ajv.errorsText(null, { dataVar: 'config' })}`,
-  );
+export const validate = (config = loadConfig(), schema = loadSchema()) => {
+  const valid = ajv.validate(schema, config);
 
-  configError.stack = undefined;
+  if (!valid) {
+    const configError = new Error(
+      `Config is invalid: ${ajv.errorsText(null, { dataVar: 'config' })}`,
+    );
 
-  throw configError;
-}
+    configError.stack = undefined;
+
+    throw configError;
+  }
+
+  return config;
+};
+
+const config = validate(loadConfig());
 
 // Create empty 'Config' interface that can be augmented per project
 export interface Config {}
