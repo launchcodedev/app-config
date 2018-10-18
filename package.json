@@ -38,7 +38,7 @@
     "@types/node": "^10",
     "@types/yargs": "^12",
     "jest": "^22",
-    "ts-jest": "^22",
+    "ts-jest": "^23",
     "ts-node": "^3",
     "tslint": "^5",
     "tslint-config-airbnb": "^5",
@@ -50,9 +50,9 @@
   },
   "jest": {
     "transform": {
-      ".(ts)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      ".(ts)": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|js)$",
+    "testRegex": "(/__tests__/.*|\\.*(test|spec))\\.(ts|js)$",
     "moduleFileExtensions": [
       "ts",
       "js"
