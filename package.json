@@ -1,6 +1,6 @@
 {
   "name": "@servall/app-config",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Configuration loader supporting types + validation + hierarchy + lists",
   "license": "UNLICENSED",
   "main": "dist/index.js",
