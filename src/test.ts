@@ -3,13 +3,15 @@ import * as fs from 'fs-extra';
 const testHarness = (config: string, schema: string, schemaType = 'json', expectErr = false) => {
   fs.writeFileSync('.app-config.toml', config);
   fs.writeFileSync(`.app-config.schema.${schemaType}`, schema);
+  let result;
   if (expectErr) {
     expect(() => require('./index').validate()).toThrow();
   } else {
-    require('./index').validate();
+    result = require('./index').validate();
   }
   fs.removeSync('.app-config.toml');
   fs.removeSync(`.app-config.schema.${schemaType}`);
+  return result;
 };
 
 describe('config', () => {
@@ -80,9 +82,9 @@ describe('config', () => {
     fs.writeFileSync('.app-config.secrets.toml', `
       password = "passw0rd"
     `);
-    testHarness(`
+    const config = testHarness(`
       email = "jon@example.com"
-    `,          `
+    `,                         `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -97,6 +99,8 @@ describe('config', () => {
         }
       }
     `);
+    expect(config).toEqual({ email: 'jon@example.com', password: 'passw0rd' });
+
     fs.removeSync('.app-config.secrets.toml');
   });
 });

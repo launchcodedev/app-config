@@ -41,7 +41,7 @@ export const loadConfig = () => {
 
   try {
     const config = TOML.parse(configString);
-    return merge(config, secrets);
+    return { ...merge(config, secrets) };
   } catch (err) {
     throw new Error(
       `Could not parse ${configFileName} file. Expecting valid TOML`,
