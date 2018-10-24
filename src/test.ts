@@ -24,7 +24,6 @@ describe('config', () => {
       age = 33
     `,          `
       {
-        "$id": "https://example.com/person.schema.json",
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Person",
         "type": "object",
@@ -57,7 +56,6 @@ describe('config', () => {
       firstName = "John"
       age = 33
     `,          `
-      "$id" = "https://example.com/person.schema.json"
       "$schema" = "http://json-schema.org/draft-07/schema#"
       title = "Person"
       type = "object"
@@ -76,5 +74,29 @@ describe('config', () => {
       type = "integer"
       minimum = 0
     `,          'toml', true);
+  });
+
+  test('loads secrets', () => {
+    fs.writeFileSync('.app-config.secrets.toml', `
+      password = "passw0rd"
+    `);
+    testHarness(`
+      email = "jon@example.com"
+    `,          `
+      {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "required": [ "email", "password" ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      }
+    `);
+    fs.removeSync('.app-config.secrets.toml');
   });
 });
