@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as Ajv from 'ajv';
-const merge: any = require('utils-merge');
+import * as _ from 'lodash';
 
 const configEnvVariableName = 'APP_CONFIG';
 const configFileName = '.app-config.toml';
@@ -41,7 +41,7 @@ export const loadConfig = () => {
 
   try {
     const config = TOML.parse(configString);
-    return { ...merge(config, secrets) };
+    return _.merge({}, config, secrets);
   } catch (err) {
     throw new Error(
       `Could not parse ${configFileName} file. Expecting valid TOML`,

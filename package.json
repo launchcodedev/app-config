@@ -29,13 +29,14 @@
     "ajv": "^6.5.3",
     "execa": "^1.0.0",
     "fs-extra": "^7.0.0",
-    "utils-merge": "^1.0.1",
+    "lodash": "^4.17.11",
     "yargs": "^12.0.2"
   },
   "devDependencies": {
     "@types/execa": "^0.9",
     "@types/fs-extra": "^5.0.4",
     "@types/jest": "^22",
+    "@types/lodash": "^4.14.117",
     "@types/node": "^10",
     "@types/yargs": "^12",
     "jest": "^22",

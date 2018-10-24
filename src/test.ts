@@ -99,7 +99,47 @@ describe('config', () => {
         }
       }
     `);
+
     expect(config).toEqual({ email: 'jon@example.com', password: 'passw0rd' });
+
+    fs.removeSync('.app-config.secrets.toml');
+  });
+
+  test('deep secret merge', () => {
+    fs.writeFileSync('.app-config.secrets.toml', `
+      [obj.a.foo]
+      secret = true
+    `);
+    const config = testHarness(`
+      [obj.a.foo]
+      secret = false
+      prop = false
+      [obj.b.foo]
+      prop = false
+    `,                         `
+      {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+        }
+      }
+    `);
+
+    expect(config).toEqual({
+      obj: {
+        a: {
+          foo: {
+            secret: true,
+            prop: false,
+          },
+        },
+        b: {
+          foo: {
+            prop: false,
+          },
+        },
+      },
+    });
 
     fs.removeSync('.app-config.secrets.toml');
   });
