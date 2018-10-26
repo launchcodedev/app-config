@@ -1,9 +1,11 @@
 import * as fs from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as Ajv from 'ajv';
+import * as _ from 'lodash';
 
 const configEnvVariableName = 'APP_CONFIG';
 const configFileName = '.app-config.toml';
+const secretsFileName = '.app-config.secrets.toml';
 const schemaFileName = '.app-config.schema';
 
 export const loadConfig = () => {
@@ -20,10 +22,12 @@ export const loadConfig = () => {
     }
   }
 
-  // Next try loading from file
-  const fileExists = fs.pathExistsSync(configFileName);
+  let secrets: object = {};
+  try {
+    secrets = TOML.parse(fs.readFileSync(secretsFileName).toString('utf8'));
+  } catch (_) {}
 
-  if (!fileExists) {
+  if (!fs.pathExistsSync(configFileName)) {
     throw new Error(
       `Could not find app config. Expecting ${
         configEnvVariableName
@@ -33,10 +37,11 @@ export const loadConfig = () => {
     );
   }
 
-  const fileBuffer = fs.readFileSync(configFileName);
+  const configString = fs.readFileSync(configFileName).toString('utf8');
 
   try {
-    return TOML.parse(fileBuffer.toString('utf8'));
+    const config = TOML.parse(configString);
+    return _.merge({}, config, secrets);
   } catch (err) {
     throw new Error(
       `Could not parse ${configFileName} file. Expecting valid TOML`,
