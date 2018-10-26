@@ -41,7 +41,7 @@ export const loadConfig = () => {
 
   try {
     const config = TOML.parse(configString);
-    return { secrets, config: _.merge({}, config, secrets), from: 'file' };
+    return { config: _.merge({}, config, secrets), from: 'file', nonSecret: config };
   } catch (err) {
     throw new Error(
       `Could not parse ${configFileName} file. Expecting valid TOML`,
@@ -63,7 +63,7 @@ export const loadSchema = () => {
   );
 };
 
-export const validate = ({ config, from, secrets } = loadConfig(), schema = loadSchema()) => {
+export const validate = ({ config, from, nonSecret } = loadConfig(), schema = loadSchema()) => {
   const ajv = new Ajv();
 
   const schemaSecrets: string[][] = [];
@@ -88,16 +88,16 @@ export const validate = ({ config, from, secrets } = loadConfig(), schema = load
 
   const valid = ajv.validate(schema, config);
 
-  // secrets from the secrets file
+  // enforce that secrets are not in the main file
   if (from === 'file') {
     schemaSecrets.map(secretProperty =>
-      secretProperty.reduce(({ acc, ctx }: { acc: any, ctx: string[] }, prop) => {
-        if (!acc[prop]) {
-          throw new Error(`app-config secrets file did not contain '.${[...ctx, prop].join('.')}'`);
+      secretProperty.reduce(({ obj, ctx }: { obj: any, ctx: string[] }, prop, i) => {
+        if (i === secretProperty.length - 1 && obj[prop]) {
+          throw new Error(`app-config file contained the secret: '.${[...ctx, prop].join('.')}'`);
         }
 
-        return { acc: acc[prop], ctx: [...ctx, prop] };
-      },                    { acc: secrets, ctx: [] }),
+        return { obj: obj[prop], ctx: [...ctx, prop] };
+      },                    { obj: nonSecret, ctx: [] }),
     );
   }
 
