@@ -41,7 +41,7 @@ export const loadConfig = () => {
 
   try {
     const config = TOML.parse(configString);
-    return { config: _.merge({}, config, secrets), from: 'file', secrets };
+    return { secrets, config: _.merge({}, config, secrets), from: 'file' };
   } catch (err) {
     throw new Error(
       `Could not parse ${configFileName} file. Expecting valid TOML`,
@@ -69,12 +69,12 @@ export const validate = ({ config, from, secrets } = loadConfig(), schema = load
   const schemaSecrets: string[][] = [];
   ajv.addKeyword('secret', {
     type: 'boolean',
-    macro: function (val, _, ctx) {
+    macro (val, _, ctx) {
       if (val) {
         // this looks like [undefined, '\'parentname\'', '\'childname\'']
         const property: string[] = (<any>ctx).dataPathArr;
         // transform into ['parentname', 'childname']
-        const key = property.filter(v => v).map(v => {
+        const key = property.filter(v => v).map((v) => {
           const match = v.match(/^\'(.*)\'$/);
           return match ? match[1] : v;
         });
@@ -83,7 +83,7 @@ export const validate = ({ config, from, secrets } = loadConfig(), schema = load
       }
 
       return false;
-    }
+    },
   });
 
   const valid = ajv.validate(schema, config);
@@ -97,7 +97,7 @@ export const validate = ({ config, from, secrets } = loadConfig(), schema = load
         }
 
         return { acc: acc[prop], ctx: [...ctx, prop] };
-      }, { acc: secrets, ctx: [] })
+      },                    { acc: secrets, ctx: [] }),
     );
   }
 

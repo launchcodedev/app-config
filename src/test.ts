@@ -177,7 +177,7 @@ describe('config', () => {
           }
         }
       }
-    `, 'json', true);
+    `,                         'json', true);
 
     fs.removeSync('.app-config.secrets.toml');
   });
@@ -205,5 +205,5 @@ test('loads env config', () => {
 });
 
 afterEach(() => {
-   delete process.env.APP_CONFIG;
+  delete process.env.APP_CONFIG;
 });
