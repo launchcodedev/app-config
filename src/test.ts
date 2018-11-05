@@ -24,7 +24,7 @@ describe('config', () => {
       firstName = "John"
       lastName = "Doe"
       age = 33
-    `,          `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Person",
@@ -57,7 +57,7 @@ describe('config', () => {
     testHarness(`
       firstName = "John"
       age = 33
-    `,          `
+    `, `
       "$schema" = "http://json-schema.org/draft-07/schema#"
       title = "Person"
       type = "object"
@@ -75,7 +75,7 @@ describe('config', () => {
       description = "Age in years which must be equal to or greater than zero."
       type = "integer"
       minimum = 0
-    `,          'toml', true);
+    `, 'toml', true);
   });
 
   test('loads secrets', () => {
@@ -84,7 +84,7 @@ describe('config', () => {
     `);
     const config = testHarness(`
       email = "jon@example.com"
-    `,                         `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -116,7 +116,7 @@ describe('config', () => {
       prop = false
       [obj.b.foo]
       prop = false
-    `,                         `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -156,7 +156,7 @@ describe('config', () => {
 
       [db]
       port = 1
-    `,                         `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -177,7 +177,7 @@ describe('config', () => {
           }
         }
       }
-    `,                         'json', true);
+    `, 'json', true);
 
     fs.removeSync('.app-config.secrets.toml');
   });
