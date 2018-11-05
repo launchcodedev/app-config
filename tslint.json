@@ -1,9 +1,29 @@
 {
-  "extends": ["tslint-config-airbnb"],
-  "rulesDirectory": ["tslint-eslint-rules"],
+  "extends": [
+    "tslint-config-airbnb"
+  ],
+  "rulesDirectory": [
+    "tslint-eslint-rules"
+  ],
   "rules": {
     "no-increment-decrement": false,
     "import-name": false,
-    "ter-padded-blocks": [true, "never"]
+    "ter-padded-blocks": [
+      true,
+      "never"
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-pascal-case"
+    ],
+    "align": [
+      true,
+      "parameters",
+      "statements",
+      "members",
+      "elements"
+    ]
   }
 }

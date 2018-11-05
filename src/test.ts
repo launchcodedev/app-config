@@ -24,7 +24,7 @@ describe('config', () => {
       firstName = "John"
       lastName = "Doe"
       age = 33
-    `,          `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Person",
@@ -57,7 +57,7 @@ describe('config', () => {
     testHarness(`
       firstName = "John"
       age = 33
-    `,          `
+    `, `
       "$schema" = "http://json-schema.org/draft-07/schema#"
       title = "Person"
       type = "object"
@@ -75,7 +75,7 @@ describe('config', () => {
       description = "Age in years which must be equal to or greater than zero."
       type = "integer"
       minimum = 0
-    `,          'toml', true);
+    `, 'toml', true);
   });
 
   test('loads secrets', () => {
@@ -84,7 +84,7 @@ describe('config', () => {
     `);
     const config = testHarness(`
       email = "jon@example.com"
-    `,                         `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -116,7 +116,7 @@ describe('config', () => {
       prop = false
       [obj.b.foo]
       prop = false
-    `,                         `
+    `, `
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -143,4 +143,67 @@ describe('config', () => {
 
     fs.removeSync('.app-config.secrets.toml');
   });
+
+  test('secret in schema', () => {
+    fs.writeFileSync('.app-config.secrets.toml', `
+      [db]
+      pwd = "secret"
+    `);
+
+    const config = testHarness(`
+      user = "username"
+      password = "should be secret!"
+
+      [db]
+      port = 1
+    `, `
+      {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "required": ["user", "password", "db"],
+        "properties": {
+          "user": { "type": "string" },
+          "password": { "type": "string", "secret": true },
+          "db": { "$ref": "#/defs/DB" }
+        },
+        "defs": {
+          "DB": {
+            "type": "object",
+            "required": ["port", "pwd"],
+            "properties": {
+              "port": { "type": "number" },
+              "pwd": { "type": "string", "secret": true }
+            }
+          }
+        }
+      }
+    `, 'json', true);
+
+    fs.removeSync('.app-config.secrets.toml');
+  });
+});
+
+test('loads env config', () => {
+  fs.writeFileSync('.app-config.schema.json', `
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "port": { "type": "number" }
+      }
+    }
+  `);
+
+  process.env.APP_CONFIG = `
+    port = 1111
+  `;
+
+  const { port } = require('./index').validate();
+  expect(port).toEqual(1111);
+
+  fs.removeSync('.app-config.schema.json');
+});
+
+afterEach(() => {
+  delete process.env.APP_CONFIG;
 });
