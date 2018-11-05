@@ -97,7 +97,7 @@ export const validate = ({ config, from, nonSecret } = loadConfig(), schema = lo
         }
 
         return { obj: obj[prop], ctx: [...ctx, prop] };
-      },                    { obj: nonSecret, ctx: [] }),
+      }, { obj: nonSecret, ctx: [] }),
     );
   }
 
