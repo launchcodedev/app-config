@@ -1,11 +1,17 @@
 import * as fs from 'fs-extra';
 
-const testHarness = (config: string, schema: string, schemaType = 'json', expectErr = false) => {
+const testHarness = (
+  config: string,
+  schema: string,
+  schemaType = 'json',
+  expectErr = false,
+  errRegex = /.*/,
+) => {
   fs.writeFileSync('.app-config.toml', config);
   fs.writeFileSync(`.app-config.schema.${schemaType}`, schema);
   let result;
   if (expectErr) {
-    expect(() => require('./index').validate()).toThrow();
+    expect(() => require('./index').validate()).toThrow(errRegex);
   } else {
     result = require('./index').validate();
   }
@@ -177,10 +183,54 @@ describe('config', () => {
           }
         }
       }
-    `, 'json', true);
+    `, 'json', true, /app-config file contained the secret/);
 
     fs.removeSync('.app-config.secrets.toml');
   });
+});
+
+test('nested secret in schema', () => {
+  const config = testHarness(`
+    [email.aws]
+    accessKeyId = "should be secret!"
+    secretAccessKey = "should be secret!"
+  `, `
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "required": ["email"],
+      "properties": {
+        "email": {
+          "$ref": "#/defs/EmailConfig"
+        }
+      },
+      "defs": {
+        "EmailConfig": {
+          "type": "object",
+          "required": ["aws"],
+          "properties": {
+            "aws": {
+              "$ref": "#/defs/AwsConfig"
+            }
+          }
+        },
+        "AwsConfig": {
+          "type": "object",
+          "required": ["accessKeyId", "secretAccessKey"],
+          "properties": {
+            "accessKeyId": {
+              "type": "string",
+              "secret": true
+            },
+            "secretAccessKey": {
+              "type": "string",
+              "secret": true
+            }
+          }
+        }
+      }
+    }
+  `, 'json', true, /app-config file contained the secret/);
 });
 
 test('loads env config', () => {

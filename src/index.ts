@@ -68,21 +68,15 @@ export const validate = ({ config, from, nonSecret } = loadConfig(), schema = lo
 
   const schemaSecrets: string[][] = [];
   ajv.addKeyword('secret', {
-    type: 'boolean',
-    macro (val, _, ctx) {
-      if (val) {
-        // this looks like [undefined, '\'parentname\'', '\'childname\'']
-        const property: string[] = (<any>ctx).dataPathArr;
-        // transform into ['parentname', 'childname']
-        const key = property.filter(v => v).map((v) => {
-          const match = v.match(/^\'(.*)\'$/);
-          return match ? match[1] : v;
-        });
-
-        schemaSecrets.push(key);
+    validate(schema: any, data: any, parentSchema?: object, dataPath?: string) {
+      if (!dataPath) {
+        return false;
       }
 
-      return false;
+      const [_, ...key] = dataPath.split('.');
+      schemaSecrets.push(key);
+
+      return schema === true;
     },
   });
 
