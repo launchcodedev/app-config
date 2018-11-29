@@ -166,6 +166,13 @@ To pass these into `docker-compose` for example, your `package.json` script woul
 }
 ```
 
+#### Secrets
+By default the CLI will not generate environment variables for config secrets. To explicitely include these secrets pass the `-S` or `--secrets` flag:
+
+```bash
+app-config --secrets env
+```
+
 ## Features Roadmap
 
 - [x] TOML parsing
