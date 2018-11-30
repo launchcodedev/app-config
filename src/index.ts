@@ -23,9 +23,9 @@ export const loadConfig = () => {
   }
 
   let secrets: object = {};
-  try {
+  if (fs.pathExistsSync(secretsFileName)) {
     secrets = TOML.parse(fs.readFileSync(secretsFileName).toString('utf8'));
-  } catch (_) {}
+  }
 
   if (!fs.pathExistsSync(configFileName)) {
     throw new Error(
