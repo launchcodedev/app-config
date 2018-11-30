@@ -254,6 +254,47 @@ test('loads env config', () => {
   fs.removeSync('.app-config.schema.json');
 });
 
+test('secret bug', () => {
+  fs.writeFileSync('.app-config.secrets.toml', `
+    [foo]
+    bar = "bar"
+  `);
+  const config = testHarness('', `
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "required": ["foo"],
+      "type": "object",
+      "properties": {
+        "foo": {
+          "type": "object",
+          "secret": true,
+          "required": ["bar"],
+          "properties": {
+            "bar": {
+              "type": "string",
+              "secret": true
+            }
+          }
+        }
+      }
+    }
+  `, 'json');
+
+  fs.removeSync('.app-config.secrets.toml');
+});
+
+test('empty config', () => {
+  const config = testHarness('', `
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "required": [],
+      "type": "object",
+      "properties": {
+      }
+    }
+  `, 'json');
+});
+
 afterEach(() => {
   delete process.env.APP_CONFIG;
 });
