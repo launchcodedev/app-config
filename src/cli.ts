@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import config from '.';
+import { loadConfig } from '.';
 import * as execa from 'execa';
 import { flattenObjectTree } from './util';
 import * as TOML from '@iarna/toml';
@@ -32,6 +32,13 @@ const argv = Yargs
     type: 'boolean',
     description: 'Print out the generated environment variables',
   })
+  .option('S', {
+    alias: 'secrets',
+    default: false,
+    nargs: 0,
+    type: 'boolean',
+    description: 'Include config secrets in the generated environment variables',
+  })
   .version()
   .help()
   .argv;
@@ -43,6 +50,13 @@ if (!command && !argv.vars) {
   Yargs.showHelp();
   process.exit(1);
 }
+
+const {
+  config: fullConfig,
+  nonSecret: nonSecretConfig,
+} = loadConfig();
+
+const config = (argv.secrets ? fullConfig : nonSecretConfig) as any;
 
 const prefix = 'APP_CONFIG';
 const flattenedConfig = flattenObjectTree(config, prefix);
@@ -61,7 +75,7 @@ execa(
   args,
   {
     env: {
-      [prefix]: TOML.stringify(config as any),
+      [prefix]: TOML.stringify(config),
       ...flattenedConfig,
     },
     stdio: 'inherit',
