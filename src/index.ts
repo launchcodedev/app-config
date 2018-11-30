@@ -90,6 +90,11 @@ export const validate = ({ config, from, nonSecret } = loadConfig(), schema = lo
           throw new Error(`app-config file contained the secret: '.${[...ctx, prop].join('.')}'`);
         }
 
+        if (!obj[prop]) {
+          // the nested object is not found in the main config
+          return { obj: {}, ctx: [...ctx, prop] };
+        }
+
         return { obj: obj[prop], ctx: [...ctx, prop] };
       }, { obj: nonSecret, ctx: [] }),
     );
