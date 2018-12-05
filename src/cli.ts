@@ -43,8 +43,7 @@ const argv = Yargs
   .help()
   .argv;
 
-const [command] = argv._;
-const args = process.argv.slice(3);
+const [command, ...args] = argv._;
 
 if (!command && !argv.vars) {
   Yargs.showHelp();
