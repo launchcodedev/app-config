@@ -86,7 +86,7 @@ export const validate = ({ config, from, nonSecret } = loadConfig(), schema = lo
   if (from === 'file') {
     schemaSecrets.map(secretProperty =>
       secretProperty.reduce(({ obj, ctx }: { obj: any, ctx: string[] }, prop, i) => {
-        if (i === secretProperty.length - 1 && obj[prop]) {
+        if (i === secretProperty.length - 1 && obj[prop] !== undefined) {
           throw new Error(`app-config file contained the secret: '.${[...ctx, prop].join('.')}'`);
         }
 
