@@ -2,3 +2,4 @@ src/
 .editorconfig
 tsconfig.json
 tslint.json
+.app-config.secrets.toml
