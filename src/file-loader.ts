@@ -1,5 +1,5 @@
 import { basename, extname } from 'path';
-import { readFile, readFileSync } from 'fs-extra';
+import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON from 'json5';
@@ -29,6 +29,17 @@ export const extToFileType = (ext: string, contents: string = ''): FileType => {
   }
 
   throw new Error(`could not guess file type for ${ext}`);
+};
+
+export const fileTypeToExt = (fileType: FileType): string[] => {
+  switch (fileType) {
+    case FileType.JSON:
+      return ['json', 'json5'];
+    case FileType.TOML:
+      return ['toml'];
+    case FileType.YAML:
+      return ['yml', 'yaml'];
+  }
 };
 
 export const guessFileType = (contents: string): [FileType, ConfigObject] => {
@@ -78,8 +89,40 @@ export const parseFile = async (
     FileType.YAML,
   ],
 ): Promise<[FileType, ConfigObject]> => {
-  const ext = extname(filePath).toLowerCase();
-  const contents = (await readFile(filePath)).toString('utf8');
+  let ext: string;
+  let file = filePath;
+
+  if (await pathExists(filePath)) {
+    ext = extname(filePath).toLowerCase();
+  } else {
+    const found = await Promise.all(supportedFileTypes
+      .map(fileTypeToExt).map(async (exts) => {
+        const found = (await Promise.all(exts.map(async extension =>
+          (await pathExists(`${filePath}.${extension}`)) ? extension : false,
+        ))).filter(e => !!e);
+
+        if (found.length > 1) {
+          console.warn(`found multiple valid files with ${filePath}`);
+        }
+
+        return found[0] || false;
+      }));
+
+    const valid = found.filter(e => !!e);
+
+    if (valid.length > 1) {
+      console.warn(`found multiple valid files with ${filePath}`);
+    }
+
+    if (valid.length === 0) {
+      throw new Error(`could not find file ${filePath}`);
+    }
+
+    ext = valid[0] as string;
+    file += `.${ext}`;
+  }
+
+  const contents = (await readFile(file)).toString('utf8');
   const fileType = extToFileType(ext, contents);
 
   if (!supportedFileTypes.includes(fileType)) {
@@ -97,8 +140,39 @@ export const parseFileSync = (
     FileType.YAML,
   ],
 ): [FileType, ConfigObject] => {
-  const ext = extname(filePath).toLowerCase();
-  const contents = readFileSync(filePath).toString('utf8');
+  let ext: string;
+  let file = filePath;
+
+  if (pathExistsSync(filePath)) {
+    ext = extname(filePath).toLowerCase();
+  } else {
+    const found = supportedFileTypes.map(fileTypeToExt).map((exts) => {
+      const found = exts.map(extension =>
+        (pathExistsSync(`${filePath}.${extension}`)) ? extension : false,
+      ).filter(e => !!e);
+
+      if (found.length > 1) {
+        console.warn(`found multiple valid files with ${filePath}`);
+      }
+
+      return found[0] || false;
+    });
+
+    const valid = found.filter(e => !!e);
+
+    if (valid.length === 0) {
+      throw new Error(`could not find file ${filePath}`);
+    }
+
+    if (valid.length > 1) {
+      console.warn(`found multiple valid files with ${filePath}`);
+    }
+
+    ext = valid[0] as string;
+    file += `.${ext}`;
+  }
+
+  const contents = readFileSync(file).toString('utf8');
   const fileType = extToFileType(ext, contents);
 
   if (!supportedFileTypes.includes(fileType)) {

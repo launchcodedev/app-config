@@ -4,9 +4,9 @@ test('parse schema', () => {
   const res = validate({
     schema: {
       type: 'object',
-      required: [ 'foo' ],
+      required: ['foo'],
       properties: {
-        foo: { type: 'number' }
+        foo: { type: 'number' },
       },
     },
     source: ConfigSource.File,
@@ -22,9 +22,9 @@ test('invalid schema', () => {
   const res = validate({
     schema: {
       type: 'object',
-      required: [ 'foo' ],
+      required: ['foo'],
       properties: {
-        foo: { type: 'number' }
+        foo: { type: 'number' },
       },
     },
     source: ConfigSource.File,
@@ -39,12 +39,12 @@ test('secret property in secret file', () => {
   const res = validate({
     schema: {
       type: 'object',
-      required: [ 'password' ],
+      required: ['password'],
       properties: {
         password: {
           type: 'string',
           secret: true,
-        }
+        },
       },
     },
     source: ConfigSource.File,
@@ -60,12 +60,12 @@ test('secret property in main file', () => {
   const res = validate({
     schema: {
       type: 'object',
-      required: [ 'password' ],
+      required: ['password'],
       properties: {
         password: {
           type: 'string',
           secret: true,
-        }
+        },
       },
     },
     source: ConfigSource.File,
@@ -81,12 +81,12 @@ test('secret in env var', () => {
   const res = validate({
     schema: {
       type: 'object',
-      required: [ 'password' ],
+      required: ['password'],
       properties: {
         password: {
           type: 'string',
           secret: true,
-        }
+        },
       },
     },
     source: ConfigSource.EnvVar,
@@ -110,11 +110,11 @@ test('deep secret property in main file', () => {
                 password: {
                   type: 'string',
                   secret: true,
-                }
-              }
-            }
-          }
-        }
+                },
+              },
+            },
+          },
+        },
       },
     },
     source: ConfigSource.File,
@@ -145,11 +145,11 @@ test('secret referenced property in main file', () => {
                 password: {
                   type: 'string',
                   secret: true,
-                }
-              }
-            }
-          }
-        }
+                },
+              },
+            },
+          },
+        },
       },
     },
     source: ConfigSource.File,
