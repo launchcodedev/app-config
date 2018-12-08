@@ -43,6 +43,7 @@
     "@types/node": "8",
     "@types/yargs": "12",
     "jest": "23",
+    "tmp-promise": "1",
     "ts-jest": "23",
     "ts-node": "3",
     "tslint": "5",

@@ -146,7 +146,7 @@ export const parseFileSync = (
   let file = filePath;
 
   if (pathExistsSync(filePath)) {
-    ext = extname(filePath).toLowerCase();
+    ext = extname(filePath).toLowerCase().substring(1);
   } else {
     const found = supportedFileTypes.map(fileTypeToExt).map((exts) => {
       const found = exts.map(extension =>

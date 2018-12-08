@@ -1,5 +1,6 @@
-import { join } from 'path';
-import { readFile, outputFile, remove } from 'fs-extra';
+import { dir } from 'tmp-promise';
+import { join, resolve } from 'path';
+import { readFile, outputFile, mkdirp, remove } from 'fs-extra';
 import {
   FileType,
   extToFileType,
@@ -8,21 +9,18 @@ import {
   parseFileSync,
 } from './file-loader';
 
-const testDir = './test-dir';
-
-afterAll(async (done) => {
-  await remove(testDir);
-  done();
-});
-
-const withFakeFile = async (
-  name: string,
-  contents: string,
-  cb: (name: string) => Promise<any>,
+const withFakeFiles = async (
+  files: [string, string][],
+  cb: (dir: string) => Promise<any>,
 ) => {
-  await outputFile(join(testDir, name), contents);
-  await cb(join(testDir, name));
-  await remove(join(testDir, name));
+  const { path: tmp } = await dir();
+  const filenames = files.map(([name]) => join(tmp, name));
+  await Promise.all(filenames.map(async (name, i) => {
+    await outputFile(name, files[i][1]);
+  }));
+
+  await cb(tmp);
+  await remove(tmp);
 };
 
 test('ext to file type', async () => {
@@ -59,14 +57,19 @@ test('guess file type', async () => {
 });
 
 test('load toml file', async () => {
-  await withFakeFile('./nested/dir/fake-file.toml', `
-    [top]
-    foo = "bar"
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.toml',
+      `
+      [top]
+      foo = "bar"
 
-    [top2]
-    bar = "foo"
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename);
+      [top2]
+      bar = "foo"
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file.toml'));
 
     expect(fileType).toBe(FileType.TOML);
     expect(obj).toEqual({
@@ -75,11 +78,16 @@ test('load toml file', async () => {
     });
   });
 
-  await withFakeFile('./nested/dir/fake-file', `
-    [unlabeled]
-    toml = "file"
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename);
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file',
+      `
+      [unlabeled]
+      toml = "file"
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.TOML);
     expect(obj).toEqual({
@@ -89,13 +97,18 @@ test('load toml file', async () => {
 });
 
 test('load json file', async () => {
-  await withFakeFile('./nested/dir/fake-file.json', `
-    {
-      "top": { "foo": "bar" },
-      "top2": { "bar": "foo" },
-    }
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename);
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.json',
+      `
+      {
+        "top": { "foo": "bar" },
+        "top2": { "bar": "foo" },
+      }
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file.json'));
 
     expect(fileType).toBe(FileType.JSON);
     expect(obj).toEqual({
@@ -104,14 +117,19 @@ test('load json file', async () => {
     });
   });
 
-  await withFakeFile('./nested/dir/fake-file', `
-    {
-      "unlabeled": {
-        "json": "file"
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file',
+      `
+      {
+        "unlabeled": {
+          "json": "file"
+        }
       }
-    }
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename);
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.JSON);
     expect(obj).toEqual({
@@ -121,13 +139,18 @@ test('load json file', async () => {
 });
 
 test('load yaml file', async () => {
-  await withFakeFile('./nested/dir/fake-file.yml', `
-    top:
-      foo: 'bar'
-    top2:
-      bar: 'foo'
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename);
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.yml',
+      `
+      top:
+        foo: 'bar'
+      top2:
+        bar: 'foo'
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file.yml'));
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual({
@@ -136,11 +159,16 @@ test('load yaml file', async () => {
     });
   });
 
-  await withFakeFile('./nested/dir/fake-file', `
-    unlabeled:
-      yaml: 'file'
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename);
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file',
+      `
+      unlabeled:
+        yaml: 'file'
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual({
@@ -150,10 +178,15 @@ test('load yaml file', async () => {
 });
 
 test('parse file sync', async () => {
-  await withFakeFile('./nested/dir/fake-file.yml', `
-    foo: 'bar'
-  `, async (filename) => {
-    const [fileType, obj] = parseFileSync(filename);
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.yml',
+      `
+      foo: 'bar'
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.yml'));
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual({
@@ -163,11 +196,16 @@ test('parse file sync', async () => {
 });
 
 test('load file without extension', async () => {
-  await withFakeFile('./nested/dir/fake-file.toml', `
-    [top]
-    foo = "bar"
-  `, async (filename) => {
-    const [fileType, obj] = await parseFile(filename.replace(/\.[^/.]+$/, ''));
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.toml',
+      `
+      [top]
+      foo = "bar"
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.TOML);
     expect(obj).toEqual({
@@ -175,15 +213,23 @@ test('load file without extension', async () => {
     });
   });
 
-  await withFakeFile('./nested/dir/fake-file.json', '{}', async (filename) => {
-    const [fileType, obj] = await parseFile(filename.replace(/\.[^/.]+$/, ''));
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.json', '{}',
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.JSON);
     expect(obj).toEqual({});
   });
 
-  await withFakeFile('./nested/dir/fake-file.yml', '{}', async (filename) => {
-    const [fileType, obj] = await parseFile(filename.replace(/\.[^/.]+$/, ''));
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.yml', '{}',
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual({});
@@ -191,11 +237,16 @@ test('load file without extension', async () => {
 });
 
 test('load file sync without extension', async () => {
-  await withFakeFile('./nested/dir/fake-file.toml', `
-    [top]
-    foo = "bar"
-  `, async (filename) => {
-    const [fileType, obj] = parseFileSync(filename.replace(/\.[^/.]+$/, ''));
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.toml',
+      `
+      [top]
+      foo = "bar"
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.TOML);
     expect(obj).toEqual({
@@ -203,15 +254,23 @@ test('load file sync without extension', async () => {
     });
   });
 
-  await withFakeFile('./nested/dir/fake-file.json', '{}', async (filename) => {
-    const [fileType, obj] = parseFileSync(filename.replace(/\.[^/.]+$/, ''));
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.json', '{}',
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
     expect(fileType).toBe(FileType.JSON);
     expect(obj).toEqual({});
   });
 
-  await withFakeFile('./nested/dir/fake-file.yml', '{}', async (filename) => {
-    const [fileType, obj] = parseFileSync(filename.replace(/\.[^/.]+$/, ''));
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file.yml', '{}',
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.yml'));
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual({});
