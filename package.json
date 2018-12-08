@@ -56,9 +56,11 @@
     "testMatch": null,
     "testRegex": "(tests/.*|src/.*\\.test)\\.(ts|js)$",
     "testPathIgnorePatterns": [
+      "node_modules",
       ".yarn-cache"
     ],
     "modulePathIgnorePatterns": [
+      "node_modules",
       ".yarn-cache"
     ]
   }
