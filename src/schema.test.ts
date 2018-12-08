@@ -1,9 +1,9 @@
 import { dir } from 'tmp-promise';
 import { join } from 'path';
-import { outputFile, remove } from 'fs-extra';
+import { readFile, outputFile, remove } from 'fs-extra';
 import { ConfigSource } from './config';
 import { FileType } from './file-loader';
-import { validate, InvalidConfig, loadSchema, loadSchemaSync } from './schema';
+import { validate, InvalidConfig, loadSchema, loadSchemaSync, generateTypeFiles } from './schema';
 
 const withFakeFiles = async (
   files: [string, string][],
@@ -316,5 +316,36 @@ test('load non dotfile schema file', async () => {
         x: { type: 'number' },
       },
     });
+  });
+});
+
+test('generate type files', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "app-config": {
+          "generate": [
+            {
+              "type": "ts",
+              "file": "config.ts"
+            }
+          ]
+        },
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+  ], async (dir) => {
+    await loadSchema(dir);
+    await generateTypeFiles(dir);
+    const config = (await readFile(join(dir, 'config.ts'))).toString('utf8');
+
+    expect(config).toBeTruthy();
+    expect(config).toMatch('x: number;');
   });
 });
