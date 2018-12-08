@@ -60,6 +60,26 @@ test('load app config file', async () => {
   });
 });
 
+test('load non dotfile config file', async () => {
+  await withFakeFiles([
+    [
+      'app-config.toml',
+      `
+      bar = "foo"
+      `,
+    ],
+  ], async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual({
+      bar: 'foo',
+    });
+  });
+});
+
 test('load secrets file', async () => {
   await withFakeFiles([
     [

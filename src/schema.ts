@@ -1,6 +1,13 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
+import { join } from 'path';
 import { ConfigObject, ConfigSource, LoadedConfig } from './config';
+import {
+  parseFile,
+  parseFileSync,
+} from './file-loader';
+
+const schemaFileName = ['.app-config.schema', 'app-config.schema'];
 
 export enum InvalidConfig {
   InvalidSchema,
@@ -79,4 +86,33 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
   }
 
   return false;
+};
+
+export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
+  const [schema] = (await Promise.all(
+    schemaFileName.map(filename => parseFile(join(cwd, filename)).catch(_ => null)),
+  )).filter(c => !!c);
+
+  if (!schema) {
+    throw new Error('Could not find app config schema.');
+  }
+
+  return schema[1];
+};
+
+export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
+  const [schema] = schemaFileName
+    .map(filename => {
+      try {
+        return parseFileSync(join(cwd, filename));
+      } catch (_) {
+        return null;
+      }
+    }).filter(c => !!c);
+
+  if (!schema) {
+    throw new Error('Could not find app config schema.');
+  }
+
+  return schema[1];
 };

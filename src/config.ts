@@ -11,7 +11,6 @@ import {
 const envVarName = ['APP_CONFIG'];
 const configFileName = ['.app-config', 'app-config'];
 const secretsFileName = ['.app-config.secrets', 'app-config.secrets'];
-const schemaFileName = ['.app-config.schema', 'app-config.schema'];
 
 export type ConfigObject = number | string | object | {
   [key: string]: ConfigObject;

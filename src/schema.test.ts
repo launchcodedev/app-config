@@ -1,6 +1,23 @@
+import { dir } from 'tmp-promise';
+import { join } from 'path';
+import { outputFile, remove } from 'fs-extra';
 import { ConfigSource } from './config';
-import { validate, InvalidConfig } from './schema';
 import { FileType } from './file-loader';
+import { validate, InvalidConfig, loadSchema, loadSchemaSync } from './schema';
+
+const withFakeFiles = async (
+  files: [string, string][],
+  cb: (dir: string) => Promise<any>,
+) => {
+  const { path: tmp } = await dir();
+  const filenames = files.map(([name]) => join(tmp, name));
+  await Promise.all(filenames.map(async (name, i) => {
+    await outputFile(name, files[i][1]);
+  }));
+
+  await cb(tmp);
+  await remove(tmp);
+};
 
 test('parse schema', () => {
   const res = validate({
@@ -200,4 +217,104 @@ test('secret referenced property in main file', () => {
   });
 
   expect((<any>res)[0]).toBe(InvalidConfig.SecretInNonSecrets);
+});
+
+test('load schema file', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual({
+      properties: {
+        x: { type: 'number' },
+      },
+    });
+  });
+});
+
+test('load sync schema file', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+  ], async (dir) => {
+    expect(loadSchemaSync(dir)).toEqual({
+      properties: {
+        x: { type: 'number' },
+      },
+    });
+  });
+});
+
+test('load toml schema file', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.toml',
+      `
+      [properties]
+      x = { type = "number" }
+      `,
+    ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual({
+      properties: {
+        x: { type: 'number' },
+      },
+    });
+  });
+});
+
+test('load yaml schema file', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema',
+      `
+      properties:
+        x:
+          type: 'number'
+      `,
+    ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual({
+      properties: {
+        x: { type: 'number' },
+      },
+    });
+  });
+});
+
+test('load non dotfile schema file', async () => {
+  await withFakeFiles([
+    [
+      'app-config.schema.json',
+      `
+      {
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual({
+      properties: {
+        x: { type: 'number' },
+      },
+    });
+  });
 });

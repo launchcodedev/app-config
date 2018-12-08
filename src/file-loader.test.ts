@@ -1,6 +1,6 @@
 import { dir } from 'tmp-promise';
-import { join, resolve } from 'path';
-import { readFile, outputFile, mkdirp, remove } from 'fs-extra';
+import { join } from 'path';
+import { outputFile, remove } from 'fs-extra';
 import {
   FileType,
   extToFileType,
