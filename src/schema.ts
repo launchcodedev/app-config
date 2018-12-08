@@ -15,7 +15,7 @@ export enum InvalidConfig {
   SchemaValidation,
 }
 
-export type ConfigInput = { schema: object } & LoadedConfig;
+export type ConfigInput = { schema: ConfigObject } & LoadedConfig;
 
 export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  => {
   const {

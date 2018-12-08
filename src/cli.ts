@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { loadConfig } from '.';
+import { loadConfigSync } from '.';
 import * as execa from 'execa';
 import { flattenObjectTree } from './util';
 import * as TOML from '@iarna/toml';
@@ -52,8 +52,8 @@ if (!command && !argv.vars) {
 
 const {
   config: fullConfig,
-  nonSecret: nonSecretConfig,
-} = loadConfig();
+  nonSecrets: nonSecretConfig,
+} = loadConfigSync();
 
 const config = (argv.secrets ? fullConfig : nonSecretConfig) as any;
 
