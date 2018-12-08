@@ -4,7 +4,7 @@ import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import { flattenObjectTree } from './util';
-import { loadConfig } from '.';
+import { loadConfig } from './index';
 
 const argv = Yargs
   .usage('Usage: $0 <command>')
@@ -50,11 +50,6 @@ const argv = Yargs
 
 const [command, ...args] = argv._;
 
-if (!command && !argv.vars) {
-  Yargs.showHelp();
-  process.exit(1);
-}
-
 (async () => {
   const {
     config: fullConfig,
@@ -65,7 +60,7 @@ if (!command && !argv.vars) {
   const config = (argv.secrets ? fullConfig : nonSecrets) as any;
   const flattenedConfig = flattenObjectTree(config, prefix);
 
-  if (!command && argv.vars) {
+  if (argv.vars) {
     console.log(
       Object.entries(flattenedConfig)
         .map(([key, value]) => `${key}=${value}`)

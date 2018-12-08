@@ -103,7 +103,7 @@ export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => 
 
 export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
   const [schema] = schemaFileName
-    .map(filename => {
+    .map((filename) => {
       try {
         return parseFileSync(join(cwd, filename));
       } catch (_) {

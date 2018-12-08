@@ -87,7 +87,7 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
   }
 
   const [secretsConfig] = secretsFileName
-    .map(filename => {
+    .map((filename) => {
       try {
         return parseFileSync(join(cwd, filename));
       } catch (_) {
@@ -98,7 +98,7 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
   const secrets = secretsConfig ? secretsConfig[1] : {};
 
   const [mainConfig] =
-    configFileName.map(filename => {
+    configFileName.map((filename) => {
       try {
         return parseFileSync(join(cwd, filename));
       } catch (_) {

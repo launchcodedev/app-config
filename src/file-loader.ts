@@ -184,16 +184,27 @@ export const parseFileSync = (
   return parseString(contents, fileType);
 };
 
+
+let metaProps: any = {};
+export const getMetaProps = () => metaProps;
+
+const stripMetaProps = (c: ConfigObject): ConfigObject => {
+  // meta properties, not actually a part of the schema
+  metaProps = (<any>c)['app-config'] || {};
+  delete (<any>c)['app-config'];
+  return c;
+};
+
 export const parseString = (
   contents: string,
   fileType: FileType,
 ): [FileType, ConfigObject] => {
   switch (fileType) {
     case FileType.JSON:
-      return [FileType.JSON, JSON.parse(contents)];
+      return [FileType.JSON, stripMetaProps(JSON.parse(contents))];
     case FileType.TOML:
-      return [FileType.TOML, TOML.parse(contents)];
+      return [FileType.TOML, stripMetaProps(TOML.parse(contents))];
     case FileType.YAML:
-      return [FileType.YAML, YAML.safeLoad(contents)];
+      return [FileType.YAML, stripMetaProps(YAML.safeLoad(contents))];
   }
 };
