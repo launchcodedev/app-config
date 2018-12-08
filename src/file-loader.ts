@@ -184,7 +184,6 @@ export const parseFileSync = (
   return parseString(contents, fileType);
 };
 
-
 let metaProps: any = {};
 export const getMetaProps = () => metaProps;
 

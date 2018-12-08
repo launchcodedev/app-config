@@ -1,11 +1,19 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
-import { join } from 'path';
+import { outputFile } from 'fs-extra';
+import { join, basename, extname } from 'path';
 import { ConfigObject, ConfigSource, LoadedConfig } from './config';
 import {
   parseFile,
   parseFileSync,
+  getMetaProps,
 } from './file-loader';
+import {
+  quicktype,
+  JSONSchemaInput,
+  JSONSchemaSourceData,
+  InputData,
+} from 'quicktype-core';
 
 const schemaFileName = ['.app-config.schema', 'app-config.schema'];
 
@@ -116,4 +124,43 @@ export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
   }
 
   return schema[1];
+};
+
+export const generateTypeFiles = async (cwd = process.cwd()) => {
+  type GenerateTypes = { type: string, file: string };
+
+  const schema = await loadSchema(cwd);
+
+  const {
+    generate = [],
+  } = getMetaProps() as { generate: GenerateTypes[] };
+
+  await Promise.all(generate.map(async ({ type, file }) => {
+    const src = {
+      name: basename(file, extname(file)),
+      schema: JSON.stringify(schema),
+    } as JSONSchemaSourceData;
+
+    const input = new JSONSchemaInput(undefined);
+    await input.addSource(src);
+
+    const inputData = new InputData();
+    inputData.addInput(input);
+
+    const { lines } = await quicktype({
+      inputData,
+      lang: type,
+      indentation: '  ',
+      leadingComments: [
+        'AUTO GENERATED CODE',
+        'Run app-config with --generate to regenerate this file',
+      ],
+      rendererOptions: {
+        'just-types': 'true',
+        'runtime-typecheck': 'false',
+      },
+    });
+
+    await outputFile(file, lines.join('\n'));
+  }));
 };

@@ -5,6 +5,7 @@ import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import { flattenObjectTree } from './util';
 import { loadConfig } from './index';
+import { generateTypeFiles } from './schema';
 
 const argv = Yargs
   .usage('Usage: $0 <command>')
@@ -19,7 +20,7 @@ const argv = Yargs
     'Print out the generated environment variables',
   )
   .example(
-    'export $($0 -V | xargs)',
+    'export $($0 -v | xargs)',
     'Export the generated environment variables to the current shell',
   )
   .option('v', {
@@ -42,6 +43,13 @@ const argv = Yargs
     nargs: 1,
     type: 'string',
     description: 'Prefix environment variables',
+  })
+  .option('g', {
+    alias: 'generate',
+    default: false,
+    nargs: 0,
+    type: 'boolean',
+    description: 'Run code generation as specified by the app-config file',
   })
   .version()
   .help()
@@ -67,6 +75,16 @@ const [command, ...args] = argv._;
         .join('\n'),
     );
 
+    return;
+  }
+
+  if (argv.generate) {
+    await generateTypeFiles();
+    return;
+  }
+
+  if (!command) {
+    Yargs.showHelp();
     return;
   }
 
