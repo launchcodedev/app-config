@@ -1,4 +1,4 @@
-import { flattenObjectTree, KeyFormatter, camelToSeparator } from './util';
+import { flattenObjectTree, KeyFormatter, camelToScreamingCase } from './util';
 
 const person = {
   name: 'bob',
@@ -122,14 +122,14 @@ describe('camelToSeperator()', () => {
   test('String in camelCase is converted to underscore_case', () => {
     const originalString = 'testVariableName';
 
-    const modifiedString = camelToSeparator(originalString, '_');
+    const modifiedString = camelToScreamingCase(originalString, '_');
 
     expect(modifiedString).toBe('TEST_VARIABLE_NAME');
   });
   test('String in camelCase is converted to kebab-case', () => {
     const originalString = 'testVariableName';
 
-    const modifiedString = camelToSeparator(originalString, '-');
+    const modifiedString = camelToScreamingCase(originalString, '-');
 
     expect(modifiedString).toBe('TEST-VARIABLE-NAME');
   });
