@@ -6,13 +6,10 @@ import { flattenObjectTree } from './util';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 
-const description =
-'Exports TOML properties as individual key-value environment variables for the specified command';
-
 const argv = Yargs
   .usage('Usage: $0 <command>')
   .usage('')
-  .usage(description)
+  .usage('Exports config as individual environment variables for the specified command')
   .example(
     '$0 docker-compose up -d',
     'Run Docker Compose with the generated environment variables',
@@ -25,14 +22,14 @@ const argv = Yargs
     'export $($0 --vars | xargs)',
     'Export the generated environment variables to the current shell',
   )
-  .option('V', {
+  .option('v', {
     alias: 'vars',
     default: false,
     nargs: 0,
     type: 'boolean',
     description: 'Print out the generated environment variables',
   })
-  .option('S', {
+  .option('s', {
     alias: 'secrets',
     default: false,
     nargs: 0,
@@ -41,6 +38,7 @@ const argv = Yargs
   })
   .version()
   .help()
+  .strict()
   .argv;
 
 const [command, ...args] = argv._;
