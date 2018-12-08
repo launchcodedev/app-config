@@ -3,7 +3,7 @@ import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON from 'json5';
-import { ConfigObject } from './common';
+import { ConfigObject } from './config';
 
 export enum FileType {
   JSON = 'JSON',

@@ -1,6 +1,6 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
-import { ConfigObject } from './common';
+import { ConfigObject, ConfigSource, LoadedConfig } from './config';
 
 export enum InvalidConfig {
   InvalidSchema,
@@ -8,23 +8,12 @@ export enum InvalidConfig {
   SchemaValidation,
 }
 
-export enum ConfigSource {
-  File,
-  EnvVar,
-}
-
-export type ConfigInput = {
-  schema: object;
-  source: ConfigSource;
-  // !config means (secrets || nonSecrets)
-  config?: ConfigObject;
-  secrets?: ConfigObject;
-  nonSecrets?: ConfigObject;
-};
+export type ConfigInput = { schema: object } & LoadedConfig;
 
 export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  => {
   const {
     source,
+    config,
     secrets,
     nonSecrets,
   } = input;
@@ -46,15 +35,6 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
       return schema === true;
     },
   });
-
-  let { config } = input;
-
-  if (config === undefined) {
-    config = {
-      ...((typeof nonSecrets === 'object') ? nonSecrets : {}),
-      ...((typeof secrets === 'object') ? secrets : {}),
-    };
-  }
 
   const schema = input.schema as { [key: string]: ConfigObject };
 
