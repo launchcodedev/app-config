@@ -11,6 +11,10 @@ export enum FileType {
   YAML = 'YAML',
 }
 
+export enum CouldNotParse {
+  FileNotFound,
+}
+
 export const extToFileType = (ext: string, contents: string = ''): FileType => {
   switch (ext) {
     case 'toml':
@@ -117,7 +121,7 @@ export const parseFile = async (
     }
 
     if (valid.length === 0) {
-      throw new Error(`could not find file ${filePath}`);
+      throw CouldNotParse.FileNotFound;
     }
 
     ext = valid[0] as string;

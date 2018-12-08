@@ -2,10 +2,11 @@ import * as _ from 'lodash';
 import { join } from 'path';
 import { ConfigObject } from './config';
 import {
-  FileType,
   parseEnv,
   parseFile,
   parseFileSync,
+  FileType,
+  CouldNotParse,
 } from './file-loader';
 
 const envVarName = ['APP_CONFIG'];
@@ -46,13 +47,21 @@ export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => 
   }
 
   const [secretsConfig] = (await Promise.all(
-    secretsFileName.map(filename => parseFile(join(cwd, filename)).catch(_ => null)),
+    secretsFileName.map(filename => parseFile(join(cwd, filename)).catch((e) => {
+      if (e !== CouldNotParse.FileNotFound) {
+        throw e;
+      }
+    })),
   )).filter(c => !!c);
 
   const secrets = secretsConfig ? secretsConfig[1] : {};
 
   const [mainConfig] = (await Promise.all(
-    configFileName.map(filename => parseFile(join(cwd, filename)).catch(_ => null)),
+    configFileName.map(filename => parseFile(join(cwd, filename)).catch((e) => {
+      if (e !== CouldNotParse.FileNotFound) {
+        throw e;
+      }
+    })),
   )).filter(c => !!c);
 
   if (!mainConfig) {

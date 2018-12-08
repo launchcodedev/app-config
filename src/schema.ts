@@ -7,6 +7,7 @@ import {
   parseFile,
   parseFileSync,
   getMetaProps,
+  CouldNotParse,
 } from './file-loader';
 import {
   quicktype,
@@ -99,7 +100,11 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
 
 export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
   const [schema] = (await Promise.all(
-    schemaFileName.map(filename => parseFile(join(cwd, filename)).catch(_ => null)),
+    schemaFileName.map(filename => parseFile(join(cwd, filename)).catch((e) => {
+      if (e !== CouldNotParse.FileNotFound) {
+        throw e;
+      }
+    })),
   )).filter(c => !!c);
 
   if (!schema) {
