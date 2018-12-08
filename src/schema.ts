@@ -25,7 +25,9 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
     nonSecrets,
   } = input;
 
-  const ajv = new Ajv();
+  const ajv = new Ajv({
+    allErrors: true,
+  });
 
   // array of property paths that should only be present in secrets file
   const schemaSecrets: string[] = [];
@@ -54,8 +56,7 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
-  const validate = ajv.compile(schema);
-  const valid = validate(config);
+  const valid = ajv.validate(schema, config);
 
   if (source === ConfigSource.File && nonSecrets) {
     // check that the nonSecrets does not contain any properties marked as secret
