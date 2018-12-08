@@ -41,46 +41,21 @@ test('guess file type', async () => {
     {
       "foo": "bar",
     }
-  `)).toEqual([
-    FileType.JSON,
-    {
-      foo: 'bar',
-    },
-  ]);
+  `)).toEqual(FileType.JSON);
 
   expect(guessFileType(`
     [foo]
     bar = true
-  `)).toEqual([
-    FileType.TOML,
-    {
-      foo: {
-        bar: true,
-      },
-    },
-  ]);
+  `)).toEqual(FileType.TOML);
 
   expect(guessFileType(`
     bar:
       - foo: true
-  `)).toEqual([
-    FileType.YAML,
-    {
-      bar: [
-        { foo: true },
-      ],
-    },
-  ]);
+  `)).toEqual(FileType.YAML);
 
-  expect(guessFileType('"string"')).toEqual([
-    FileType.JSON,
-    'string',
-  ]);
+  expect(guessFileType('"string"')).toEqual(FileType.JSON);
 
-  expect(guessFileType('23')).toEqual([
-    FileType.JSON,
-    23,
-  ]);
+  expect(guessFileType('23')).toEqual(FileType.JSON);
 });
 
 test('load toml file', async () => {

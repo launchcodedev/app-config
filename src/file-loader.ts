@@ -23,8 +23,7 @@ export const extToFileType = (ext: string, contents: string = ''): FileType => {
       return FileType.JSON;
     default:
       if (contents) {
-        const [fileType] = guessFileType(contents);
-        return fileType;
+        return guessFileType(contents);
       }
   }
 
@@ -42,17 +41,20 @@ export const fileTypeToExt = (fileType: FileType): string[] => {
   }
 };
 
-export const guessFileType = (contents: string): [FileType, ConfigObject] => {
+export const guessFileType = (contents: string): FileType => {
   try {
-    return [FileType.JSON, JSON.parse(contents)];
+    JSON.parse(contents);
+    return FileType.JSON;
   } catch (_) {}
 
   try {
-    return [FileType.TOML, TOML.parse(contents)];
+    TOML.parse(contents);
+    return FileType.TOML;
   } catch (_) {}
 
   try {
-    return [FileType.YAML, YAML.safeLoad(contents)];
+    YAML.safeLoad(contents);
+    return FileType.YAML;
   } catch (_) {}
 
   throw new Error('contents were not a valid FileType');
@@ -72,13 +74,13 @@ export const parseEnv = (
     throw new Error(`No environment variable '${name}' found`);
   }
 
-  const [fileType, parsed] = guessFileType(contents);
+  const fileType = guessFileType(contents);
 
   if (!supportedFileTypes.includes(fileType)) {
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  return [fileType, parsed];
+  return parseString(contents, fileType);
 };
 
 export const parseFile = async (
