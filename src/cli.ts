@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
-import { loadConfigSync } from '.';
 import * as execa from 'execa';
-import { flattenObjectTree } from './util';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
+import { flattenObjectTree } from './util';
+import { loadConfig } from '.';
 
 const argv = Yargs
   .usage('Usage: $0 <command>')
   .usage('')
   .usage('Exports config as individual environment variables for the specified command')
   .example(
-    '$0 docker-compose up -d',
+    '$0 -- docker-compose up -d',
     'Run Docker Compose with the generated environment variables',
   )
   .example(
@@ -19,7 +19,7 @@ const argv = Yargs
     'Print out the generated environment variables',
   )
   .example(
-    'export $($0 --vars | xargs)',
+    'export $($0 -V | xargs)',
     'Export the generated environment variables to the current shell',
   )
   .option('v', {
@@ -36,6 +36,13 @@ const argv = Yargs
     type: 'boolean',
     description: 'Include config secrets in the generated environment variables',
   })
+  .option('p', {
+    alias: 'prefix',
+    default: 'APP_CONFIG',
+    nargs: 1,
+    type: 'string',
+    description: 'Prefix environment variables',
+  })
   .version()
   .help()
   .strict()
@@ -48,41 +55,43 @@ if (!command && !argv.vars) {
   process.exit(1);
 }
 
-const {
-  config: fullConfig,
-  nonSecrets: nonSecretConfig,
-} = loadConfigSync();
+(async () => {
+  const {
+    config: fullConfig,
+    nonSecrets,
+  } = await loadConfig();
 
-const config = (argv.secrets ? fullConfig : nonSecretConfig) as any;
+  const { prefix } = argv;
+  const config = (argv.secrets ? fullConfig : nonSecrets) as any;
+  const flattenedConfig = flattenObjectTree(config, prefix);
 
-const prefix = 'APP_CONFIG';
-const flattenedConfig = flattenObjectTree(config, prefix);
+  if (!command && argv.vars) {
+    console.log(
+      Object.entries(flattenedConfig)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n'),
+    );
 
-if (!command && argv.vars) {
-  console.log(
-    Object.entries(flattenedConfig)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('\n'),
-  );
-  process.exit(0);
-}
-
-execa(
-  command,
-  args,
-  {
-    env: {
-      [prefix]: TOML.stringify(config),
-      ...flattenedConfig,
-    },
-    stdio: 'inherit',
-  },
-)
-.catch((err) => {
-  if (err.failed) {
-    console.error(`Failed to run command '${err.cmd}': Error code ${err.code}`);
-  } else {
-    console.error(err.message);
+    return;
   }
-  process.exit(1);
-});
+
+  await execa(
+    command,
+    args,
+    {
+      env: {
+        [prefix]: TOML.stringify(config),
+        ...flattenedConfig,
+      },
+      stdio: 'inherit',
+    },
+  )
+  .catch((err) => {
+    if (err.failed) {
+      console.error(`Failed to run command '${err.cmd}': Error code ${err.code}`);
+    } else {
+      console.error(err.message);
+    }
+    process.exit(1);
+  });
+})();
