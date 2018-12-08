@@ -39,6 +39,27 @@ test('load env config', async () => {
   delete process.env.APP_CONFIG;
 });
 
+test('load env sync', async () => {
+  process.env.APP_CONFIG = `
+    [foo]
+    bar = true
+  `;
+
+  const { config, secrets, fileType, source } = loadConfigSync();
+
+  expect(config).toEqual({
+    foo: {
+      bar: true,
+    },
+  });
+
+  expect(secrets).toBe(undefined);
+  expect(fileType).toBe(FileType.TOML);
+  expect(source).toBe(ConfigSource.EnvVar);
+
+  delete process.env.APP_CONFIG;
+});
+
 test('load app config file', async () => {
   await withFakeFiles([
     [
