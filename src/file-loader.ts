@@ -3,6 +3,7 @@ import { readFile, readFileSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON from 'json5';
+import { ConfigObject } from './common';
 
 export enum FileType {
   JSON = 'JSON',
@@ -30,7 +31,7 @@ export const extToFileType = (ext: string, contents: string = ''): FileType => {
   throw new Error(`could not guess file type for ${ext}`);
 };
 
-export const guessFileType = (contents: string): [FileType, number | string | object] => {
+export const guessFileType = (contents: string): [FileType, ConfigObject] => {
   try {
     return [FileType.JSON, JSON.parse(contents)];
   } catch (_) {}
@@ -53,7 +54,7 @@ export const parseEnv = (
     FileType.TOML,
     FileType.YAML,
   ],
-): [FileType, number | string | object] => {
+): [FileType, ConfigObject] => {
   const contents = process.env[name];
 
   if (!contents) {
@@ -76,7 +77,7 @@ export const parseFile = async (
     FileType.TOML,
     FileType.YAML,
   ],
-): Promise<[FileType, number | string | object]> => {
+): Promise<[FileType, ConfigObject]> => {
   const ext = extname(filePath).toLowerCase();
   const contents = (await readFile(filePath)).toString('utf8');
   const fileType = extToFileType(ext, contents);
@@ -95,7 +96,7 @@ export const parseFileSync = (
     FileType.TOML,
     FileType.YAML,
   ],
-): [FileType, number | string | object] => {
+): [FileType, ConfigObject] => {
   const ext = extname(filePath).toLowerCase();
   const contents = readFileSync(filePath).toString('utf8');
   const fileType = extToFileType(ext, contents);
@@ -110,7 +111,7 @@ export const parseFileSync = (
 export const parseString = (
   contents: string,
   fileType: FileType,
-): [FileType, number | string | object] => {
+): [FileType, ConfigObject] => {
   switch (fileType) {
     case FileType.JSON:
       return [FileType.JSON, JSON.parse(contents)];
