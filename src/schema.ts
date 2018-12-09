@@ -6,8 +6,9 @@ import { ConfigObject, ConfigSource, LoadedConfig } from './config';
 import {
   parseFile,
   parseFileSync,
+  findParseableFile,
+  findParseableFileSync,
   getMetaProps,
-  CouldNotParse,
 } from './file-loader';
 import {
   quicktype,
@@ -99,13 +100,7 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
 };
 
 export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
-  const [schema] = (await Promise.all(
-    schemaFileName.map(filename => parseFile(join(cwd, filename)).catch((e) => {
-      if (e !== CouldNotParse.FileNotFound) {
-        throw e;
-      }
-    })),
-  )).filter(c => !!c);
+  const schema = await findParseableFile(schemaFileName.map(f => join(cwd, f)));
 
   if (!schema) {
     throw new Error('Could not find app config schema.');
@@ -115,14 +110,7 @@ export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => 
 };
 
 export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
-  const [schema] = schemaFileName
-    .map((filename) => {
-      try {
-        return parseFileSync(join(cwd, filename));
-      } catch (_) {
-        return null;
-      }
-    }).filter(c => !!c);
+  const schema = findParseableFileSync(schemaFileName.map(f => join(cwd, f)));
 
   if (!schema) {
     throw new Error('Could not find app config schema.');

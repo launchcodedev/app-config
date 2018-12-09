@@ -5,8 +5,9 @@ import {
   parseEnv,
   parseFile,
   parseFileSync,
+  findParseableFile,
+  findParseableFileSync,
   FileType,
-  CouldNotParse,
 } from './file-loader';
 
 const envVarName = ['APP_CONFIG'];
@@ -46,23 +47,10 @@ export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => 
     };
   }
 
-  const [secretsConfig] = (await Promise.all(
-    secretsFileName.map(filename => parseFile(join(cwd, filename)).catch((e) => {
-      if (e !== CouldNotParse.FileNotFound) {
-        throw e;
-      }
-    })),
-  )).filter(c => !!c);
-
+  const secretsConfig = await findParseableFile(secretsFileName.map(f => join(cwd, f)));
   const secrets = secretsConfig ? secretsConfig[1] : {};
 
-  const [mainConfig] = (await Promise.all(
-    configFileName.map(filename => parseFile(join(cwd, filename)).catch((e) => {
-      if (e !== CouldNotParse.FileNotFound) {
-        throw e;
-      }
-    })),
-  )).filter(c => !!c);
+  const mainConfig = await findParseableFile(configFileName.map(f => join(cwd, f)));
 
   if (!mainConfig) {
     throw new Error('Could not find app config. Expected an environment variable or file.');
@@ -95,25 +83,10 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
     };
   }
 
-  const [secretsConfig] = secretsFileName
-    .map((filename) => {
-      try {
-        return parseFileSync(join(cwd, filename));
-      } catch (_) {
-        return null;
-      }
-    }).filter(c => !!c);
-
+  const secretsConfig = findParseableFileSync(secretsFileName.map(f => join(cwd, f)));
   const secrets = secretsConfig ? secretsConfig[1] : {};
 
-  const [mainConfig] =
-    configFileName.map((filename) => {
-      try {
-        return parseFileSync(join(cwd, filename));
-      } catch (_) {
-        return null;
-      }
-    }).filter(c => !!c);
+  const mainConfig = findParseableFileSync(configFileName.map(f => join(cwd, f)));
 
   if (!mainConfig) {
     throw new Error('Could not find app config. Expected an environment variable or file.');
