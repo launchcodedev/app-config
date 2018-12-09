@@ -12,7 +12,7 @@ export enum FileType {
 }
 
 export enum CouldNotParse {
-  FileNotFound,
+  FileNotFound = 'FileNotFound',
 }
 
 export const extToFileType = (ext: string, contents: string = ''): FileType => {
@@ -99,7 +99,7 @@ export const parseFile = async (
   let file = filePath;
 
   if (await pathExists(filePath)) {
-    ext = extname(filePath).toLowerCase();
+    ext = extname(filePath).toLowerCase().slice(1);
   } else {
     const found = await Promise.all(supportedFileTypes
       .map(fileTypeToExt).map(async (exts) => {
@@ -150,7 +150,7 @@ export const parseFileSync = (
   let file = filePath;
 
   if (pathExistsSync(filePath)) {
-    ext = extname(filePath).toLowerCase().substring(1);
+    ext = extname(filePath).toLowerCase().slice(1);
   } else {
     const found = supportedFileTypes.map(fileTypeToExt).map((exts) => {
       const found = exts.map(extension =>
@@ -167,7 +167,7 @@ export const parseFileSync = (
     const valid = found.filter(e => !!e);
 
     if (valid.length === 0) {
-      throw new Error(`could not find file ${filePath}`);
+      throw CouldNotParse.FileNotFound;
     }
 
     if (valid.length > 1) {
@@ -188,14 +188,46 @@ export const parseFileSync = (
   return parseString(contents, fileType);
 };
 
-let metaProps: any = {};
-export const getMetaProps = () => metaProps;
+export const findParseableFile = async (
+  files: string[],
+): Promise<[FileType, ConfigObject] | undefined> => {
+  const [valid, ...others] = (await Promise.all(files.map(async (filename) => {
+    return parseFile(filename).catch((e) => {
+      if (e !== CouldNotParse.FileNotFound) {
+        throw e;
+      }
 
-const stripMetaProps = (c: ConfigObject): ConfigObject => {
-  // meta properties, not actually a part of the schema
-  metaProps = (<any>c)['app-config'] || {};
-  delete (<any>c)['app-config'];
-  return c;
+      return undefined;
+    });
+  }))).filter(c => !!c);
+
+  if (others.length) {
+    console.warn(`Found multiple valid files, only expected one. (${others.join(', ')})`);
+  }
+
+  return valid;
+};
+
+export const findParseableFileSync = (
+  files: string[],
+): [FileType, ConfigObject] | undefined => {
+  const [valid, ...others] = files.map((filename) => {
+    try {
+      return parseFileSync(filename);
+    } catch (e) {
+      if (e !== CouldNotParse.FileNotFound) {
+        throw e;
+      }
+
+      return undefined;
+    }
+  }).filter(c => !!c);
+
+  if (others.length) {
+    console.warn(`Found multiple valid files, only expected one. (${others.join(', ')})`);
+  }
+
+  return valid;
 };
 
 export const parseString = (
@@ -210,4 +242,14 @@ export const parseString = (
     case FileType.YAML:
       return [FileType.YAML, stripMetaProps(YAML.safeLoad(contents))];
   }
+};
+
+let metaProps: any = {};
+export const getMetaProps = () => metaProps;
+
+const stripMetaProps = (c: ConfigObject): ConfigObject => {
+  // meta properties, not actually a part of the schema
+  metaProps = (<any>c)['app-config'] || {};
+  delete (<any>c)['app-config'];
+  return c;
 };

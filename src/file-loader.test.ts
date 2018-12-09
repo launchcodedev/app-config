@@ -7,6 +7,8 @@ import {
   guessFileType,
   parseFile,
   parseFileSync,
+  findParseableFile,
+  findParseableFileSync,
 } from './file-loader';
 
 const withFakeFiles = async (
@@ -274,5 +276,119 @@ test('load file sync without extension', async () => {
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual({});
+  });
+});
+
+test('find parseable file', async () => {
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file3.yml',
+      `
+      foo: 'bar'
+      `,
+    ],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/fake-file1.yml'),
+      join(dir, 'nested/dir/fake-file2.yml'),
+      join(dir, 'nested/dir/fake-file3.yml'),
+      join(dir, 'nested/dir/fake-file4.yml'),
+    ]);
+
+    const [fileType, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual({
+      foo: 'bar',
+    });
+  });
+});
+
+test('find parseable file sync', async () => {
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file3.yml',
+      `
+      foo: 'bar'
+      `,
+    ],
+  ], async (dir) => {
+    const [fileType, obj] = findParseableFileSync([
+      join(dir, 'nested/dir/fake-file1.yml'),
+      join(dir, 'nested/dir/fake-file2.yml'),
+      join(dir, 'nested/dir/fake-file3.yml'),
+      join(dir, 'nested/dir/fake-file4.yml'),
+    ])!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual({
+      foo: 'bar',
+    });
+  });
+});
+
+test('find missing file sync', async () => {
+  await withFakeFiles([], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/fake-file1.yml'),
+      join(dir, 'nested/dir/fake-file2.yml'),
+      join(dir, 'nested/dir/fake-file3.yml'),
+      join(dir, 'nested/dir/fake-file4.yml'),
+    ]);
+
+    expect(found).toBe(undefined);
+  });
+});
+
+test('find missing file', async () => {
+  await withFakeFiles([], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/fake-file1.yml'),
+      join(dir, 'nested/dir/fake-file2.yml'),
+      join(dir, 'nested/dir/fake-file3.yml'),
+      join(dir, 'nested/dir/fake-file4.yml'),
+    ]);
+
+    expect(found).toBe(undefined);
+  });
+});
+
+test('find file with parsing error sync', async () => {
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file3.toml',
+      `
+      invalid key = "val"
+      `,
+    ],
+  ], async (dir) => {
+    expect(() => {
+      findParseableFileSync([
+        join(dir, 'nested/dir/fake-file1.toml'),
+        join(dir, 'nested/dir/fake-file2.toml'),
+        join(dir, 'nested/dir/fake-file3.toml'),
+        join(dir, 'nested/dir/fake-file4.toml'),
+      ]);
+    }).toThrow();
+  });
+});
+
+test('find file with parsing error', async () => {
+  await withFakeFiles([
+    [
+      'nested/dir/fake-file3.toml',
+      `
+      invalid key = "val"
+      `,
+    ],
+  ], async (dir) => {
+    const promise = findParseableFile([
+      join(dir, 'nested/dir/fake-file1.toml'),
+      join(dir, 'nested/dir/fake-file2.toml'),
+      join(dir, 'nested/dir/fake-file3.toml'),
+      join(dir, 'nested/dir/fake-file4.toml'),
+    ]);
+
+    await expect(promise).rejects.toThrow();
   });
 });
