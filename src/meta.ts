@@ -14,7 +14,7 @@ import { findParseableFile } from './file-loader';
 const metaFileName = ['.app-config.meta', 'app-config.meta'];
 
 type MetaProps = {
-  generate: { type: string, file: string }[];
+  generate: { type: string, file: string, name?: string }[];
 };
 
 export const metaProps: any = {};
@@ -37,16 +37,16 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
   // trigger reload of config and schema files so that metaProps are up to date
   const [schema] = await Promise.all([
     loadSchema(cwd),
-    loadConfig(cwd).catch(_ => {}),
+    loadConfig(cwd).catch((_) => {}),
   ]);
 
   const meta = await loadMeta(cwd);
 
   const { generate = [] } = meta;
 
-  await Promise.all(generate.map(async ({ type, file }) => {
+  await Promise.all(generate.map(async ({ type, file, name = basename(file, extname(file)) }) => {
     const src = {
-      name: basename(file, extname(file)),
+      name,
       schema: JSON.stringify(schema),
     } as JSONSchemaSourceData;
 

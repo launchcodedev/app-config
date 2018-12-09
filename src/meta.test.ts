@@ -112,3 +112,35 @@ test('meta config file', async () => {
     expect(config).toMatch('x: number;');
   });
 });
+
+test('named export codegen', async () => {
+  await withFakeFiles([
+    ['.app-config.schema.json5', `{
+      "properties": {
+        "x": { "type": "number" }
+      },
+    }`],
+    [
+      '.app-config.meta.json',
+      `
+      {
+        "generate": [
+          {
+            "type": "ts",
+            "file": "config3.ts",
+            "name": "MyCustomConfigName",
+          }
+        ]
+      }
+      `,
+    ],
+  ], async (dir) => {
+    const output = await generateTypeFiles(dir);
+    expect(output.length).toBe(1);
+
+    const config = (await readFile(join(dir, 'config3.ts'))).toString('utf8');
+
+    expect(config).toBeTruthy();
+    expect(config).toMatch('interface MyCustomConfigName');
+  });
+});
