@@ -4,7 +4,8 @@ import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import { flattenObjectTree } from './util';
-import { loadConfig } from './index';
+import { loadConfig } from './config';
+import { loadSchema, validate } from './schema';
 import { generateTypeFiles } from './meta';
 
 const argv = Yargs
@@ -59,10 +60,23 @@ const argv = Yargs
 const [command, ...args] = argv._;
 
 (async () => {
+  const loaded = await loadConfig();
+
+  const validation = await validate({
+    schema: await loadSchema(),
+    ...loaded,
+  });
+
+  if (validation) {
+    console.error('Invalid config - validation failed');
+    console.error(validation[1].message);
+    process.exit(3);
+  }
+
   const {
     config: fullConfig,
     nonSecrets,
-  } = await loadConfig();
+  } = loaded;
 
   const { prefix } = argv;
   const config = (argv.secrets ? fullConfig : nonSecrets) as any;
