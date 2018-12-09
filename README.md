@@ -87,13 +87,25 @@ converting from one to another is trivial.
 
       We can use app-config's built-in support for code generation for this.
 
-      First, define where and what kind of codegen. In your schema file, add
-      something equivalent to:
+      First, define where and what kind of codegen. There are three options
+      on where to do this. It can be added to a special `app-config` root-level
+      property in your app-config file, or your schema file. It can also be
+      added to a 'meta' file, `.app-config.meta.{filetype}`, without the
+      need for a top level `app-config`.
+
+      In your schema or config file, add something equivalent to:
 
       ```yaml
       app-config:
         generate:
           - { type: 'ts', file: 'src/config-types.ts' }
+      ```
+
+      Or, in your meta file, add:
+
+      ```yaml
+      generate:
+        - { type: 'ts', file: 'src/config-types.ts' }
       ```
 
       In your server, simply call:
@@ -205,6 +217,6 @@ export {
 - [x] JSON Schema validation
 - [x] Flattened environment variable generation
 - [x] Built-in JSON schema to typescript generation
-- [x] Meta configuration file (through `app-config` meta property)
+- [x] Meta configuration file (through `app-config` meta property or `.app-config.meta` file)
 - [x] Support for other config formats (YAML, JSON)
 - [ ] Typescript generation w/ declare module?

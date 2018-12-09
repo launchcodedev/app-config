@@ -3,8 +3,6 @@ import { join } from 'path';
 import { ConfigObject } from './config';
 import {
   parseEnv,
-  parseFile,
-  parseFileSync,
   findParseableFile,
   findParseableFileSync,
   FileType,

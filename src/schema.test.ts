@@ -1,23 +1,7 @@
-import { dir } from 'tmp-promise';
-import { join } from 'path';
-import { readFile, outputFile, remove } from 'fs-extra';
 import { ConfigSource } from './config';
 import { FileType } from './file-loader';
-import { validate, InvalidConfig, loadSchema, loadSchemaSync, generateTypeFiles } from './schema';
-
-const withFakeFiles = async (
-  files: [string, string][],
-  cb: (dir: string) => Promise<any>,
-) => {
-  const { path: tmp } = await dir();
-  const filenames = files.map(([name]) => join(tmp, name));
-  await Promise.all(filenames.map(async (name, i) => {
-    await outputFile(name, files[i][1]);
-  }));
-
-  await cb(tmp);
-  await remove(tmp);
-};
+import { validate, InvalidConfig, loadSchema, loadSchemaSync } from './schema';
+import { withFakeFiles } from './test-util';
 
 test('parse schema', () => {
   const res = validate({
@@ -316,36 +300,5 @@ test('load non dotfile schema file', async () => {
         x: { type: 'number' },
       },
     });
-  });
-});
-
-test('generate type files', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.schema.json',
-      `
-      {
-        "app-config": {
-          "generate": [
-            {
-              "type": "ts",
-              "file": "config.ts"
-            }
-          ]
-        },
-        "required": ["x"],
-        "properties": {
-          "x": { "type": "number" }
-        }
-      }
-      `,
-    ],
-  ], async (dir) => {
-    await loadSchema(dir);
-    await generateTypeFiles(dir);
-    const config = (await readFile(join(dir, 'config.ts'))).toString('utf8');
-
-    expect(config).toBeTruthy();
-    expect(config).toMatch('x: number;');
   });
 });

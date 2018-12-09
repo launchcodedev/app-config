@@ -1,22 +1,6 @@
-import { dir } from 'tmp-promise';
-import { join } from 'path';
-import { outputFile, mkdirp, remove } from 'fs-extra';
 import { FileType } from './file-loader';
 import { loadConfig, loadConfigSync, ConfigSource } from './config';
-
-const withFakeFiles = async (
-  files: [string, string][],
-  cb: (dir: string) => Promise<any>,
-) => {
-  const { path: tmp } = await dir();
-  const filenames = files.map(([name]) => join(tmp, name));
-  await Promise.all(filenames.map(async (name, i) => {
-    await outputFile(name, files[i][1]);
-  }));
-
-  await cb(tmp);
-  await remove(tmp);
-};
+import { withFakeFiles } from './test-util';
 
 test('load env config', async () => {
   process.env.APP_CONFIG = `

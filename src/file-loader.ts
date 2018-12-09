@@ -4,6 +4,7 @@ import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON from 'json5';
 import { ConfigObject } from './config';
+import { metaProps } from './meta';
 
 export enum FileType {
   JSON = 'JSON',
@@ -244,12 +245,10 @@ export const parseString = (
   }
 };
 
-let metaProps: any = {};
-export const getMetaProps = () => metaProps;
+const stripMetaProps = (c: any): ConfigObject => {
+  // meta properties, not actually a part of the config / schema
+  Object.assign(metaProps, c['app-config']);
+  delete c['app-config'];
 
-const stripMetaProps = (c: ConfigObject): ConfigObject => {
-  // meta properties, not actually a part of the schema
-  metaProps = (<any>c)['app-config'] || {};
-  delete (<any>c)['app-config'];
   return c;
 };

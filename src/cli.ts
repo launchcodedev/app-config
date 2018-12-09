@@ -5,7 +5,7 @@ import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import { flattenObjectTree } from './util';
 import { loadConfig } from './index';
-import { generateTypeFiles } from './schema';
+import { generateTypeFiles } from './meta';
 
 const argv = Yargs
   .usage('Usage: $0 <command>')
@@ -79,7 +79,14 @@ const [command, ...args] = argv._;
   }
 
   if (argv.generate) {
-    await generateTypeFiles();
+    const output = await generateTypeFiles();
+
+    if (output.length === 0) {
+      console.warn('No files generated - did you add the correct meta properties?');
+    } else {
+      console.log(`Generated: [ ${output.map(({ file }) => file).join(', ')} ]`);
+    }
+
     return;
   }
 

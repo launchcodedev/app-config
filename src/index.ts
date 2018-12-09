@@ -1,5 +1,6 @@
 import { loadConfig, loadConfigSync } from './config';
 import { loadSchema, loadSchemaSync, validate } from './schema';
+import { generateTypeFiles } from './meta';
 
 const loaded = loadConfigSync();
 
@@ -16,10 +17,8 @@ export default loaded.config;
 export {
   loadConfig,
   loadConfigSync,
-} from './config';
-export {
   validate,
   loadSchema,
   loadSchemaSync,
   generateTypeFiles,
-} from './schema';
+};

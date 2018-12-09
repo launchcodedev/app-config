@@ -1,6 +1,4 @@
-import { dir } from 'tmp-promise';
 import { join } from 'path';
-import { outputFile, remove } from 'fs-extra';
 import {
   FileType,
   extToFileType,
@@ -10,20 +8,7 @@ import {
   findParseableFile,
   findParseableFileSync,
 } from './file-loader';
-
-const withFakeFiles = async (
-  files: [string, string][],
-  cb: (dir: string) => Promise<any>,
-) => {
-  const { path: tmp } = await dir();
-  const filenames = files.map(([name]) => join(tmp, name));
-  await Promise.all(filenames.map(async (name, i) => {
-    await outputFile(name, files[i][1]);
-  }));
-
-  await cb(tmp);
-  await remove(tmp);
-};
+import { withFakeFiles } from './test-util';
 
 test('ext to file type', async () => {
   expect(extToFileType('toml')).toBe(FileType.TOML);
