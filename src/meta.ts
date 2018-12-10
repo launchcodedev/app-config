@@ -11,7 +11,7 @@ import { loadConfig } from './config';
 import { loadSchema } from './schema';
 import { findParseableFile } from './file-loader';
 
-const metaFileName = ['.app-config.meta', 'app-config.meta'];
+const metaFileNames = ['.app-config.meta', 'app-config.meta'];
 
 type MetaProps = {
   generate: { type: string, file: string, name?: string }[];
@@ -26,7 +26,7 @@ export const resetMetaProps = () => {
 };
 
 export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
-  const meta = await findParseableFile(metaFileName.map(f => join(cwd, f)));
+  const meta = await findParseableFile(metaFileNames.map(f => join(cwd, f)));
 
   return _.merge({}, metaProps, meta ? meta[1] : {}) as MetaProps;
 };

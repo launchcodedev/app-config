@@ -9,7 +9,7 @@ import {
   findParseableFileSync,
 } from './file-loader';
 
-const schemaFileName = ['.app-config.schema', 'app-config.schema'];
+const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
 
 export enum InvalidConfig {
   InvalidSchema,
@@ -92,7 +92,7 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
 };
 
 export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
-  const schema = await findParseableFile(schemaFileName.map(f => join(cwd, f)));
+  const schema = await findParseableFile(schemaFileNames.map(f => join(cwd, f)));
 
   if (!schema) {
     throw new Error('Could not find app config schema.');
@@ -102,7 +102,7 @@ export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => 
 };
 
 export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
-  const schema = findParseableFileSync(schemaFileName.map(f => join(cwd, f)));
+  const schema = findParseableFileSync(schemaFileNames.map(f => join(cwd, f)));
 
   if (!schema) {
     throw new Error('Could not find app config schema.');
