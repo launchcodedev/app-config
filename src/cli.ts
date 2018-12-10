@@ -128,4 +128,7 @@ const [command, ...args] = argv._;
     }
     process.exit(1);
   });
-})();
+})().catch((err) => {
+  console.error(err);
+  process.exit(3);
+});
