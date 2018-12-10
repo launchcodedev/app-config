@@ -1,3 +1,6 @@
+import { join } from 'path';
+import * as fs from 'fs-extra';
+
 export type KeyFormatter = (key: string, separator: string) => string;
 
 export const camelToScreamingCase: KeyFormatter = (key: string, separator: string) => {
@@ -28,4 +31,16 @@ export const flattenObjectTree = (
 
     return Object.assign(merged, flattenedObject);
   }, {});
+};
+
+export const findPackageRoot = async (cwd = process.cwd()): Promise<string> => {
+  if (!(await fs.pathExists(join(cwd, 'package.json')))) {
+    if (join(cwd, '..') === cwd) {
+      throw new Error('no package root found in pwd or its parents');
+    }
+
+    return findPackageRoot(join(cwd, '..'));
+  }
+
+  return cwd;
 };

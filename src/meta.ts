@@ -1,5 +1,5 @@
 import { join, basename, extname } from 'path';
-import { outputFile } from 'fs-extra';
+import { outputFile, readJson } from 'fs-extra';
 import * as _ from 'lodash';
 import {
   quicktype,
@@ -7,6 +7,7 @@ import {
   JSONSchemaSourceData,
   InputData,
 } from 'quicktype-core';
+import { findPackageRoot } from './util';
 import { loadConfig } from './config';
 import { loadSchema } from './schema';
 import { findParseableFile } from './file-loader';
@@ -28,7 +29,20 @@ export const resetMetaProps = () => {
 export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
   const meta = await findParseableFile(metaFileNames.map(f => join(cwd, f)));
 
-  return _.merge({}, metaProps, meta ? meta[1] : {}) as MetaProps;
+  let packageConfig;
+  try {
+    const packageRoot = await findPackageRoot(cwd);
+    const { 'app-config': config } = await readJson(join(packageRoot, 'package.json'));
+
+    packageConfig = config;
+  } catch (_) {}
+
+  return _.merge(
+    {},
+    metaProps,
+    packageConfig || {},
+    meta ? meta[1] : {},
+  ) as MetaProps;
 };
 
 export const generateTypeFiles = async (cwd = process.cwd()) => {

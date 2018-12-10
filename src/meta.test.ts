@@ -111,6 +111,45 @@ test('meta config file', async () => {
   });
 });
 
+test('meta info in package.json', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+    [
+      'package.json',
+      `
+      {
+        "app-config": {
+          "generate": [
+            {
+              "type": "ts",
+              "file": "config4.ts"
+            }
+          ]
+        }
+      }
+      `,
+    ],
+  ], async (dir) => {
+    const output = await generateTypeFiles(dir);
+    expect(output.length).toBe(1);
+
+    const config = (await readFile(join(dir, 'config4.ts'))).toString('utf8');
+
+    expect(config).toBeTruthy();
+    expect(config).toMatch('x: number;');
+  });
+});
+
 test('named export codegen', async () => {
   await withFakeFiles([
     ['.app-config.schema.json5', `{

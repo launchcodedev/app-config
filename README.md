@@ -87,11 +87,12 @@ converting from one to another is trivial.
 
       We can use app-config's built-in support for code generation for this.
 
-      First, define where and what kind of codegen. There are three options
+      First, define where and what kind of codegen. There are four options
       on where to do this. It can be added to a special `app-config` root-level
       property in your app-config file, or your schema file. It can also be
       added to a 'meta' file, `.app-config.meta.{filetype}`, without the
-      need for a top level `app-config`.
+      need for a top level `app-config`. Alternatively, you can define an
+      `"app-config"` section in your `package.json`.
 
       In your schema or config file, add something equivalent to:
 
