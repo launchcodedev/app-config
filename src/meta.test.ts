@@ -1,9 +1,7 @@
 import { join } from 'path';
 import { readFile } from 'fs-extra';
-import { generateTypeFiles, resetMetaProps } from './meta';
+import { generateTypeFiles } from './meta';
 import { withFakeFiles } from './test-util';
-
-beforeEach(() => resetMetaProps());
 
 test('meta property in schema', async () => {
   await withFakeFiles([

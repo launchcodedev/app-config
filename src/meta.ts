@@ -34,6 +34,8 @@ export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
 export const generateTypeFiles = async (cwd = process.cwd()) => {
   type GenerateTypes = { type: string, file: string };
 
+  resetMetaProps();
+
   // trigger reload of config and schema files so that metaProps are up to date
   const [schema] = await Promise.all([
     loadSchema(cwd),
