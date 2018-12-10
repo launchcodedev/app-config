@@ -126,7 +126,7 @@ converting from one to another is trivial.
       Alternatively, you can also do the same thing with the CLI.
 
       ```bash
-      app-config --generate
+      app-config generate
       ```
 
       Now you'll likely want to be able to use this type in your code. The recommended

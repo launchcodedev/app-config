@@ -45,13 +45,18 @@ const argv = Yargs
     type: 'string',
     description: 'Prefix environment variables',
   })
-  .option('g', {
-    alias: 'generate',
-    default: false,
-    nargs: 0,
-    type: 'boolean',
-    description: 'Run code generation as specified by the app-config file',
-  })
+  .command('generate', 'Run code generation as specified by the app-config file',
+    yargs => yargs,
+    async () => {
+      const output = await generateTypeFiles();
+
+      if (output.length === 0) {
+        console.warn('No files generated - did you add the correct meta properties?');
+      } else {
+        console.log(`Generated: [ ${output.map(({ file }) => file).join(', ')} ]`);
+      }
+    },
+  )
   .version()
   .help()
   .strict()
@@ -59,7 +64,7 @@ const argv = Yargs
 
 const [command, ...args] = argv._;
 
-(async () => {
+const main = async () => {
   const loaded = await loadConfig();
 
   const validation = await validate({
@@ -92,18 +97,6 @@ const [command, ...args] = argv._;
     return;
   }
 
-  if (argv.generate) {
-    const output = await generateTypeFiles();
-
-    if (output.length === 0) {
-      console.warn('No files generated - did you add the correct meta properties?');
-    } else {
-      console.log(`Generated: [ ${output.map(({ file }) => file).join(', ')} ]`);
-    }
-
-    return;
-  }
-
   if (!command) {
     Yargs.showHelp();
     return;
@@ -128,7 +121,11 @@ const [command, ...args] = argv._;
     }
     process.exit(1);
   });
-})().catch((err) => {
-  console.error(err);
-  process.exit(3);
-});
+};
+
+if (command !== 'generate') {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(3);
+  });
+}
