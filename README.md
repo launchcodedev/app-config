@@ -80,7 +80,7 @@ converting from one to another is trivial.
       If anything in the configuration was incorrect, `app-config` would throw
       an error on app load that includes details on what was incorrect.
 
-  5. (Optional) Running code generation for Typescript types:
+  5. (Optional) Running code generation for TypeScript types:
 
       If you are using TypeScript, you will likely want to create an interface
       that describes your config so that it can be type checked.
@@ -137,7 +137,7 @@ converting from one to another is trivial.
       export default config as Config;
       ```
 
-      This approach is slightly manual, but avoids issues with typescript
+      This approach is slightly manual, but avoids issues with TypeScript
       typeRoot and defining modules. It also allows you to use app-config
       many times in one project, if you wished. You're free to choose whatever
       way you feel is best for your project.
@@ -216,7 +216,7 @@ export {
 - [x] TOML parsing
 - [x] JSON Schema validation
 - [x] Flattened environment variable generation
-- [x] Built-in JSON schema to typescript generation
+- [x] Built-in JSON schema to TypeScript generation
 - [x] Meta configuration file (through `app-config` meta property or `.app-config.meta` file)
 - [x] Support for other config formats (YAML, JSON)
-- [ ] Typescript generation w/ declare module?
+- [ ] TypeScript generation w/ declare module?
