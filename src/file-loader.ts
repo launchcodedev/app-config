@@ -242,7 +242,7 @@ export const parseString = (
     case FileType.TOML:
       return [FileType.TOML, stripMetaProps(TOML.parse(contents))];
     case FileType.YAML:
-      return [FileType.YAML, stripMetaProps(YAML.safeLoad(contents))];
+      return [FileType.YAML, stripMetaProps(YAML.safeLoad(contents) || {})];
   }
 };
 
