@@ -226,7 +226,7 @@ export const findParseableFileSync = (
   }).filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${others.join(', ')})`);
+    console.warn(`found multiple valid files, only expected one. (${files.join(', ')})`);
   }
 
   return valid;
