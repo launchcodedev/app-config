@@ -4,33 +4,29 @@ import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import { flattenObjectTree } from './util';
-import { loadConfig } from './config';
+import { loadConfig, LoadedConfig } from './config';
 import { loadSchema, validate } from './schema';
 import { generateTypeFiles } from './meta';
+
+const flattenConfig = (loaded: LoadedConfig, argv: Yargs.Arguments) => {
+  const {
+    secrets,
+    prefix,
+  } = argv;
+
+  const {
+    config: fullConfig,
+    nonSecrets,
+  } = loaded;
+
+  const config = (secrets ? fullConfig : nonSecrets) as any;
+
+  return [config, flattenObjectTree(config, prefix)];
+};
 
 const argv = Yargs
   .usage('Usage: $0 <command>')
   .usage('')
-  .usage('Exports config as individual environment variables for the specified command')
-  .example(
-    '$0 -- docker-compose up -d',
-    'Run Docker Compose with the generated environment variables',
-  )
-  .example(
-    '$0 --vars',
-    'Print out the generated environment variables',
-  )
-  .example(
-    'export $($0 -v | xargs)',
-    'Export the generated environment variables to the current shell',
-  )
-  .option('v', {
-    alias: 'vars',
-    default: false,
-    nargs: 0,
-    type: 'boolean',
-    description: 'Print out the generated environment variables',
-  })
   .option('s', {
     alias: 'secrets',
     default: false,
@@ -45,7 +41,25 @@ const argv = Yargs
     type: 'string',
     description: 'Prefix environment variables',
   })
-  .command('generate', 'Run code generation as specified by the app-config file',
+  .command(['variables', 'vars', 'v'], 'Print out the generated environment variables',
+    yargs => yargs
+      .example(
+        'export $($0 vars | xargs)',
+        'Export the generated environment variables to the current shell',
+      ),
+    async () => {
+      const loaded = await loadConfig();
+
+      const [_, flattenedConfig] = flattenConfig(loaded, argv);
+
+      console.log(
+        Object.entries(flattenedConfig)
+          .map(([key, value]) => `${key}=${value}`)
+          .join('\n'),
+      );
+    },
+  )
+  .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
     yargs => yargs,
     async () => {
       const output = await generateTypeFiles();
@@ -57,75 +71,57 @@ const argv = Yargs
       }
     },
   )
+  .command('*', 'Exports config as individual environment variables for the specified command',
+    yargs => yargs
+      .example(
+        '$0 -- docker-compose up -d',
+        'Run Docker Compose with the generated environment variables',
+      ),
+    async ({ _, prefix }) => {
+      const [command, ...args] = _;
+
+      if (!command) {
+        Yargs.showHelp();
+        return;
+      }
+
+      const loaded = await loadConfig();
+
+      const validation = await validate({
+        schema: await loadSchema(),
+        ...loaded,
+      });
+
+      if (validation) {
+        console.error('Invalid config - validation failed');
+        console.error(validation[1].message);
+        process.exit(3);
+      }
+
+      const [config, flattenedConfig] = flattenConfig(loaded, argv);
+
+      await execa(
+        command,
+        args,
+        {
+          env: {
+            [prefix]: TOML.stringify(config),
+            ...flattenedConfig,
+          },
+          stdio: 'inherit',
+        },
+      )
+      .catch((err) => {
+        if (err.failed) {
+          console.error(`Failed to run command '${err.cmd}': Error code ${err.code}`);
+        } else {
+          console.error(err.message);
+        }
+        process.exit(1);
+      });
+    },
+  )
   .version()
   .help()
   .strict()
   .argv;
-
-const [command, ...args] = argv._;
-
-const main = async () => {
-  const loaded = await loadConfig();
-
-  const validation = await validate({
-    schema: await loadSchema(),
-    ...loaded,
-  });
-
-  if (validation) {
-    console.error('Invalid config - validation failed');
-    console.error(validation[1].message);
-    process.exit(3);
-  }
-
-  const {
-    config: fullConfig,
-    nonSecrets,
-  } = loaded;
-
-  const { prefix } = argv;
-  const config = (argv.secrets ? fullConfig : nonSecrets) as any;
-  const flattenedConfig = flattenObjectTree(config, prefix);
-
-  if (argv.vars) {
-    console.log(
-      Object.entries(flattenedConfig)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('\n'),
-    );
-
-    return;
-  }
-
-  if (!command) {
-    Yargs.showHelp();
-    return;
-  }
-
-  await execa(
-    command,
-    args,
-    {
-      env: {
-        [prefix]: TOML.stringify(config),
-        ...flattenedConfig,
-      },
-      stdio: 'inherit',
-    },
-  )
-  .catch((err) => {
-    if (err.failed) {
-      console.error(`Failed to run command '${err.cmd}': Error code ${err.code}`);
-    } else {
-      console.error(err.message);
-    }
-    process.exit(1);
-  });
-};
-
-if (command !== 'generate') {
-  main().catch((err) => {
-    console.error(err);
-    process.exit(3);
-  });
-}
