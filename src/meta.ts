@@ -61,10 +61,10 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
   const { generate = [] } = meta;
 
   await Promise.all(generate.map(async ({ type, file, name = basename(file, extname(file)) }) => {
-    const src = {
+    const src: JSONSchemaSourceData = {
       name,
       schema: JSON.stringify(schema),
-    } as JSONSchemaSourceData;
+    };
 
     const input = new JSONSchemaInput(undefined);
     await input.addSource(src);
