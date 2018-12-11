@@ -1,7 +1,7 @@
 {
   "name": "@servall/app-config",
-  "version": "0.1.7",
-  "description": "Configuration loader supporting types + validation + hierarchy + lists",
+  "description": "Configuration file loader with JSON schema support",
+  "version": "0.2.0-rc.1",
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,51 +14,56 @@
     "url": "https://www.servalldev.com"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "jest",
+    "build": "rm -rf dist && tsc",
     "cli": "ts-node src/cli.ts",
-    "coverage": "jest --coverage",
+    "test": "jest",
     "lint": "yarn lint:ts",
     "fix": "yarn fix:ts",
-    "lint:ts": "tslint --project tsconfig.json src/**/*.ts src/**/*.tsx",
+    "lint:ts": "tslint src/**/*.ts",
     "fix:ts": "yarn lint:ts --fix",
-    "prepublishOnly": "yarn build"
+    "prepublish": "yarn build"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.0",
-    "ajv": "^6.5.3",
-    "execa": "^1.0.0",
-    "fs-extra": "^7.0.0",
-    "lodash": "^4.17.11",
-    "yargs": "^12.0.2"
+    "@iarna/toml": "2",
+    "ajv": "6",
+    "execa": "1",
+    "fs-extra": "5",
+    "js-yaml": "3",
+    "json5": "2",
+    "lodash": "4",
+    "quicktype-core": "6",
+    "yargs": "12"
   },
   "devDependencies": {
-    "@types/execa": "^0.9",
-    "@types/fs-extra": "^5.0.4",
-    "@types/jest": "^22",
-    "@types/lodash": "^4.14.117",
-    "@types/node": "^10",
-    "@types/yargs": "^12",
-    "jest": "^22",
-    "ts-jest": "^23",
-    "ts-node": "^3",
-    "tslint": "^5",
-    "tslint-config-airbnb": "^5",
-    "tslint-eslint-rules": "^5",
-    "typescript": "^3"
-  },
-  "engines": {
-    "node": ">=6.0.0"
+    "@types/execa": "0.9",
+    "@types/fs-extra": "5",
+    "@types/jest": "23",
+    "@types/js-yaml": "3",
+    "@types/json5": "0.0.30",
+    "@types/lodash": "4",
+    "@types/node": "8",
+    "@types/tmp": "0.0.33",
+    "@types/yargs": "12",
+    "jest": "23",
+    "tmp-promise": "1",
+    "ts-jest": "23",
+    "ts-node": "3",
+    "tslint": "5",
+    "tslint-config-airbnb": "5",
+    "tslint-eslint-rules": "5",
+    "typescript": "3"
   },
   "jest": {
-    "transform": {
-      ".(ts)": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|\\.*(test|spec))\\.(ts|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
+    "preset": "ts-jest",
+    "testMatch": null,
+    "testRegex": "(tests/.*|src/.*\\.test)\\.(ts|js)$",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      ".yarn-cache"
     ],
-    "testEnvironment": "node"
+    "modulePathIgnorePatterns": [
+      "node_modules",
+      ".yarn-cache"
+    ]
   }
 }
