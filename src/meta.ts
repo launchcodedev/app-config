@@ -78,7 +78,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
       indentation: '  ',
       leadingComments: [
         'AUTO GENERATED CODE',
-        'Run app-config with --generate to regenerate this file',
+        'Run app-config with \'generate\' command to regenerate this file',
       ],
       rendererOptions: {
         'just-types': 'true',
