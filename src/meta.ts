@@ -61,10 +61,10 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
   const { generate = [] } = meta;
 
   await Promise.all(generate.map(async ({ type, file, name = basename(file, extname(file)) }) => {
-    const src = {
+    const src: JSONSchemaSourceData = {
       name,
       schema: JSON.stringify(schema),
-    } as JSONSchemaSourceData;
+    };
 
     const input = new JSONSchemaInput(undefined);
     await input.addSource(src);
@@ -78,7 +78,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
       indentation: '  ',
       leadingComments: [
         'AUTO GENERATED CODE',
-        'Run app-config with --generate to regenerate this file',
+        'Run app-config with \'generate\' command to regenerate this file',
       ],
       rendererOptions: {
         'just-types': 'true',

@@ -41,7 +41,7 @@ test('invalid schema', () => {
     nonSecrets: {},
   });
 
-  expect((<any>res)[0]).toBe(InvalidConfig.SchemaValidation);
+  expect((res as any)[0]).toBe(InvalidConfig.SchemaValidation);
 });
 
 test('secret property in secret file', () => {
@@ -92,7 +92,7 @@ test('secret property in main file', () => {
     },
   });
 
-  expect((<any>res)[0]).toBe(InvalidConfig.SecretInNonSecrets);
+  expect((res as any)[0]).toBe(InvalidConfig.SecretInNonSecrets);
 });
 
 test('secret in env var', () => {
@@ -157,7 +157,7 @@ test('deep secret property in main file', () => {
     },
   });
 
-  expect((<any>res)[0]).toBe(InvalidConfig.SecretInNonSecrets);
+  expect((res as any)[0]).toBe(InvalidConfig.SecretInNonSecrets);
 });
 
 test('secret referenced property in main file', () => {
@@ -200,7 +200,7 @@ test('secret referenced property in main file', () => {
     },
   });
 
-  expect((<any>res)[0]).toBe(InvalidConfig.SecretInNonSecrets);
+  expect((res as any)[0]).toBe(InvalidConfig.SecretInNonSecrets);
 });
 
 test('load schema file', async () => {
