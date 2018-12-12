@@ -14,9 +14,15 @@ import { findParseableFile } from './file-loader';
 
 const metaFileNames = ['.app-config.meta', 'app-config.meta'];
 
-type MetaProps = {
-  generate: { type: string, file: string, name?: string }[];
+type GenerateFile = {
+  file: string,
+  type?: string,
+  name?: string,
+  leadingComments?: string[],
+  rendererOptions?: { [key: string]: string },
 };
+
+type MetaProps = { generate: GenerateFile[] };
 
 export const metaProps: any = {};
 
@@ -46,8 +52,6 @@ export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
 };
 
 export const generateTypeFiles = async (cwd = process.cwd()) => {
-  type GenerateTypes = { type: string, file: string };
-
   resetMetaProps();
 
   // trigger reload of config and schema files so that metaProps are up to date
@@ -60,7 +64,13 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
 
   const { generate = [] } = meta;
 
-  await Promise.all(generate.map(async ({ type, file, name = basename(file, extname(file)) }) => {
+  await Promise.all(generate.map(async ({
+    file,
+    type = extname(file).slice(1),
+    name = basename(file, extname(file)),
+    leadingComments,
+    rendererOptions = {},
+  }) => {
     const src: JSONSchemaSourceData = {
       name,
       schema: JSON.stringify(schema),
@@ -76,13 +86,14 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
       inputData,
       lang: type,
       indentation: '  ',
-      leadingComments: [
+      leadingComments: leadingComments || [
         'AUTO GENERATED CODE',
         'Run app-config with \'generate\' command to regenerate this file',
       ],
       rendererOptions: {
         'just-types': 'true',
         'runtime-typecheck': 'false',
+        ...rendererOptions,
       },
     });
 
