@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="img/app-config.png" width="40%" align="center" alt="app-config">
+</p>
+<br />
+
 # App Config
 Easily create configurations for your application, with strong typing, schema
 validation, and many supported file formats.
