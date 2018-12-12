@@ -2,5 +2,5 @@ node_modules/
 dist/
 coverage/
 yarn-error.log
-
+.DS_Store
 .app-config.*
