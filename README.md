@@ -1,6 +1,6 @@
-<p align="center">
+<div align="center">
   <img src="img/app-config.png" width="40%" align="center" alt="app-config">
-</p>
+</div>
 <br />
 
 # App Config
