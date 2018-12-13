@@ -302,3 +302,36 @@ test('load non dotfile schema file', async () => {
     });
   });
 });
+
+test('load schema extends', async () => {
+  await withFakeFiles([
+    [
+      'app-config.schema.json',
+      `
+      {
+        "app-config": {
+          "extends": "other-file.yml"
+        },
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+    [
+      'other-file.yml',
+      `
+      properties:
+        y:
+          type: number
+      `,
+    ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual({
+      properties: {
+        x: { type: 'number' },
+        y: { type: 'number' },
+      },
+    });
+  });
+});
