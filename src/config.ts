@@ -12,7 +12,7 @@ const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 
-export type ConfigObject = number | string | object | {
+export type ConfigObject = number | boolean | string | {
   [key: string]: ConfigObject;
 };
 

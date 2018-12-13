@@ -131,3 +131,195 @@ test('load config sync', async () => {
     });
   });
 });
+
+test('load config extends in env', async () => {
+  process.env.APP_CONFIG = `
+    [app-config]
+    extends = ["invalid.toml"]
+  `;
+
+  // we can't extend files in an env config
+  await expect(loadConfig()).rejects.toThrow();
+
+  delete process.env.APP_CONFIG;
+});
+
+test('load config extends one file', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.toml',
+      `
+      [app-config]
+      extends = ".app-config.extender.yml"
+
+      [foo]
+      bar = "baz"
+      `,
+    ],
+    [
+      '.app-config.extender.yml',
+      `
+      baz:
+        bar: 'foo'
+      `,
+    ],
+  ], async (dir) => {
+    const { config } = await loadConfig(dir);
+
+    expect(config).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      baz: {
+        bar: 'foo',
+      },
+    });
+  });
+});
+
+test('load config extends multiple file', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.toml',
+      `
+      [app-config]
+      extends = [
+        ".app-config.extender1.yml",
+        ".app-config.extender2.yml",
+        ".app-config.extender3.yml",
+      ]
+
+      [foo]
+      bar = "baz"
+      `,
+    ],
+    [
+      '.app-config.extender1.yml',
+      `
+      baz1:
+        bar: 'foo1'
+      `,
+    ],
+    [
+      '.app-config.extender2.yml',
+      `
+      baz2:
+        bar: 'foo2'
+      `,
+    ],
+    [
+      '.app-config.extender3.yml',
+      `
+      baz3:
+        bar: 'foo3'
+      `,
+    ],
+  ], async (dir) => {
+    const { config } = await loadConfig(dir);
+
+    expect(config).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      baz1: {
+        bar: 'foo1',
+      },
+      baz2: {
+        bar: 'foo2',
+      },
+      baz3: {
+        bar: 'foo3',
+      },
+    });
+  });
+});
+
+test('load config extends one file sync', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.toml',
+      `
+      [app-config]
+      extends = ".app-config.extender.yml"
+
+      [foo]
+      bar = "baz"
+      `,
+    ],
+    [
+      '.app-config.extender.yml',
+      `
+      baz:
+        bar: 'foo'
+      `,
+    ],
+  ], async (dir) => {
+    const { config } = loadConfigSync(dir);
+
+    expect(config).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      baz: {
+        bar: 'foo',
+      },
+    });
+  });
+});
+
+test('load config extends multiple file sync', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.toml',
+      `
+      [app-config]
+      extends = [
+        ".app-config.extender1.yml",
+        ".app-config.extender2.yml",
+        ".app-config.extender3.yml",
+      ]
+
+      [foo]
+      bar = "baz"
+      `,
+    ],
+    [
+      '.app-config.extender1.yml',
+      `
+      baz1:
+        bar: 'foo1'
+      `,
+    ],
+    [
+      '.app-config.extender2.yml',
+      `
+      baz2:
+        bar: 'foo2'
+      `,
+    ],
+    [
+      '.app-config.extender3.yml',
+      `
+      baz3:
+        bar: 'foo3'
+      `,
+    ],
+  ], async (dir) => {
+    const { config } = loadConfigSync(dir);
+
+    expect(config).toEqual({
+      foo: {
+        bar: 'baz',
+      },
+      baz1: {
+        bar: 'foo1',
+      },
+      baz2: {
+        bar: 'foo2',
+      },
+      baz3: {
+        bar: 'foo3',
+      },
+    });
+  });
+});
