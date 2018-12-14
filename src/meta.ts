@@ -116,7 +116,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
       ]);
     }
 
-    await outputFile(join(cwd, file), lines.join('\n'));
+    await outputFile(join(cwd, file), `${lines.join('\n')}${'\n'}`);
   }));
 
   return generate;
