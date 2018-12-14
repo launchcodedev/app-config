@@ -13,7 +13,10 @@ if (validation) {
   throw validation[1];
 }
 
-export default loaded.config;
+// Create empty 'Config' interface that can be augmented per project
+export interface Config {}
+export default loaded.config as Config;
+
 export {
   loadConfig,
   loadConfigSync,
