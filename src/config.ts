@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { join } from 'path';
+import { ExportedConfig } from './index';
 import { ConfigObject } from './config';
 import {
   parseEnv,
@@ -23,15 +24,17 @@ export enum ConfigSource {
   EnvVar,
 }
 
-export type LoadedConfig = {
+export type LoadedConfig<Conf = ConfigObject> = {
   source: ConfigSource,
   fileType: FileType,
-  config: ConfigObject,
+  config: Conf,
   secrets?: ConfigObject,
   nonSecrets: ConfigObject,
 };
 
-export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => {
+export const loadConfig = async <C = ExportedConfig>(
+  cwd = process.cwd(),
+): Promise<LoadedConfig<C>> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
     .map(envVar => parseEnv(envVar));
@@ -41,7 +44,7 @@ export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => 
 
     return {
       fileType,
-      config,
+      config: config as unknown as C,
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
@@ -62,12 +65,12 @@ export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => 
     fileType,
     secrets,
     nonSecrets,
-    config: _.merge({}, nonSecrets, secrets),
+    config: _.merge({}, nonSecrets, secrets) as unknown as C,
     source: ConfigSource.File,
   };
 };
 
-export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
+export const loadConfigSync = <C = ExportedConfig>(cwd = process.cwd()): LoadedConfig<C> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
     .map(envVar => parseEnv(envVar));
@@ -77,7 +80,7 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
 
     return {
       fileType,
-      config,
+      config: config as unknown as C,
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
@@ -98,7 +101,7 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
     fileType,
     secrets,
     nonSecrets,
-    config: _.merge({}, nonSecrets, secrets),
+    config: _.merge({}, nonSecrets, secrets) as unknown as C,
     source: ConfigSource.File,
   };
 };

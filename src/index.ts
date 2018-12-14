@@ -13,9 +13,9 @@ if (validation) {
   throw validation[1];
 }
 
-// Create empty 'Config' interface that can be augmented per project
-export interface Config {}
-export default loaded.config as Config;
+// the config type that is exported to consumers and can be augmented
+export interface ExportedConfig {}
+export default loaded.config as ExportedConfig;
 
 export {
   loadConfig,
