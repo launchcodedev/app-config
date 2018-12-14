@@ -134,19 +134,12 @@ converting from one to another is trivial.
       app-config generate
       ```
 
-      Now you'll likely want to be able to use this type in your code. The recommended
-      approach to do so is to use a wrapper file, maybe called `config.ts`.
+      Now you'll likely want to be able to use these types in your code. You can import
+      `@servall/app-config` directly, and they types of your config will be enforced.
 
       ```typescript
       import config from '@servall/app-config';
-      import { Config } from './config-types';
-      export default config as Config;
       ```
-
-      This approach is slightly manual, but avoids issues with TypeScript
-      typeRoot and defining modules. It also allows you to use app-config
-      many times in one project, if you wished. You're free to choose whatever
-      way you feel is best for your project.
 
 ## Environment variable generation
 Most third party tooling/apps accept configuration only through single key-value
