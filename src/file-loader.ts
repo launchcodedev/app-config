@@ -1,8 +1,9 @@
-import { basename, extname } from 'path';
+import { basename, extname, dirname, join } from 'path';
 import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON from 'json5';
+import { merge } from 'lodash';
 import { ConfigObject } from './config';
 import { metaProps } from './meta';
 
@@ -15,6 +16,8 @@ export enum FileType {
 export enum CouldNotParse {
   FileNotFound = 'FileNotFound',
 }
+
+type MetaProps = { [key: string]: ConfigObject };
 
 export const extToFileType = (ext: string, contents: string = ''): FileType => {
   switch (ext) {
@@ -85,7 +88,13 @@ export const parseEnv = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  return parseString(contents, fileType);
+  const [_, config, meta] = parseString(contents, fileType);
+
+  if (meta.extends) {
+    throw new Error('cannot extend in an env var config');
+  }
+
+  return [fileType, config];
 };
 
 export const parseFile = async (
@@ -137,7 +146,30 @@ export const parseFile = async (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  return parseString(contents, fileType);
+  const [_, config, meta] = parseString(contents, fileType);
+
+  if (meta.extends) {
+    const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
+
+    await extend.reduce(async (prev: Promise<void>, filename) => {
+      await prev;
+
+      try {
+        const [_, ext] = await parseFile(join(dirname(file), filename));
+        merge(config, ext);
+      } catch (e) {
+        if (e === CouldNotParse.FileNotFound) {
+          throw new Error(`could not find extends: ${filename}`);
+        }
+
+        throw e;
+      }
+    }, Promise.resolve());
+
+    delete meta.extends;
+  }
+
+  return [fileType, config];
 };
 
 export const parseFileSync = (
@@ -187,7 +219,28 @@ export const parseFileSync = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  return parseString(contents, fileType);
+  const [_, config, meta] = parseString(contents, fileType);
+
+  if (meta.extends) {
+    const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
+
+    extend.forEach((filename) => {
+      try {
+        const [_, ext] = parseFileSync(join(dirname(file), filename));
+        merge(config, ext);
+      } catch (e) {
+        if (e === CouldNotParse.FileNotFound) {
+          throw new Error(`could not find extends: ${filename}`);
+        }
+
+        throw e;
+      }
+    });
+
+    delete meta.extends;
+  }
+
+  return [fileType, config];
 };
 
 export const findParseableFile = async (
@@ -235,21 +288,28 @@ export const findParseableFileSync = (
 export const parseString = (
   contents: string,
   fileType: FileType,
-): [FileType, ConfigObject] => {
+): [FileType, ConfigObject, MetaProps] => {
   switch (fileType) {
-    case FileType.JSON:
-      return [FileType.JSON, stripMetaProps(JSON.parse(contents))];
-    case FileType.TOML:
-      return [FileType.TOML, stripMetaProps(TOML.parse(contents))];
-    case FileType.YAML:
-      return [FileType.YAML, stripMetaProps(YAML.safeLoad(contents) || {})];
+    case FileType.JSON: {
+      const [config, meta] = stripMetaProps(JSON.parse(contents));
+      return [FileType.JSON, config, meta];
+    }
+    case FileType.TOML: {
+      const [config, meta] = stripMetaProps(TOML.parse(contents));
+      return [FileType.TOML, config, meta];
+    }
+    case FileType.YAML: {
+      const [config, meta] = stripMetaProps(YAML.safeLoad(contents) || {});
+      return [FileType.YAML, config, meta];
+    }
   }
 };
 
-const stripMetaProps = (c: any): ConfigObject => {
-  // meta properties, not actually a part of the config / schema
-  Object.assign(metaProps, c['app-config']);
-  delete c['app-config'];
+const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
+  const meta = config['app-config'] || {};
 
-  return c;
+  Object.assign(metaProps, meta);
+  delete config['app-config'];
+
+  return [config, meta];
 };
