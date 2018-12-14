@@ -110,8 +110,6 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
     if (type === 'ts' && augmentModule !== false) {
       lines.push(...[
         '// augment the default export from app-config',
-        "import '@servall/app-config';",
-        '',
         "declare module '@servall/app-config' {",
         `  export interface ExportedConfig extends ${name} {}`,
         '}',
