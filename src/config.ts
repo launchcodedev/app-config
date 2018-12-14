@@ -1,7 +1,5 @@
 import * as _ from 'lodash';
 import { join } from 'path';
-import { ExportedConfig } from './index';
-import { ConfigObject } from './config';
 import {
   parseEnv,
   findParseableFile,
@@ -32,7 +30,7 @@ export type LoadedConfig<Conf = ConfigObject> = {
   nonSecrets: ConfigObject,
 };
 
-export const loadConfig = async <C = ExportedConfig>(
+export const loadConfig = async <C = ConfigObject>(
   cwd = process.cwd(),
 ): Promise<LoadedConfig<C>> => {
   const [envVarConfig] = envVarNames
@@ -70,7 +68,7 @@ export const loadConfig = async <C = ExportedConfig>(
   };
 };
 
-export const loadConfigSync = <C = ExportedConfig>(cwd = process.cwd()): LoadedConfig<C> => {
+export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedConfig<C> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
     .map(envVar => parseEnv(envVar));

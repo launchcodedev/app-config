@@ -4,7 +4,7 @@ import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import { flattenObjectTree } from './util';
-import { loadConfig, LoadedConfig, ConfigObject } from './config';
+import { loadConfig, LoadedConfig } from './config';
 import { loadSchema, validate } from './schema';
 import { generateTypeFiles } from './meta';
 
@@ -48,7 +48,7 @@ const argv = Yargs
         'Export the generated environment variables to the current shell',
       ),
     async () => {
-      const loaded = await loadConfig<ConfigObject>();
+      const loaded = await loadConfig();
 
       const [_, flattenedConfig] = flattenConfig(loaded, argv);
 
@@ -85,7 +85,7 @@ const argv = Yargs
         return;
       }
 
-      const loaded = await loadConfig<ConfigObject>();
+      const loaded = await loadConfig();
 
       const validation = await validate({
         schema: await loadSchema(),
