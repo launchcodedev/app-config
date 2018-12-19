@@ -18,6 +18,7 @@ type GenerateFile = {
   file: string,
   type?: string,
   name?: string,
+  augmentModule?: boolean,
   leadingComments?: string[],
   rendererOptions?: { [key: string]: string },
 };
@@ -67,10 +68,19 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
   await Promise.all(generate.map(async ({
     file,
     type = extname(file).slice(1),
-    name = basename(file, extname(file)),
+    name,
+    augmentModule = true,
     leadingComments,
     rendererOptions = {},
   }) => {
+    if (!name) {
+      // default to PascalCase with non-word chars removed
+      name = basename(file, extname(file)) /* tslint:disable-line */
+        .split(/[^\w]/)
+        .map(s => `${s.charAt(0).toUpperCase()}${s.slice(1)}`)
+        .join('');
+    }
+
     const src: JSONSchemaSourceData = {
       name,
       schema: JSON.stringify(schema),
@@ -97,7 +107,16 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
       },
     });
 
-    await outputFile(join(cwd, file), lines.join('\n'));
+    if (type === 'ts' && augmentModule !== false) {
+      lines.push(...[
+        '// augment the default export from app-config',
+        "declare module '@servall/app-config' {",
+        `  export interface ExportedConfig extends ${name} {}`,
+        '}',
+      ]);
+    }
+
+    await outputFile(join(cwd, file), `${lines.join('\n')}${'\n'}`);
   }));
 
   return generate;

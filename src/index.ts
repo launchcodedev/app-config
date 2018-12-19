@@ -1,27 +1,8 @@
-import { loadConfig, loadConfigSync } from './config';
-import { loadSchema, loadSchemaSync, validate } from './schema';
-import { generateTypeFiles } from './meta';
+import { loadValidatedSync } from './schema';
 
-const loaded = loadConfigSync();
+const { config } = loadValidatedSync();
 
-const validation = validate({
-  schema: loadSchemaSync(),
-  ...loaded,
-});
-
-if (validation) {
-  throw validation[1];
-}
-
-// Create empty 'Config' interface that can be augmented per project
-export interface Config {}
-export default loaded.config as Config;
-
-export {
-  loadConfig,
-  loadConfigSync,
-  validate,
-  loadSchema,
-  loadSchemaSync,
-  generateTypeFiles,
-};
+// the config type that is exported to consumers and can be augmented
+export interface ExportedConfig {}
+export default config as ExportedConfig;
+export * from './exports';

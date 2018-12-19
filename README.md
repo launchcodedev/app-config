@@ -134,19 +134,12 @@ converting from one to another is trivial.
       app-config generate
       ```
 
-      Now you'll likely want to be able to use this type in your code. The recommended
-      approach to do so is to use a wrapper file, maybe called `config.ts`.
+      Now you'll likely want to be able to use these types in your code. You can import
+      `@servall/app-config` directly, and the types of your config will be enforced.
 
       ```typescript
       import config from '@servall/app-config';
-      import { Config } from './config-types';
-      export default config as Config;
       ```
-
-      This approach is slightly manual, but avoids issues with TypeScript
-      typeRoot and defining modules. It also allows you to use app-config
-      many times in one project, if you wished. You're free to choose whatever
-      way you feel is best for your project.
 
 ## Environment variable generation
 Most third party tooling/apps accept configuration only through single key-value
@@ -212,9 +205,19 @@ export {
   loadSchemaSync(cwd?),
   // validates the config against a schema
   validate(LoadedConfig & { schema }),
+  loadValidated(cwd?),
+  loadValidatedSync(cwd?),
   // creates generated files defined in the schema
   generateTypeFiles(cwd?),
 } from './schema';
+```
+
+Alternatively, if you don't want the config to be loaded on import, you'll need to:
+
+```typescript
+import { loadValidated } from '@servall/app-config/dist/exports';
+
+loadValidated(cwd?).then(...);
 ```
 
 ## Features Roadmap
@@ -225,4 +228,4 @@ export {
 - [x] Built-in JSON schema to TypeScript generation
 - [x] Meta configuration file (through `app-config` meta property or `.app-config.meta` file)
 - [x] Support for other config formats (YAML, JSON)
-- [ ] TypeScript generation w/ declare module?
+- [x] TypeScript generation w/ declare module?

@@ -1,12 +1,12 @@
 import * as _ from 'lodash';
 import { join } from 'path';
-import { ConfigObject } from './config';
 import {
   parseEnv,
   findParseableFile,
   findParseableFileSync,
   FileType,
 } from './file-loader';
+import { loadSchema, loadSchemaSync, validate } from './schema';
 
 const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
@@ -23,15 +23,17 @@ export enum ConfigSource {
   EnvVar,
 }
 
-export type LoadedConfig = {
+export type LoadedConfig<Conf = ConfigObject> = {
   source: ConfigSource,
   fileType: FileType,
-  config: ConfigObject,
+  config: Conf,
   secrets?: ConfigObject,
   nonSecrets: ConfigObject,
 };
 
-export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => {
+export const loadConfig = async <C = ConfigObject>(
+  cwd = process.cwd(),
+): Promise<LoadedConfig<C>> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
     .map(envVar => parseEnv(envVar));
@@ -41,7 +43,7 @@ export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => 
 
     return {
       fileType,
-      config,
+      config: config as unknown as C,
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
@@ -62,12 +64,12 @@ export const loadConfig = async (cwd = process.cwd()): Promise<LoadedConfig> => 
     fileType,
     secrets,
     nonSecrets,
-    config: _.merge({}, nonSecrets, secrets),
+    config: _.merge({}, nonSecrets, secrets) as unknown as C,
     source: ConfigSource.File,
   };
 };
 
-export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
+export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedConfig<C> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
     .map(envVar => parseEnv(envVar));
@@ -77,7 +79,7 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
 
     return {
       fileType,
-      config,
+      config: config as unknown as C,
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
@@ -98,7 +100,7 @@ export const loadConfigSync = (cwd = process.cwd()): LoadedConfig => {
     fileType,
     secrets,
     nonSecrets,
-    config: _.merge({}, nonSecrets, secrets),
+    config: _.merge({}, nonSecrets, secrets) as unknown as C,
     source: ConfigSource.File,
   };
 };
