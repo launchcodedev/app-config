@@ -3,10 +3,21 @@
 import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
+import * as PrettyError from 'pretty-error';
 import { flattenObjectTree } from './util';
-import { loadConfig, LoadedConfig } from './config';
-import { loadSchema, validate } from './schema';
+import { LoadedConfig } from './config';
+import { loadSchema, validate, loadValidated } from './schema';
 import { generateTypeFiles } from './meta';
+
+const wrapCommand = <T>(cmd: (arg: T) => Promise<void> | void) => async (arg: T) => {
+  try {
+    await cmd(arg);
+  } catch (err) {
+    console.log();
+    console.error(new PrettyError().render(err));
+    process.exit(1);
+  }
+};
 
 const flattenConfig = (loaded: LoadedConfig, argv: Yargs.Arguments) => {
   const {
@@ -47,21 +58,21 @@ const argv = Yargs
         'export $($0 vars | xargs)',
         'Export the generated environment variables to the current shell',
       ),
-    async () => {
-      const loaded = await loadConfig();
+    wrapCommand(async () => {
+      const loaded = await loadValidated();
 
       const [_, flattenedConfig] = flattenConfig(loaded, argv);
 
       console.log(
         Object.entries(flattenedConfig)
-          .map(([key, value]) => `${key}=${value}`)
-          .join('\n'),
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n'),
       );
-    },
+    }),
   )
   .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
     yargs => yargs,
-    async () => {
+    wrapCommand(async () => {
       const output = await generateTypeFiles();
 
       if (output.length === 0) {
@@ -69,7 +80,7 @@ const argv = Yargs
       } else {
         console.log(`Generated: [ ${output.map(({ file }) => file).join(', ')} ]`);
       }
-    },
+    }),
   )
   .command('*', 'Exports config as individual environment variables for the specified command',
     yargs => yargs
@@ -77,7 +88,7 @@ const argv = Yargs
         '$0 -- docker-compose up -d',
         'Run Docker Compose with the generated environment variables',
       ),
-    async ({ _, prefix }) => {
+    wrapCommand(async ({ _, prefix }) => {
       const [command, ...args] = _;
 
       if (!command) {
@@ -85,18 +96,7 @@ const argv = Yargs
         return;
       }
 
-      const loaded = await loadConfig();
-
-      const validation = await validate({
-        schema: await loadSchema(),
-        ...loaded,
-      });
-
-      if (validation) {
-        console.error('Invalid config - validation failed');
-        console.error(validation[1].message);
-        process.exit(3);
-      }
+      const loaded = await loadValidated();
 
       const [config, flattenedConfig] = flattenConfig(loaded, argv);
 
@@ -110,8 +110,7 @@ const argv = Yargs
           },
           stdio: 'inherit',
         },
-      )
-      .catch((err) => {
+      ).catch((err) => {
         if (err.failed) {
           console.error(`Failed to run command '${err.cmd}': Error code ${err.code}`);
         } else {
@@ -119,7 +118,7 @@ const argv = Yargs
         }
         process.exit(1);
       });
-    },
+    }),
   )
   .version()
   .help()

@@ -2,7 +2,7 @@ import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { outputFile } from 'fs-extra';
 import { join, basename, extname } from 'path';
-import { ConfigObject, ConfigSource, LoadedConfig } from './config';
+import { ConfigObject, ConfigSource, LoadedConfig, loadConfig, loadConfigSync } from './config';
 import { metaProps } from './meta';
 import {
   findParseableFile,
@@ -109,4 +109,34 @@ export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
   }
 
   return schema[1];
+};
+
+export const loadValidated = async (cwd = process.cwd()) => {
+  const loaded = await loadConfig(cwd);
+
+  const validation = validate({
+    schema: await loadSchema(cwd),
+    ...loaded,
+  });
+
+  if (validation) {
+    throw validation[1];
+  }
+
+  return loaded;
+};
+
+export const loadValidatedSync = (cwd = process.cwd()) => {
+  const loaded = loadConfigSync(cwd);
+
+  const validation = validate({
+    schema: loadSchemaSync(cwd),
+    ...loaded,
+  });
+
+  if (validation) {
+    throw validation[1];
+  }
+
+  return loaded;
 };

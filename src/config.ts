@@ -6,6 +6,7 @@ import {
   findParseableFileSync,
   FileType,
 } from './file-loader';
+import { loadSchema, loadSchemaSync, validate } from './schema';
 
 const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
