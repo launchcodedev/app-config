@@ -65,8 +65,8 @@ const argv = Yargs
 
       console.log(
         Object.entries(flattenedConfig)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('\n'),
+          .map(([key, value]) => `${key}=${value}`)
+          .join('\n'),
       );
     }),
   )
