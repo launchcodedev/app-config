@@ -19,6 +19,26 @@ export enum InvalidConfig {
 
 export type ConfigInput = { schema: ConfigObject } & LoadedConfig;
 
+export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
+  const schema = await findParseableFile(schemaFileNames.map(f => join(cwd, f)));
+
+  if (!schema) {
+    throw new Error('Could not find app config schema.');
+  }
+
+  return schema[1];
+};
+
+export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
+  const schema = findParseableFileSync(schemaFileNames.map(f => join(cwd, f)));
+
+  if (!schema) {
+    throw new Error('Could not find app config schema.');
+  }
+
+  return schema[1];
+};
+
 export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  => {
   const {
     source,
@@ -89,26 +109,6 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
   }
 
   return false;
-};
-
-export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
-  const schema = await findParseableFile(schemaFileNames.map(f => join(cwd, f)));
-
-  if (!schema) {
-    throw new Error('Could not find app config schema.');
-  }
-
-  return schema[1];
-};
-
-export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
-  const schema = findParseableFileSync(schemaFileNames.map(f => join(cwd, f)));
-
-  if (!schema) {
-    throw new Error('Could not find app config schema.');
-  }
-
-  return schema[1];
 };
 
 export const loadValidated = async (cwd = process.cwd()) => {

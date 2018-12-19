@@ -215,9 +215,9 @@ export {
 Alternatively, if you don't want the config to be loaded on import, you'll need to:
 
 ```typescript
-import { loadValidated } from '@servall/app-config/dist/schema';
+import { loadValidated } from '@servall/app-config/dist/exports';
 
-loadValidated(cwd?);
+loadValidated(cwd?).then(...);
 ```
 
 ## Features Roadmap
