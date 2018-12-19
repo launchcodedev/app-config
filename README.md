@@ -135,7 +135,7 @@ converting from one to another is trivial.
       ```
 
       Now you'll likely want to be able to use these types in your code. You can import
-      `@servall/app-config` directly, and they types of your config will be enforced.
+      `@servall/app-config` directly, and the types of your config will be enforced.
 
       ```typescript
       import config from '@servall/app-config';
