@@ -205,9 +205,19 @@ export {
   loadSchemaSync(cwd?),
   // validates the config against a schema
   validate(LoadedConfig & { schema }),
+  loadValidated(cwd?),
+  loadValidatedSync(cwd?),
   // creates generated files defined in the schema
   generateTypeFiles(cwd?),
 } from './schema';
+```
+
+Alternatively, if you don't want the config to be loaded on import, you'll need to:
+
+```typescript
+import { loadValidated } from '@servall/app-config/dist/exports';
+
+loadValidated(cwd?).then(...);
 ```
 
 ## Features Roadmap

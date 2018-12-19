@@ -31,6 +31,7 @@
     "js-yaml": "3",
     "json5": "2",
     "lodash": "4",
+    "pretty-error": "2",
     "quicktype-core": "6",
     "yargs": "12"
   },

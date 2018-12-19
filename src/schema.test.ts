@@ -1,6 +1,13 @@
 import { ConfigSource } from './config';
 import { FileType } from './file-loader';
-import { validate, InvalidConfig, loadSchema, loadSchemaSync } from './schema';
+import {
+  InvalidConfig,
+  validate,
+  loadSchema,
+  loadSchemaSync,
+  loadValidated,
+  loadValidatedSync,
+} from './schema';
 import { withFakeFiles } from './test-util';
 
 test('parse schema', () => {
@@ -333,5 +340,97 @@ test('load schema extends', async () => {
         y: { type: 'number' },
       },
     });
+  });
+});
+
+test('load validated', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+    [
+      '.app-config.yml',
+      `
+      x: 1
+      `,
+    ],
+  ], async (dir) => {
+    await loadValidated(dir);
+  });
+
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+    [
+      '.app-config.yml',
+      `
+      y: 1
+      `,
+    ],
+  ], async (dir) => {
+    await expect(loadValidated(dir)).rejects.toThrow();
+  });
+});
+
+test('load validated sync', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+    [
+      '.app-config.yml',
+      `
+      x: 1
+      `,
+    ],
+  ], async (dir) => {
+    loadValidatedSync(dir);
+  });
+
+  await withFakeFiles([
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+    [
+      '.app-config.yml',
+      `
+      y: 1
+      `,
+    ],
+  ], async (dir) => {
+    expect(() => loadValidatedSync(dir)).toThrow();
   });
 });
