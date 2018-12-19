@@ -5,8 +5,11 @@ import { join, basename, extname } from 'path';
 import { ConfigObject, ConfigSource, LoadedConfig, loadConfig, loadConfigSync } from './config';
 import { metaProps } from './meta';
 import {
+  FileType,
   findParseableFile,
   findParseableFileSync,
+  parseFile,
+  parseFileSync,
 } from './file-loader';
 
 const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
@@ -39,7 +42,7 @@ export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
   return schema[1];
 };
 
-export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  => {
+export const validate = (input: ConfigInput, cwd = process.cwd()): [InvalidConfig, Error] | false  => {
   const {
     source,
     config,
@@ -47,8 +50,37 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
     nonSecrets,
   } = input;
 
+  const extractExternalSchemas = (schema: ConfigObject, schemas: any = {}) => {
+    if (schema && typeof schema === 'object') {
+      Object.entries(schema).forEach(([key, val]) => {
+        if (key === '$ref' && typeof val === 'string') {
+          // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
+          const [_, filepath] = val.match(/^([^#]*)#?/)!;
+
+          if (filepath) {
+            const [_, schema] = parseFileSync(join(cwd, filepath)) as [FileType, any];
+
+            if (!schema.$id) {
+              schema.$id = filepath;
+            }
+
+            schemas[filepath] = schema;
+          }
+        } else {
+          extractExternalSchemas(val, schemas);
+        }
+      });
+    }
+
+    return schemas;
+  };
+
+  // rips out any URIs under $ref keys
+  const schemas = extractExternalSchemas(input.schema);
+
   const ajv = new Ajv({
     allErrors: true,
+    schemas: Object.values(schemas),
   });
 
   // array of property paths that should only be present in secrets file
@@ -78,7 +110,8 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
-  const valid = ajv.validate(schema, config);
+  const validate = ajv.compile(schema);
+  const valid = validate(config);
 
   if (source === ConfigSource.File && nonSecrets) {
     // check that the nonSecrets does not contain any properties marked as secret
@@ -100,7 +133,7 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
 
   if (!valid) {
     const err = new Error(
-      `Config is invalid: ${ajv.errorsText(null, { dataVar: 'config' })}`,
+      `Config is invalid: ${ajv.errorsText(validate.errors, { dataVar: 'config' })}`,
     );
 
     err.stack = undefined;
@@ -113,11 +146,9 @@ export const validate = (input: ConfigInput): [InvalidConfig, Error] | false  =>
 
 export const loadValidated = async (cwd = process.cwd()) => {
   const loaded = await loadConfig(cwd);
+  const schema = await loadSchema(cwd);
 
-  const validation = validate({
-    schema: await loadSchema(cwd),
-    ...loaded,
-  });
+  const validation = await validate({ schema, ...loaded }, cwd);
 
   if (validation) {
     throw validation[1];
@@ -128,11 +159,9 @@ export const loadValidated = async (cwd = process.cwd()) => {
 
 export const loadValidatedSync = (cwd = process.cwd()) => {
   const loaded = loadConfigSync(cwd);
+  const schema = loadSchemaSync(cwd);
 
-  const validation = validate({
-    schema: loadSchemaSync(cwd),
-    ...loaded,
-  });
+  const validation = validate({ schema, ...loaded }, cwd);
 
   if (validation) {
     throw validation[1];
