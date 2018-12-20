@@ -4,7 +4,7 @@ import { outputFile, remove } from 'fs-extra';
 
 export const withFakeFiles = async (
   files: [string, string][],
-  cb: (dir: string) => Promise<any>,
+  cb: (dir: string) => Promise<void>,
 ) => {
   const { path: tmp } = await dir();
   const filenames = files.map(([name]) => join(tmp, name));
