@@ -119,7 +119,21 @@ export const validate = (
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
-  const validate = ajv.compile(schema);
+  let validate;
+  try {
+    validate = ajv.compile(schema);
+  } catch (e) {
+    if (e instanceof (Ajv.MissingRefError as any)) {
+      // monkeypatch in the .. that was replaced earlier in this function for a good error message
+      e.message = e.message.replace(/,,\//g, '../');
+      e.missingRef = e.missingRef.replace(/,,\//g, '../');
+      e.missingSchema = e.missingSchema.replace(/,,\//g, '../');
+      throw e;
+    }
+
+    throw e;
+  }
+
   const valid = validate(config);
 
   if (source === ConfigSource.File && nonSecrets) {
