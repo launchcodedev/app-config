@@ -58,17 +58,22 @@ export const validate = (
       Object.entries(schema).forEach(([key, val]) => {
         if (key === '$ref' && typeof val === 'string') {
           // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-          const [_, filepath] = val.match(/^([^#]*)#?/)!;
+          const [_, filepath, ref] = val.match(/^([^#]*)(#?.*)/)!;
 
           if (filepath) {
-            const basepath = basename(filepath);
-            const [_, schema] = parseFileSync(join(cwd, filepath)) as [FileType, any];
+            // we preface filepaths so that ajv resolves them correctly
+            const resolvePath = `${filepath.replace(/\.\./g, ',,')}`;
+            const [_, child] = parseFileSync(join(cwd, filepath)) as [FileType, any];
 
-            if (!schema.$id) {
-              schema.$id = basepath;
+            // ajv needs the $id to match for resolving later
+            child.$id = resolvePath;
+
+            if (!Array.isArray(schema)) {
+              // replace the $ref inline with the resolvePath
+              schema.$ref = `${resolvePath}${ref}`;
             }
 
-            schemas[basepath] = schema;
+            schemas[resolvePath] = child;
           }
         } else {
           extractExternalSchemas(val, schemas);
@@ -114,7 +119,21 @@ export const validate = (
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
-  const validate = ajv.compile(schema);
+  let validate;
+  try {
+    validate = ajv.compile(schema);
+  } catch (e) {
+    if (e instanceof (Ajv.MissingRefError as any)) {
+      // monkeypatch in the .. that was replaced earlier in this function for a good error message
+      e.message = e.message.replace(/,,\//g, '../');
+      e.missingRef = e.missingRef.replace(/,,\//g, '../');
+      e.missingSchema = e.missingSchema.replace(/,,\//g, '../');
+      throw e;
+    }
+
+    throw e;
+  }
+
   const valid = validate(config);
 
   if (source === ConfigSource.File && nonSecrets) {
