@@ -1,7 +1,7 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { outputFile } from 'fs-extra';
-import { join, basename, extname } from 'path';
+import { join, dirname, basename, extname } from 'path';
 import { ConfigObject, ConfigSource, LoadedConfig, loadConfig, loadConfigSync } from './config';
 import { metaProps } from './meta';
 import {
@@ -53,7 +53,7 @@ export const validate = (
     nonSecrets,
   } = input;
 
-  const extractExternalSchemas = (schema: ConfigObject, schemas: any = {}) => {
+  const extractExternalSchemas = (schema: ConfigObject, schemas: any = {}, pwd: string = cwd) => {
     if (schema && typeof schema === 'object') {
       Object.entries(schema).forEach(([key, val]) => {
         if (key === '$ref' && typeof val === 'string') {
@@ -63,7 +63,9 @@ export const validate = (
           if (filepath) {
             // we preface filepaths so that ajv resolves them correctly
             const resolvePath = `${filepath.replace(/\.\./g, ',,')}`;
-            const [_, child] = parseFileSync(join(cwd, filepath)) as [FileType, any];
+            const [_, child] = parseFileSync(join(pwd, filepath)) as [FileType, any];
+
+            extractExternalSchemas(child, schemas, dirname(join(pwd, filepath)));
 
             // ajv needs the $id to match for resolving later
             child.$id = resolvePath;
@@ -76,7 +78,7 @@ export const validate = (
             schemas[resolvePath] = child;
           }
         } else {
-          extractExternalSchemas(val, schemas);
+          extractExternalSchemas(val, schemas, pwd);
         }
       });
     }
