@@ -58,13 +58,14 @@ export const validate = (input: ConfigInput, cwd = process.cwd()): [InvalidConfi
           const [_, filepath] = val.match(/^([^#]*)#?/)!;
 
           if (filepath) {
+            const basepath = basename(filepath);
             const [_, schema] = parseFileSync(join(cwd, filepath)) as [FileType, any];
 
             if (!schema.$id) {
-              schema.$id = filepath;
+              schema.$id = basepath;
             }
 
-            schemas[filepath] = schema;
+            schemas[basepath] = schema;
           }
         } else {
           extractExternalSchemas(val, schemas);
