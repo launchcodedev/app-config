@@ -62,13 +62,11 @@ export const validate = (
 
           if (filepath) {
             // we preface filepaths so that ajv resolves them correctly
-            const resolvePath = `ref-${filepath}`;
+            const resolvePath = `${filepath.replace(/\.\./g, ',,')}`;
             const [_, child] = parseFileSync(join(cwd, filepath)) as [FileType, any];
 
-            if (!child.$id) {
-              // ajv needs the $id to match for resolving later
-              child.$id = resolvePath;
-            }
+            // ajv needs the $id to match for resolving later
+            child.$id = resolvePath;
 
             if (!Array.isArray(schema)) {
               // replace the $ref inline with the resolvePath
