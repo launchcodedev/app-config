@@ -154,7 +154,7 @@ describe('load json config file', () => {
   ];
 
   const expected = {
-    prop: '5'
+    prop: '5',
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
@@ -189,7 +189,7 @@ describe('load json5 config file', () => {
   ];
 
   const expected = {
-    meaningOfLife: 42
+    meaningOfLife: 42,
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {

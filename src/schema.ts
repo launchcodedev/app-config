@@ -42,7 +42,10 @@ export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
   return schema[1];
 };
 
-export const validate = (input: ConfigInput, cwd = process.cwd()): [InvalidConfig, Error] | false  => {
+export const validate = (
+  input: ConfigInput,
+  cwd = process.cwd(),
+): [InvalidConfig, Error] | false  => {
   const {
     source,
     config,

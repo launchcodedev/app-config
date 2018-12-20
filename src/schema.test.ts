@@ -533,6 +533,6 @@ test('schema relative ref to other file', async () => {
       `,
     ],
   ], async (dir) => {
-    await loadValidated(dir + '/nested-folder');
+    await loadValidated(`${dir}/nested-folder`);
   });
 });
