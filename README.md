@@ -204,7 +204,7 @@ export {
   loadSchema(cwd?),
   loadSchemaSync(cwd?),
   // validates the config against a schema
-  validate(LoadedConfig & { schema }),
+  validate(LoadedConfig & { schema }, cwd?),
   loadValidated(cwd?),
   loadValidatedSync(cwd?),
   // creates generated files defined in the schema
@@ -229,3 +229,4 @@ loadValidated(cwd?).then(...);
 - [x] Meta configuration file (through `app-config` meta property or `.app-config.meta` file)
 - [x] Support for other config formats (YAML, JSON)
 - [x] TypeScript generation w/ declare module?
+- [x] Relative file $ref schema loading
