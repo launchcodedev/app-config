@@ -152,7 +152,7 @@ export const loadValidated = async (cwd = process.cwd()) => {
   const loaded = await loadConfig(cwd);
   const schema = await loadSchema(cwd);
 
-  const validation = await validate({ schema, ...loaded }, cwd);
+  const validation = validate({ schema, ...loaded }, cwd);
 
   if (validation) {
     throw validation[1];
