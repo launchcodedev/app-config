@@ -536,3 +536,56 @@ test('schema relative ref to other file', async () => {
     await loadValidated(`${dir}/nested-folder`);
   });
 });
+
+test('schema relative ref to nested folder', async () => {
+  await withFakeFiles([
+    [
+      'app-config.schema.yml',
+      `
+      required: [x]
+      properties:
+        x: { $ref: 'nested/other.schema.yml#/Nested' }
+      `,
+    ],
+    [
+      'nested/other.schema.yml',
+      `
+      Nested:
+        type: number
+      `,
+    ],
+    [
+      'app-config.yml',
+      `
+      x: 1
+      `,
+    ],
+  ], async (dir) => {
+    await loadValidated(dir);
+  });
+
+  await withFakeFiles([
+    [
+      'app-config.schema.yml',
+      `
+      required: [x]
+      properties:
+        x: { $ref: 'nested/other.schema.yml' }
+      `,
+    ],
+    [
+      'nested/other.schema.yml',
+      `
+      type: number
+      `,
+    ],
+    [
+      'app-config.yml',
+      `
+      x: 1
+      `,
+    ],
+  ], async (dir) => {
+    await loadValidated(dir);
+  });
+});

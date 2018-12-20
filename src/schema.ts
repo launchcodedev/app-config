@@ -58,17 +58,24 @@ export const validate = (
       Object.entries(schema).forEach(([key, val]) => {
         if (key === '$ref' && typeof val === 'string') {
           // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-          const [_, filepath] = val.match(/^([^#]*)#?/)!;
+          const [_, filepath, ref] = val.match(/^([^#]*)#?(.*)/)!;
 
           if (filepath) {
-            const basepath = basename(filepath);
-            const [_, schema] = parseFileSync(join(cwd, filepath)) as [FileType, any];
+            // we preface filepaths so that ajv resolves them correctly
+            const resolvePath = `ref-${filepath}`;
+            const [_, child] = parseFileSync(join(cwd, filepath)) as [FileType, any];
 
-            if (!schema.$id) {
-              schema.$id = basepath;
+            if (!child.$id) {
+              // ajv needs the $id to match for resolving later
+              child.$id = resolvePath;
             }
 
-            schemas[basepath] = schema;
+            if (!Array.isArray(schema)) {
+              // replace the $ref inline with the resolvePath
+              schema.$ref = `${resolvePath}#${ref}`;
+            }
+
+            schemas[resolvePath] = child;
           }
         } else {
           extractExternalSchemas(val, schemas);
