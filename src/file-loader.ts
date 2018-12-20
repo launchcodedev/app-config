@@ -305,6 +305,23 @@ export const parseString = (
   }
 };
 
+export const stringify = (
+  config: ConfigObject,
+  fileType: FileType,
+): String => {
+  switch (fileType) {
+    case FileType.JSON: {
+      return JSON.stringify(config, null, 2);
+    }
+    case FileType.TOML: {
+      return TOML.stringify(config as any);
+    }
+    case FileType.YAML: {
+      return YAML.safeDump(config);
+    }
+  }
+};
+
 const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   const meta = config['app-config'] || {};
 

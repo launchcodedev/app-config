@@ -8,6 +8,7 @@ import { flattenObjectTree } from './util';
 import { LoadedConfig } from './config';
 import { loadSchema, validate, loadValidated } from './schema';
 import { generateTypeFiles } from './meta';
+import { stringify, extToFileType } from './file-loader';
 
 const wrapCommand = <T>(cmd: (arg: T) => Promise<void> | void) => async (arg: T) => {
   try {
@@ -45,20 +46,20 @@ const argv = Yargs
     type: 'boolean',
     description: 'Include config secrets in the generated environment variables',
   })
-  .option('p', {
-    alias: 'prefix',
-    default: 'APP_CONFIG',
-    nargs: 1,
-    type: 'string',
-    description: 'Prefix environment variables',
-  })
   .command(['variables', 'vars', 'v'], 'Print out the generated environment variables',
     yargs => yargs
+      .option('p', {
+        alias: 'prefix',
+        default: 'APP_CONFIG',
+        nargs: 1,
+        type: 'string',
+        description: 'Prefix environment variables',
+      })
       .example(
         'export $($0 vars | xargs)',
         'Export the generated environment variables to the current shell',
       ),
-    wrapCommand(async () => {
+    wrapCommand(async (argv) => {
       const loaded = await loadValidated();
 
       const [_, flattenedConfig] = flattenConfig(loaded, argv);
@@ -68,6 +69,29 @@ const argv = Yargs
           .map(([key, value]) => `${key}=${value}`)
           .join('\n'),
       );
+    }),
+  )
+  .command(['create', 'c'], 'Outputs the current configuration in a specific format',
+    yargs => yargs
+      .example(
+        '$0 --format yaml',
+        'Print out the configuration in yaml format',
+      )
+      .option('f', {
+        alias: 'format',
+        default: 'toml',
+        nargs: 1,
+        type: 'string',
+        description: 'toml/yaml/json',
+      }),
+    wrapCommand(async ({ format, secrets }) => {
+      const { config, nonSecrets } = await loadValidated();
+
+      if (secrets) {
+        console.log(stringify(config, extToFileType(format)));
+      } else {
+        console.log(stringify(nonSecrets, extToFileType(format)));
+      }
     }),
   )
   .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
