@@ -67,9 +67,6 @@ export const validate = (
 
             extractExternalSchemas(child, schemas, dirname(join(pwd, filepath)));
 
-            // ajv needs the $id to match for resolving later
-            child.$id = resolvePath;
-
             if (!Array.isArray(schema)) {
               // replace the $ref inline with the resolvePath
               schema.$ref = `${resolvePath}${ref}`;
@@ -91,8 +88,10 @@ export const validate = (
 
   const ajv = new Ajv({
     allErrors: true,
-    schemas: Object.values(schemas),
   });
+
+  Object.entries(schemas)
+    .forEach(([id, schema]) => ajv.addSchema(schema, id));
 
   // array of property paths that should only be present in secrets file
   const schemaSecrets: string[] = [];
