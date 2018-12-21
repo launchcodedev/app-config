@@ -310,11 +310,11 @@ describe('load config w/ one file extends', () => {
 
   const expected = {
     foo: {
-        bar: 'baz',
-      },
-      baz: {
-        bar: 'foo',
-      },
+      bar: 'baz',
+    },
+    baz: {
+      bar: 'foo',
+    },
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
@@ -376,18 +376,18 @@ describe('load config w/ multiple file extends', () => {
   ];
 
   const expected = {
-      foo: {
-        bar: 'baz',
-      },
-      baz1: {
-        bar: 'foo1',
-      },
-      baz2: {
-        bar: 'foo2',
-      },
-      baz3: {
-        bar: 'foo3',
-      },
+    foo: {
+      bar: 'baz',
+    },
+    baz1: {
+      bar: 'foo1',
+    },
+    baz2: {
+      bar: 'foo2',
+    },
+    baz3: {
+      bar: 'foo3',
+    },
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {

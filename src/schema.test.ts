@@ -228,13 +228,13 @@ describe('load json schema', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'app-config.schema.json', content ],
+    ['app-config.schema.json', content],
   ], async (dir) => {
     expect(await loadSchema(dir)).toEqual(expected);
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'app-config.schema.json', content ],
+    ['app-config.schema.json', content],
   ], async (dir) => {
     expect(loadSchemaSync(dir)).toEqual(expected);
   }));
@@ -255,13 +255,13 @@ describe('load toml schema', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'app-config.schema.toml', content ],
+    ['app-config.schema.toml', content],
   ], async (dir) => {
     expect(await loadSchema(dir)).toEqual(expected);
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'app-config.schema.toml', content ],
+    ['app-config.schema.toml', content],
   ], async (dir) => {
     expect(loadSchemaSync(dir)).toEqual(expected);
   }));
@@ -283,13 +283,13 @@ describe('load yaml schema', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'app-config.schema.yml', content ],
+    ['app-config.schema.yml', content],
   ], async (dir) => {
     expect(await loadSchema(dir)).toEqual(expected);
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'app-config.schema.yml', content ],
+    ['app-config.schema.yml', content],
   ], async (dir) => {
     expect(loadSchemaSync(dir)).toEqual(expected);
   }));

@@ -64,7 +64,7 @@ describe('load toml file', () => {
   };
 
   test('file w/ extension', () => withFakeFiles([
-    [ 'nested/dir/fake-file.toml', content ],
+    ['nested/dir/fake-file.toml', content],
   ], async (dir) => {
     const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file.toml'));
 
@@ -73,7 +73,7 @@ describe('load toml file', () => {
   }));
 
   test('file w/ extension sync', () => withFakeFiles([
-    [ 'nested/dir/fake-file.toml', content ],
+    ['nested/dir/fake-file.toml', content],
   ], async (dir) => {
     const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.toml'));
 
@@ -82,7 +82,7 @@ describe('load toml file', () => {
   }));
 
   test('file w/o extension', () => withFakeFiles([
-    [ 'nested/dir/fake-file', content ],
+    ['nested/dir/fake-file', content],
   ], async (dir) => {
     const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
@@ -91,7 +91,7 @@ describe('load toml file', () => {
   }));
 
   test('file w/o extension sync', () => withFakeFiles([
-    [ 'nested/dir/fake-file', content ],
+    ['nested/dir/fake-file', content],
   ], async (dir) => {
     const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
@@ -126,7 +126,7 @@ describe('load json file', () => {
   };
 
   test('file w/ extension', () => withFakeFiles([
-    [ 'nested/dir/fake-file.json', content ],
+    ['nested/dir/fake-file.json', content],
   ], async (dir) => {
     const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file.json'));
 
@@ -135,7 +135,7 @@ describe('load json file', () => {
   }));
 
   test('file w/ extension sync', () => withFakeFiles([
-    [ 'nested/dir/fake-file.json', content ],
+    ['nested/dir/fake-file.json', content],
   ], async (dir) => {
     const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.json'));
 
@@ -144,7 +144,7 @@ describe('load json file', () => {
   }));
 
   test('file w/o extension', () => withFakeFiles([
-    [ 'nested/dir/fake-file', content ],
+    ['nested/dir/fake-file', content],
   ], async (dir) => {
     const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
@@ -153,7 +153,7 @@ describe('load json file', () => {
   }));
 
   test('file w/o extension sync', () => withFakeFiles([
-    [ 'nested/dir/fake-file', content ],
+    ['nested/dir/fake-file', content],
   ], async (dir) => {
     const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
@@ -183,7 +183,7 @@ describe('load yaml file', () => {
   };
 
   test('file w/ extension', () => withFakeFiles([
-    [ 'nested/dir/fake-file.yml', content ],
+    ['nested/dir/fake-file.yml', content],
   ], async (dir) => {
     const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file.yml'));
 
@@ -192,7 +192,7 @@ describe('load yaml file', () => {
   }));
 
   test('file w/ extension sync', () => withFakeFiles([
-    [ 'nested/dir/fake-file.yml', content ],
+    ['nested/dir/fake-file.yml', content],
   ], async (dir) => {
     const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.yml'));
 
@@ -201,7 +201,7 @@ describe('load yaml file', () => {
   }));
 
   test('file w/o extension', () => withFakeFiles([
-    [ 'nested/dir/fake-file', content ],
+    ['nested/dir/fake-file', content],
   ], async (dir) => {
     const [fileType, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
@@ -210,7 +210,7 @@ describe('load yaml file', () => {
   }));
 
   test('file w/o extension sync', () => withFakeFiles([
-    [ 'nested/dir/fake-file', content ],
+    ['nested/dir/fake-file', content],
   ], async (dir) => {
     const [fileType, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
@@ -229,7 +229,7 @@ describe('find toml file', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'nested/dir/filename2.toml', content ],
+    ['nested/dir/filename2.toml', content],
   ], async (dir) => {
     const found = await findParseableFile([
       join(dir, 'nested/dir/filename0.toml'),
@@ -245,7 +245,7 @@ describe('find toml file', () => {
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'nested/dir/filename2.toml', content ],
+    ['nested/dir/filename2.toml', content],
   ], async (dir) => {
     const found = findParseableFileSync([
       join(dir, 'nested/dir/filename0.toml'),
@@ -271,7 +271,7 @@ describe('find yaml file', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'nested/dir/filename2.yml', content ],
+    ['nested/dir/filename2.yml', content],
   ], async (dir) => {
     const found = await findParseableFile([
       join(dir, 'nested/dir/filename0.yml'),
@@ -287,7 +287,7 @@ describe('find yaml file', () => {
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'nested/dir/filename2.yml', content ],
+    ['nested/dir/filename2.yml', content],
   ], async (dir) => {
     const found = findParseableFileSync([
       join(dir, 'nested/dir/filename0.yml'),
@@ -315,7 +315,7 @@ describe('find json file', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'nested/dir/filename2.json', content ],
+    ['nested/dir/filename2.json', content],
   ], async (dir) => {
     const found = await findParseableFile([
       join(dir, 'nested/dir/filename0.json'),
@@ -331,7 +331,7 @@ describe('find json file', () => {
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'nested/dir/filename2.json', content ],
+    ['nested/dir/filename2.json', content],
   ], async (dir) => {
     const found = findParseableFileSync([
       join(dir, 'nested/dir/filename0.json'),
@@ -359,7 +359,7 @@ describe('find json5 file', () => {
   };
 
   test('async', () => withFakeFiles([
-    [ 'nested/dir/filename2.json5', content ],
+    ['nested/dir/filename2.json5', content],
   ], async (dir) => {
     const found = await findParseableFile([
       join(dir, 'nested/dir/filename0.json5'),
@@ -375,7 +375,7 @@ describe('find json5 file', () => {
   }));
 
   test('sync', () => withFakeFiles([
-    [ 'nested/dir/filename2.json5', content ],
+    ['nested/dir/filename2.json5', content],
   ], async (dir) => {
     const found = findParseableFileSync([
       join(dir, 'nested/dir/filename0.json5'),
