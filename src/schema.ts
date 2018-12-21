@@ -1,7 +1,7 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { outputFile } from 'fs-extra';
-import { join, dirname, basename, extname } from 'path';
+import { join, dirname, basename, extname, resolve } from 'path';
 import { ConfigObject, ConfigSource, LoadedConfig, loadConfig, loadConfigSync } from './config';
 import { metaProps } from './meta';
 import {
@@ -61,9 +61,9 @@ export const validate = (
           const [_, __, filepath, ref] = val.match(/^(\.\/)?([^#]*)(#?.*)/)!;
 
           if (filepath) {
-            // we preface filepaths so that ajv resolves them correctly
-            const resolvePath = `${filepath.replace(/\.\./g, ',,')}`;
-            const [_, child] = parseFileSync(join(pwd, filepath)) as [FileType, any];
+            // we resolve filepaths so that ajv resolves them correctly
+            const resolvePath = resolve(join(pwd, filepath));
+            const [_, child] = parseFileSync(resolvePath) as [FileType, any];
 
             extractExternalSchemas(child, schemas, dirname(join(pwd, filepath)));
 
@@ -124,14 +124,6 @@ export const validate = (
   try {
     validate = ajv.compile(schema);
   } catch (e) {
-    if (e instanceof (Ajv.MissingRefError as any)) {
-      // monkeypatch in the .. that was replaced earlier in this function for a good error message
-      e.message = e.message.replace(/,,\//g, '../');
-      e.missingRef = e.missingRef.replace(/,,\//g, '../');
-      e.missingSchema = e.missingSchema.replace(/,,\//g, '../');
-      throw e;
-    }
-
     throw e;
   }
 
