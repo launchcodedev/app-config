@@ -220,11 +220,14 @@ describe('load json schema', () => {
   `;
 
   const expected = {
-    properties: {
-      x: {
-        type: 'number',
+    schema: {
+      properties: {
+        x: {
+          type: 'number',
+        },
       },
     },
+    schemaRefs: {},
   };
 
   test('async', () => withFakeFiles([
@@ -247,11 +250,14 @@ describe('load toml schema', () => {
   `;
 
   const expected = {
-    properties: {
-      x: {
-        type: 'number',
+    schema: {
+      properties: {
+        x: {
+          type: 'number',
+        },
       },
     },
+    schemaRefs: {},
   };
 
   test('async', () => withFakeFiles([
@@ -275,11 +281,14 @@ describe('load yaml schema', () => {
   `;
 
   const expected = {
-    properties: {
-      x: {
-        type: 'number',
+    schema: {
+      properties: {
+        x: {
+          type: 'number',
+        },
       },
     },
+    schemaRefs: {},
   };
 
   test('async', () => withFakeFiles([
@@ -320,10 +329,13 @@ describe('load extends', () => {
     ],
   ], async (dir) => {
     expect(await loadSchema(dir)).toEqual({
-      properties: {
-        x: { type: 'number' },
-        y: { type: 'number' },
+      schema: {
+        properties: {
+          x: { type: 'number' },
+          y: { type: 'number' },
+        },
       },
+      schemaRefs: {},
     });
   }));
 });

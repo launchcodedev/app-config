@@ -20,30 +20,42 @@ export enum InvalidConfig {
   SchemaValidation,
 }
 
-export type ConfigInput = { schema: ConfigObject } & LoadedConfig;
-
-export const loadSchema = async (cwd = process.cwd()): Promise<ConfigObject> => {
-  const schema = await findParseableFile(schemaFileNames.map(f => join(cwd, f)));
-
-  if (!schema) {
-    throw new Error('Could not find app config schema.');
-  }
-
-  return schema[1];
+export type SchemaRefs = { [path: string]: ConfigObject };
+export type Schema = {
+  schema: ConfigObject;
+  schemaRefs?: SchemaRefs;
 };
 
-export const loadSchemaSync = (cwd = process.cwd()): ConfigObject => {
-  const schema = findParseableFileSync(schemaFileNames.map(f => join(cwd, f)));
+export const loadSchema = async (cwd = process.cwd()): Promise<Schema> => {
+  const found = await findParseableFile(schemaFileNames.map(f => join(cwd, f)));
 
-  if (!schema) {
+  if (!found) {
     throw new Error('Could not find app config schema.');
   }
 
-  return schema[1];
+  const [_, schema] = found;
+
+  const schemaRefs = extractExternalSchemas(schema, cwd);
+
+  return { schema, schemaRefs };
+};
+
+export const loadSchemaSync = (cwd = process.cwd()): Schema => {
+  const found = findParseableFileSync(schemaFileNames.map(f => join(cwd, f)));
+
+  if (!found) {
+    throw new Error('Could not find app config schema.');
+  }
+
+  const [_, schema] = found;
+
+  const schemaRefs = extractExternalSchemas(schema, cwd);
+
+  return { schema, schemaRefs };
 };
 
 export const validate = (
-  input: ConfigInput,
+  input: Schema & LoadedConfig,
   cwd = process.cwd(),
 ): [InvalidConfig, Error] | false  => {
   const {
@@ -53,45 +65,12 @@ export const validate = (
     nonSecrets,
   } = input;
 
-  const extractExternalSchemas = (schema: ConfigObject, schemas: any = {}, pwd: string = cwd) => {
-    if (schema && typeof schema === 'object') {
-      Object.entries(schema).forEach(([key, val]) => {
-        if (key === '$ref' && typeof val === 'string') {
-          // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-          const [_, __, filepath, ref] = val.match(/^(\.\/)?([^#]*)(#?.*)/)!;
-
-          if (filepath) {
-            // we resolve filepaths so that ajv resolves them correctly
-            const resolvePath = resolve(join(pwd, filepath));
-            const [_, child] = parseFileSync(resolvePath) as [FileType, any];
-
-            extractExternalSchemas(child, schemas, dirname(join(pwd, filepath)));
-
-            if (!Array.isArray(schema)) {
-              // replace the $ref inline with the resolvePath
-              schema.$ref = `${resolvePath}${ref}`;
-            }
-
-            schemas[resolvePath] = child;
-          }
-        } else {
-          extractExternalSchemas(val, schemas, pwd);
-        }
-      });
-    }
-
-    return schemas;
-  };
-
-  // rips out any URIs under $ref keys
-  const schemas = extractExternalSchemas(input.schema);
-
   const ajv = new Ajv({
     allErrors: true,
   });
 
-  Object.entries(schemas)
-    .forEach(([id, schema]) => ajv.addSchema(schema, id));
+  Object.entries(input.schemaRefs || {})
+    .forEach(([id, schema]) => ajv.addSchema(schema as object, id));
 
   // array of property paths that should only be present in secrets file
   const schemaSecrets: string[] = [];
@@ -120,13 +99,7 @@ export const validate = (
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
-  let validate;
-  try {
-    validate = ajv.compile(schema);
-  } catch (e) {
-    throw e;
-  }
-
+  const validate = ajv.compile(schema);
   const valid = validate(config);
 
   if (source === ConfigSource.File && nonSecrets) {
@@ -164,7 +137,7 @@ export const loadValidated = async (cwd = process.cwd()) => {
   const loaded = await loadConfig(cwd);
   const schema = await loadSchema(cwd);
 
-  const validation = validate({ schema, ...loaded }, cwd);
+  const validation = validate({ ...schema, ...loaded }, cwd);
 
   if (validation) {
     throw validation[1];
@@ -177,11 +150,41 @@ export const loadValidatedSync = (cwd = process.cwd()) => {
   const loaded = loadConfigSync(cwd);
   const schema = loadSchemaSync(cwd);
 
-  const validation = validate({ schema, ...loaded }, cwd);
+  const validation = validate({ ...schema, ...loaded }, cwd);
 
   if (validation) {
     throw validation[1];
   }
 
   return loaded;
+};
+
+const extractExternalSchemas = (schema: ConfigObject, cwd: string, schemas: SchemaRefs = {}) => {
+  if (schema && typeof schema === 'object') {
+    Object.entries(schema).forEach(([key, val]) => {
+      if (key === '$ref' && typeof val === 'string') {
+        // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
+        const [_, __, filepath, ref] = val.match(/^(\.\/)?([^#]*)(#?.*)/)!;
+
+        if (filepath) {
+          // we resolve filepaths so that ajv resolves them correctly
+          const resolvePath = resolve(join(cwd, filepath));
+          const [_, child] = parseFileSync(resolvePath) as [FileType, any];
+
+          extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
+
+          if (!Array.isArray(schema)) {
+            // replace the $ref inline with the resolvePath
+            schema.$ref = `${resolvePath}${ref}`;
+          }
+
+          schemas[resolvePath] = child;
+        }
+      } else {
+        extractExternalSchemas(val, cwd, schemas);
+      }
+    });
+  }
+
+  return schemas;
 };
