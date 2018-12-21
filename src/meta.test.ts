@@ -181,3 +181,62 @@ test('named export codegen', async () => {
     expect(config).toMatch('interface MyCustomConfigName');
   });
 });
+
+test('deep ref recursion in generation', async () => {
+  await withFakeFiles([
+    [
+      'a/app-config.schema.yml',
+      `
+      required: [x]
+      type: object
+      properties:
+        x: { $ref: '../root.yml' }
+      `,
+    ],
+    [
+      'root.yml',
+      `
+      required: [y]
+      type: object
+      properties:
+        y: { $ref: 'b/-/-/1.yml' }
+      `,
+    ],
+    [
+      'b/-/-/1.yml',
+      `
+      required: [z]
+      type: object
+      properties:
+        z: { $ref: '../../2.yml' }
+      `,
+    ],
+    [
+      'b/2.yml',
+      `
+      type: array
+      items: { type: number }
+      `,
+    ],
+    [
+      'a/app-config.yml',
+      `
+      app-config:
+        generate:
+          - { file: "types.ts", name: CustomTypes }
+      x:
+        y:
+          z: [0]
+      `,
+    ],
+  ], async (dir) => {
+    const output = await generateTypeFiles(`${dir}/a`);
+    expect(output.length).toBe(1);
+
+    const config = (await readFile(join(dir, 'a/types.ts'))).toString('utf8');
+    expect(config).toMatch('export interface CustomTypes');
+    expect(config).toMatch('x: X');
+    expect(config).toMatch('y: Y');
+    expect(config).toMatch('z: number[]');
+  });
+});

@@ -3,7 +3,9 @@ import { outputFile, readJson } from 'fs-extra';
 import * as _ from 'lodash';
 import {
   quicktype,
+  JSONSchema,
   JSONSchemaInput,
+  JSONSchemaStore,
   JSONSchemaSourceData,
   InputData,
 } from 'quicktype-core';
@@ -56,7 +58,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
   resetMetaProps();
 
   // trigger reload of config and schema files so that metaProps are up to date
-  const [schema] = await Promise.all([
+  const [{ schema, schemaRefs }] = await Promise.all([
     loadSchema(cwd),
     loadConfig(cwd).catch((_) => {}),
   ]);
@@ -73,12 +75,14 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
     leadingComments,
     rendererOptions = {},
   }) => {
-    if (!name) {
-      // default to PascalCase with non-word chars removed
-      name = basename(file, extname(file)) /* tslint:disable-line */
+    // default to PascalCase with non-word chars removed
+    const normalizeName = (file: string) => basename(file, extname(file))
         .split(/[^\w]/)
         .map(s => `${s.charAt(0).toUpperCase()}${s.slice(1)}`)
         .join('');
+
+    if (!name) {
+      name = normalizeName(file); /* tslint:disable-line */
     }
 
     const src: JSONSchemaSourceData = {
@@ -86,11 +90,18 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
       schema: JSON.stringify(schema),
     };
 
-    const input = new JSONSchemaInput(undefined);
-    await input.addSource(src);
+    class FetchingJSONSchemaStore extends JSONSchemaStore {
+      async fetch(address: string): Promise<JSONSchema | undefined> {
+        return (schemaRefs as any)[address];
+      }
+    }
 
     const inputData = new InputData();
-    inputData.addInput(input);
+    await inputData.addSource(
+      'schema',
+      src,
+      () => new JSONSchemaInput(new FetchingJSONSchemaStore(), []),
+    );
 
     const { lines } = await quicktype({
       inputData,
