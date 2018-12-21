@@ -58,7 +58,7 @@ export const validate = (
       Object.entries(schema).forEach(([key, val]) => {
         if (key === '$ref' && typeof val === 'string') {
           // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-          const [_, filepath, ref] = val.match(/^([^#]*)(#?.*)/)!;
+          const [_, __, filepath, ref] = val.match(/^(\.\/)?([^#]*)(#?.*)/)!;
 
           if (filepath) {
             // we preface filepaths so that ajv resolves them correctly
