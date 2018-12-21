@@ -39,19 +39,19 @@ describe('load env config', () => {
   });
 });
 
-describe('load config file', () => {
+describe('load unhidden config file', () => {
   const files: [string, string][] = [
     [
-      '.app-config.toml',
+      'app-config.toml',
       `
-      [to]
-      bar = "foo"
+      [nested]
+      foo = "baz"
       `,
     ],
   ];
 
   const expected = {
-    to: { bar: 'foo' },
+    nested: { foo: 'baz' },
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
@@ -73,19 +73,19 @@ describe('load config file', () => {
   }));
 });
 
-describe('load unhidden config file', () => {
+describe('load toml config file', () => {
   const files: [string, string][] = [
     [
-      'app-config.toml',
+      '.app-config.toml',
       `
-      [nested]
-      foo = "baz"
+      [to]
+      bar = "foo"
       `,
     ],
   ];
 
   const expected = {
-    nested: { foo: 'baz' },
+    to: { bar: 'foo' },
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
@@ -261,20 +261,34 @@ describe('load secrets file', () => {
   }));
 });
 
-test('load config extends in env', async () => {
-  process.env.APP_CONFIG = `
-    [app-config]
-    extends = ["invalid.toml"]
-  `;
+describe('extends in env var', () => {
+  test('async', async () => {
+    process.env.APP_CONFIG = `
+      [app-config]
+      extends = ["invalid.toml"]
+    `;
 
-  // we can't extend files in an env config
-  await expect(loadConfig()).rejects.toThrow();
+    // we can't extend files in an env config
+    await expect(loadConfig()).rejects.toThrow();
 
-  delete process.env.APP_CONFIG;
+    delete process.env.APP_CONFIG;
+  });
+
+  test('sync', () => {
+    process.env.APP_CONFIG = `
+      [app-config]
+      extends = ["invalid.toml"]
+    `;
+
+    // we can't extend files in an env config
+    expect(() => loadConfigSync()).toThrow();
+
+    delete process.env.APP_CONFIG;
+  });
 });
 
-test('load config extends one file', async () => {
-  await withFakeFiles([
+describe('load config w/ one file extends', () => {
+  const files: [string, string][] = [
     [
       '.app-config.toml',
       `
@@ -292,22 +306,38 @@ test('load config extends one file', async () => {
         bar: 'foo'
       `,
     ],
-  ], async (dir) => {
-    const { config } = await loadConfig(dir);
+  ];
 
-    expect(config).toEqual({
-      foo: {
+  const expected = {
+    foo: {
         bar: 'baz',
       },
       baz: {
         bar: 'foo',
       },
-    });
-  });
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
 });
 
-test('load config extends multiple file', async () => {
-  await withFakeFiles([
+describe('load config w/ multiple file extends', () => {
+  const files: [string, string][] = [
     [
       '.app-config.toml',
       `
@@ -343,10 +373,9 @@ test('load config extends multiple file', async () => {
         bar: 'foo3'
       `,
     ],
-  ], async (dir) => {
-    const { config } = await loadConfig(dir);
+  ];
 
-    expect(config).toEqual({
+  const expected = {
       foo: {
         bar: 'baz',
       },
@@ -359,96 +388,23 @@ test('load config extends multiple file', async () => {
       baz3: {
         bar: 'foo3',
       },
-    });
-  });
-});
+  };
 
-test('load config extends one file sync', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.toml',
-      `
-      [app-config]
-      extends = ".app-config.extender.yml"
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
 
-      [foo]
-      bar = "baz"
-      `,
-    ],
-    [
-      '.app-config.extender.yml',
-      `
-      baz:
-        bar: 'foo'
-      `,
-    ],
-  ], async (dir) => {
-    const { config } = loadConfigSync(dir);
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
 
-    expect(config).toEqual({
-      foo: {
-        bar: 'baz',
-      },
-      baz: {
-        bar: 'foo',
-      },
-    });
-  });
-});
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-test('load config extends multiple file sync', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.toml',
-      `
-      [app-config]
-      extends = [
-        ".app-config.extender1.yml",
-        ".app-config.extender2.yml",
-        ".app-config.extender3.yml",
-      ]
-
-      [foo]
-      bar = "baz"
-      `,
-    ],
-    [
-      '.app-config.extender1.yml',
-      `
-      baz1:
-        bar: 'foo1'
-      `,
-    ],
-    [
-      '.app-config.extender2.yml',
-      `
-      baz2:
-        bar: 'foo2'
-      `,
-    ],
-    [
-      '.app-config.extender3.yml',
-      `
-      baz3:
-        bar: 'foo3'
-      `,
-    ],
-  ], async (dir) => {
-    const { config } = loadConfigSync(dir);
-
-    expect(config).toEqual({
-      foo: {
-        bar: 'baz',
-      },
-      baz1: {
-        bar: 'foo1',
-      },
-      baz2: {
-        bar: 'foo2',
-      },
-      baz3: {
-        bar: 'foo3',
-      },
-    });
-  });
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
 });
