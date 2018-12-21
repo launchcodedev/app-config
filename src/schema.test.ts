@@ -210,108 +210,93 @@ test('secret referenced property in main file', () => {
   expect((res as any)[0]).toBe(InvalidConfig.SecretInNonSecrets);
 });
 
-test('load schema file', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.schema.json',
-      `
-      {
-        "properties": {
-          "x": { "type": "number" }
-        }
+describe('load json schema', () => {
+  const content = `
+    {
+      "properties": {
+        "x": { "type": "number" }
       }
-      `,
-    ],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual({
-      properties: {
-        x: { type: 'number' },
+    }
+  `;
+
+  const expected = {
+    properties: {
+      x: {
+        type: 'number',
       },
-    });
-  });
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    [ 'app-config.schema.json', content ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    [ 'app-config.schema.json', content ],
+  ], async (dir) => {
+    expect(loadSchemaSync(dir)).toEqual(expected);
+  }));
 });
 
-test('load sync schema file', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.schema.json',
-      `
-      {
-        "properties": {
-          "x": { "type": "number" }
-        }
-      }
-      `,
-    ],
-  ], async (dir) => {
-    expect(loadSchemaSync(dir)).toEqual({
-      properties: {
-        x: { type: 'number' },
+describe('load toml schema', () => {
+  const content = `
+    [properties.x]
+    type = "number"
+  `;
+
+  const expected = {
+    properties: {
+      x: {
+        type: 'number',
       },
-    });
-  });
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    [ 'app-config.schema.toml', content ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    [ 'app-config.schema.toml', content ],
+  ], async (dir) => {
+    expect(loadSchemaSync(dir)).toEqual(expected);
+  }));
 });
 
-test('load toml schema file', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.schema.toml',
-      `
-      [properties]
-      x = { type = "number" }
-      `,
-    ],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual({
-      properties: {
-        x: { type: 'number' },
+describe('load yaml schema', () => {
+  const content = `
+    properties:
+      x:
+        type: number
+  `;
+
+  const expected = {
+    properties: {
+      x: {
+        type: 'number',
       },
-    });
-  });
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    [ 'app-config.schema.yml', content ],
+  ], async (dir) => {
+    expect(await loadSchema(dir)).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    [ 'app-config.schema.yml', content ],
+  ], async (dir) => {
+    expect(loadSchemaSync(dir)).toEqual(expected);
+  }));
 });
 
-test('load yaml schema file', async () => {
-  await withFakeFiles([
-    [
-      '.app-config.schema',
-      `
-      properties:
-        x:
-          type: 'number'
-      `,
-    ],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual({
-      properties: {
-        x: { type: 'number' },
-      },
-    });
-  });
-});
-
-test('load non dotfile schema file', async () => {
-  await withFakeFiles([
-    [
-      'app-config.schema.json',
-      `
-      {
-        "properties": {
-          "x": { "type": "number" }
-        }
-      }
-      `,
-    ],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual({
-      properties: {
-        x: { type: 'number' },
-      },
-    });
-  });
-});
-
-test('load schema extends', async () => {
-  await withFakeFiles([
+describe('load extends', () => {
+  test('async', () => withFakeFiles([
     [
       'app-config.schema.json',
       `
@@ -340,7 +325,7 @@ test('load schema extends', async () => {
         y: { type: 'number' },
       },
     });
-  });
+  }));
 });
 
 test('load validated', async () => {
