@@ -648,7 +648,7 @@ test('schema ref recursion', async () => {
       'rootlevel.schema.yml',
       `
       Nested:
-        type: { $ref: './b/nested/schema.yml' }
+        $ref: './b/nested/schema.yml'
       `,
     ],
     [
@@ -661,5 +661,51 @@ test('schema ref recursion', async () => {
     ],
   ], async (dir) => {
     await loadValidated(`${dir}/a/nested-folder`);
+  });
+});
+
+test('deep ref recursion', async () => {
+  await withFakeFiles([
+    [
+      'a/app-config.schema.yml',
+      `
+      required: [x]
+      properties:
+        x: { $ref: '../root.yml' }
+      `,
+    ],
+    [
+      'root.yml',
+      `
+      required: [y]
+      properties:
+        y: { $ref: 'b/-/-/1.yml' }
+      `,
+    ],
+    [
+      'b/-/-/1.yml',
+      `
+      required: [z]
+      properties:
+        z: { $ref: '../../2.yml' }
+      `,
+    ],
+    [
+      'b/2.yml',
+      `
+      type: array
+      items: { type: number }
+      `,
+    ],
+    [
+      'a/app-config.yml',
+      `
+      x:
+        y:
+          z: [0]
+      `,
+    ],
+  ], async (dir) => {
+    await loadValidated(`${dir}/a`);
   });
 });
