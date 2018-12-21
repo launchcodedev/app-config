@@ -63,13 +63,14 @@ export const validate = (
     config,
     secrets,
     nonSecrets,
+    schemaRefs = {},
   } = input;
 
   const ajv = new Ajv({
     allErrors: true,
   });
 
-  Object.entries(input.schemaRefs || {})
+  Object.entries(schemaRefs)
     .forEach(([id, schema]) => ajv.addSchema(schema as object, id));
 
   // array of property paths that should only be present in secrets file
