@@ -120,13 +120,7 @@ export const validate = (
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
-  let validate;
-  try {
-    validate = ajv.compile(schema);
-  } catch (e) {
-    throw e;
-  }
-
+  const validate = ajv.compile(schema);
   const valid = validate(config);
 
   if (source === ConfigSource.File && nonSecrets) {
