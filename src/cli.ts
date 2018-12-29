@@ -108,6 +108,13 @@ const argv = Yargs
   )
   .command('*', 'Exports config as individual environment variables for the specified command',
     yargs => yargs
+      .option('p', {
+        alias: 'prefix',
+        default: 'APP_CONFIG',
+        nargs: 1,
+        type: 'string',
+        description: 'Prefix environment variables',
+      })
       .example(
         '$0 -- docker-compose up -d',
         'Run Docker Compose with the generated environment variables',
