@@ -6,7 +6,7 @@ import * as Yargs from 'yargs';
 import * as PrettyError from 'pretty-error';
 import { flattenObjectTree } from './util';
 import { LoadedConfig } from './config';
-import { loadSchema, validate, loadValidated } from './schema';
+import { loadValidated } from './schema';
 import { generateTypeFiles } from './meta';
 import { stringify, extToFileType } from './file-loader';
 
