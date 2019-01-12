@@ -228,5 +228,5 @@ loadValidated(cwd?).then(...);
 - [x] Built-in JSON schema to TypeScript generation
 - [x] Meta configuration file (through `app-config` meta property or `.app-config.meta` file)
 - [x] Support for other config formats (YAML, JSON)
-- [x] TypeScript generation w/ declare module?
+- [x] TypeScript generation w/ declare module
 - [x] Relative file $ref schema loading
