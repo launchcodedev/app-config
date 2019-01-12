@@ -4,8 +4,16 @@
 <br />
 
 # App Config
+![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)
+![Latest Version](https://img.shields.io/badge/version-0.3.10-orange.svg)
+![Code Coverage](https://img.shields.io/badge/coverage-92%25-green.svg)
+
 Easily create configurations for your application, with strong typing, schema
 validation, and many supported file formats.
+
+All files here and in distributed copies are licensed under [MPL 2.0](https://choosealicense.com/licenses/mpl-2.0/).
+See [here](http://veldstra.org/2016/12/09/you-should-choose-mpl2-for-your-opensource-project.html)
+for more details, but feel free to use this project for any purpose.
 
 ## Why this?
 Config loaders like [`dotenv`](https://github.com/motdotla/dotenv#readme) are
