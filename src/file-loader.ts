@@ -139,6 +139,12 @@ export const parseFile = async (
     file += `.${ext}`;
   }
 
+  // this is for node-dev, so that it knows that app-config is a dependency
+  // this should have no effect on performance and is virtually side effect free
+  try {
+    require(file);
+  } catch (_) {}
+
   const contents = (await readFile(file)).toString('utf8');
   const fileType = extToFileType(ext, contents);
 
@@ -211,6 +217,12 @@ export const parseFileSync = (
     ext = valid[0] as string;
     file += `.${ext}`;
   }
+
+  // this is for node-dev, so that it knows that app-config is a dependency
+  // this should have no effect on performance and is virtually side effect free
+  try {
+    require(file);
+  } catch (_) {}
 
   const contents = readFileSync(file).toString('utf8');
   const fileType = extToFileType(ext, contents);
