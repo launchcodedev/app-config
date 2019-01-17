@@ -408,3 +408,129 @@ describe('load config w/ multiple file extends', () => {
     expect(config).toEqual(expected);
   }));
 });
+
+describe('extending from env var', () => {
+  const files: [string, string][] = [
+    [
+      'app-config.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+    [
+      'app-config.secrets.yml',
+      `
+      nested:
+        secret: 'password'
+      `,
+    ],
+  ];
+
+  beforeEach(() => {
+    process.env.APP_CONFIG_EXTEND = `
+      nested:
+        baz: 1
+    `;
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_EXTEND;
+  });
+
+  const expected = {
+    nested: { baz: 1 },
+  };
+
+  const expectedSecrets = {
+    nested: { secret: 'password' },
+  };
+
+  const expectedConfig = {
+    nested: {
+      baz: 1,
+      secret: 'password',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expectedConfig);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expectedConfig);
+  }));
+});
+
+describe('extending secret from env var', () => {
+  const files: [string, string][] = [
+    [
+      'app-config.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+    [
+      'app-config.secrets.yml',
+      `
+      nested:
+        secret: 'password'
+      `,
+    ],
+  ];
+
+  beforeEach(() => {
+    process.env.APP_CONFIG_EXTEND = `
+      nested:
+        secret: 'other password'
+    `;
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_EXTEND;
+  });
+
+  const expected = {
+    nested: { baz: 2 },
+  };
+
+  const expectedSecrets = {
+    nested: { secret: 'other password' },
+  };
+
+  const expectedConfig = {
+    nested: {
+      baz: 2,
+      secret: 'other password',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expectedConfig);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expectedConfig);
+  }));
+});
