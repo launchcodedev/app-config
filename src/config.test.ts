@@ -438,10 +438,6 @@ describe('extending from env var', () => {
     delete process.env.APP_CONFIG_EXTEND;
   });
 
-  const expected = {
-    nested: { baz: 1 },
-  };
-
   const expectedSecrets = {
     nested: { secret: 'password' },
   };
@@ -500,10 +496,6 @@ describe('extending secret from env var', () => {
   afterEach(() => {
     delete process.env.APP_CONFIG_EXTEND;
   });
-
-  const expected = {
-    nested: { baz: 2 },
-  };
 
   const expectedSecrets = {
     nested: { secret: 'other password' },
