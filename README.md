@@ -238,3 +238,4 @@ loadValidated(cwd?).then(...);
 - [x] Support for other config formats (YAML, JSON)
 - [x] TypeScript generation w/ declare module
 - [x] Relative file $ref schema loading
+- [x] Global (eg. CI) configuration extension

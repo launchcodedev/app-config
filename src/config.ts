@@ -11,6 +11,7 @@ import { loadSchema, loadSchemaSync, validate } from './schema';
 const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
+const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
 
 export type ConfigObject = number | boolean | string | ConfigObjectArr | {
   [key: string]: ConfigObject;
@@ -60,6 +61,14 @@ export const loadConfig = async <C = ConfigObject>(
 
   const [fileType, nonSecrets] = mainConfig;
 
+  const [globalConfigExtend] = globalConfigExtends
+    .filter(name => !!process.env[name])
+    .map(envVar => parseEnv(envVar));
+
+  if (globalConfigExtend) {
+    assignProperties(globalConfigExtend[1], nonSecrets as object, secrets as object);
+  }
+
   return {
     fileType,
     secrets,
@@ -96,6 +105,14 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
 
   const [fileType, nonSecrets] = mainConfig;
 
+  const [globalConfigExtend] = globalConfigExtends
+    .filter(name => !!process.env[name])
+    .map(envVar => parseEnv(envVar));
+
+  if (globalConfigExtend) {
+    assignProperties(globalConfigExtend[1], nonSecrets as object, secrets as object);
+  }
+
   return {
     fileType,
     secrets,
@@ -103,4 +120,20 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
     config: _.merge({}, nonSecrets, secrets) as unknown as C,
     source: ConfigSource.File,
   };
+};
+
+const assignProperties = (globalConfig: any, nonSecrets: object, secrets: object, path = '') => {
+  Object.entries(globalConfig).forEach(([key, value]) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      assignProperties(value, nonSecrets, secrets, `${path ? `${path}.` : ''}${key}`);
+    } else {
+      const propPath = `${path}.${key}`;
+
+      if (_.get(nonSecrets, propPath)) {
+        _.set(nonSecrets, propPath, value);
+      } else {
+        _.set(secrets, propPath, value);
+      }
+    }
+  });
 };
