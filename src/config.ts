@@ -127,7 +127,7 @@ const assignProperties = (globalConfig: any, nonSecrets: object, secrets: object
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       assignProperties(value, nonSecrets, secrets, `${path ? `${path}.` : ''}${key}`);
     } else {
-      const propPath = `${path}.${key}`;
+      const propPath = `${path ? `${path}.` : ''}${key}`;
 
       if (_.get(nonSecrets, propPath)) {
         _.set(nonSecrets, propPath, value);
