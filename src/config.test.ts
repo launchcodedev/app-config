@@ -526,3 +526,57 @@ describe('extending secret from env var', () => {
     expect(config).toEqual(expectedConfig);
   }));
 });
+
+describe('extending from env var without nesting', () => {
+  const files: [string, string][] = [
+    [
+      'app-config.yml',
+      `
+      baz: 2
+      `,
+    ],
+    [
+      'app-config.secrets.yml',
+      `
+      secret: 'password'
+      `,
+    ],
+  ];
+
+  beforeEach(() => {
+    process.env.APP_CONFIG_EXTEND = `
+      baz: 1
+    `;
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_EXTEND;
+  });
+
+  const expectedSecrets = {
+    secret: 'password',
+  };
+
+  const expectedConfig = {
+    baz: 1,
+    secret: 'password',
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expectedConfig);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expectedConfig);
+  }));
+});
