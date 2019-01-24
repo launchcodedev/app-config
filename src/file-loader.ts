@@ -13,8 +13,12 @@ export enum FileType {
   YAML = 'YAML',
 }
 
-export enum CouldNotParse {
-  FileNotFound = 'FileNotFound',
+class FileNotFound extends Error {
+  readonly path: string;
+  constructor(path: string) {
+    super(`FileNotFound(${path})`);
+    this.path = path;
+  }
 }
 
 type MetaProps = { [key: string]: ConfigObject };
@@ -132,7 +136,7 @@ export const parseFile = async (
     }
 
     if (valid.length === 0) {
-      throw CouldNotParse.FileNotFound;
+      throw new FileNotFound(filePath)
     }
 
     ext = valid[0] as string;
@@ -164,7 +168,7 @@ export const parseFile = async (
         const [_, ext] = await parseFile(join(dirname(file), filename));
         merge(config, ext);
       } catch (e) {
-        if (e === CouldNotParse.FileNotFound) {
+        if (e instanceof FileNotFound) {
           throw new Error(`could not find extends: ${filename}`);
         }
 
@@ -207,7 +211,7 @@ export const parseFileSync = (
     const valid = found.filter(e => !!e);
 
     if (valid.length === 0) {
-      throw CouldNotParse.FileNotFound;
+      throw new FileNotFound(filePath)
     }
 
     if (valid.length > 1) {
@@ -241,7 +245,7 @@ export const parseFileSync = (
         const [_, ext] = parseFileSync(join(dirname(file), filename));
         merge(config, ext);
       } catch (e) {
-        if (e === CouldNotParse.FileNotFound) {
+        if (e instanceof FileNotFound) {
           throw new Error(`could not find extends: ${filename}`);
         }
 
@@ -260,7 +264,7 @@ export const findParseableFile = async (
 ): Promise<[FileType, ConfigObject] | undefined> => {
   const [valid, ...others] = (await Promise.all(files.map(async (filename) => {
     return parseFile(filename).catch((e) => {
-      if (e !== CouldNotParse.FileNotFound) {
+      if (!(e instanceof FileNotFound)) {
         throw e;
       }
 
@@ -282,7 +286,7 @@ export const findParseableFileSync = (
     try {
       return parseFileSync(filename);
     } catch (e) {
-      if (e !== CouldNotParse.FileNotFound) {
+      if (!(e instanceof FileNotFound)) {
         throw e;
       }
 
