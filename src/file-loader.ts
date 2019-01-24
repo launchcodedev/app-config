@@ -136,7 +136,7 @@ export const parseFile = async (
     }
 
     if (valid.length === 0) {
-      throw new FileNotFound(filePath)
+      throw new FileNotFound(filePath);
     }
 
     ext = valid[0] as string;
@@ -211,7 +211,7 @@ export const parseFileSync = (
     const valid = found.filter(e => !!e);
 
     if (valid.length === 0) {
-      throw new FileNotFound(filePath)
+      throw new FileNotFound(filePath);
     }
 
     if (valid.length > 1) {
