@@ -59,7 +59,6 @@ converting from one to another is trivial.
 3. Add a `.app-config.schema.yml` to the root of your project. This validates the configuration before the app starts:
 
     ```yaml
-    "$schema": http://json-schema.org/draft-07/schema#
     type: object
     required: [server]
     properties:
@@ -68,8 +67,7 @@ converting from one to another is trivial.
     definitions:
       Server:
         type: object
-        required:
-        - port
+        required: [port]
         properties:
           port:
             type: number
