@@ -36,9 +36,7 @@ global configuration, multi-tenant production systems, in-browser config loading
 - Explicit secret config items, disallowed in non-secret configuration
 
 # Getting Started
-Simple setup is as follows:
-
-Add the module to your project, using your preferred NPM client.
+Add the module to your project, using your preferred NPM client. Then run the init command.
 
 ```
 yarn add @servall/app-config
