@@ -4,8 +4,10 @@ import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import * as PrettyError from 'pretty-error';
+import { stripIndent } from 'common-tags';
+import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
-import { LoadedConfig } from './config';
+import { loadConfig, LoadedConfig, ConfigSource } from './config';
 import { loadValidated } from './schema';
 import { generateTypeFiles } from './meta';
 import { stringify, extToFileType } from './file-loader';
@@ -103,6 +105,44 @@ const argv = Yargs
         console.warn('No files generated - did you add the correct meta properties?');
       } else {
         console.log(`Generated: [ ${output.map(({ file }) => file).join(', ')} ]`);
+      }
+    }),
+  )
+  .command(['init'], 'Creates the boilerplate for your project',
+    yargs => yargs
+      .option('force', {
+        default: false,
+        type: 'boolean',
+      }),
+    wrapCommand(async ({ force }) => {
+      await loadConfig()
+        .catch(_ => null)
+        .then(res => {
+          if (res !== null && res.source === ConfigSource.File && !force) {
+            throw new Error('an app config file already existed');
+          }
+        });
+
+      await outputFile('.app-config.toml', '');
+      console.log('.app-config.toml file written');
+
+      await outputFile('.app-config.secrets.toml', '');
+      console.log('.app-config.secrets.toml file written');
+
+      await outputFile('.app-config.schema.yml', stripIndent`
+        $schema: http://json-schema.org/draft-07/schema#
+
+        type: object
+        required: []
+        properties: {}
+        definitions: {}
+      `);
+      console.log('.app-config.schema.yml file written');
+
+      if (await pathExists('.gitignore')) {
+        const contents = await readFile('.gitignore');
+        await outputFile('.gitignore', `${contents}\n*app-config.secrets.*`);
+        console.log('app-config secrets gitignored');
       }
     }),
   )
