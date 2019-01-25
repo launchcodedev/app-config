@@ -117,7 +117,7 @@ const argv = Yargs
     wrapCommand(async ({ force }) => {
       await loadConfig()
         .catch(_ => null)
-        .then(res => {
+        .then((res) => {
           if (res !== null && res.source === ConfigSource.File && !force) {
             throw new Error('an app config file already existed');
           }
