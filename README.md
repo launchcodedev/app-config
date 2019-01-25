@@ -30,7 +30,6 @@ global configuration, multi-tenant production systems, in-browser config loading
 ### Core Functionality
 - Loads your configuration from environment variable or a file (YAML, TOML, JSON, JSON5)
 - Validates your configuration using JSON Schema
-  - Includes `$ref` relative file loading for deduplicating schema types
 - Generates strong types from your schema (using [quicktype](https://quicktype.io/))
 - Includes a CLI tool for injecting configuration as a environment variables
 - Global configuration extension, allowing CI specific configuration without overriding config
