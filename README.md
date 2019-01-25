@@ -44,14 +44,14 @@ yarn add @servall/app-config
 npx app-config init
 ```
 
-The CLI init command simply creates `.app-config.toml` and `.app-config.schema.yml`.
-You can then run `npx app-config variables` at any time to see your population configuration.
+The CLI init command simply creates `.app-config.*` files.  You can then run
+`npx app-config variables` at any time to see your populated configuration.
 
 ### Files and Formats
 This module supports YAML, TOML, JSON, and JSON5 out of the box, for any of the files. Your
-schema can be YAML, and config be TOML (like the CLI defaults to), or any other way around.
+schema could be YAML, and config be TOML (like the CLI defaults to), or any other way around.
 
-- Configuration files are `.app-config.{ext}`, or `app-config.{ext}`
+- Configuration files are `.app-config.{ext}` or `app-config.{ext}`
 - Secret configuration items 
 - Schema files are `.app-config.schema.{ext}` or `app-config.schema.{ext}`
 - Meta files are `.app-config.meta.{ext}` or `app-config.meta.{ext}`
