@@ -24,6 +24,7 @@ configuration with confidence.
 - in-browser config loading, since it relies on filesystem libraries
 
 ### Alternatives
+- [dotenv](https://www.npmjs.com/package/dotenv)
 - [rc](https://www.npmjs.com/package/rc)
 - [nconf](https://www.npmjs.com/package/nconf)
 - [config](https://www.npmjs.com/package/config)
