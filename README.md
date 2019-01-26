@@ -15,7 +15,7 @@ and more.
 Why yet-another-config-package? We want strong typing and strict validation of our
 configurations, for confidence in development and production. We also want the
 flexibility of using different file formats, using environment variables, and
-keeping secrets safe. It should be adundantly easy and straightforward to change
+keeping secrets safe. It should be abundantly easy and straightforward to change
 configuration with confidence.
 
 **What is it not useful for**: dynamic configuration (functions, behavior), system
@@ -56,7 +56,7 @@ schema could be YAML, and config be TOML (like the CLI defaults to), or any othe
 - Schema files are `.app-config.schema.{ext}` or `app-config.schema.{ext}`
 - Meta files are `.app-config.meta.{ext}` or `app-config.meta.{ext}`
 - Meta properties are specified in the root of any file (except meta files) under the `app-config` key
-- The `APP_CONFIG` environment variable always takes precendent over files, and can be in any supported format
+- The `APP_CONFIG` environment variable always takes precedent over files, and can be in any supported format
 - The `APP_CONFIG_CI` or `APP_CONFIG_EXTEND` environment variable is parsed and deeply merged with your main configuration, if loading from a file
 
 ### CLI
