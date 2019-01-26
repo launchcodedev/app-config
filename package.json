@@ -17,10 +17,8 @@
     "build": "rm -rf dist && tsc",
     "cli": "ts-node src/cli.ts",
     "test": "jest",
-    "lint": "yarn lint:ts",
-    "fix": "yarn fix:ts",
-    "lint:ts": "tslint src/**/*.ts",
-    "fix:ts": "yarn lint:ts --fix",
+    "lint": "tslint src/**/*.ts src/*.ts",
+    "fix": "yarn lint --fix",
     "prepublish": "yarn build"
   },
   "dependencies": {
