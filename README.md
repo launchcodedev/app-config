@@ -8,9 +8,8 @@
 ![Latest Version](https://img.shields.io/badge/version-0.3.13-orange.svg)
 ![Code Coverage](https://img.shields.io/badge/coverage-92%25-green.svg)
 
-Opionated and simple configuration loader for node. Comes with strong typing,
-schema validation, many supported file formats, secrets, environment variables,
-and more.
+Simple configuration loader for node. Comes with strong typing, schema validation,
+many supported file formats, secrets, environment variables, and more.
 
 Why yet-another-config-package? We want strong typing and strict validation of our
 configurations, for confidence in development and production. We also want the
