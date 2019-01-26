@@ -23,6 +23,14 @@ configuration with confidence.
 - multi-tenant production systems, since it assumes only one `APP_CONFIG` variable
 - in-browser config loading, since it relies on filesystem libraries
 
+Benefits:
+- **Types** - All config variables have types. Environment variables alone do not store type information.
+- **Validation** - Config variables are validated against a JSON schema. This ensures that configurations are valid, when the app loads instead of when you least expect it.
+- **Hierarchy** - Config variables can have hierarchy and structure.
+- **Code Generation** - Configuration schemas can be used to generate correct types in your language of choosing (typescript, swift, rust, and many more), all automatically.
+- **Configuration Formats** - Everyone has their own preferences for configuration format - supports JSON, JSON5, TOML, YAML out of the box.
+- **Lists** - Config can include lists of variables. This can be useful when a dynamic number of settings is required, and can be difficult to do with plain environment variables.
+
 ### Alternatives
 - [dotenv](https://www.npmjs.com/package/dotenv)
 - [rc](https://www.npmjs.com/package/rc)
