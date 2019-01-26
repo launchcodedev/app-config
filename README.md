@@ -32,6 +32,7 @@ Benefits:
 - **Lists** - Config can include lists of variables. This can be useful when a dynamic number of settings is required, and can be difficult to do with plain environment variables.
 
 ### Alternatives
+- [node-config-ts](https://www.npmjs.com/package/node-config-ts)
 - [dotenv](https://www.npmjs.com/package/dotenv)
 - [rc](https://www.npmjs.com/package/rc)
 - [nconf](https://www.npmjs.com/package/nconf)
