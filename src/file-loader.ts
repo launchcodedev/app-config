@@ -22,6 +22,7 @@ class FileNotFound extends Error {
 }
 
 type MetaProps = { [key: string]: ConfigObject };
+type Path = string;
 
 export const extToFileType = (ext: string, contents: string = ''): FileType => {
   switch (ext) {
@@ -102,13 +103,13 @@ export const parseEnv = (
 };
 
 export const parseFile = async (
-  filePath: string,
+  filePath: Path,
   supportedFileTypes: FileType[] = [
     FileType.JSON,
     FileType.TOML,
     FileType.YAML,
   ],
-): Promise<[FileType, ConfigObject]> => {
+): Promise<[FileType, Path, ConfigObject]> => {
   let ext: string;
   let file = filePath;
 
@@ -165,7 +166,7 @@ export const parseFile = async (
       await prev;
 
       try {
-        const [_, ext] = await parseFile(join(dirname(file), filename));
+        const [_, __, ext] = await parseFile(join(dirname(file), filename));
         merge(config, ext);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -179,17 +180,17 @@ export const parseFile = async (
     delete meta.extends;
   }
 
-  return [fileType, config];
+  return [fileType, file, config];
 };
 
 export const parseFileSync = (
-  filePath: string,
+  filePath: Path,
   supportedFileTypes: FileType[] = [
     FileType.JSON,
     FileType.TOML,
     FileType.YAML,
   ],
-): [FileType, ConfigObject] => {
+): [FileType, Path, ConfigObject] => {
   let ext: string;
   let file = filePath;
 
@@ -242,7 +243,7 @@ export const parseFileSync = (
 
     extend.forEach((filename) => {
       try {
-        const [_, ext] = parseFileSync(join(dirname(file), filename));
+        const [_, __, ext] = parseFileSync(join(dirname(file), filename));
         merge(config, ext);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -256,12 +257,12 @@ export const parseFileSync = (
     delete meta.extends;
   }
 
-  return [fileType, config];
+  return [fileType, file, config];
 };
 
 export const findParseableFile = async (
-  files: string[],
-): Promise<[FileType, ConfigObject] | undefined> => {
+  files: Path[],
+): Promise<[FileType, Path, ConfigObject] | undefined> => {
   const [valid, ...others] = (await Promise.all(files.map(async (filename) => {
     return parseFile(filename).catch((e) => {
       if (!(e instanceof FileNotFound)) {
@@ -280,8 +281,8 @@ export const findParseableFile = async (
 };
 
 export const findParseableFileSync = (
-  files: string[],
-): [FileType, ConfigObject] | undefined => {
+  files: Path[],
+): [FileType, Path, ConfigObject] | undefined => {
   const [valid, ...others] = files.map((filename) => {
     try {
       return parseFileSync(filename);
@@ -324,7 +325,7 @@ export const parseString = (
 export const stringify = (
   config: ConfigObject,
   fileType: FileType,
-): String => {
+): string => {
   switch (fileType) {
     case FileType.JSON: {
       return JSON.stringify(config, null, 2);

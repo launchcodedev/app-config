@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { FileType } from './file-loader';
 import { loadConfig, loadConfigSync, ConfigSource } from './config';
 import { withFakeFiles } from './test-util';
@@ -208,6 +209,26 @@ describe('load json5 config file', () => {
     expect(fileType).toBe(FileType.JSON);
     expect(secrets).toEqual({});
     expect(config).toEqual(expected);
+  }));
+});
+
+describe('config file source', () => {
+  const files: [string, string][] = [
+    [ 'app-config.json5', `{}` ],
+  ];
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { fileSource, fileType } = await loadConfig(dir);
+
+    expect(fileSource).toBe(join(dir, 'app-config.json5'));
+    expect(fileType).toBe(FileType.JSON);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { fileSource, fileType } = loadConfigSync(dir);
+
+    expect(fileSource).toBe(join(dir, 'app-config.json5'));
+    expect(fileType).toBe(FileType.JSON);
   }));
 });
 

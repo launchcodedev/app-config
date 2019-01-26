@@ -50,7 +50,7 @@ export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
     {},
     metaProps,
     packageConfig || {},
-    meta ? meta[1] : {},
+    meta ? meta[2] : {},
   ) as MetaProps;
 };
 

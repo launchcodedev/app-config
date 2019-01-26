@@ -13,11 +13,11 @@ const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
 
-export type ConfigObject = number | boolean | string | ConfigObjectArr | {
-  [key: string]: ConfigObject;
+interface ConfigObjectArr extends Array<ConfigSubObject> {}
+export type ConfigSubObject = number | boolean | string | ConfigObjectArr | ConfigObject;
+export type ConfigObject = {
+  [key: string]: ConfigSubObject;
 };
-
-interface ConfigObjectArr extends Array<ConfigObject> {}
 
 export enum ConfigSource {
   File,
@@ -27,6 +27,7 @@ export enum ConfigSource {
 export type LoadedConfig<Conf = ConfigObject> = {
   source: ConfigSource,
   fileType: FileType,
+  fileSource?: string;
   config: Conf,
   secrets?: ConfigObject,
   nonSecrets: ConfigObject,
@@ -51,7 +52,7 @@ export const loadConfig = async <C = ConfigObject>(
   }
 
   const secretsConfig = await findParseableFile(secretsFileNames.map(f => join(cwd, f)));
-  const secrets = secretsConfig ? secretsConfig[1] : {};
+  const secrets = secretsConfig ? secretsConfig[2] : {};
 
   const mainConfig = await findParseableFile(configFileNames.map(f => join(cwd, f)));
 
@@ -59,7 +60,7 @@ export const loadConfig = async <C = ConfigObject>(
     throw new Error('Could not find app config. Expected an environment variable or file.');
   }
 
-  const [fileType, nonSecrets] = mainConfig;
+  const [fileType, fileSource, nonSecrets] = mainConfig;
 
   const [globalConfigExtend] = globalConfigExtends
     .filter(name => !!process.env[name])
@@ -71,6 +72,7 @@ export const loadConfig = async <C = ConfigObject>(
 
   return {
     fileType,
+    fileSource,
     secrets,
     nonSecrets,
     config: _.merge({}, nonSecrets, secrets) as unknown as C,
@@ -95,7 +97,7 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
   }
 
   const secretsConfig = findParseableFileSync(secretsFileNames.map(f => join(cwd, f)));
-  const secrets = secretsConfig ? secretsConfig[1] : {};
+  const secrets = secretsConfig ? secretsConfig[2] : {};
 
   const mainConfig = findParseableFileSync(configFileNames.map(f => join(cwd, f)));
 
@@ -103,7 +105,7 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
     throw new Error('Could not find app config. Expected an environment variable or file.');
   }
 
-  const [fileType, nonSecrets] = mainConfig;
+  const [fileType, fileSource, nonSecrets] = mainConfig;
 
   const [globalConfigExtend] = globalConfigExtends
     .filter(name => !!process.env[name])
@@ -115,6 +117,7 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
 
   return {
     fileType,
+    fileSource,
     secrets,
     nonSecrets,
     config: _.merge({}, nonSecrets, secrets) as unknown as C,
