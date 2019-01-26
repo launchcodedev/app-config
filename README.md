@@ -58,6 +58,44 @@ npx app-config init
 The CLI init command simply creates `.app-config.*` files.  You can then run
 `npx app-config variables` at any time to see your populated configuration.
 
+You might start with a simple configuration, like:
+
+.app-config.toml
+```toml
+[server]
+port = 3000
+
+[database]
+host = "localhost"
+port = 5432
+name = "master"
+```
+
+.app-config.schema.yml
+```yaml
+type: object
+required: [server, database]
+properties:
+  server:
+    type: object
+    required: [port]
+    properties:
+      port:
+        type: number
+  database:
+    type: object
+    required: [host, port, name]
+    properties:
+      host:
+        type: string
+      port:
+        type: number
+      name:
+        type: string
+```
+
+Check out the [JSON Schema](https://json-schema.org/) documentation for details.
+
 ### Files and Formats
 This module supports YAML, TOML, JSON, and JSON5 out of the box, for any of the files. Your
 schema could be YAML, and config be TOML (like the CLI defaults to), or any other way around.
