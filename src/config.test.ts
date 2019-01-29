@@ -214,7 +214,7 @@ describe('load json5 config file', () => {
 
 describe('config file source', () => {
   const files: [string, string][] = [
-    [ 'app-config.json5', `{}` ],
+    ['app-config.json5', '{}'],
   ];
 
   test('async', () => withFakeFiles(files, async (dir) => {
