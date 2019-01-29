@@ -18,6 +18,14 @@ const wrapCommand = <T>(cmd: (arg: T) => Promise<void> | void) => async (arg: T)
   } catch (err) {
     console.log();
     console.error(new PrettyError().render(err));
+
+    let name = process.cwd();
+
+    try {
+      name = require(`${process.cwd()}/package.json`).name;
+    } catch (_) {}
+
+    console.error(`Error occurred in ${name}`);
     process.exit(1);
   }
 };
