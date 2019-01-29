@@ -2,10 +2,16 @@ import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { outputFile } from 'fs-extra';
 import { join, dirname, basename, extname, resolve } from 'path';
-import { ConfigObject, ConfigSource, LoadedConfig, loadConfig, loadConfigSync } from './config';
+import {
+  ConfigObject,
+  ConfigSubObject,
+  ConfigSource,
+  LoadedConfig,
+  loadConfig,
+  loadConfigSync,
+} from './config';
 import { metaProps } from './meta';
 import {
-  FileType,
   findParseableFile,
   findParseableFileSync,
   parseFile,
@@ -20,7 +26,7 @@ export enum InvalidConfig {
   SchemaValidation,
 }
 
-export type SchemaRefs = { [path: string]: ConfigObject };
+export type SchemaRefs = ConfigObject;
 export type Schema = {
   schema: ConfigObject;
   schemaRefs?: SchemaRefs;
@@ -33,8 +39,7 @@ export const loadSchema = async (cwd = process.cwd()): Promise<Schema> => {
     throw new Error('Could not find app config schema.');
   }
 
-  const [_, schema] = found;
-
+  const schema = found[2];
   const schemaRefs = extractExternalSchemas(schema, cwd);
 
   return { schema, schemaRefs };
@@ -47,8 +52,7 @@ export const loadSchemaSync = (cwd = process.cwd()): Schema => {
     throw new Error('Could not find app config schema.');
   }
 
-  const [_, schema] = found;
-
+  const schema = found[2];
   const schemaRefs = extractExternalSchemas(schema, cwd);
 
   return { schema, schemaRefs };
@@ -63,6 +67,7 @@ export const validate = (
     config,
     secrets,
     nonSecrets,
+    schema,
     schemaRefs = {},
   } = input;
 
@@ -88,8 +93,6 @@ export const validate = (
       return schema === true;
     },
   });
-
-  const schema = input.schema as { [key: string]: ConfigObject };
 
   if (typeof schema !== 'object') {
     return [InvalidConfig.InvalidSchema, new Error('schema was not an object')];
@@ -160,7 +163,7 @@ export const loadValidatedSync = (cwd = process.cwd()) => {
   return loaded;
 };
 
-const extractExternalSchemas = (schema: ConfigObject, cwd: string, schemas: SchemaRefs = {}) => {
+const extractExternalSchemas = (schema: ConfigSubObject, cwd: string, schemas: SchemaRefs = {}) => {
   if (schema && typeof schema === 'object') {
     Object.entries(schema).forEach(([key, val]) => {
       if (key === '$ref' && typeof val === 'string') {
@@ -170,7 +173,7 @@ const extractExternalSchemas = (schema: ConfigObject, cwd: string, schemas: Sche
         if (filepath) {
           // we resolve filepaths so that ajv resolves them correctly
           const resolvePath = resolve(join(cwd, filepath));
-          const [_, child] = parseFileSync(resolvePath) as [FileType, any];
+          const child = parseFileSync(resolvePath)[2];
 
           extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
 
