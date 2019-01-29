@@ -6,7 +6,6 @@ import {
   findParseableFileSync,
   FileType,
 } from './file-loader';
-import { loadSchema, loadSchemaSync, validate } from './schema';
 
 const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
@@ -33,6 +32,8 @@ export type LoadedConfig<Conf = ConfigObject> = {
   nonSecrets: ConfigObject,
 };
 
+const getEnvFileNames = (files: string[]) => files.map(f => `${f}.${process.env.NODE_ENV}`);
+
 export const loadConfig = async <C = ConfigObject>(
   cwd = process.cwd(),
 ): Promise<LoadedConfig<C>> => {
@@ -51,10 +52,16 @@ export const loadConfig = async <C = ConfigObject>(
     };
   }
 
-  const secretsConfig = await findParseableFile(secretsFileNames.map(f => join(cwd, f)));
+  const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames);
+  const secretsConfig = await findParseableFile(
+    secretEnvConfigFileNames.concat(secretsFileNames).map(f => join(cwd, f)),
+  );
   const secrets = secretsConfig ? secretsConfig[2] : {};
 
-  const mainConfig = await findParseableFile(configFileNames.map(f => join(cwd, f)));
+  const envConfigFileNames = getEnvFileNames(configFileNames);
+  const mainConfig = await findParseableFile(
+    envConfigFileNames.concat(configFileNames).map(f => join(cwd, f)),
+  );
 
   if (!mainConfig) {
     throw new Error('Could not find app config. Expected an environment variable or file.');
@@ -96,10 +103,16 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
     };
   }
 
-  const secretsConfig = findParseableFileSync(secretsFileNames.map(f => join(cwd, f)));
+  const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames);
+  const secretsConfig = findParseableFileSync(
+    secretEnvConfigFileNames.concat(secretsFileNames).map(f => join(cwd, f)),
+  );
   const secrets = secretsConfig ? secretsConfig[2] : {};
 
-  const mainConfig = findParseableFileSync(configFileNames.map(f => join(cwd, f)));
+  const envConfigFileNames = getEnvFileNames(configFileNames);
+  const mainConfig = findParseableFileSync(
+    envConfigFileNames.concat(configFileNames).map(f => join(cwd, f)),
+  );
 
   if (!mainConfig) {
     throw new Error('Could not find app config. Expected an environment variable or file.');
