@@ -32,7 +32,19 @@ export type LoadedConfig<Conf = ConfigObject> = {
   nonSecrets: ConfigObject,
 };
 
-const getEnvFileNames = (files: string[]) => files.map(f => `${f}.${process.env.NODE_ENV}`);
+const envAliases: {[ key: string ]: string[]} = {
+  production: ['prod'],
+  development: ['dev'],
+};
+
+const getEnvFileNames = (files: string[]) => {
+  const { NODE_ENV } = process.env;
+  const envFiles = [NODE_ENV, ...(envAliases[NODE_ENV as string] || [])];
+
+  return envFiles.reduce((filenames: string[], envFile) => filenames.concat(
+    files.map(f => `${f}.${envFile}`),
+  ), []);
+};
 
 export const loadConfig = async <C = ConfigObject>(
   cwd = process.cwd(),

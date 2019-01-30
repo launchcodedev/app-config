@@ -675,6 +675,59 @@ describe('load environment specific config', () => {
   });
 });
 
+describe('load environment specific config with alias', () => {
+  const envFiles: { env: string, files: [string, string][], expected: { env: string } }[] = [
+    {
+      env: 'development',
+      files: [
+        [
+          '.app-config.dev.toml',
+          'env = "dev"',
+        ],
+      ],
+      expected: { env: 'dev' },
+    },
+    {
+      env: 'production',
+      files: [
+        [
+          '.app-config.prod.toml',
+          'env = "prod"',
+        ],
+      ],
+      expected: { env: 'prod' },
+    },
+  ];
+
+  const OLD_ENV = process.env;
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  envFiles.forEach(({ env, files, expected }) => {
+    test('async', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+
+    test('sync', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+});
+
 describe('load environment specific config with secrets', () => {
   const envFiles: {
     env: string,
