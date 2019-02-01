@@ -49,6 +49,13 @@ const flattenConfig = (loaded: LoadedConfig, argv: Yargs.Arguments) => {
 const argv = Yargs
   .usage('Usage: $0 <command>')
   .usage('')
+  .option('C', {
+    alias: 'cwd',
+    default: process.cwd(),
+    nargs: 1,
+    type: 'string',
+    description: 'Run app-config in the context of this directory',
+  })
   .option('s', {
     alias: 'secrets',
     default: false,
@@ -70,7 +77,7 @@ const argv = Yargs
         'Export the generated environment variables to the current shell',
       ),
     wrapCommand(async (argv) => {
-      const loaded = await loadValidated();
+      const loaded = await loadValidated(argv.cwd);
 
       const [_, flattenedConfig] = flattenConfig(loaded, argv);
 
@@ -94,8 +101,8 @@ const argv = Yargs
         type: 'string',
         description: 'toml/yaml/json',
       }),
-    wrapCommand(async ({ format, secrets }) => {
-      const { config, nonSecrets } = await loadValidated();
+    wrapCommand(async ({ cwd, format, secrets }) => {
+      const { config, nonSecrets } = await loadValidated(cwd);
 
       if (secrets) {
         console.log(stringify(config, extToFileType(format)));
@@ -106,8 +113,8 @@ const argv = Yargs
   )
   .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
     yargs => yargs,
-    wrapCommand(async () => {
-      const output = await generateTypeFiles();
+    wrapCommand(async ({ cwd }) => {
+      const output = await generateTypeFiles(cwd);
 
       if (output.length === 0) {
         console.warn('No files generated - did you add the correct meta properties?');
@@ -122,7 +129,9 @@ const argv = Yargs
         default: false,
         type: 'boolean',
       }),
-    wrapCommand(async ({ force }) => {
+    wrapCommand(async ({ cwd, force }) => {
+      process.chdir(cwd);
+
       await loadConfig()
         .catch(_ => null)
         .then((res) => {
@@ -167,7 +176,7 @@ const argv = Yargs
         '$0 -- docker-compose up -d',
         'Run Docker Compose with the generated environment variables',
       ),
-    wrapCommand(async ({ _, prefix }) => {
+    wrapCommand(async ({ _, cwd, prefix }) => {
       const [command, ...args] = _;
 
       if (!command) {
@@ -175,7 +184,7 @@ const argv = Yargs
         return;
       }
 
-      const loaded = await loadValidated();
+      const loaded = await loadValidated(cwd);
 
       const [config, flattenedConfig] = flattenConfig(loaded, argv);
 
