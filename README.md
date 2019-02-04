@@ -102,7 +102,7 @@ This module supports YAML, TOML, JSON, and JSON5 out of the box, for any of the 
 schema could be YAML, and config be TOML (like the CLI defaults to), or any other way around.
 
 - Configuration files are `.app-config.{ext}` or `app-config.{ext}`
-- Secret configuration items 
+- Secret configuration items
 - Schema files are `.app-config.schema.{ext}` or `app-config.schema.{ext}`
 - Meta files are `.app-config.meta.{ext}` or `app-config.meta.{ext}`
 - Meta properties are specified in the root of any file (except meta files) under the `app-config` key
@@ -186,7 +186,6 @@ More options are available for generation:
 - `leadingComments: string[]` changes the top-of-file comment block that's generated
 - `rendererOptions: { [key: string]: string }` adds any quicktype supported renderer option (like `just-types`)
 
-
 ### Extends
 This module supports a special 'extending' syntax for deduplicating configuration.
 
@@ -198,6 +197,16 @@ extends = ["other-file.yml"]
 ```
 
 This will do a deep merge of `other-file.yml` into your main configuration.
+
+### Environment Specific Config
+This module supports environment specific config and will attempt to load the config based on your
+`NODE_ENV` environment variable and fallback to the default config file if nothing matching is found.
+
+Environment specific configuration files are named `[.]app-config.{NODE_ENV}.{ext}`.
+
+If you prefer, you can alias the development and production config filenames with the short naming convention: `[.]app-config.dev.{ext}` and `[.]app-config.prod.{ext}`.
+
+Secret files follow the same pattern and are loaded based on your `NODE_ENV`.
 
 ### Node API
 This module exports a basic stable node API to do what you would expect.
