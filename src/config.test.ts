@@ -820,3 +820,49 @@ describe('load environment specific config with secrets', () => {
     }));
   });
 });
+
+describe('load environment specific config with alternate env variables', () => {
+  const envs = ['NODE_ENV', 'ENV', 'APP_CONFIG_ENV'];
+  const files: [string, string][] = [
+    [
+      '.app-config.prod.yml',
+      `
+      foo: bar
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: 'bar',
+  };
+
+  const OLD_ENV = process.env;
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  envs.forEach((envName) => {
+    test('async', () => withFakeFiles(files, async (dir) => {
+      process.env[envName] = 'production';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+
+  envs.forEach((envName) => {
+    test('sync', () => withFakeFiles(files, async (dir) => {
+      process.env[envName] = 'production';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+});

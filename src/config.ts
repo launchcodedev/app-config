@@ -11,6 +11,7 @@ const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
+const envs = ['NODE_ENV', 'ENV', 'APP_CONFIG_ENV'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
 export type ConfigSubObject = number | boolean | string | ConfigObjectArr | ConfigObject;
@@ -38,8 +39,10 @@ const envAliases: {[ key: string ]: string[]} = {
 };
 
 const getEnvFileNames = (files: string[]) => {
-  const { NODE_ENV } = process.env;
-  const envFiles = [NODE_ENV, ...(envAliases[NODE_ENV as string] || [])];
+  const [env] = envs
+    .filter(env => !!process.env[env])
+    .map(env => process.env[env]);
+  const envFiles = [env, ...(envAliases[env as string] || [])];
 
   return envFiles.reduce((filenames: string[], envFile) => filenames.concat(
     files.map(f => `${f}.${envFile}`),
