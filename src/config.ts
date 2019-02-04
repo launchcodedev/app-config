@@ -6,12 +6,12 @@ import {
   findParseableFileSync,
   FileType,
 } from './file-loader';
-import { loadSchema, loadSchemaSync, validate } from './schema';
 
 const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
+const envs = ['NODE_ENV', 'ENV', 'APP_CONFIG_ENV'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
 export type ConfigSubObject = number | boolean | string | ConfigObjectArr | ConfigObject;
@@ -33,6 +33,22 @@ export type LoadedConfig<Conf = ConfigObject> = {
   nonSecrets: ConfigObject,
 };
 
+const envAliases: {[ key: string ]: string[]} = {
+  production: ['prod'],
+  development: ['dev'],
+};
+
+const getEnvFileNames = (files: string[]) => {
+  const [env] = envs
+    .filter(env => !!process.env[env])
+    .map(env => process.env[env]);
+  const envFiles = [env, ...(envAliases[env as string] || [])];
+
+  return envFiles.reduce((filenames: string[], envFile) => filenames.concat(
+    files.map(f => `${f}.${envFile}`),
+  ), []);
+};
+
 export const loadConfig = async <C = ConfigObject>(
   cwd = process.cwd(),
 ): Promise<LoadedConfig<C>> => {
@@ -51,10 +67,16 @@ export const loadConfig = async <C = ConfigObject>(
     };
   }
 
-  const secretsConfig = await findParseableFile(secretsFileNames.map(f => join(cwd, f)));
+  const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames);
+  const secretsConfig = await findParseableFile(
+    secretEnvConfigFileNames.concat(secretsFileNames).map(f => join(cwd, f)),
+  );
   const secrets = secretsConfig ? secretsConfig[2] : {};
 
-  const mainConfig = await findParseableFile(configFileNames.map(f => join(cwd, f)));
+  const envConfigFileNames = getEnvFileNames(configFileNames);
+  const mainConfig = await findParseableFile(
+    envConfigFileNames.concat(configFileNames).map(f => join(cwd, f)),
+  );
 
   if (!mainConfig) {
     throw new Error('Could not find app config. Expected an environment variable or file.');
@@ -96,10 +118,16 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
     };
   }
 
-  const secretsConfig = findParseableFileSync(secretsFileNames.map(f => join(cwd, f)));
+  const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames);
+  const secretsConfig = findParseableFileSync(
+    secretEnvConfigFileNames.concat(secretsFileNames).map(f => join(cwd, f)),
+  );
   const secrets = secretsConfig ? secretsConfig[2] : {};
 
-  const mainConfig = findParseableFileSync(configFileNames.map(f => join(cwd, f)));
+  const envConfigFileNames = getEnvFileNames(configFileNames);
+  const mainConfig = findParseableFileSync(
+    envConfigFileNames.concat(configFileNames).map(f => join(cwd, f)),
+  );
 
   if (!mainConfig) {
     throw new Error('Could not find app config. Expected an environment variable or file.');

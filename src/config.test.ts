@@ -601,3 +601,268 @@ describe('extending from env var without nesting', () => {
     expect(config).toEqual(expectedConfig);
   }));
 });
+
+describe('load environment specific config', () => {
+  const envFiles: { env: string, files: [string, string][], expected: { env: string } }[] = [
+    {
+      env: 'test',
+      files: [
+        [
+          '.app-config.test.toml',
+          'env = "test"',
+        ],
+      ],
+      expected: { env: 'test' },
+    },
+    {
+      env: 'development',
+      files: [
+        [
+          '.app-config.development.toml',
+          'env = "dev"',
+        ],
+      ],
+      expected: { env: 'dev' },
+    },
+    {
+      env: 'staging',
+      files: [
+        [
+          '.app-config.staging.toml',
+          'env = "staging"',
+        ],
+      ],
+      expected: { env: 'staging' },
+    },
+    {
+      env: 'production',
+      files: [
+        [
+          '.app-config.production.toml',
+          'env = "prod"',
+        ],
+      ],
+      expected: { env: 'prod' },
+    },
+  ];
+
+  const OLD_ENV = process.env;
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  envFiles.forEach(({ env, files, expected }) => {
+    test('async', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+
+    test('sync', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+});
+
+describe('load environment specific config with alias', () => {
+  const envFiles: { env: string, files: [string, string][], expected: { env: string } }[] = [
+    {
+      env: 'development',
+      files: [
+        [
+          '.app-config.dev.toml',
+          'env = "dev"',
+        ],
+      ],
+      expected: { env: 'dev' },
+    },
+    {
+      env: 'production',
+      files: [
+        [
+          '.app-config.prod.toml',
+          'env = "prod"',
+        ],
+      ],
+      expected: { env: 'prod' },
+    },
+  ];
+
+  const OLD_ENV = process.env;
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  envFiles.forEach(({ env, files, expected }) => {
+    test('async', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+
+    test('sync', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+});
+
+describe('load environment specific config with secrets', () => {
+  const envFiles: {
+    env: string,
+    files: [string, string][],
+    expected: { env: string, secret: string },
+  }[] = [
+    {
+      env: 'test',
+      files: [
+        [
+          '.app-config.test.toml',
+          'env = "test"',
+        ],
+        [
+          '.app-config.secrets.test.toml',
+          'secret = "test"',
+        ],
+      ],
+      expected: { env: 'test', secret: 'test' },
+    },
+    {
+      env: 'development',
+      files: [
+        [
+          '.app-config.development.toml',
+          'env = "dev"',
+        ],
+        [
+          '.app-config.secrets.development.toml',
+          'secret = "dev"',
+        ],
+      ],
+      expected: { env: 'dev', secret: 'dev' },
+    },
+    {
+      env: 'staging',
+      files: [
+        [
+          '.app-config.staging.toml',
+          'env = "staging"',
+        ],
+        [
+          '.app-config.secrets.staging.toml',
+          'secret = "staging"',
+        ],
+      ],
+      expected: { env: 'staging', secret: 'staging' },
+    },
+    {
+      env: 'production',
+      files: [
+        [
+          '.app-config.production.toml',
+          'env = "prod"',
+        ],
+        [
+          '.app-config.secrets.production.toml',
+          'secret = "production"',
+        ],
+      ],
+      expected: { env: 'prod', secret: 'production' },
+    },
+  ];
+
+  const OLD_ENV = process.env;
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  envFiles.forEach(({ env, files, expected }) => {
+    test('async', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({ secret: expected.secret });
+      expect(config).toEqual(expected);
+    }));
+
+    test('sync', () => withFakeFiles(files, async (dir) => {
+      process.env.NODE_ENV = env;
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.TOML);
+      expect(secrets).toEqual({ secret: expected.secret });
+      expect(config).toEqual(expected);
+    }));
+  });
+});
+
+describe('load environment specific config with alternate env variables', () => {
+  const envs = ['NODE_ENV', 'ENV', 'APP_CONFIG_ENV'];
+  const files: [string, string][] = [
+    [
+      '.app-config.prod.yml',
+      `
+      foo: bar
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: 'bar',
+  };
+
+  const OLD_ENV = process.env;
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  envs.forEach((envName) => {
+    test('async', () => withFakeFiles(files, async (dir) => {
+      process.env[envName] = 'production';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+
+  envs.forEach((envName) => {
+    test('sync', () => withFakeFiles(files, async (dir) => {
+      process.env[envName] = 'production';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+  });
+});
