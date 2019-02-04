@@ -202,7 +202,7 @@ This will do a deep merge of `other-file.yml` into your main configuration.
 This module supports environment specific config and will attempt to load the config based on your
 `NODE_ENV` environment variable and fallback to the default config file if nothing matching is found.
 
-Environment specific configuration files are named `[.]app-config.{NODE_ENV}.{ext}`.
+Environment specific configuration files are named `[.]app-config.{NODE_ENV|ENV|APP_CONFIG_ENV}.{ext}`.
 
 If you prefer, you can alias the development and production config filenames with the short naming convention: `[.]app-config.dev.{ext}` and `[.]app-config.prod.{ext}`.
 
