@@ -11,7 +11,7 @@ const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
-const envs = ['NODE_ENV', 'ENV', 'APP_CONFIG_ENV'];
+const envs = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
 export type ConfigSubObject = number | boolean | string | ConfigObjectArr | ConfigObject;
