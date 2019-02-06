@@ -11,7 +11,7 @@ const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
-const envs = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
+const envTypeVarNames = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
 export type ConfigSubObject = number | boolean | string | ConfigObjectArr | ConfigObject;
@@ -38,11 +38,20 @@ const envAliases: {[ key: string ]: string[]} = {
   development: ['dev'],
 };
 
-const getEnvFileNames = (files: string[]) => {
-  const [env] = envs
-    .filter(env => !!process.env[env])
-    .map(env => process.env[env]);
-  const envFiles = [env, ...(envAliases[env as string] || [])];
+const getEnvType = () => {
+  const [envType] = envTypeVarNames
+    .filter(envType => !!process.env[envType])
+    .map(envType => process.env[envType]);
+
+  return envType;
+};
+
+const getEnvFileNames = (files: string[], envType = getEnvType()) => {
+  if (!envType) {
+    return [];
+  }
+
+  const envFiles = [envType].concat(envAliases[envType]);
 
   return envFiles.reduce((filenames: string[], envFile) => filenames.concat(
     files.map(f => `${f}.${envFile}`),
@@ -79,6 +88,23 @@ export const loadConfig = async <C = ConfigObject>(
   );
 
   if (!mainConfig) {
+    // make a best attempt at detecting env files without a main one
+    const tryFiles = ([] as string[])
+      .concat(getEnvFileNames(configFileNames, 'development'))
+      .concat(getEnvFileNames(configFileNames, 'production'))
+      .concat(getEnvFileNames(configFileNames, 'staging'))
+      .concat(getEnvFileNames(configFileNames, 'test'));
+
+    const found = await findParseableFile(tryFiles.map(f => join(cwd, f)));
+
+    if (found && !getEnvType()) {
+      throw new Error('Could not find app config. '
+        + `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`);
+    } else if (found) {
+      throw new Error('Could not find app config. '
+        + `Found ${found[1]}, but your environment was ${getEnvType()}.`);
+    }
+
     throw new Error('Could not find app config. Expected an environment variable or file.');
   }
 
@@ -130,6 +156,23 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
   );
 
   if (!mainConfig) {
+    // make a best attempt at detecting env files without a main one
+    const tryFiles = ([] as string[])
+      .concat(getEnvFileNames(configFileNames, 'development'))
+      .concat(getEnvFileNames(configFileNames, 'production'))
+      .concat(getEnvFileNames(configFileNames, 'staging'))
+      .concat(getEnvFileNames(configFileNames, 'test'));
+
+    const found = findParseableFileSync(tryFiles.map(f => join(cwd, f)));
+
+    if (found && !getEnvType()) {
+      throw new Error('Could not find app config. '
+        + `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`);
+    } else if (found) {
+      throw new Error('Could not find app config. '
+        + `Found ${found[1]}, but your environment was ${getEnvType()}.`);
+    }
+
     throw new Error('Could not find app config. Expected an environment variable or file.');
   }
 
