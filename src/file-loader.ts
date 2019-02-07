@@ -361,7 +361,9 @@ const envVar = /^\$(ENV)?(({([a-zA-Z_][a-zA-Z0-9_]+)(:-(.*))?})|(([a-zA-Z_][a-zA
 const replaceEnvVars = (config: any) => {
   if (config && typeof config !== 'object') {
     return config;
-  } else if (!config) {
+  }
+
+  if (!config) {
     return config;
   }
 
