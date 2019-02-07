@@ -870,10 +870,16 @@ describe('load environment specific config with alternate env variables', () => 
 describe('extending with $ENV', () => {
   beforeEach(() => {
     process.env.BAZ = 'supersecret';
+
+    process.env.APP_CONFIG_EXTEND = `
+      nested:
+        baz: $ENV{BAZ}
+    `;
   });
 
   afterEach(() => {
     delete process.env.BAZ;
+    delete process.env.APP_CONFIG_EXTEND;
   });
 
   const files: [string, string][] = [
@@ -885,17 +891,6 @@ describe('extending with $ENV', () => {
       `,
     ],
   ];
-
-  beforeEach(() => {
-    process.env.APP_CONFIG_EXTEND = `
-      nested:
-        baz: $ENV{BAZ}
-    `;
-  });
-
-  afterEach(() => {
-    delete process.env.APP_CONFIG_EXTEND;
-  });
 
   const expectedConfig = {
     nested: {
