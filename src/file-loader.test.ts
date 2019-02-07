@@ -540,6 +540,52 @@ describe('embedded env var with fallback', () => {
   }));
 });
 
+describe('embedded env var with empty fallback', () => {
+  const content = `
+    foo = "$ENV{FOO:-}"
+
+    [[nested.deep]]
+    foo = "$\{FOO:-\}"
+  `;
+
+  const expected = {
+    foo: '',
+    nested: {
+      deep: [
+        {
+          foo: '',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
 describe('embedded env var with env fallback', () => {
   beforeEach(() => {
     process.env.BAR = 'bar';

@@ -380,7 +380,7 @@ const replaceEnvVars = (config: any) => {
         config[key] = process.env[varName];
 
         if (!config[key]) {
-          if (fallback) {
+          if (fallback !== undefined) {
             config[key] = fallback;
 
             // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
