@@ -354,47 +354,55 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
 //   ${FOO:-fallback}
 //   ${FOO:-${FALLBACK}}
 //
-// var name is group 4 || 8
-// fallback value is group 6
-const envVar = /^\$(ENV)?(({([a-zA-Z_][a-zA-Z0-9_]+)(:-(.*))?})|(([a-zA-Z_][a-zA-Z0-9_]+)))$/;
+// var name is group 1 || 3
+// fallback value is group 2
+// https://regex101.com/r/kaXMh8/3
+const envVar = /^\$(?:ENV)?(?:(?:{([a-zA-Z_]\w+)(?::-\s*(.*?)\s*)?})?|([a-zA-Z_]\w+))$/;
 
-const replaceEnvVars = (config: any) => {
-  if (config && typeof config !== 'object') {
-    return config;
+const replaceEnvVars = (config: any): any => {
+  if (typeof config === 'string') {
+    const match = config.match(envVar);
+
+    if (!match) {
+      return config;
+    }
+
+    const varName = match[1] || match[3];
+    const fallback = match[2];
+
+    let value: string | undefined = config;
+
+    if (varName) {
+      value = process.env[varName];
+
+      if (value === undefined) {
+        if (fallback !== undefined) {
+          // trims to match bash semantics
+          // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+          value = replaceEnvVars(fallback.trim());
+        } else {
+          throw new Error(`Could not find environment variable ${match[1]}`);
+        }
+      }
+    }
+
+    return value;
   }
 
   if (!config) {
     return config;
   }
 
+  if (Array.isArray(config)) {
+    return config.map(replaceEnvVars);
+  }
+
+  if (typeof config !== 'object') {
+    return config;
+  }
+
   for (const [key, value] of Object.entries(config)) {
-    if (typeof value === 'string') {
-      const match = value.match(envVar);
-
-      if (!match) {
-        continue;
-      }
-
-      const varName = match[4] || match[8];
-      const fallback = match[6];
-
-      if (varName) {
-        config[key] = process.env[varName];
-
-        if (config[key] === undefined) {
-          if (fallback !== undefined) {
-            config[key] = fallback;
-
-            // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-            replaceEnvVars(config);
-          } else {
-            throw new Error(`Could not find environment variable ${match[1]}`);
-          }
-        }
-      }
-    } else {
-      replaceEnvVars(value);
-    }
+    config[key] = replaceEnvVars(value);
   }
 
   return config;
