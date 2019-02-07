@@ -552,7 +552,7 @@ describe('extending blank config from env var', () => {
   const files: [string, string][] = [
     [
       'app-config.yml',
-      ``,
+      '',
     ],
   ];
 
