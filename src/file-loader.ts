@@ -309,15 +309,15 @@ export const parseString = (
   switch (fileType) {
     case FileType.JSON: {
       const [config, meta] = stripMetaProps(JSON.parse(contents));
-      return [FileType.JSON, config, meta];
+      return [FileType.JSON, replaceEnvVars(config), meta];
     }
     case FileType.TOML: {
       const [config, meta] = stripMetaProps(TOML.parse(contents));
-      return [FileType.TOML, config, meta];
+      return [FileType.TOML, replaceEnvVars(config), meta];
     }
     case FileType.YAML: {
       const [config, meta] = stripMetaProps(YAML.safeLoad(contents) || {});
-      return [FileType.YAML, config, meta];
+      return [FileType.YAML, replaceEnvVars(config), meta];
     }
   }
 };
@@ -346,4 +346,30 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   delete config['app-config'];
 
   return [config, meta];
+};
+
+const envVar = /\$ENV{([\w\d]+)}/;
+
+const replaceEnvVars = (config: any) => {
+  if (config && typeof config !== 'object') {
+    return config;
+  }
+
+  for (const [key, value] of Object.entries(config)) {
+    if (typeof value === 'string') {
+      const match = value.match(envVar);
+
+      if (match && match[1]) {
+        config[key] = process.env[match[1]];
+
+        if (!config[key]) {
+          throw new Error(`Could not find environment variable ${match[1]}`);
+        }
+      }
+    } else {
+      replaceEnvVars(value);
+    }
+  }
+
+  return config;
 };

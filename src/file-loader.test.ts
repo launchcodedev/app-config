@@ -437,3 +437,57 @@ describe('invalid file parsing', () => {
     ])).rejects.toThrow();
   }));
 });
+
+describe('embedded env var', () => {
+  beforeEach(() => {
+    process.env.FOO = 'bar';
+  });
+
+  afterEach(() => {
+    delete process.env.FOO;
+  });
+
+  const content = `
+    foo = "$ENV{FOO}"
+
+    [[nested.deep]]
+    foo = "$ENV{FOO}"
+  `;
+
+  const expected = {
+    foo: 'bar',
+    nested: {
+      deep: [
+        {
+          foo: 'bar',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
