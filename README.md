@@ -209,8 +209,10 @@ If you prefer, you can alias the development and production config filenames wit
 Secret files follow the same pattern and are loaded based on your `NODE_ENV`.
 
 ### Using External Variables
-If you need to, you can access environment variables with the string syntax `$ENV{VAR_NAME}`. This
-will in-place change the value to that environment variable. It cannot be blank.
+If you need to, you can access environment variables with the string syntax `$ENV{VAR_NAME}` or `${VAR_NAME}`.
+This will in-place change the value to that environment variable.
+
+You can also use the bash fallback syntax, like `${VAR:-fallback value}` or `${VAR:-${OTHER_VAR}}`.
 
 ### Node API
 This module exports a basic stable node API to do what you would expect.
