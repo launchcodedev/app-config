@@ -451,7 +451,109 @@ describe('embedded env var', () => {
     foo = "$ENV{FOO}"
 
     [[nested.deep]]
-    foo = "$ENV{FOO}"
+    foo = "$\{FOO\}"
+    baz = "$FOO"
+  `;
+
+  const expected = {
+    foo: 'bar',
+    nested: {
+      deep: [
+        {
+          foo: 'bar',
+          baz: 'bar',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var with fallback', () => {
+  const content = `
+    foo = "$ENV{FOO:-bar}"
+
+    [[nested.deep]]
+    foo = "$ENV{FOO:-bar}"
+  `;
+
+  const expected = {
+    foo: 'bar',
+    nested: {
+      deep: [
+        {
+          foo: 'bar',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var with env fallback', () => {
+  beforeEach(() => {
+    process.env.BAR = 'bar';
+  });
+
+  afterEach(() => {
+    delete process.env.BAR;
+  });
+
+  const content = `
+    foo = "$ENV{FOO:-$\{BAR\}}"
+
+    [[nested.deep]]
+    foo = "$\{FOO:-$ENV{BAR}\}"
   `;
 
   const expected = {

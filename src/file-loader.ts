@@ -348,10 +348,20 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   return [config, meta];
 };
 
-const envVar = /\$ENV{([\w\d]+)}/;
+// this regex matches:
+//   ${FOO}
+//   $ENV{FOO}
+//   ${FOO:-fallback}
+//   ${FOO:-${FALLBACK}}
+//
+// var name is group 4 || 8
+// fallback value is group 6
+const envVar = /^\$(ENV)?(({([a-zA-Z_][a-zA-Z0-9_]+)(:-(.*))?})|(([a-zA-Z_][a-zA-Z0-9_]+)))$/;
 
 const replaceEnvVars = (config: any) => {
   if (config && typeof config !== 'object') {
+    return config;
+  } else if (!config) {
     return config;
   }
 
@@ -359,11 +369,25 @@ const replaceEnvVars = (config: any) => {
     if (typeof value === 'string') {
       const match = value.match(envVar);
 
-      if (match && match[1]) {
-        config[key] = process.env[match[1]];
+      if (!match) {
+        continue;
+      }
+
+      const varName = match[4] || match[8];
+      const fallback = match[6];
+
+      if (varName) {
+        config[key] = process.env[varName];
 
         if (!config[key]) {
-          throw new Error(`Could not find environment variable ${match[1]}`);
+          if (fallback) {
+            config[key] = fallback;
+
+            // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+            replaceEnvVars(config);
+          } else {
+            throw new Error(`Could not find environment variable ${match[1]}`);
+          }
         }
       }
     } else {
