@@ -866,3 +866,56 @@ describe('load environment specific config with alternate env variables', () => 
     }));
   });
 });
+
+describe('extending with $ENV', () => {
+  beforeEach(() => {
+    process.env.BAZ = 'supersecret';
+  });
+
+  afterEach(() => {
+    delete process.env.BAZ;
+  });
+
+  const files: [string, string][] = [
+    [
+      'app-config.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+  ];
+
+  beforeEach(() => {
+    process.env.APP_CONFIG_EXTEND = `
+      nested:
+        baz: $ENV{BAZ}
+    `;
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_EXTEND;
+  });
+
+  const expectedConfig = {
+    nested: {
+      baz: 'supersecret',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(config).toEqual(expectedConfig);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(config).toEqual(expectedConfig);
+  }));
+});
