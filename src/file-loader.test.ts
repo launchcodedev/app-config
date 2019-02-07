@@ -437,3 +437,293 @@ describe('invalid file parsing', () => {
     ])).rejects.toThrow();
   }));
 });
+
+describe('embedded env var', () => {
+  beforeEach(() => {
+    process.env.FOO = 'bar';
+  });
+
+  afterEach(() => {
+    delete process.env.FOO;
+  });
+
+  const content = `
+    foo = "$ENV{FOO}"
+
+    [[nested.deep]]
+    foo = "$\{FOO\}"
+    baz = "$FOO"
+  `;
+
+  const expected = {
+    foo: 'bar',
+    nested: {
+      deep: [
+        {
+          foo: 'bar',
+          baz: 'bar',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var with fallback', () => {
+  const content = `
+    foo = "$ENV{FOO:-bar}"
+
+    [[nested.deep]]
+    foo = "$ENV{FOO:-bar}"
+  `;
+
+  const expected = {
+    foo: 'bar',
+    nested: {
+      deep: [
+        {
+          foo: 'bar',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var with empty fallback', () => {
+  const content = `
+    foo = "$ENV{FOO:-}"
+
+    [[nested.deep]]
+    foo = "$\{FOO:-\}"
+  `;
+
+  const expected = {
+    foo: '',
+    nested: {
+      deep: [
+        {
+          foo: '',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var with env fallback', () => {
+  beforeEach(() => {
+    process.env.BAR = 'bar';
+  });
+
+  afterEach(() => {
+    delete process.env.BAR;
+  });
+
+  const content = `
+    foo = "$ENV{FOO:-$\{BAR\}}"
+
+    [[nested.deep]]
+    foo = "$\{FOO:-$ENV{BAR}\}"
+  `;
+
+  const expected = {
+    foo: 'bar',
+    nested: {
+      deep: [
+        {
+          foo: 'bar',
+        },
+      ],
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('empty embedded env var', () => {
+  beforeEach(() => {
+    process.env.FOO = '';
+  });
+
+  afterEach(() => {
+    delete process.env.FOO;
+  });
+
+  const content = `
+    foo = "$ENV{FOO}"
+  `;
+
+  const expected = {
+    foo: '',
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var in array', () => {
+  beforeEach(() => {
+    process.env.FOO = 'bar';
+  });
+
+  afterEach(() => {
+    delete process.env.FOO;
+  });
+
+  const content = `
+    foo = ["$ENV{FOO}"]
+  `;
+
+  const expected = {
+    foo: ['bar'],
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});

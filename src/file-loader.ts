@@ -309,15 +309,15 @@ export const parseString = (
   switch (fileType) {
     case FileType.JSON: {
       const [config, meta] = stripMetaProps(JSON.parse(contents));
-      return [FileType.JSON, config, meta];
+      return [FileType.JSON, replaceEnvVars(config), meta];
     }
     case FileType.TOML: {
       const [config, meta] = stripMetaProps(TOML.parse(contents));
-      return [FileType.TOML, config, meta];
+      return [FileType.TOML, replaceEnvVars(config), meta];
     }
     case FileType.YAML: {
       const [config, meta] = stripMetaProps(YAML.safeLoad(contents) || {});
-      return [FileType.YAML, config, meta];
+      return [FileType.YAML, replaceEnvVars(config), meta];
     }
   }
 };
@@ -346,4 +346,63 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   delete config['app-config'];
 
   return [config, meta];
+};
+
+// this regex matches:
+//   ${FOO}
+//   $ENV{FOO}
+//   ${FOO:-fallback}
+//   ${FOO:-${FALLBACK}}
+//
+// var name is group 1 || 3
+// fallback value is group 2
+// https://regex101.com/r/kaXMh8/3
+const envVar = /^\$(?:ENV)?(?:(?:{([a-zA-Z_]\w+)(?::-\s*(.*?)\s*)?})?|([a-zA-Z_]\w+))$/;
+
+const replaceEnvVars = (config: any): any => {
+  if (typeof config === 'string') {
+    const match = config.match(envVar);
+
+    if (!match) {
+      return config;
+    }
+
+    const varName = match[1] || match[3];
+    const fallback = match[2];
+
+    let value: string | undefined = config;
+
+    if (varName) {
+      value = process.env[varName];
+
+      if (value === undefined) {
+        if (fallback !== undefined) {
+          // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+          value = replaceEnvVars(fallback);
+        } else {
+          throw new Error(`Could not find environment variable ${match[1]}`);
+        }
+      }
+    }
+
+    return value;
+  }
+
+  if (!config) {
+    return config;
+  }
+
+  if (Array.isArray(config)) {
+    return config.map(replaceEnvVars);
+  }
+
+  if (typeof config !== 'object') {
+    return config;
+  }
+
+  for (const [key, value] of Object.entries(config)) {
+    config[key] = replaceEnvVars(value);
+  }
+
+  return config;
 };

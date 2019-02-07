@@ -6,7 +6,7 @@
 # App Config
 ![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)
 ![Latest Version](https://img.shields.io/badge/version-0.4.0-orange.svg)
-![Code Coverage](https://img.shields.io/badge/coverage-92%25-green.svg)
+![Code Coverage](https://img.shields.io/badge/coverage-91%25-green.svg)
 
 Simple configuration loader for node. Comes with strong typing, schema validation,
 many supported file formats, secrets, environment variables, and more.
@@ -207,6 +207,12 @@ Environment specific configuration files are named `[.]app-config.{NODE_ENV|ENV|
 If you prefer, you can alias the development and production config filenames with the short naming convention: `[.]app-config.dev.{ext}` and `[.]app-config.prod.{ext}`.
 
 Secret files follow the same pattern and are loaded based on your `NODE_ENV`.
+
+### Using External Variables
+If you need to, you can access environment variables with the string syntax `$ENV{VAR_NAME}` or `${VAR_NAME}`.
+This will in-place change the value to that environment variable.
+
+You can also use the bash fallback syntax, like `${VAR:-fallback value}` or `${VAR:-${OTHER_VAR}}`.
 
 ### Node API
 This module exports a basic stable node API to do what you would expect.

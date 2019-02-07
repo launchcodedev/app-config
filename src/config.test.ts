@@ -548,6 +548,48 @@ describe('extending secret from env var', () => {
   }));
 });
 
+describe('extending blank config from env var', () => {
+  const files: [string, string][] = [
+    [
+      'app-config.yml',
+      '',
+    ],
+  ];
+
+  beforeEach(() => {
+    process.env.APP_CONFIG_EXTEND = `
+      nested:
+        baz: 1
+    `;
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_EXTEND;
+  });
+
+  const expectedConfig = {
+    nested: {
+      baz: 1,
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(config).toEqual(expectedConfig);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(config).toEqual(expectedConfig);
+  }));
+});
+
 describe('extending from env var without nesting', () => {
   const files: [string, string][] = [
     [
@@ -865,4 +907,52 @@ describe('load environment specific config with alternate env variables', () => 
       expect(config).toEqual(expected);
     }));
   });
+});
+
+describe('extending with $ENV', () => {
+  beforeEach(() => {
+    process.env.BAZ = 'supersecret';
+
+    process.env.APP_CONFIG_EXTEND = `
+      nested:
+        baz: $ENV{BAZ}
+    `;
+  });
+
+  afterEach(() => {
+    delete process.env.BAZ;
+    delete process.env.APP_CONFIG_EXTEND;
+  });
+
+  const files: [string, string][] = [
+    [
+      'app-config.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+  ];
+
+  const expectedConfig = {
+    nested: {
+      baz: 'supersecret',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(config).toEqual(expectedConfig);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(config).toEqual(expectedConfig);
+  }));
 });
