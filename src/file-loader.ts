@@ -377,9 +377,8 @@ const replaceEnvVars = (config: any): any => {
 
       if (value === undefined) {
         if (fallback !== undefined) {
-          // trims to match bash semantics
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          value = replaceEnvVars(fallback.trim());
+          value = replaceEnvVars(fallback);
         } else {
           throw new Error(`Could not find environment variable ${match[1]}`);
         }
