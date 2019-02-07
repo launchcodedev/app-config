@@ -381,7 +381,7 @@ const replaceEnvVars = (config: any) => {
       if (varName) {
         config[key] = process.env[varName];
 
-        if (!config[key]) {
+        if (config[key] === undefined) {
           if (fallback !== undefined) {
             config[key] = fallback;
 

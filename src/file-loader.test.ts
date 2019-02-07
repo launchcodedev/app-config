@@ -639,3 +639,47 @@ describe('embedded env var with env fallback', () => {
     expect(obj).toEqual(expected);
   }));
 });
+
+describe('empty embedded env var', () => {
+  beforeEach(() => {
+    process.env.FOO = '';
+  });
+
+  afterEach(() => {
+    delete process.env.FOO;
+  });
+
+  const content = `
+    foo = "$ENV{FOO}"
+  `;
+
+  const expected = {
+    foo: '',
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
