@@ -3,6 +3,7 @@
 import * as execa from 'execa';
 import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
+import * as refParser from 'json-schema-ref-parser';
 import * as PrettyError from 'pretty-error';
 import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
@@ -94,21 +95,30 @@ const argv = Yargs
         '$0 --format yaml',
         'Print out the configuration in yaml format',
       )
+      .example(
+        '$0 --format yaml --select "#/kubernetes"',
+        'Print out only the value of config.kubernetes',
+      )
       .option('f', {
         alias: 'format',
         default: 'toml',
         nargs: 1,
         type: 'string',
         description: 'toml/yaml/json',
+      })
+      .option('select', {
+        default: '#',
+        nargs: 1,
+        type: 'string',
+        description: 'a json pointer for what to select in the config',
       }),
-    wrapCommand(async ({ cwd, format, secrets }) => {
+    wrapCommand(async ({ cwd, format, select, secrets }) => {
       const { config, nonSecrets } = await loadValidated(cwd);
 
-      if (secrets) {
-        console.log(stringify(config, extToFileType(format)));
-      } else {
-        console.log(stringify(nonSecrets, extToFileType(format)));
-      }
+      const output = secrets ? config : nonSecrets;
+      const refs = await refParser.resolve(output);
+
+      console.log(stringify(refs.get(select) as any, extToFileType(format)));
     }),
   )
   .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
