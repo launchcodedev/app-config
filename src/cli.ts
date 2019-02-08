@@ -115,15 +115,10 @@ const argv = Yargs
     wrapCommand(async ({ cwd, format, select, secrets }) => {
       const { config, nonSecrets } = await loadValidated(cwd);
 
-      if (secrets) {
-        const refs = await refParser.resolve(config);
+      const output = secrets ? config : nonSecrets;
+      const refs = await refParser.resolve(output);
 
-        console.log(stringify(refs.get(select) as any, extToFileType(format)));
-      } else {
-        const refs = await refParser.resolve(nonSecrets);
-
-        console.log(stringify(refs.get(select) as any, extToFileType(format)));
-      }
+      console.log(stringify(refs.get(select) as any, extToFileType(format)));
     }),
   )
   .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
