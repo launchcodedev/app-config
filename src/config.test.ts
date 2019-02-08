@@ -197,7 +197,7 @@ describe('load json5 config file', () => {
     const { config, secrets, fileType, source } = await loadConfig(dir);
 
     expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.JSON);
+    expect(fileType).toBe(FileType.JSON5);
     expect(secrets).toEqual({});
     expect(config).toEqual(expected);
   }));
@@ -206,7 +206,7 @@ describe('load json5 config file', () => {
     const { config, secrets, fileType, source } = loadConfigSync(dir);
 
     expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.JSON);
+    expect(fileType).toBe(FileType.JSON5);
     expect(secrets).toEqual({});
     expect(config).toEqual(expected);
   }));
@@ -221,14 +221,14 @@ describe('config file source', () => {
     const { fileSource, fileType } = await loadConfig(dir);
 
     expect(fileSource).toBe(join(dir, 'app-config.json5'));
-    expect(fileType).toBe(FileType.JSON);
+    expect(fileType).toBe(FileType.JSON5);
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
     const { fileSource, fileType } = loadConfigSync(dir);
 
     expect(fileSource).toBe(join(dir, 'app-config.json5'));
-    expect(fileType).toBe(FileType.JSON);
+    expect(fileType).toBe(FileType.JSON5);
   }));
 });
 
