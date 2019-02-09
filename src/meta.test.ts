@@ -165,7 +165,7 @@ test('named export codegen', async () => {
           {
             "type": "ts",
             "file": "config3.ts",
-            "name": "MyCustomConfigName",
+            "name": "MyCustomConfigName"
           }
         ]
       }

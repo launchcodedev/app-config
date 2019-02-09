@@ -15,7 +15,7 @@ describe('ext to file type', () => {
   expect(extToFileType('yaml')).toBe(FileType.YAML);
   expect(extToFileType('yml')).toBe(FileType.YAML);
   expect(extToFileType('json')).toBe(FileType.JSON);
-  expect(extToFileType('json5')).toBe(FileType.JSON);
+  expect(extToFileType('json5')).toBe(FileType.JSON5);
   expect(extToFileType('', '23')).toBe(FileType.JSON);
   expect(extToFileType('', '[foo]')).toBe(FileType.TOML);
   expect(extToFileType('', 'foo:')).toBe(FileType.YAML);
@@ -24,9 +24,15 @@ describe('ext to file type', () => {
 describe('guess file type', () => {
   expect(guessFileType(`
     {
-      "foo": "bar",
+      "foo": "bar"
     }
   `)).toEqual(FileType.JSON);
+
+  expect(guessFileType(`
+    {
+      "foo": "bar",
+    }
+  `)).toEqual(FileType.JSON5);
 
   expect(guessFileType(`
     [foo]
@@ -107,13 +113,13 @@ describe('load json file', () => {
   const content = `
     {
       "top": {
-        "foo": "bar",
+        "foo": "bar"
       },
       "top2": {
         "bar": {
-          "baz": "value",
-        },
-      },
+          "baz": "value"
+        }
+      }
     }
   `;
 
@@ -375,7 +381,7 @@ describe('find json5 file', () => {
 
     const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.JSON);
+    expect(fileType).toBe(FileType.JSON5);
     expect(obj).toEqual(expected);
   }));
 
@@ -391,7 +397,7 @@ describe('find json5 file', () => {
 
     const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.JSON);
+    expect(fileType).toBe(FileType.JSON5);
     expect(obj).toEqual(expected);
   }));
 });

@@ -2,13 +2,14 @@ import { basename, extname, dirname, join } from 'path';
 import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
-import * as JSON from 'json5';
+import * as JSON5 from 'json5';
 import { merge } from 'lodash';
 import { ConfigObject } from './config';
 import { metaProps } from './meta';
 
 export enum FileType {
   JSON = 'JSON',
+  JSON5 = 'JSON5',
   TOML = 'TOML',
   YAML = 'YAML',
 }
@@ -32,8 +33,9 @@ export const extToFileType = (ext: string, contents: string = ''): FileType => {
     case 'yml':
       return FileType.YAML;
     case 'json':
-    case 'json5':
       return FileType.JSON;
+    case 'json5':
+      return FileType.JSON5;
     default:
       if (contents) {
         return guessFileType(contents);
@@ -46,7 +48,9 @@ export const extToFileType = (ext: string, contents: string = ''): FileType => {
 export const fileTypeToExt = (fileType: FileType): string[] => {
   switch (fileType) {
     case FileType.JSON:
-      return ['json', 'json5'];
+      return ['json'];
+    case FileType.JSON5:
+      return ['json5'];
     case FileType.TOML:
       return ['toml'];
     case FileType.YAML:
@@ -58,6 +62,11 @@ export const guessFileType = (contents: string): FileType => {
   try {
     JSON.parse(contents);
     return FileType.JSON;
+  } catch (_) {}
+
+  try {
+    JSON5.parse(contents);
+    return FileType.JSON5;
   } catch (_) {}
 
   try {
@@ -77,6 +86,7 @@ export const parseEnv = (
   name: string,
   supportedFileTypes: FileType[] = [
     FileType.JSON,
+    FileType.JSON5,
     FileType.TOML,
     FileType.YAML,
   ],
@@ -106,6 +116,7 @@ export const parseFile = async (
   filePath: Path,
   supportedFileTypes: FileType[] = [
     FileType.JSON,
+    FileType.JSON5,
     FileType.TOML,
     FileType.YAML,
   ],
@@ -187,6 +198,7 @@ export const parseFileSync = (
   filePath: Path,
   supportedFileTypes: FileType[] = [
     FileType.JSON,
+    FileType.JSON5,
     FileType.TOML,
     FileType.YAML,
   ],
@@ -311,6 +323,10 @@ export const parseString = (
       const [config, meta] = stripMetaProps(JSON.parse(contents));
       return [FileType.JSON, replaceEnvVars(config), meta];
     }
+    case FileType.JSON5: {
+      const [config, meta] = stripMetaProps(JSON5.parse(contents));
+      return [FileType.JSON5, replaceEnvVars(config), meta];
+    }
     case FileType.TOML: {
       const [config, meta] = stripMetaProps(TOML.parse(contents));
       return [FileType.TOML, replaceEnvVars(config), meta];
@@ -329,6 +345,9 @@ export const stringify = (
   switch (fileType) {
     case FileType.JSON: {
       return JSON.stringify(config, null, 2);
+    }
+    case FileType.JSON5: {
+      return JSON5.stringify(config, null, 2);
     }
     case FileType.TOML: {
       return TOML.stringify(config as any);
