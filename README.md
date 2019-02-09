@@ -247,6 +247,6 @@ loadValidated(cwd?).then(...);
 ```
 
 ### Roadmap
-- [ ] Webpack loader
+- [x] Webpack loader
 - [ ] Child `extends` properties
 - [ ] Non-js language support
