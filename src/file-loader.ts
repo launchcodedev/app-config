@@ -367,37 +367,37 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   return [config, meta];
 };
 
-// this regex matches:
-//   ${FOO}
-//   $ENV{FOO}
-//   ${FOO:-fallback}
-//   ${FOO:-${FALLBACK}}
-//
-// var name is group 1 || 3
-// fallback value is group 2
-// https://regex101.com/r/kaXMh8/3
-const envVar = /^\$(?:ENV)?(?:(?:{([a-zA-Z_]\w+)(?::-\s*(.*?)\s*)?})?|([a-zA-Z_]\w+))$/;
-
 const replaceEnvVars = (config: any): any => {
   if (typeof config === 'string') {
-    const match = config.match(envVar);
+    let value: string = config;
 
-    if (!match) {
-      return config;
-    }
+    // this regex matches:
+    //   $FOO
+    //   ${FOO}
+    //   ${FOO:-fallback}
+    //   ${FOO:-${FALLBACK}}
+    //
+    // var name is group 1 || 2
+    // fallback value is group 3
+    // https://regex101.com/r/6ZMmx7/2
+    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*) *)?}))/g;
 
-    const varName = match[1] || match[3];
-    const fallback = match[2];
+    while (true) {
+      const match = envVar.exec(config);
+      if (!match) break;
 
-    let value: string | undefined = config;
+      const fullMatch = match[0];
+      const varName = match[1] || match[2];
+      const fallback = match[3];
 
-    if (varName) {
-      value = process.env[varName];
+      if (varName) {
+        const env = process.env[varName];
 
-      if (value === undefined) {
-        if (fallback !== undefined) {
+        if (env !== undefined) {
+          value = value.replace(fullMatch, env);
+        } else if (fallback !== undefined) {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          value = replaceEnvVars(fallback);
+          value = replaceEnvVars(value.replace(fullMatch, fallback));
         } else {
           throw new Error(`Could not find environment variable ${match[1]}`);
         }

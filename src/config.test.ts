@@ -909,13 +909,13 @@ describe('load environment specific config with alternate env variables', () => 
   });
 });
 
-describe('extending with $ENV', () => {
+describe('extending with env', () => {
   beforeEach(() => {
     process.env.BAZ = 'supersecret';
 
     process.env.APP_CONFIG_EXTEND = `
       nested:
-        baz: $ENV{BAZ}
+        baz: $\{BAZ\}
     `;
   });
 
