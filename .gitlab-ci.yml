@@ -1,22 +1,21 @@
+include:
+  - project: 'meat-n-potatoes/ci'
+    file: 'all.yml'
+    ref: v1
+
 stages:
   - lint
+  - build
   - test
 
-cache:
-  untracked: true
-  paths:
-    - node_modules/
-
 lint:
-  image: node:8-alpine
+  extends: .node-lint
   stage: lint
-  script:
-    - yarn install
-    - yarn lint
+
+build:
+  extends: .node-build
+  stage: build
 
 test:
+  extends: .node-test
   stage: test
-  image: node:8
-  script:
-    - yarn install
-    - yarn test
