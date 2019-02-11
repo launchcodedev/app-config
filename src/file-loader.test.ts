@@ -454,7 +454,7 @@ describe('embedded env var', () => {
   });
 
   const content = `
-    foo = "$ENV{FOO}"
+    foo = "$\{FOO\}"
 
     [[nested.deep]]
     foo = "$\{FOO\}"
@@ -502,10 +502,10 @@ describe('embedded env var', () => {
 
 describe('embedded env var with fallback', () => {
   const content = `
-    foo = "$ENV{FOO:-bar}"
+    foo = "$\{FOO:-bar\}"
 
     [[nested.deep]]
-    foo = "$ENV{FOO:-bar}"
+    foo = "$\{FOO:-bar\}"
   `;
 
   const expected = {
@@ -548,7 +548,7 @@ describe('embedded env var with fallback', () => {
 
 describe('embedded env var with empty fallback', () => {
   const content = `
-    foo = "$ENV{FOO:-}"
+    foo = "$\{FOO:-\}"
 
     [[nested.deep]]
     foo = "$\{FOO:-\}"
@@ -602,10 +602,10 @@ describe('embedded env var with env fallback', () => {
   });
 
   const content = `
-    foo = "$ENV{FOO:-$\{BAR\}}"
+    foo = "$\{FOO:-$\{BAR\}\}"
 
     [[nested.deep]]
-    foo = "$\{FOO:-$ENV{BAR}\}"
+    foo = "$\{FOO:-$\{BAR\}\}"
   `;
 
   const expected = {
@@ -656,7 +656,7 @@ describe('empty embedded env var', () => {
   });
 
   const content = `
-    foo = "$ENV{FOO}"
+    foo = "$\{FOO\}"
   `;
 
   const expected = {
@@ -700,11 +700,61 @@ describe('embedded env var in array', () => {
   });
 
   const content = `
-    foo = ["$ENV{FOO}"]
+    foo = ["$\{FOO\}"]
   `;
 
   const expected = {
     foo: ['bar'],
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('embedded env var mid string', () => {
+  beforeEach(() => {
+    process.env.FOOBAR = 'bar';
+  });
+
+  afterEach(() => {
+    delete process.env.FOOBAR;
+  });
+
+  const content = `
+    foo = " surrounding $\{FOOBAR\} context"
+    bar = "B$\{INV:-fallback\}"
+    baz = "$\{INV:-$\{FOOBAR\}\} plus"
+    bat = "_$\{INV:-$\{INV2:-$\{FOOBAR\}\}\}_"
+  `;
+
+  const expected = {
+    foo: ' surrounding bar context',
+    bar: 'Bfallback',
+    baz: 'bar plus',
+    bat: '_bar_',
   };
 
   test('async', () => withFakeFiles([
