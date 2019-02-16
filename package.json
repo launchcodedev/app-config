@@ -19,7 +19,7 @@
     "test": "jest",
     "lint": "tslint src/**/*.ts src/*.ts",
     "fix": "yarn lint --fix",
-    "prepublish": "yarn build"
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "@iarna/toml": "2",
