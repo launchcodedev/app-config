@@ -173,16 +173,17 @@ const extractExternalSchemas = (schema: ConfigSubObject, cwd: string, schemas: S
         if (filepath) {
           // we resolve filepaths so that ajv resolves them correctly
           const resolvePath = resolve(join(cwd, filepath));
+          const resolvePathEncoded = encodeURI(resolvePath);
           const child = parseFileSync(resolvePath)[2];
 
           extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
 
           if (!Array.isArray(schema)) {
             // replace the $ref inline with the resolvePath
-            schema.$ref = `${resolvePath}${ref}`;
+            schema.$ref = `${resolvePathEncoded}${ref}`;
           }
 
-          schemas[resolvePath] = child;
+          schemas[resolvePathEncoded] = child;
         }
       } else {
         extractExternalSchemas(val, cwd, schemas);

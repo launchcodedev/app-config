@@ -721,3 +721,31 @@ test('deep ref recursion', async () => {
     await loadValidated(`${dir}/a`);
   });
 });
+
+test('schema relative ref to file with space in filepath', async () => {
+  await withFakeFiles([
+    [
+      'nested-folder/app-config.schema.yml',
+      `
+      required: [x]
+      properties:
+        x: { $ref: '../my schema.yml#/Nested' }
+      `,
+    ],
+    [
+      'nested-folder/app-config.yml',
+      `
+      x: 1
+      `,
+    ],
+    [
+      'my schema.yml',
+      `
+      Nested:
+        type: number
+      `,
+    ],
+  ], async (dir) => {
+    await loadValidated(`${dir}/nested-folder`);
+  });
+});
