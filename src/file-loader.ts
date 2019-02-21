@@ -157,17 +157,16 @@ export const parseFile = async (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, config, meta] = parseString(contents, fileType);
+  const [_, parsed, meta] = parseString(contents, fileType);
+  let config = parsed;
 
   if (meta.extends) {
     const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
 
-    await extend.reduce(async (prev: Promise<void>, filename) => {
-      await prev;
-
+    for (const filename of extend) {
       try {
         const [_, __, ext] = await parseFile(join(dirname(file), filename));
-        merge(config, ext);
+        config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
           throw new Error(`could not find extends: ${filename}`);
@@ -175,7 +174,7 @@ export const parseFile = async (
 
         throw e;
       }
-    }, Promise.resolve());
+    }
 
     delete meta.extends;
   }
@@ -236,15 +235,16 @@ export const parseFileSync = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, config, meta] = parseString(contents, fileType);
+  const [_, parsed, meta] = parseString(contents, fileType);
+  let config = parsed;
 
   if (meta.extends) {
     const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
 
-    extend.forEach((filename) => {
+    for (const filename of extend) {
       try {
         const [_, __, ext] = parseFileSync(join(dirname(file), filename));
-        merge(config, ext);
+        config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
           throw new Error(`could not find extends: ${filename}`);
@@ -252,7 +252,7 @@ export const parseFileSync = (
 
         throw e;
       }
-    });
+    }
 
     delete meta.extends;
   }
@@ -274,7 +274,9 @@ export const findParseableFile = async (
   }))).filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${files.join(', ')})`);
+    console.warn(`found multiple valid files, only expected one. (${
+      [valid, ...others].map(file => file![1]).join(', ')
+    })`);
   }
 
   return valid;
@@ -296,7 +298,9 @@ export const findParseableFileSync = (
   }).filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${files.join(', ')})`);
+    console.warn(`found multiple valid files, only expected one. (${
+      [valid, ...others].map(file => file![1]).join(', ')
+    })`);
   }
 
   return valid;
