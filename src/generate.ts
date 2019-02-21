@@ -33,7 +33,6 @@ export interface GenerateFile {
 export const generateTypeFiles = async (cwd = process.cwd()) => {
   resetMetaProps();
 
-  // trigger reload of config and schema files so that metaProps are up to date
   const [{ schema, schemaRefs }, { config, nonSecrets }] = await Promise.all([
     loadSchema(cwd),
     loadConfig(cwd),
