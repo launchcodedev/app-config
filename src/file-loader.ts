@@ -286,7 +286,9 @@ export const findParseableFile = async (
   }))).filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${files.join(', ')})`);
+    console.warn(`found multiple valid files, only expected one. (${
+      [valid, ...others].map(file => file![1]).join(', ')
+    })`);
   }
 
   return valid;
@@ -308,7 +310,9 @@ export const findParseableFileSync = (
   }).filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${files.join(', ')})`);
+    console.warn(`found multiple valid files, only expected one. (${
+      [valid, ...others].map(file => file![1]).join(', ')
+    })`);
   }
 
   return valid;
