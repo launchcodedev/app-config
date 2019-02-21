@@ -168,17 +168,15 @@ export const parseFile = async (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, config, meta] = parseString(contents, fileType);
+  let [_, config, meta] = parseString(contents, fileType);
 
   if (meta.extends) {
     const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
 
-    await extend.reduce(async (prev: Promise<void>, filename) => {
-      await prev;
-
+    for (const filename of extend) {
       try {
         const [_, __, ext] = await parseFile(join(dirname(file), filename));
-        merge(config, ext);
+        config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
           throw new Error(`could not find extends: ${filename}`);
@@ -186,7 +184,7 @@ export const parseFile = async (
 
         throw e;
       }
-    }, Promise.resolve());
+    }
 
     delete meta.extends;
   }
@@ -248,15 +246,15 @@ export const parseFileSync = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, config, meta] = parseString(contents, fileType);
+  let [_, config, meta] = parseString(contents, fileType);
 
   if (meta.extends) {
     const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
 
-    extend.forEach((filename) => {
+    for (const filename of extend) {
       try {
         const [_, __, ext] = parseFileSync(join(dirname(file), filename));
-        merge(config, ext);
+        config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
           throw new Error(`could not find extends: ${filename}`);
@@ -264,7 +262,7 @@ export const parseFileSync = (
 
         throw e;
       }
-    });
+    }
 
     delete meta.extends;
   }

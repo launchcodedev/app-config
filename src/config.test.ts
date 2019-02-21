@@ -490,22 +490,22 @@ describe('load env config and secrets w/ file extends', () => {
 
   test('async', () => withFakeFiles(files, async (dir) => {
     process.env.NODE_ENV = 'production';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+    const { nonSecrets, secrets, fileType, source } = await loadConfig(dir);
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.TOML);
     expect(secrets).toEqual(expectedSecrets);
-    expect(config).toEqual(expected);
+    expect(nonSecrets).toEqual(expected);
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
     process.env.NODE_ENV = 'production';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+    const { nonSecrets, secrets, fileType, source } = loadConfigSync(dir);
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.TOML);
     expect(secrets).toEqual(expectedSecrets);
-    expect(config).toEqual(expected);
+    expect(nonSecrets).toEqual(expected);
   }));
 });
 
