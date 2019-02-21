@@ -1,8 +1,10 @@
 import { join, basename, extname } from 'path';
 import { outputFile } from 'fs-extra';
+import { stringify, extToFileType } from './file-loader';
 import { loadConfig, ConfigObject } from './config';
 import { loadSchema, SchemaRefs } from './schema';
 import { loadMeta, resetMetaProps } from './meta';
+import * as refParser from 'json-schema-ref-parser';
 import {
   quicktype,
   RendererOptions,
@@ -16,19 +18,25 @@ import {
 export interface GenerateFile {
   file: string;
   type?: string;
+
+  // Quicktype options
   name?: string;
   augmentModule?: boolean;
   leadingComments?: string[];
   rendererOptions?: { [key: string]: string };
+
+  // Config output options
+  includeSecrets?: boolean;
+  select?: string;
 }
 
 export const generateTypeFiles = async (cwd = process.cwd()) => {
   resetMetaProps();
 
   // trigger reload of config and schema files so that metaProps are up to date
-  const [{ schema, schemaRefs }] = await Promise.all([
+  const [{ schema, schemaRefs }, { config, nonSecrets }] = await Promise.all([
     loadSchema(cwd),
-    loadConfig(cwd).catch((_) => {}),
+    loadConfig(cwd),
   ]);
 
   const meta = await loadMeta(cwd);
@@ -48,10 +56,31 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
     augmentModule = true,
     leadingComments,
     rendererOptions = {},
+    includeSecrets = false,
+    select = '#',
   }) => {
-    const lines = await generateQuicktype(
-      schema, schemaRefs, file, type, name, augmentModule, leadingComments, rendererOptions,
-    );
+    let lines;
+
+    switch (type) {
+      case 'json':
+      case 'json5':
+      case 'toml':
+      case 'yml':
+      case 'yaml': {
+        const output = includeSecrets ? config : nonSecrets;
+        const refs = await refParser.resolve(output);
+        const selected = refs.get(select);
+
+        lines = [stringify(selected as ConfigObject, extToFileType(type))];
+        break;
+      }
+      default: {
+        lines = await generateQuicktype(
+          schema, schemaRefs, file, type, name, augmentModule, leadingComments, rendererOptions,
+        );
+        break;
+      }
+    };
 
     await outputFile(join(cwd, file), `${lines.join('\n')}${'\n'}`);
   }));
