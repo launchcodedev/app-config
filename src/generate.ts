@@ -80,7 +80,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
         );
         break;
       }
-    };
+    }
 
     await outputFile(join(cwd, file), `${lines.join('\n')}${'\n'}`);
   }));
@@ -141,4 +141,4 @@ const generateQuicktype = async (
   }
 
   return lines;
-}
+};
