@@ -163,6 +163,7 @@ test('generate config file', async () => {
     [
       '.app-config.yml',
       `
+      foo: bar
       `,
     ],
     [
@@ -194,7 +195,54 @@ test('generate config file', async () => {
     expect(() => {
       const parsed = JSON.parse(config);
 
-      expect(parsed).toEqual({});
+      expect(parsed).toEqual({ foo: 'bar' });
+    }).not.toThrow();
+  });
+});
+
+test('generate config file select', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.yml',
+      `
+      nested:
+        baz:
+          foo: bar
+        ignored: 1
+      ignored: 1
+      `,
+    ],
+    [
+      '.app-config.schema.json5',
+      `{
+        "properties": {
+          "x": { "type": "number" }
+        },
+      }`,
+    ],
+    [
+      '.app-config.meta.json',
+      `
+      {
+        "generate": [
+          {
+            "file": "config.json",
+            "select": "#/nested/baz"
+          }
+        ]
+      }
+      `,
+    ],
+  ], async (dir) => {
+    const output = await generateTypeFiles(dir);
+    expect(output.length).toBe(1);
+
+    const config = (await readFile(join(dir, 'config.json'))).toString('utf8');
+
+    expect(() => {
+      const parsed = JSON.parse(config);
+
+      expect(parsed).toEqual({ foo: 'bar' });
     }).not.toThrow();
   });
 });
