@@ -42,8 +42,50 @@ test('meta property in config', async () => {
   });
 });
 
+test('meta property in schema', async () => {
+  await withFakeFiles([
+    [
+      '.app-config.yml',
+      `
+      `,
+    ],
+    [
+      '.app-config.schema.json',
+      `
+      {
+        "app-config": {
+          "generate": [
+            {
+              "type": "ts",
+              "file": "config.ts"
+            }
+          ]
+        },
+        "required": ["x"],
+        "properties": {
+          "x": { "type": "number" }
+        }
+      }
+      `,
+    ],
+  ], async (dir) => {
+    const output = await generateTypeFiles(dir);
+    expect(output.length).toBe(1);
+
+    const config = (await readFile(join(dir, 'config.ts'))).toString('utf8');
+
+    expect(config).toBeTruthy();
+    expect(config).toMatch('x: number;');
+  });
+});
+
 test('meta config file', async () => {
   await withFakeFiles([
+    [
+      '.app-config.yml',
+      `
+      `,
+    ],
     [
       '.app-config.schema.json',
       `
@@ -81,6 +123,11 @@ test('meta config file', async () => {
 
 test('meta info in package.json', async () => {
   await withFakeFiles([
+    [
+      '.app-config.yml',
+      `
+      `,
+    ],
     [
       '.app-config.schema.json',
       `
