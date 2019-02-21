@@ -168,7 +168,8 @@ export const parseFile = async (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  let [_, config, meta] = parseString(contents, fileType);
+  const [_, parsed, meta] = parseString(contents, fileType);
+  let config = parsed;
 
   if (meta.extends) {
     const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
@@ -246,7 +247,8 @@ export const parseFileSync = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  let [_, config, meta] = parseString(contents, fileType);
+  const [_, parsed, meta] = parseString(contents, fileType);
+  let config = parsed;
 
   if (meta.extends) {
     const extend = (Array.isArray(meta.extends) ? meta.extends : [meta.extends]) as string[];
