@@ -430,6 +430,85 @@ describe('load config w/ multiple file extends', () => {
   }));
 });
 
+describe('load env config and secrets w/ file extends', () => {
+  afterEach(() => {
+    delete process.env.NODE_ENV;
+  });
+
+  const files: [string, string][] = [
+    [
+      '.app-config.prod.toml',
+      `
+      [app-config]
+      extends = '.app-config.toml'
+
+      [foo]
+      bar = "baz"
+      `,
+    ],
+    [
+      '.app-config.toml',
+      `
+      [foo]
+      bar = "foo1"
+      baz = "foo2"
+      `,
+    ],
+    [
+      '.app-config.secrets.prod.toml',
+      `
+      [app-config]
+      extends = '.app-config.secrets.toml'
+
+      [foo]
+      secret = "new secret"
+      `,
+    ],
+    [
+      '.app-config.secrets.toml',
+      `
+      [foo]
+      secret = "secret"
+      extra = "extra"
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: {
+      bar: 'baz',
+      baz: 'foo2',
+    },
+  };
+
+  const expectedSecrets = {
+    foo: {
+      secret: 'new secret',
+      extra: 'extra',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    process.env.NODE_ENV = 'production';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    process.env.NODE_ENV = 'production';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.TOML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+});
+
 describe('extending from env var', () => {
   const files: [string, string][] = [
     [
