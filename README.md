@@ -186,6 +186,20 @@ More options are available for generation:
 - `leadingComments: string[]` changes the top-of-file comment block that's generated
 - `rendererOptions: { [key: string]: string }` adds any quicktype supported renderer option (like `just-types`)
 
+### Config Generation
+We use the same infrastructure as described above for "config generation". That means that when running
+generation, you can just specify an output file like `my-other-config.yaml`. And instead of static types
+like above, the full configuration is spit out into that file.
+
+This is extensible (and mostly only useful for) "selection", like in the creation CLI.
+
+```
+generate:
+  - { file: 'rustw.toml', select: '#/build/cargo-src' }
+```
+
+There is also the `includeSecrets` boolean option, which is disabled by default.
+
 ### Extends
 This module supports a special 'extending' syntax for deduplicating configuration.
 

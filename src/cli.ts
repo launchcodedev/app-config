@@ -10,7 +10,7 @@ import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
 import { loadConfig, LoadedConfig, ConfigSource } from './config';
 import { loadValidated } from './schema';
-import { generateTypeFiles } from './meta';
+import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
 
 const wrapCommand = <T>(cmd: (arg: T) => Promise<void> | void) => async (arg: T) => {

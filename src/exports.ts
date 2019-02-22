@@ -13,5 +13,8 @@ export {
 
 export {
   loadMeta,
-  generateTypeFiles,
 } from './meta';
+
+export {
+  generateTypeFiles,
+} from './generate';
