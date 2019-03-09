@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { join } from 'path';
 import {
   parseEnv,
+  getEnvType,
   findParseableFile,
   findParseableFileSync,
   FileType,
@@ -11,7 +12,6 @@ const envVarNames = ['APP_CONFIG'];
 const configFileNames = ['.app-config', 'app-config'];
 const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
-const envTypeVarNames = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
 export type ConfigSubObject = number | boolean | string | ConfigObjectArr | ConfigObject;
@@ -36,14 +36,6 @@ export type LoadedConfig<Conf = ConfigObject> = {
 const envAliases: {[ key: string ]: string[]} = {
   production: ['prod'],
   development: ['dev'],
-};
-
-const getEnvType = () => {
-  const [envType] = envTypeVarNames
-    .filter(envType => !!process.env[envType])
-    .map(envType => process.env[envType]);
-
-  return envType;
 };
 
 const getEnvFileNames = (files: string[], envType = getEnvType()) => {

@@ -783,3 +783,113 @@ describe('embedded env var mid string', () => {
     expect(obj).toEqual(expected);
   }));
 });
+
+describe('resolving $env value', () => {
+  beforeEach(() => {
+    process.env.APP_CONFIG_ENV = 'production';
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_ENV;
+  });
+
+  const content = `
+    foo:
+      bar:
+        $env:
+          production:
+            baz: 14
+          development:
+            baz: 18
+  `;
+
+  const expected = {
+    foo: {
+      bar: {
+        baz: 14,
+      },
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.yml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.yml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.yml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.yml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
+describe('resolving $env default value', () => {
+  beforeEach(() => {
+    delete process.env.NODE_ENV;
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = 'test';
+  });
+
+  const content = `
+    foo:
+      bar:
+        $env:
+          production:
+            baz: 14
+          development:
+            baz: 18
+          default:
+            baz: 22
+  `;
+
+  const expected = {
+    foo: {
+      bar: {
+        baz: 22,
+      },
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.yml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.yml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.yml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.yml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual(expected);
+  }));
+});
