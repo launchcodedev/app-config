@@ -44,3 +44,15 @@ export const findPackageRoot = async (cwd = process.cwd()): Promise<string> => {
 
   return cwd;
 };
+
+export const findPackageRootSync = (cwd = process.cwd()): string => {
+  if (!fs.pathExistsSync(join(cwd, 'package.json'))) {
+    if (join(cwd, '..') === cwd) {
+      throw new Error('no package root found in pwd or its parents');
+    }
+
+    return findPackageRootSync(join(cwd, '..'));
+  }
+
+  return cwd;
+};
