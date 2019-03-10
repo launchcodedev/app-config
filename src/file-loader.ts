@@ -335,19 +335,19 @@ export const parseString = (
   switch (fileType) {
     case FileType.JSON: {
       const [config, meta] = stripMetaProps(JSON.parse(contents));
-      return [FileType.JSON, mapConfig(config), meta];
+      return [FileType.JSON, mapObject(config), meta];
     }
     case FileType.JSON5: {
       const [config, meta] = stripMetaProps(JSON5.parse(contents));
-      return [FileType.JSON5, mapConfig(config), meta];
+      return [FileType.JSON5, mapObject(config), meta];
     }
     case FileType.TOML: {
       const [config, meta] = stripMetaProps(TOML.parse(contents));
-      return [FileType.TOML, mapConfig(config), meta];
+      return [FileType.TOML, mapObject(config), meta];
     }
     case FileType.YAML: {
       const [config, meta] = stripMetaProps(YAML.safeLoad(contents) || {});
-      return [FileType.YAML, mapConfig(config), meta];
+      return [FileType.YAML, mapObject(config), meta];
     }
   }
 };
@@ -381,7 +381,7 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   return [config, meta];
 };
 
-const mapConfig = (config: any): any => {
+const mapObject = (config: any): any => {
   if (typeof config === 'string') {
     let value: string = config;
 
@@ -411,7 +411,7 @@ const mapConfig = (config: any): any => {
           value = value.replace(fullMatch, env);
         } else if (fallback !== undefined) {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          value = mapConfig(value.replace(fullMatch, fallback));
+          value = mapObject(value.replace(fullMatch, fallback));
         } else {
           throw new Error(`Could not find environment variable ${match[1]}`);
         }
@@ -426,7 +426,7 @@ const mapConfig = (config: any): any => {
   }
 
   if (Array.isArray(config)) {
-    return config.map(mapConfig);
+    return config.map(mapObject);
   }
 
   if (typeof config !== 'object') {
@@ -441,7 +441,7 @@ const mapConfig = (config: any): any => {
       if (!env) {
         // $env: { default: value, ...} gets chosen when there's no env
         if ((value as any).default) {
-          return mapConfig((value as any).default);
+          return mapObject((value as any).default);
           continue;
         }
 
@@ -456,9 +456,9 @@ const mapConfig = (config: any): any => {
         throw new Error(`Environment variable found, but variant did not exist (${env}).`);
       }
 
-      return mapConfig(envSpecificValue);
+      return mapObject(envSpecificValue);
     } else {
-      config[key] = mapConfig(value);
+      config[key] = mapObject(value);
     }
   }
 
