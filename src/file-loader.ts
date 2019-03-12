@@ -7,6 +7,16 @@ import { merge } from 'lodash';
 import { ConfigObject } from './config';
 import { metaProps } from './meta';
 
+const envTypeVarNames = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
+
+export const getEnvType = () => {
+  const [envType] = envTypeVarNames
+    .filter(envType => !!process.env[envType])
+    .map(envType => process.env[envType]);
+
+  return envType;
+};
+
 export enum FileType {
   JSON = 'JSON',
   JSON5 = 'JSON5',
@@ -325,19 +335,19 @@ export const parseString = (
   switch (fileType) {
     case FileType.JSON: {
       const [config, meta] = stripMetaProps(JSON.parse(contents));
-      return [FileType.JSON, replaceEnvVars(config), meta];
+      return [FileType.JSON, mapObject(config), meta];
     }
     case FileType.JSON5: {
       const [config, meta] = stripMetaProps(JSON5.parse(contents));
-      return [FileType.JSON5, replaceEnvVars(config), meta];
+      return [FileType.JSON5, mapObject(config), meta];
     }
     case FileType.TOML: {
       const [config, meta] = stripMetaProps(TOML.parse(contents));
-      return [FileType.TOML, replaceEnvVars(config), meta];
+      return [FileType.TOML, mapObject(config), meta];
     }
     case FileType.YAML: {
       const [config, meta] = stripMetaProps(YAML.safeLoad(contents) || {});
-      return [FileType.YAML, replaceEnvVars(config), meta];
+      return [FileType.YAML, mapObject(config), meta];
     }
   }
 };
@@ -371,7 +381,7 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   return [config, meta];
 };
 
-const replaceEnvVars = (config: any): any => {
+const mapObject = (config: any): any => {
   if (typeof config === 'string') {
     let value: string = config;
 
@@ -401,7 +411,7 @@ const replaceEnvVars = (config: any): any => {
           value = value.replace(fullMatch, env);
         } else if (fallback !== undefined) {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          value = replaceEnvVars(value.replace(fullMatch, fallback));
+          value = mapObject(value.replace(fullMatch, fallback));
         } else {
           throw new Error(`Could not find environment variable ${match[1]}`);
         }
@@ -416,7 +426,7 @@ const replaceEnvVars = (config: any): any => {
   }
 
   if (Array.isArray(config)) {
-    return config.map(replaceEnvVars);
+    return config.map(mapObject);
   }
 
   if (typeof config !== 'object') {
@@ -424,7 +434,31 @@ const replaceEnvVars = (config: any): any => {
   }
 
   for (const [key, value] of Object.entries(config)) {
-    config[key] = replaceEnvVars(value);
+    // we map $env: { production: 12, development: 14 } to 12 or 14
+    if (key === '$env') {
+      const env = getEnvType();
+
+      if (!env) {
+        // $env: { default: value, ...} gets chosen when there's no env
+        if ((value as any).default) {
+          return mapObject((value as any).default);
+        }
+
+        throw new Error(
+          'Environment variable found, but no environment found (hint: use "default" key).',
+        );
+      }
+
+      const envSpecificValue = (value as any)[env];
+
+      if (envSpecificValue === undefined) {
+        throw new Error(`Environment variable found, but variant did not exist (${env}).`);
+      }
+
+      return mapObject(envSpecificValue);
+    } else {
+      config[key] = mapObject(value);
+    }
   }
 
   return config;

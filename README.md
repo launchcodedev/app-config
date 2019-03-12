@@ -214,13 +214,26 @@ This will do a deep merge of `other-file.yml` into your main configuration.
 
 ### Environment Specific Config
 This module supports environment specific config and will attempt to load the config based on your
-`NODE_ENV` environment variable and fallback to the default config file if nothing matching is found.
+`NODE_ENV|ENV|APP_CONFIG_ENV` environment variable and fallback to the default config file if
+nothing matching is found.
 
 Environment specific configuration files are named `[.]app-config.{NODE_ENV|ENV|APP_CONFIG_ENV}.{ext}`.
 
 If you prefer, you can alias the development and production config filenames with the short naming convention: `[.]app-config.dev.{ext}` and `[.]app-config.prod.{ext}`.
 
-Secret files follow the same pattern and are loaded based on your `NODE_ENV`.
+Secret files follow the same pattern and are loaded based on your `NODE_ENV|ENV|APP_CONFIG_ENV`.
+
+You can also use a special `$env` property within any objects.
+
+```yaml
+my-server-config:
+  port:
+    $env:
+      default: 3000
+      production: 80
+```
+
+The config above would result in `{ my-server-config: { port: 3000 } }` or `{ my-server-config: { port: 80 } }`.
 
 ### Using External Variables
 If you need to, you can access environment variables with the string syntax `$VAR_NAME` or `${VAR_NAME}`.
