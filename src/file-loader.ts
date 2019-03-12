@@ -442,7 +442,6 @@ const mapObject = (config: any): any => {
         // $env: { default: value, ...} gets chosen when there's no env
         if ((value as any).default) {
           return mapObject((value as any).default);
-          continue;
         }
 
         throw new Error(
