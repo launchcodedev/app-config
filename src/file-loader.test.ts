@@ -1194,3 +1194,152 @@ describe('$env containing app-config with extends', () => {
     expect(config).toEqual(defaultExpected);
   }));
 });
+
+describe('extends $env with root level $env merge objects properly', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      app-config:
+        extends:
+          $env:
+            default:
+              - 'foo.yml'
+
+      $env:
+        default:
+          base:
+            bat: 'bob'
+      `,
+    ],
+    [
+      'foo.yml',
+      `
+      base:
+        foo: 'bar'
+      `,
+    ],
+  ];
+
+  const expected = {
+    base: {
+      foo: 'bar',
+      bat: 'bob',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('$env deep-merge arrays don\'t merge; last occurance overwrites', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      foo:
+        bar:
+          - 'bat'
+          - 'billy'
+      $env:
+        default:
+          foo:
+            bar:
+              - 'bob'
+            bob: 'yay'
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: {
+      bar: ['bob'],
+      bob: 'yay',
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('$env merges work regardless of occurance in file', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      foo:
+        bar:
+          bat: 4
+        $env:
+          default:
+            fizz:
+              bob: 6
+            bar:
+              bob: 'yay'
+        fizz:
+          buzz: 2
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: {
+      bar: {
+        bat: 4,
+        bob: 'yay',
+      },
+      fizz: {
+        buzz: 2,
+        bob: 6,
+      },
+    },
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+});
