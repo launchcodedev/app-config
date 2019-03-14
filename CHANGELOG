@@ -1,3 +1,7 @@
+# 0.7.1
+
+- `$env` keys support environment aliases (e.g. `$env: { dev: 'foo' }`)
+
 # 0.7.0
 
 - `extends` and `$env` are now compatible with each other.
