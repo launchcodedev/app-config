@@ -1,3 +1,10 @@
+# 0.7.0
+
+- `extends` and `$env` are now compatible with each other.
+  See https://gitlab.servalldatasystems.com/meat-n-potatoes/app-config/tree/master#extends-combined-with-environment-specific-config
+- `$env` default now gets chosen when an environment is requested (through APP_CONFIG_ENV, etc), 
+  but isn't specified in the `$env` sections. This used to produce an error.
+
 # 0.6.4
 
 - Adds embedded `$env` property support in config files. This brings alternatives to `.app-config.<env>.toml` files for each environment, with lots of duplication of shared config.
