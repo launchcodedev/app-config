@@ -33,7 +33,7 @@ export type LoadedConfig<Conf = ConfigObject> = {
   nonSecrets: ConfigObject,
 };
 
-const envAliases: {[ key: string ]: string[]} = {
+export const envAliases: {[ key: string ]: string[]} = {
   production: ['prod'],
   development: ['dev'],
 };

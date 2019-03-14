@@ -895,6 +895,60 @@ describe('resolving $env default value', () => {
   }));
 });
 
+describe('$env supports environment aliases', () => {
+  beforeEach(() => {
+    process.env.APP_CONFIG_ENV = 'development';
+  });
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_ENV;
+  });
+
+  const content = `
+    foo:
+      bar:
+        $env:
+          dev:
+            baz: 18
+          default:
+            baz: 22
+  `;
+
+  const expected = {
+    foo: {
+      bar: {
+        baz: 18,
+      },
+    },
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.yml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.yml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.yml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.yml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.YAML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
 describe('extends with an $env value', () => {
   const files: [string, string][] = [
     [
