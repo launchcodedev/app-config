@@ -334,20 +334,24 @@ export const parseString = (
 ): [FileType, ConfigObject, MetaProps] => {
   switch (fileType) {
     case FileType.JSON: {
-      const [config, meta] = stripMetaProps(JSON.parse(contents));
-      return [FileType.JSON, mapObject(config), meta];
+      const mappedConfig = mapObject(JSON.parse(contents));
+      const [config, meta] = stripMetaProps(mappedConfig);
+      return [FileType.JSON, config, meta];
     }
     case FileType.JSON5: {
-      const [config, meta] = stripMetaProps(JSON5.parse(contents));
-      return [FileType.JSON5, mapObject(config), meta];
+      const mappedConfig = mapObject(JSON5.parse(contents));
+      const [config, meta] = stripMetaProps(mappedConfig);
+      return [FileType.JSON5, config, meta];
     }
     case FileType.TOML: {
-      const [config, meta] = stripMetaProps(TOML.parse(contents));
-      return [FileType.TOML, mapObject(config), meta];
+      const mappedConfig = mapObject(TOML.parse(contents));
+      const [config, meta] = stripMetaProps(mappedConfig);
+      return [FileType.TOML, config, meta];
     }
     case FileType.YAML: {
-      const [config, meta] = stripMetaProps(YAML.safeLoad(contents) || {});
-      return [FileType.YAML, mapObject(config), meta];
+      const mappedConfig = mapObject(YAML.safeLoad(contents) || {});
+      const [config, meta] = stripMetaProps(mappedConfig);
+      return [FileType.YAML, config, meta];
     }
   }
 };
@@ -437,22 +441,33 @@ const mapObject = (config: any): any => {
     // we map $env: { production: 12, development: 14 } to 12 or 14
     if (key === '$env') {
       const env = getEnvType();
+      const envValues = value as any;
 
-      if (!env) {
-        // $env: { default: value, ...} gets chosen when there's no env
-        if ((value as any).default) {
-          return mapObject((value as any).default);
-        }
-
+      if (typeof envValues !== 'object') {
         throw new Error(
-          'Environment variable found, but no environment found (hint: use "default" key).',
+          '$env value must be an object with keys being \'default\' or an environment name',
         );
       }
 
-      const envSpecificValue = (value as any)[env];
+      const envSpecificValue = envValues[env as any];
 
-      if (envSpecificValue === undefined) {
-        throw new Error(`Environment variable found, but variant did not exist (${env}).`);
+      if (!env || envSpecificValue === undefined) {
+        // $env: { default: value, ...} gets chosen when a matching environment
+        // is not found in the provided options
+        if (envValues.default) {
+          return mapObject(envValues.default);
+        }
+
+        if (!env) {
+          throw new Error(
+            'No environment provided, and no default option provided. Please provide one.',
+          );
+        }
+
+        throw new Error(
+          `No matching environment option found for '${env}'. ` +
+          `Please provide either '${env}' or 'default' option.`,
+        );
       }
 
       return mapObject(envSpecificValue);
