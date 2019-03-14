@@ -4,7 +4,7 @@ import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON5 from 'json5';
 import { merge } from 'lodash';
-import { ConfigObject } from './config';
+import { ConfigObject, envAliases } from './config';
 import { metaProps } from './meta';
 
 const envTypeVarNames = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
@@ -440,7 +440,8 @@ const mapObject = (config: any): any => {
   for (const [key, value] of Object.entries(config)) {
     // we map $env: { production: 12, development: 14 } to 12 or 14
     if (key === '$env') {
-      const env = getEnvType();
+      const rawEnv = getEnvType();
+      const envVariations = [rawEnv].concat(envAliases[rawEnv as any]).filter(env => !!env);
       const envValues = value as any;
 
       if (typeof envValues !== 'object') {
@@ -449,24 +450,39 @@ const mapObject = (config: any): any => {
         );
       }
 
-      const envSpecificValue = envValues[env as any];
+      let envSpecificValue: any;
 
-      if (!env || envSpecificValue === undefined) {
+      envVariations.forEach((env) => {
+        const envValue = envValues[env as any];
+
+        if (envValue !== undefined) {
+          if (envSpecificValue !== undefined) {
+            throw new Error(
+              `More than one value found for environment '${rawEnv}'. ` +
+              'Remove additional declarations (includes aliases).',
+            );
+          }
+
+          envSpecificValue = envValue;
+        }
+      });
+
+      if (!rawEnv || envSpecificValue === undefined) {
         // $env: { default: value, ...} gets chosen when a matching environment
         // is not found in the provided options
         if (envValues.default) {
           return mapObject(envValues.default);
         }
 
-        if (!env) {
+        if (!rawEnv) {
           throw new Error(
             'No environment provided, and no default option provided. Please provide one.',
           );
         }
 
         throw new Error(
-          `No matching environment option found for '${env}'. ` +
-          `Please provide either '${env}' or 'default' option.`,
+          `No matching environment option found for '${rawEnv}'. ` +
+          `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
         );
       }
 

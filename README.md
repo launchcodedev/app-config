@@ -223,17 +223,18 @@ If you prefer, you can alias the development and production config filenames wit
 
 Secret files follow the same pattern and are loaded based on your `NODE_ENV|ENV|APP_CONFIG_ENV`.
 
-You can also use a special `$env` property within any objects.
+You can also use a special `$env` property within any objects. This also supports aliasing.
 
 ```yaml
 my-server-config:
   port:
     $env:
       default: 3000
+      dev: 8080
       production: 80
 ```
 
-The config above would result in `{ my-server-config: { port: 3000 } }` or `{ my-server-config: { port: 80 } }`.
+The config above would result in `{ my-server-config: { port: 3000 } }` (default) or `{ my-server-config: { port: 80 } }` (production) or `{ my-service-config: { port: 8080 } }` (development).
 
 #### Extends Combined with Environment Specific Config
 Using $env alongside extends, you can load different files for each environment.
