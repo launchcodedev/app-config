@@ -9,6 +9,7 @@ import {
   findParseableFileSync,
 } from './file-loader';
 import { withFakeFiles } from './test-util';
+import { loadConfig, loadConfigSync, ConfigSource } from './config';
 
 describe('ext to file type', () => {
   expect(extToFileType('toml')).toBe(FileType.TOML);
@@ -891,5 +892,251 @@ describe('resolving $env default value', () => {
 
     expect(fileType).toBe(FileType.YAML);
     expect(obj).toEqual(expected);
+  }));
+});
+
+describe('extends with an $env value', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      app-config:
+        extends:
+          $env:
+            development:
+              - '.app-config.dev-extender.yml'
+            default:
+              - '.app-config.default-extender.yml'
+      `,
+    ],
+    [
+      '.app-config.dev-extender.yml',
+      `
+      value: 'dev'
+      `,
+    ],
+    [
+      '.app-config.default-extender.yml',
+      `
+      value: 'default'
+      `,
+    ],
+  ];
+
+  const defaultExpected = {
+    value: 'default',
+  };
+
+  const devExpected = {
+    value: 'dev',
+  };
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_ENV;
+  });
+
+  test('async development', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'development';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(devExpected);
+  }));
+
+  test('async default', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'triggers-default';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(defaultExpected);
+  }));
+
+  test('sync development', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'development';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(devExpected);
+  }));
+
+  test('sync default', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'triggers-default';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(defaultExpected);
+  }));
+});
+
+describe('app-config with $env value containing extends', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+        app-config:
+          $env:
+            development:
+              extends:
+                - '.app-config.dev-extender.yml'
+            default:
+              extends:
+                - '.app-config.default-extender.yml'
+      `,
+    ],
+    [
+      '.app-config.dev-extender.yml',
+      `
+      value: 'dev'
+      `,
+    ],
+    [
+      '.app-config.default-extender.yml',
+      `
+      value: 'default'
+      `,
+    ],
+  ];
+
+  const defaultExpected = {
+    value: 'default',
+  };
+
+  const devExpected = {
+    value: 'dev',
+  };
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_ENV;
+  });
+
+  test('async development', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'development';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(devExpected);
+  }));
+
+  test('async default', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'triggers-default';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(defaultExpected);
+  }));
+
+  test('sync development', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'development';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(devExpected);
+  }));
+
+  test('sync default', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'triggers-default';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(defaultExpected);
+  }));
+});
+
+describe('$env containing app-config with extends', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+        $env:
+          development:
+            app-config:
+              extends:
+                - '.app-config.dev-extender.yml'
+          default:
+            app-config:
+              extends:
+                - '.app-config.default-extender.yml'
+      `,
+    ],
+    [
+      '.app-config.dev-extender.yml',
+      `
+      value: 'dev'
+      `,
+    ],
+    [
+      '.app-config.default-extender.yml',
+      `
+      value: 'default'
+      `,
+    ],
+  ];
+
+  const defaultExpected = {
+    value: 'default',
+  };
+
+  const devExpected = {
+    value: 'dev',
+  };
+
+  afterEach(() => {
+    delete process.env.APP_CONFIG_ENV;
+  });
+
+  test('async development', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'development';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(devExpected);
+  }));
+
+  test('async default', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'triggers-default';
+    const { config, secrets, fileType, source } = await loadConfig(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(defaultExpected);
+  }));
+
+  test('sync development', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'development';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(devExpected);
+  }));
+
+  test('sync default', () => withFakeFiles(files, async (dir) => {
+    process.env.APP_CONFIG_ENV = 'triggers-default';
+    const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(defaultExpected);
   }));
 });
