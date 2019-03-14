@@ -235,6 +235,23 @@ my-server-config:
 
 The config above would result in `{ my-server-config: { port: 3000 } }` or `{ my-server-config: { port: 80 } }`.
 
+#### Extends Combined with Environment Specific Config
+Using $env alongside extends, you can load different files for each environment.
+
+```yaml
+app-config:
+  extends:
+    $env:
+      development:
+        - 'test-database-config.yml'
+        - 'database-config.yml'
+      production:
+        - 'database-config.yml'
+```
+
+This way, only 'database-config.yml' will be included in 'production' config; Where as 
+'test-databases-config.yml' and 'database-config.yml' will be included in 'development' config.
+
 ### Using External Variables
 If you need to, you can access environment variables with the string syntax `$VAR_NAME` or `${VAR_NAME}`.
 This will in-place change the value to that environment variable.
