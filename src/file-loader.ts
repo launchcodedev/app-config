@@ -441,7 +441,7 @@ const mapObject = (config: any): any => {
     // we map $env: { production: 12, development: 14 } to 12 or 14
     if (key === '$env') {
       const rawEnv = getEnvType();
-      const envVariations = [rawEnv].concat(envAliases[rawEnv as any]);
+      const envVariations = [rawEnv].concat(envAliases[rawEnv as any]).filter(env => !!env);
       const envValues = value as any;
 
       if (typeof envValues !== 'object') {
