@@ -227,14 +227,20 @@ You can also use a special `$env` property within any objects. This also support
 
 ```yaml
 my-server-config:
-  port:
-    $env:
-      default: 3000
-      dev: 8080
-      production: 80
+  logging: false
+  $env:
+    default:
+      port: 3000
+    dev:
+      port: 8080
+    production:
+      port: 80
 ```
 
-The config above would result in `{ my-server-config: { port: 3000 } }` (default) or `{ my-server-config: { port: 80 } }` (production) or `{ my-service-config: { port: 8080 } }` (development).
+The config above would result in:
+ - default: `{ my-server-config: { logging: false, port: 3000 } }`
+ - development: `{ my-service-config: { logging: false, port: 8080 } }`
+ - production: `{ my-server-config: { logging: false, port: 80 } }`
 
 #### Extends Combined with Environment Specific Config
 Using $env alongside extends, you can load different files for each environment.

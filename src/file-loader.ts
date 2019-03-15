@@ -3,7 +3,7 @@ import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
 import * as JSON5 from 'json5';
-import { merge } from 'lodash';
+import { merge, mergeWith } from 'lodash';
 import { ConfigObject, envAliases } from './config';
 import { metaProps } from './meta';
 
@@ -467,28 +467,39 @@ const mapObject = (config: any): any => {
         }
       });
 
-      if (!rawEnv || envSpecificValue === undefined) {
-        // $env: { default: value, ...} gets chosen when a matching environment
-        // is not found in the provided options
-        if (envValues.default) {
-          return mapObject(envValues.default);
-        }
+      // $env: { default: value, ...} gets chosen when a matching environment
+      // is not found in the provided options
+      if (envSpecificValue === undefined) {
+        envSpecificValue = envValues.default;
+      }
 
-        if (!rawEnv) {
+      if (envSpecificValue === undefined) {
+        if (rawEnv) {
+          throw new Error(
+            `No matching environment option found for '${rawEnv}'. ` +
+            `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
+          );
+        } else {
           throw new Error(
             'No environment provided, and no default option provided. Please provide one.',
           );
         }
-
-        throw new Error(
-          `No matching environment option found for '${rawEnv}'. ` +
-          `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
-        );
       }
 
-      return mapObject(envSpecificValue);
+      if (typeof envSpecificValue === 'object' && !Array.isArray(envSpecificValue)) {
+        delete config['$env'];
+        mergeWith(config, mapObject(envSpecificValue), (a, b) => Array.isArray(b) ? b : undefined);
+      } else {
+        return mapObject(envSpecificValue);
+      }
     } else {
-      config[key] = mapObject(value);
+      const newVal = mapObject(value);
+
+      if (typeof newVal === 'object' && !Array.isArray(newVal)) {
+        config[key] = mergeWith(config[key], newVal, (a, b) => Array.isArray(b) ? b : undefined);
+      } else {
+        config[key] = newVal;
+      }
     }
   }
 
