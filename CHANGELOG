@@ -1,3 +1,8 @@
+# 0.7.2
+
+- objects now deep-merge instead of overwrite - primarily to handle $env sections that result in an object.
+  See https://gitlab.servalldatasystems.com/meat-n-potatoes/app-config/tree/master#environment-specific-config
+
 # 0.7.1
 
 - `$env` keys support environment aliases (e.g. `$env: { dev: 'foo' }`)
