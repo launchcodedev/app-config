@@ -130,10 +130,16 @@ const generateQuicktype = async (
     },
   });
 
+  // some configs are empty, so just mark them as an empty object
+  if (!lines.some(line => line.startsWith('export'))) {
+    lines.push(`export interface ${name} {}\n`);
+  }
+
   if (type === 'ts' && augmentModule !== false) {
     lines.push(...[
       '// augment the default export from app-config',
       "declare module '@servall/app-config' {",
+      "  import '@servall/app-config';",
       `  export interface ExportedConfig extends ${name} {}`,
       '}',
     ]);
