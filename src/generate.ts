@@ -146,5 +146,7 @@ const generateQuicktype = async (
     ]);
   }
 
-  return lines;
+  return lines
+    // this is a fix for quicktype, which adds an Object postfix, sometimes
+    .map(line => line.replace(`interface ${name}Object`, `interface ${name}`));
 };
