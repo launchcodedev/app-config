@@ -119,16 +119,23 @@ const generateQuicktype = async (
     inputData,
     lang: type,
     indentation: '  ',
-    leadingComments: leadingComments || [
+    leadingComments: (leadingComments || [
       'AUTO GENERATED CODE',
       'Run app-config with \'generate\' command to regenerate this file',
-    ],
+    ]).concat([
+      'import \'@servall/app-config\';',
+    ]),
     rendererOptions: {
       'just-types': 'true',
       'runtime-typecheck': 'false',
       ...rendererOptions,
     },
   });
+
+  // some configs are empty, so just mark them as an empty object
+  if (!lines.some(line => line.startsWith('export'))) {
+    lines.push(`export interface ${name} {}\n`);
+  }
 
   if (type === 'ts' && augmentModule !== false) {
     lines.push(...[
@@ -139,5 +146,7 @@ const generateQuicktype = async (
     ]);
   }
 
-  return lines;
+  return lines
+    // this is a fix for quicktype, which adds an Object postfix, sometimes
+    .map(line => line.replace(`interface ${name}Object`, `interface ${name}`));
 };

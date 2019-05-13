@@ -39,6 +39,7 @@ test('meta property in config', async () => {
 
     expect(config).toBeTruthy();
     expect(config).toMatch('x: number;');
+    expect(config).toMatch('interface Config2 {');
   });
 });
 
