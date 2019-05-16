@@ -4,3 +4,5 @@ coverage/
 yarn-error.log
 .DS_Store
 .app-config.*
+
+*app-config.secrets.*
