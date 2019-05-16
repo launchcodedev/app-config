@@ -13,25 +13,26 @@ import { loadValidated } from './schema';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
 
-const wrapCommand = <T>(cmd: (arg: T) => Promise<void> | void) => async (arg: T) => {
-  try {
-    await cmd(arg);
-  } catch (err) {
-    console.log();
-    console.error(new PrettyError().render(err));
-
-    let name = process.cwd();
-
+const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) =>
+  async (arg: Yargs.Arguments<T>) => {
     try {
-      name = require(`${process.cwd()}/package.json`).name;
-    } catch (_) {}
+      await cmd(arg);
+    } catch (err) {
+      console.log();
+      console.error(new PrettyError().render(err));
 
-    console.error(`Error occurred in ${name}`);
-    process.exit(1);
-  }
-};
+      let name = process.cwd();
 
-const flattenConfig = (loaded: LoadedConfig, argv: Yargs.Arguments) => {
+      try {
+        name = require(`${process.cwd()}/package.json`).name;
+      } catch (_) {}
+
+      console.error(`Error occurred in ${name}`);
+      process.exit(1);
+    }
+  };
+
+const flattenConfig = (loaded: LoadedConfig, argv: { secrets: boolean, prefix: string }) => {
   const {
     secrets,
     prefix,
@@ -47,27 +48,31 @@ const flattenConfig = (loaded: LoadedConfig, argv: Yargs.Arguments) => {
   return [config, flattenObjectTree(config, prefix)];
 };
 
+type BaseArgs = { cwd: string, secrets: boolean };
+
 const argv = Yargs
   .usage('Usage: $0 <command>')
   .usage('')
-  .option('C', {
-    alias: 'cwd',
+  .option('cwd', {
+    alias: 'C',
     default: process.cwd(),
     nargs: 1,
     type: 'string',
     description: 'Run app-config in the context of this directory',
   })
-  .option('s', {
-    alias: 'secrets',
+  .option('secrets', {
+    alias: 's',
     default: false,
     nargs: 0,
     type: 'boolean',
     description: 'Include config secrets in the generated environment variables',
   })
-  .command(['variables', 'vars', 'v'], 'Print out the generated environment variables',
-    yargs => yargs
-      .option('p', {
-        alias: 'prefix',
+  .command<BaseArgs & { prefix: string }>(
+    ['variables', 'vars', 'v'],
+    'Print out the generated environment variables',
+    (yargs: Yargs.Argv<BaseArgs>) => yargs
+      .option('prefix', {
+        alias: 'p',
         default: 'APP_CONFIG',
         nargs: 1,
         type: 'string',
@@ -77,7 +82,7 @@ const argv = Yargs
         'export $($0 vars | xargs)',
         'Export the generated environment variables to the current shell',
       ),
-    wrapCommand(async (argv) => {
+    wrapCommand<BaseArgs & { prefix: string }>(async (argv) => {
       const loaded = await loadValidated(argv.cwd);
 
       const [_, flattenedConfig] = flattenConfig(loaded, argv);
@@ -89,8 +94,10 @@ const argv = Yargs
       );
     }),
   )
-  .command(['create', 'c'], 'Outputs the current configuration in a specific format',
-    yargs => yargs
+  .command<BaseArgs & { format: string, select: string }>(
+    ['create', 'c'],
+    'Outputs the current configuration in a specific format',
+    (yargs: Yargs.Argv<BaseArgs>) => yargs
       .example(
         '$0 --format yaml',
         'Print out the configuration in yaml format',
@@ -99,8 +106,8 @@ const argv = Yargs
         '$0 --format yaml --select "#/kubernetes"',
         'Print out only the value of config.kubernetes',
       )
-      .option('f', {
-        alias: 'format',
+      .option('format', {
+        alias: 'f',
         default: 'toml',
         nargs: 1,
         type: 'string',
@@ -112,7 +119,8 @@ const argv = Yargs
         type: 'string',
         description: 'a json pointer for what to select in the config',
       }),
-    wrapCommand(async ({ cwd, format, select, secrets }) => {
+    wrapCommand<BaseArgs & { format: string, select: string }>(async (argv) => {
+      const { cwd, format, select, secrets } = argv;
       const { config, nonSecrets } = await loadValidated(cwd);
 
       const output = secrets ? config : nonSecrets;
@@ -121,9 +129,11 @@ const argv = Yargs
       console.log(stringify(refs.get(select) as any, extToFileType(format)));
     }),
   )
-  .command(['generate', 'gen', 'g'], 'Run code generation as specified by the app-config file',
-    yargs => yargs,
-    wrapCommand(async ({ cwd }) => {
+  .command<BaseArgs>(
+    ['generate', 'gen', 'g'],
+    'Run code generation as specified by the app-config file',
+    (yargs: Yargs.Argv<BaseArgs>) => yargs,
+    wrapCommand<BaseArgs>(async ({ cwd }) => {
       const output = await generateTypeFiles(cwd);
 
       if (output.length === 0) {
@@ -133,13 +143,15 @@ const argv = Yargs
       }
     }),
   )
-  .command(['init'], 'Creates the boilerplate for your project',
-    yargs => yargs
+  .command<BaseArgs & { force: boolean }>(
+    ['init'],
+    'Creates the boilerplate for your project',
+    (yargs: Yargs.Argv<BaseArgs>) => yargs
       .option('force', {
         default: false,
         type: 'boolean',
       }),
-    wrapCommand(async ({ cwd, force }) => {
+    wrapCommand<BaseArgs & { force: boolean }>(async ({ cwd, force }) => {
       process.chdir(cwd);
 
       await loadConfig()
@@ -173,10 +185,12 @@ const argv = Yargs
       }
     }),
   )
-  .command('*', 'Exports config as individual environment variables for the specified command',
-    yargs => yargs
-      .option('p', {
-        alias: 'prefix',
+  .command<BaseArgs & { prefix: string }>(
+    '*',
+    'Exports config as individual environment variables for the specified command',
+    (yargs: Yargs.Argv<BaseArgs>) => yargs
+      .option('prefix', {
+        alias: 'p',
         default: 'APP_CONFIG',
         nargs: 1,
         type: 'string',
@@ -186,7 +200,8 @@ const argv = Yargs
         '$0 -- docker-compose up -d',
         'Run Docker Compose with the generated environment variables',
       ),
-    wrapCommand(async ({ _, cwd, prefix }) => {
+    wrapCommand<BaseArgs & { prefix: string }>(async (argv) => {
+      const { _, cwd, prefix } = argv;
       const [command, ...args] = _;
 
       if (!command) {

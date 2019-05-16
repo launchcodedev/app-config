@@ -1,3 +1,5 @@
+# Our Gitlab CI is internal to Servall - see TravisCI file for public releases!
+
 include:
   - project: 'meat-n-potatoes/ci'
     file: 'all.yml'
