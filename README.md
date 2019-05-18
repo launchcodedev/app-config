@@ -5,7 +5,7 @@
 
 # App Config
 ![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)
-![Latest Version](https://img.shields.io/badge/version-0.5.0-orange.svg)
+![Latest Version](https://img.shields.io/badge/version-1.0.0-orange.svg)
 ![Code Coverage](https://img.shields.io/badge/coverage-91%25-green.svg)
 
 Simple configuration loader for node. Comes with strong typing, schema validation,
