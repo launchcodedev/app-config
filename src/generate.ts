@@ -122,8 +122,6 @@ const generateQuicktype = async (
     leadingComments: (leadingComments || [
       'AUTO GENERATED CODE',
       'Run app-config with \'generate\' command to regenerate this file',
-    ]).concat([
-      'import \'@servall/app-config\';',
     ]),
     rendererOptions: {
       'just-types': 'true',
@@ -139,6 +137,8 @@ const generateQuicktype = async (
 
   if (type === 'ts' && augmentModule !== false) {
     lines.push(...[
+      'import \'@servall/app-config\';',
+      '',
       '// augment the default export from app-config',
       "declare module '@servall/app-config' {",
       `  export interface ExportedConfig extends ${name} {}`,
