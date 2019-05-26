@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="img/app-config.png" width="40%" align="center" alt="app-config">
+  <img src="https://raw.githubusercontent.com/servall/app-config/master/img/app-config.png" width="40%" align="center" alt="app-config">
 </div>
 <br />
 
