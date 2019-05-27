@@ -6,6 +6,7 @@
 # App Config
 ![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)
 ![Code Coverage](https://img.shields.io/badge/coverage-91%25-green.svg)
+[![Build Status](https://travis-ci.org/servall/app-config.svg?branch=master)](https://travis-ci.org/servall/app-config)
 [![npm](https://img.shields.io/npm/v/@servall/app-config.svg)](https://www.npmjs.com/package/@servall/app-config)
 
 Simple configuration loader for node. Comes with strong typing, schema validation,
