@@ -3,7 +3,7 @@ cache: yarn
 
 node_js:
   - stable
-  - lts
+  - lts/*
 
 script:
   - yarn lint
