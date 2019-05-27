@@ -1,0 +1,11 @@
+language: node_js
+cache: yarn
+
+node_js:
+  - stable
+  - lts
+
+script:
+  - yarn lint
+  - yarn build
+  - yarn test
