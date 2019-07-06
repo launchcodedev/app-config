@@ -146,7 +146,12 @@ const generateQuicktype = async (
     ]);
   }
 
-  return lines
-    // this is a fix for quicktype, which adds an Object postfix, sometimes
-    .map(line => line.replace(`interface ${name}Object`, `interface ${name}`));
+  if (type === 'ts') {
+    return lines
+      // this is a fix for quicktype, which adds an Object postfix, sometimes
+      .map(line => line.replace(`interface ${name}Object`, `interface ${name}`))
+      .map(line => line.replace(/: +(\w)/, ': $1'));
+  }
+
+  return lines;
 };
