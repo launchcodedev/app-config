@@ -417,7 +417,7 @@ const mapObject = (config: any): any => {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
           value = mapObject(value.replace(fullMatch, fallback));
         } else {
-          throw new Error(`Could not find environment variable ${match[1]}`);
+          throw new Error(`Could not find environment variable ${varName}`);
         }
       }
     }
