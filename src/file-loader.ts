@@ -397,8 +397,8 @@ const mapObject = (config: any): any => {
     //
     // var name is group 1 || 2
     // fallback value is group 3
-    // https://regex101.com/r/6ZMmx7/2
-    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*) *)?}))/g;
+    // https://regex101.com/r/6ZMmx7/3
+    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g;
 
     while (true) {
       const match = envVar.exec(config);

@@ -607,6 +607,7 @@ describe('embedded env var with env fallback', () => {
 
     [[nested.deep]]
     foo = "$\{FOO:-$\{BAR\}\}"
+    baz = "$\{FOO:-bar\} $\{FOO:-$\{BAR\}\}"
   `;
 
   const expected = {
@@ -615,6 +616,7 @@ describe('embedded env var with env fallback', () => {
       deep: [
         {
           foo: 'bar',
+          baz: 'bar bar',
         },
       ],
     },
