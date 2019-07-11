@@ -49,6 +49,7 @@ test('deep ref recursion in generation', async () => {
       type: object
       properties:
         x: { $ref: '../root.yml' }
+        xy: { type: number }
       `,
     ],
     [
@@ -94,6 +95,7 @@ test('deep ref recursion in generation', async () => {
     const config = (await readFile(join(dir, 'a/types.ts'))).toString('utf8');
     expect(config).toMatch('export interface CustomTypes');
     expect(config).toMatch('x: X');
+    expect(config).toMatch('xy?: number');
     expect(config).toMatch('y: Y');
     expect(config).toMatch('z: number[]');
   });
