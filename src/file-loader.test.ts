@@ -787,6 +787,50 @@ describe('embedded env var mid string', () => {
   }));
 });
 
+describe('APP_CONFIG_ENV', () => {
+  beforeEach(() => {
+    process.env.ENV = 'production';
+  });
+
+  afterEach(() => {
+    delete process.env.ENV;
+  });
+
+  const content = `
+    foo = "$\{APP_CONFIG_ENV\}"
+  `;
+
+  const expected = {
+    foo: 'production',
+  };
+
+  test('async', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = await findParseableFile([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles([
+    ['nested/dir/filename.toml', content],
+  ], async (dir) => {
+    const found = findParseableFileSync([
+      join(dir, 'nested/dir/filename.toml'),
+    ]);
+
+    const [fileType, _, obj] = found!;
+
+    expect(fileType).toBe(FileType.TOML);
+    expect(obj).toEqual(expected);
+  }));
+});
+
 describe('resolving $env value', () => {
   beforeEach(() => {
     process.env.APP_CONFIG_ENV = 'production';

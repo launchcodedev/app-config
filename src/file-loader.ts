@@ -416,6 +416,15 @@ const mapObject = (config: any): any => {
         } else if (fallback !== undefined) {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
           value = mapObject(value.replace(fullMatch, fallback));
+        } else if (varName === 'APP_CONFIG_ENV') {
+          const envType = getEnvType();
+
+          if (!envType) {
+            throw new Error(`Could not find environment variable ${varName}`);
+          }
+
+          // there's a special case for APP_CONFIG_ENV, which is always the envType
+          value = value.replace(fullMatch, envType);
         } else {
           throw new Error(`Could not find environment variable ${varName}`);
         }
