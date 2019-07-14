@@ -36,7 +36,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
   const { schema, schemaRefs } = await loadSchema(cwd);
 
   // call loadConfig so that loadMeta is populated, but it could fail for legit reasons
-  try { await loadConfig(cwd) } catch {}
+  try { await loadConfig(cwd); } catch {}
 
   const meta = await loadMeta(cwd);
 
