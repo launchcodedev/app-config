@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import * as execa from 'execa';
-import * as TOML from '@iarna/toml';
 import * as Yargs from 'yargs';
 import * as refParser from 'json-schema-ref-parser';
 import * as PrettyError from 'pretty-error';
@@ -99,19 +98,19 @@ const argv = Yargs
     'Outputs the current configuration in a specific format',
     (yargs: Yargs.Argv<BaseArgs>) => yargs
       .example(
-        '$0 --format yaml',
-        'Print out the configuration in yaml format',
+        '$0 --format json',
+        'Print out the configuration in json format',
       )
       .example(
-        '$0 --format yaml --select "#/kubernetes"',
+        '$0 --format json --select "#/kubernetes"',
         'Print out only the value of config.kubernetes',
       )
       .option('format', {
         alias: 'f',
-        default: 'toml',
+        default: 'yaml',
         nargs: 1,
         type: 'string',
-        description: 'toml/yaml/json',
+        description: 'yaml/toml/json',
       })
       .option('select', {
         default: '#',
@@ -162,11 +161,11 @@ const argv = Yargs
           }
         });
 
-      await outputFile('.app-config.toml', '');
-      console.log('.app-config.toml file written');
+      await outputFile('.app-config.yml', '');
+      console.log('.app-config.yml file written');
 
-      await outputFile('.app-config.secrets.toml', '');
-      console.log('.app-config.secrets.toml file written');
+      await outputFile('.app-config.secrets.yml', '');
+      console.log('.app-config.secrets.yml file written');
 
       await outputFile('.app-config.schema.yml', stripIndent`
         $schema: http://json-schema.org/draft-07/schema#
@@ -185,7 +184,7 @@ const argv = Yargs
       }
     }),
   )
-  .command<BaseArgs & { prefix: string }>(
+  .command<BaseArgs & { prefix: string, format: string }>(
     '*',
     'Exports config as individual environment variables for the specified command',
     (yargs: Yargs.Argv<BaseArgs>) => yargs
@@ -196,12 +195,19 @@ const argv = Yargs
         type: 'string',
         description: 'Prefix environment variables',
       })
+      .option('format', {
+        alias: 'f',
+        default: 'yaml',
+        nargs: 1,
+        type: 'string',
+        description: 'yaml/toml/json',
+      })
       .example(
         '$0 -- docker-compose up -d',
         'Run Docker Compose with the generated environment variables',
       ),
-    wrapCommand<BaseArgs & { prefix: string }>(async (argv) => {
-      const { _, cwd, prefix } = argv;
+    wrapCommand<BaseArgs & { prefix: string, format: string }>(async (argv) => {
+      const { _, cwd, prefix, format } = argv;
       const [command, ...args] = _;
 
       if (!command) {
@@ -218,7 +224,7 @@ const argv = Yargs
         args,
         {
           env: {
-            [prefix]: TOML.stringify(config),
+            [prefix]: stringify(config, extToFileType(format)),
             ...flattenedConfig,
           },
           stdio: 'inherit',

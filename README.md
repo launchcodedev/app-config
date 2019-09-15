@@ -62,23 +62,25 @@ The CLI init command simply creates `.app-config.*` files.  You can then run
 
 You might start with a simple configuration, like:
 
-.app-config.toml
-```toml
-[server]
-port = 3000
+.app-config.yml
+```yaml
+webServer:
+  port: 3000
 
-[database]
-host = "localhost"
-port = 5432
-name = "master"
+database:
+  host: "localhost"
+  port: 5432
+  name: "master"
 ```
 
 .app-config.schema.yml
 ```yaml
 type: object
-required: [server, database]
+required:
+  - webServer
+  - database
 properties:
-  server:
+  webServer:
     type: object
     required: [port]
     properties:
@@ -100,7 +102,7 @@ Check out the [JSON Schema](https://json-schema.org/) documentation for details.
 
 ### Files and Formats
 This module supports YAML, TOML, JSON, and JSON5 out of the box, for any of the files. Your
-schema could be YAML, and config be TOML (like the CLI defaults to), or any other way around.
+schema could be YAML, and config be TOML, or any other way around. By default the CLI produces YAML for all files.
 
 - Configuration files are `.app-config.{ext}` or `app-config.{ext}`
 - Secret configuration items
@@ -133,7 +135,7 @@ app-config generate
 ```
 
 Of course, you can and should use `app-config` in your `package.json` scripts.
-Note that running commands this way (`--`) also get a `APP_CONFIG` variable in TOML.
+Note that running commands this way (`--`) also get a `APP_CONFIG` variable (in YAML by default).
 
 ### Schemas
 This module uses JSON Schema to define constraints on your configuration. As shown above,
@@ -206,9 +208,10 @@ This module supports a special 'extending' syntax for deduplicating configuratio
 
 In your main config:
 
-```toml
-[app-config]
-extends = ["other-file.yml"]
+```yaml
+app-config:
+  extends:
+    - other-file.yml
 ```
 
 This will do a deep merge of `other-file.yml` into your main configuration.
