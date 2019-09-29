@@ -497,7 +497,7 @@ const mapObject = (config: any): any => {
         }
       }
 
-      if (typeof envSpecificValue === 'object' && !Array.isArray(envSpecificValue)) {
+      if (typeof envSpecificValue === 'object' && envSpecificValue !== null && !Array.isArray(envSpecificValue)) {
         delete config['$env'];
         mergeWith(config, mapObject(envSpecificValue), (a, b) => Array.isArray(b) ? b : undefined);
       } else {
