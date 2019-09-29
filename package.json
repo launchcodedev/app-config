@@ -1,7 +1,7 @@
 {
   "name": "@servall/app-config",
   "description": "Configuration file loader with JSON schema support",
-  "version": "1.0.7",
+  "version": "1.0.8-dev",
   "license": "MPL-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
