@@ -506,7 +506,7 @@ const mapObject = (config: any): any => {
     } else {
       const newVal = mapObject(value);
 
-      if (typeof newVal === 'object' && !Array.isArray(newVal)) {
+      if (typeof newVal === 'object' && newVal !== null && !Array.isArray(newVal)) {
         config[key] = mergeWith(config[key], newVal, (a, b) => Array.isArray(b) ? b : undefined);
       } else {
         config[key] = newVal;
