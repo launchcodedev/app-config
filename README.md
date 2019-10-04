@@ -21,8 +21,6 @@ configuration with confidence.
 **What is it not useful for** (as of today):
 - dynamic configuration (behaviour), since it only allows static configuration
 - system global configuration, since it assumes configuration local to your application
-- multi-tenant production systems, since it assumes only one `APP_CONFIG` variable
-- in-browser config loading, since it relies on filesystem libraries
 
 Benefits:
 - **Types** - All config variables have types. Environment variables alone do not store type information.
