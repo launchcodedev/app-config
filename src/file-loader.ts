@@ -7,7 +7,20 @@ import { merge, mergeWith } from 'lodash';
 import { ConfigObject, envAliases } from './config';
 import { metaProps } from './meta';
 
+export enum FileType {
+  JSON = 'JSON',
+  JSON5 = 'JSON5',
+  TOML = 'TOML',
+  YAML = 'YAML',
+}
+
 const envTypeVarNames = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
+const defaultFileTypes = [
+  FileType.JSON,
+  FileType.JSON5,
+  FileType.TOML,
+  FileType.YAML,
+];
 
 export const getEnvType = () => {
   const [envType] = envTypeVarNames
@@ -16,13 +29,6 @@ export const getEnvType = () => {
 
   return envType;
 };
-
-export enum FileType {
-  JSON = 'JSON',
-  JSON5 = 'JSON5',
-  TOML = 'TOML',
-  YAML = 'YAML',
-}
 
 class FileNotFound extends Error {
   readonly path: string;
@@ -94,12 +100,8 @@ export const guessFileType = (contents: string): FileType => {
 
 export const parseEnv = (
   name: string,
-  supportedFileTypes: FileType[] = [
-    FileType.JSON,
-    FileType.JSON5,
-    FileType.TOML,
-    FileType.YAML,
-  ],
+  supportedFileTypes: FileType[] = defaultFileTypes,
+  envOverride?: string,
 ): [FileType, ConfigObject] => {
   const contents = process.env[name];
 
@@ -113,7 +115,7 @@ export const parseEnv = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, config, meta] = parseString(contents, fileType);
+  const [_, config, meta] = parseString(contents, fileType, envOverride);
 
   if (meta.extends) {
     throw new Error('cannot extend in an env var config');
@@ -124,12 +126,8 @@ export const parseEnv = (
 
 export const parseFile = async (
   filePath: Path,
-  supportedFileTypes: FileType[] = [
-    FileType.JSON,
-    FileType.JSON5,
-    FileType.TOML,
-    FileType.YAML,
-  ],
+  supportedFileTypes: FileType[] = defaultFileTypes,
+  envOverride?: string,
 ): Promise<[FileType, Path, ConfigObject]> => {
   let ext: string;
   let file = filePath;
@@ -178,7 +176,7 @@ export const parseFile = async (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, parsed, meta] = parseString(contents, fileType);
+  const [_, parsed, meta] = parseString(contents, fileType, envOverride);
   let config = parsed;
 
   if (meta.extends) {
@@ -186,7 +184,7 @@ export const parseFile = async (
 
     for (const filename of extend) {
       try {
-        const [_, __, ext] = await parseFile(join(dirname(file), filename));
+        const [_, __, ext] = await parseFile(join(dirname(file), filename), supportedFileTypes, envOverride);
         config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -205,12 +203,8 @@ export const parseFile = async (
 
 export const parseFileSync = (
   filePath: Path,
-  supportedFileTypes: FileType[] = [
-    FileType.JSON,
-    FileType.JSON5,
-    FileType.TOML,
-    FileType.YAML,
-  ],
+  supportedFileTypes: FileType[] = defaultFileTypes,
+  envOverride?: string,
 ): [FileType, Path, ConfigObject] => {
   let ext: string;
   let file = filePath;
@@ -257,7 +251,7 @@ export const parseFileSync = (
     throw new Error(`Unsupported file type: ${fileType}`);
   }
 
-  const [_, parsed, meta] = parseString(contents, fileType);
+  const [_, parsed, meta] = parseString(contents, fileType, envOverride);
   let config = parsed;
 
   if (meta.extends) {
@@ -265,7 +259,7 @@ export const parseFileSync = (
 
     for (const filename of extend) {
       try {
-        const [_, __, ext] = parseFileSync(join(dirname(file), filename));
+        const [_, __, ext] = parseFileSync(join(dirname(file), filename), supportedFileTypes, envOverride);
         config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -284,9 +278,11 @@ export const parseFileSync = (
 
 export const findParseableFile = async (
   files: Path[],
+  supportedFileTypes: FileType[] = defaultFileTypes,
+  envOverride?: string,
 ): Promise<[FileType, Path, ConfigObject] | undefined> => {
   const [valid, ...others] = (await Promise.all(files.map(async (filename) => {
-    return parseFile(filename).catch((e) => {
+    return parseFile(filename, supportedFileTypes, envOverride).catch((e) => {
       if (!(e instanceof FileNotFound)) {
         throw e;
       }
@@ -306,10 +302,12 @@ export const findParseableFile = async (
 
 export const findParseableFileSync = (
   files: Path[],
+  supportedFileTypes: FileType[] = defaultFileTypes,
+  envOverride?: string,
 ): [FileType, Path, ConfigObject] | undefined => {
   const [valid, ...others] = files.map((filename) => {
     try {
-      return parseFileSync(filename);
+      return parseFileSync(filename, supportedFileTypes, envOverride);
     } catch (e) {
       if (!(e instanceof FileNotFound)) {
         throw e;
@@ -331,25 +329,26 @@ export const findParseableFileSync = (
 export const parseString = (
   contents: string,
   fileType: FileType,
+  envOverride?: string,
 ): [FileType, ConfigObject, MetaProps] => {
   switch (fileType) {
     case FileType.JSON: {
-      const mappedConfig = mapObject(JSON.parse(contents));
+      const mappedConfig = mapObject(JSON.parse(contents), envOverride);
       const [config, meta] = stripMetaProps(mappedConfig);
       return [FileType.JSON, config, meta];
     }
     case FileType.JSON5: {
-      const mappedConfig = mapObject(JSON5.parse(contents));
+      const mappedConfig = mapObject(JSON5.parse(contents), envOverride);
       const [config, meta] = stripMetaProps(mappedConfig);
       return [FileType.JSON5, config, meta];
     }
     case FileType.TOML: {
-      const mappedConfig = mapObject(TOML.parse(contents));
+      const mappedConfig = mapObject(TOML.parse(contents), envOverride);
       const [config, meta] = stripMetaProps(mappedConfig);
       return [FileType.TOML, config, meta];
     }
     case FileType.YAML: {
-      const mappedConfig = mapObject(YAML.safeLoad(contents) || {});
+      const mappedConfig = mapObject(YAML.safeLoad(contents) || {}, envOverride);
       const [config, meta] = stripMetaProps(mappedConfig);
       return [FileType.YAML, config, meta];
     }
@@ -385,7 +384,7 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   return [config, meta];
 };
 
-const mapObject = (config: any): any => {
+const mapObject = (config: any, envOverride?: string): any => {
   if (typeof config === 'string') {
     let value: string = config;
 
@@ -415,9 +414,9 @@ const mapObject = (config: any): any => {
           value = value.replace(fullMatch, env);
         } else if (fallback !== undefined) {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          value = mapObject(value.replace(fullMatch, fallback));
+          value = mapObject(value.replace(fullMatch, fallback), envOverride);
         } else if (varName === 'APP_CONFIG_ENV') {
-          const envType = getEnvType();
+          const envType = envOverride || getEnvType();
 
           if (!envType) {
             throw new Error(`Could not find environment variable ${varName}`);
@@ -441,7 +440,7 @@ const mapObject = (config: any): any => {
   }
 
   if (Array.isArray(config)) {
-    return config.map(mapObject);
+    return config.map(v => mapObject(v, envOverride));
   }
 
   if (typeof config !== 'object') {
@@ -451,7 +450,7 @@ const mapObject = (config: any): any => {
   for (const [key, value] of Object.entries(config)) {
     // we map $env: { production: 12, development: 14 } to 12 or 14
     if (key === '$env') {
-      const rawEnv = getEnvType();
+      const rawEnv = envOverride || getEnvType();
       const envVariations = [rawEnv].concat(envAliases[rawEnv as any]).filter(env => !!env);
       const envValues = value as any;
 
@@ -503,12 +502,12 @@ const mapObject = (config: any): any => {
           && !Array.isArray(envSpecificValue)
       ) {
         delete config['$env'];
-        mergeWith(config, mapObject(envSpecificValue), (a, b) => Array.isArray(b) ? b : undefined);
+        mergeWith(config, mapObject(envSpecificValue, envOverride), (a, b) => Array.isArray(b) ? b : undefined);
       } else {
-        return mapObject(envSpecificValue);
+        return mapObject(envSpecificValue, envOverride);
       }
     } else {
-      const newVal = mapObject(value);
+      const newVal = mapObject(value, envOverride);
 
       if (typeof newVal === 'object' && newVal !== null && !Array.isArray(newVal)) {
         config[key] = mergeWith(config[key], newVal, (a, b) => Array.isArray(b) ? b : undefined);
