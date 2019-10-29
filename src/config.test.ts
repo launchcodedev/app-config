@@ -108,6 +108,92 @@ describe('load toml config file', () => {
   }));
 });
 
+describe('load custom named yaml config file', () => {
+  const files: [string, string][] = [
+    [
+      'custom-name.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+    [
+      'custom-name.secrets.yml',
+      'foo: bar',
+    ],
+  ];
+
+  const expected = {
+    nested: { baz: 2 },
+    foo: 'bar',
+  };
+
+  const expectedSecrets = {
+    foo: 'bar',
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir, 'custom-name');
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir, 'custom-name');
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('load hideen custom named yaml config file', () => {
+  const files: [string, string][] = [
+    [
+      '.custom-name.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+    [
+      '.custom-name.secrets.yml',
+      'foo: bar',
+    ],
+  ];
+
+  const expected = {
+    nested: { baz: 2 },
+    foo: 'bar',
+  };
+
+  const expectedSecrets = {
+    foo: 'bar',
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = await loadConfig(dir, 'custom-name');
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const { config, secrets, fileType, source } = loadConfigSync(dir, 'custom-name');
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+});
+
 describe('load yaml config file', () => {
   const files: [string, string][] = [
     [

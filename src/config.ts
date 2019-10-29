@@ -9,8 +9,8 @@ import {
 } from './file-loader';
 
 const envVarNames = ['APP_CONFIG'];
-const configFileNames = ['.app-config', 'app-config'];
-const secretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
+const defaultConfigFileNames = ['.app-config', 'app-config'];
+const defaultSecretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
@@ -52,6 +52,7 @@ const getEnvFileNames = (files: string[], envType = getEnvType()) => {
 
 export const loadConfig = async <C = ConfigObject>(
   cwd = process.cwd(),
+  fileNameOverride?: string,
 ): Promise<LoadedConfig<C>> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
@@ -66,6 +67,14 @@ export const loadConfig = async <C = ConfigObject>(
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
+  }
+
+  let configFileNames = defaultConfigFileNames;
+  let secretsFileNames = defaultSecretsFileNames;
+
+  if (fileNameOverride) {
+    configFileNames = [`.${fileNameOverride}`, fileNameOverride];
+    secretsFileNames = [`.${fileNameOverride}.secrets`, `${fileNameOverride}.secrets`];
   }
 
   const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames);
@@ -120,7 +129,10 @@ export const loadConfig = async <C = ConfigObject>(
   };
 };
 
-export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedConfig<C> => {
+export const loadConfigSync = <C = ConfigObject>(
+  cwd = process.cwd(),
+  fileNameOverride?: string,
+): LoadedConfig<C> => {
   const [envVarConfig] = envVarNames
     .filter(name => !!process.env[name])
     .map(envVar => parseEnv(envVar));
@@ -134,6 +146,14 @@ export const loadConfigSync = <C = ConfigObject>(cwd = process.cwd()): LoadedCon
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
+  }
+
+  let configFileNames = defaultConfigFileNames;
+  let secretsFileNames = defaultSecretsFileNames;
+
+  if (fileNameOverride) {
+    configFileNames = [`.${fileNameOverride}`, fileNameOverride];
+    secretsFileNames = [`.${fileNameOverride}.secrets`, `${fileNameOverride}.secrets`];
   }
 
   const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames);
