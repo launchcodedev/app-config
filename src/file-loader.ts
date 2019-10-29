@@ -184,7 +184,11 @@ export const parseFile = async (
 
     for (const filename of extend) {
       try {
-        const [_, __, ext] = await parseFile(join(dirname(file), filename), supportedFileTypes, envOverride);
+        const [_, __, ext] = await parseFile(
+          join(dirname(file), filename),
+          supportedFileTypes,
+          envOverride,
+        );
         config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -259,7 +263,11 @@ export const parseFileSync = (
 
     for (const filename of extend) {
       try {
-        const [_, __, ext] = parseFileSync(join(dirname(file), filename), supportedFileTypes, envOverride);
+        const [_, __, ext] = parseFileSync(
+          join(dirname(file), filename),
+          supportedFileTypes,
+          envOverride,
+        );
         config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -502,7 +510,11 @@ const mapObject = (config: any, envOverride?: string): any => {
           && !Array.isArray(envSpecificValue)
       ) {
         delete config['$env'];
-        mergeWith(config, mapObject(envSpecificValue, envOverride), (a, b) => Array.isArray(b) ? b : undefined);
+        mergeWith(
+          config,
+          mapObject(envSpecificValue, envOverride),
+          (a, b) => Array.isArray(b) ? b : undefined,
+        );
       } else {
         return mapObject(envSpecificValue, envOverride);
       }

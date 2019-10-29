@@ -126,11 +126,16 @@ describe('load env override files', () => {
   ];
 
   const expected = {
-    env: 'qa'
+    env: 'qa',
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -139,7 +144,12 @@ describe('load env override files', () => {
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -168,7 +178,12 @@ describe('load env override files', () => {
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -177,7 +192,12 @@ describe('load env override files', () => {
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -212,7 +232,12 @@ describe('load env override from within extends', () => {
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -221,7 +246,12 @@ describe('load env override from within extends', () => {
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -255,7 +285,12 @@ describe('load custom named yaml config file', () => {
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -264,7 +299,12 @@ describe('load custom named yaml config file', () => {
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -298,7 +338,12 @@ describe('load hidden custom named yaml config file', () => {
   };
 
   test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
@@ -307,7 +352,12 @@ describe('load hidden custom named yaml config file', () => {
   }));
 
   test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
 
     expect(source).toBe(ConfigSource.File);
     expect(fileType).toBe(FileType.YAML);
