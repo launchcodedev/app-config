@@ -9,8 +9,7 @@ import {
 } from './file-loader';
 
 const envVarNames = ['APP_CONFIG'];
-const defaultConfigFileNames = ['.app-config', 'app-config'];
-const defaultSecretsFileNames = ['.app-config.secrets', 'app-config.secrets'];
+const defaultConfigFileName = 'app-config';
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
@@ -75,13 +74,10 @@ export const loadConfig = async <C = ConfigObject>(
     };
   }
 
-  let configFileNames = defaultConfigFileNames;
-  let secretsFileNames = defaultSecretsFileNames;
+  let configFileName = fileNameOverride || defaultConfigFileName;
 
-  if (fileNameOverride) {
-    configFileNames = [`.${fileNameOverride}`, fileNameOverride];
-    secretsFileNames = [`.${fileNameOverride}.secrets`, `${fileNameOverride}.secrets`];
-  }
+  const configFileNames = [`.${configFileName}`, configFileName];
+  const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
 
   const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames, envOverride);
   const secretsConfig = await findParseableFile(
@@ -164,13 +160,10 @@ export const loadConfigSync = <C = ConfigObject>(
     };
   }
 
-  let configFileNames = defaultConfigFileNames;
-  let secretsFileNames = defaultSecretsFileNames;
+  let configFileName = fileNameOverride || defaultConfigFileName;
 
-  if (fileNameOverride) {
-    configFileNames = [`.${fileNameOverride}`, fileNameOverride];
-    secretsFileNames = [`.${fileNameOverride}.secrets`, `${fileNameOverride}.secrets`];
-  }
+  const configFileNames = [`.${configFileName}`, configFileName];
+  const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
 
   const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames, envOverride);
   const secretsConfig = findParseableFileSync(
