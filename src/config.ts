@@ -74,7 +74,7 @@ export const loadConfig = async <C = ConfigObject>(
     };
   }
 
-  let configFileName = fileNameOverride || defaultConfigFileName;
+  const configFileName = fileNameOverride || defaultConfigFileName;
 
   const configFileNames = [`.${configFileName}`, configFileName];
   const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
@@ -160,7 +160,7 @@ export const loadConfigSync = <C = ConfigObject>(
     };
   }
 
-  let configFileName = fileNameOverride || defaultConfigFileName;
+  const configFileName = fileNameOverride || defaultConfigFileName;
 
   const configFileNames = [`.${configFileName}`, configFileName];
   const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
