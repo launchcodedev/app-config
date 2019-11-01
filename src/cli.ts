@@ -231,7 +231,7 @@ const argv = Yargs
         },
       ).catch((err) => {
         if (err.failed) {
-          console.error(`Failed to run command '${err.cmd}': Error code ${err.code}`);
+          console.error(`Failed to run command '${err.command}': Error code ${err.exitCode}`);
         } else {
           console.error(err.message);
         }
