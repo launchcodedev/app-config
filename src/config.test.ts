@@ -108,6 +108,264 @@ describe('load toml config file', () => {
   }));
 });
 
+describe('load env override files', () => {
+  // Using qa because that wouldn't be picked up by default
+  const files: [string, string][] = [
+    [
+      'custom-name.qa.yml',
+      'env: qa',
+    ],
+    [
+      'custom-name.staging.yml',
+      'env: staging',
+    ],
+    [
+      'custom-name.prod.yml',
+      'env: prod',
+    ],
+  ];
+
+  const expected = {
+    env: 'qa',
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('load env override files', () => {
+  // Using qa because that wouldn't be picked up by default
+  const files: [string, string][] = [
+    [
+      'custom-name.yml',
+      `foo:
+        $env:
+          default: 0
+          qa: 1
+          staging: 2
+          prod: 3
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: 1,
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('load env override from within extends', () => {
+  // Using qa because that wouldn't be picked up by default
+  const files: [string, string][] = [
+    [
+      'custom-name.yml',
+      `app-config:
+         extends: foo.yml
+      `,
+    ],
+    [
+      'foo.yml',
+      `foo:
+        $env:
+          default: 0
+          qa: 1
+          staging: 2
+          prod: 3
+      `,
+    ],
+  ];
+
+  const expected = {
+    foo: 1,
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = loadConfigSync(dir, { fileNameOverride: 'custom-name', envOverride: 'qa' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual({});
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('load custom named yaml config file', () => {
+  const files: [string, string][] = [
+    [
+      'custom-name.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+    [
+      'custom-name.secrets.yml',
+      'foo: bar',
+    ],
+  ];
+
+  const expected = {
+    nested: { baz: 2 },
+    foo: 'bar',
+  };
+
+  const expectedSecrets = {
+    foo: 'bar',
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+});
+
+describe('load hidden custom named yaml config file', () => {
+  const files: [string, string][] = [
+    [
+      '.custom-name.yml',
+      `
+      nested:
+        baz: 2
+      `,
+    ],
+    [
+      '.custom-name.secrets.yml',
+      'foo: bar',
+    ],
+  ];
+
+  const expected = {
+    nested: { baz: 2 },
+    foo: 'bar',
+  };
+
+  const expectedSecrets = {
+    foo: 'bar',
+  };
+
+  test('async', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+
+  test('sync', () => withFakeFiles(files, async (dir) => {
+    const {
+      config,
+      secrets,
+      fileType,
+      source,
+    } = await loadConfig(dir, { fileNameOverride: 'custom-name' });
+
+    expect(source).toBe(ConfigSource.File);
+    expect(fileType).toBe(FileType.YAML);
+    expect(secrets).toEqual(expectedSecrets);
+    expect(config).toEqual(expected);
+  }));
+});
+
 describe('load yaml config file', () => {
   const files: [string, string][] = [
     [
