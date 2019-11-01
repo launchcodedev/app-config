@@ -276,8 +276,8 @@ export default config;
 
 export {
   // loads app config from the filesystem
-  loadConfig(cwd?),
-  loadConfigSync(cwd?),
+  loadConfig(cwd?, { fileNameOverride?, envOverride? }?),
+  loadConfigSync(cwd?, { fileNameOverride?, envOverride? }?),
   // loads app config schema from the filesystem
   loadSchema(cwd?),
   loadSchemaSync(cwd?),
