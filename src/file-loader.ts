@@ -392,7 +392,7 @@ const stripMetaProps = (config: any): [ConfigObject, MetaProps] => {
   return [config, meta];
 };
 
-const mapObject = (config: any, envOverride?: string): any => {
+const mapObject = (config: any, envOverride?: string, context?: string): any => {
   if (typeof config === 'string') {
     let value: string = config;
 
@@ -494,12 +494,13 @@ const mapObject = (config: any, envOverride?: string): any => {
       if (envSpecificValue === undefined) {
         if (rawEnv) {
           throw new Error(
-            `No matching environment option found for '${rawEnv}'. ` +
+            `No matching environment option found for '${rawEnv}' (${context || 'root'}). ` +
             `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
           );
         } else {
           throw new Error(
-            'No environment provided, and no default option provided. Please provide one.',
+            `No environment provided, and no default option provided (${context || 'root'}). ` +
+            'Please provide one.',
           );
         }
       }
@@ -519,7 +520,7 @@ const mapObject = (config: any, envOverride?: string): any => {
         return mapObject(envSpecificValue, envOverride);
       }
     } else {
-      const newVal = mapObject(value, envOverride);
+      const newVal = mapObject(value, envOverride, key);
 
       if (typeof newVal === 'object' && newVal !== null && !Array.isArray(newVal)) {
         config[key] = mergeWith(config[key], newVal, (a, b) => Array.isArray(b) ? b : undefined);
