@@ -153,7 +153,7 @@ test('deep ref recursion in generation', async () => {
     expect(output.length).toBe(1);
 
     const config = (await readFile(join(dir, 'a/types.ts'))).toString('utf8');
-    expect(config).toMatch('\nimport \'@servall/app-config\';');
+    expect(config).toMatch('\nimport \'@lcdev/app-config\';');
     expect(config).toMatch('export interface CustomTypes');
     expect(config).toMatch('x: X');
     expect(config).toMatch('y: Y');

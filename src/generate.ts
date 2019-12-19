@@ -138,10 +138,10 @@ const generateQuicktype = async (
 
   if (type === 'ts' && augmentModule !== false) {
     lines.push(...[
-      'import \'@servall/app-config\';',
+      'import \'@lcdev/app-config\';',
       '',
       '// augment the default export from app-config',
-      "declare module '@servall/app-config' {",
+      "declare module '@lcdev/app-config' {",
       `  export interface ExportedConfig extends ${name} {}`,
       '}',
     ]);

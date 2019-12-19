@@ -1,5 +1,5 @@
 {
-  "name": "@servall/app-config",
+  "name": "@lcdev/app-config",
   "description": "Configuration file loader with JSON schema support",
   "version": "1.0.10-dev",
   "license": "MPL-2.0",
@@ -9,9 +9,9 @@
     "app-config": "dist/cli.js"
   },
   "author": {
-    "name": "Servall Development",
-    "email": "admin@servalldev.com",
-    "url": "https://www.servalldev.com"
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
   },
   "scripts": {
     "build": "rm -rf dist && tsc",
