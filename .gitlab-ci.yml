@@ -1,9 +1,9 @@
-# Our Gitlab CI is internal to Servall - see TravisCI file for public releases!
+# Our Gitlab CI is internal to Launchcode - see TravisCI file for public releases!
 
 include:
   - project: 'meat-n-potatoes/ci'
     file: 'all.yml'
-    ref: v1
+    ref: v2
 
 stages:
   - lint
@@ -21,3 +21,7 @@ build:
 test:
   extends: .node-test
   stage: test
+
+publish:
+  extends: .node-publish-tag
+  stage: publish
