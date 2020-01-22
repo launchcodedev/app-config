@@ -9,6 +9,7 @@ stages:
   - lint
   - build
   - test
+  - publish
 
 lint:
   extends: .node-lint
