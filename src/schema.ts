@@ -1,7 +1,6 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
-import { outputFile } from 'fs-extra';
-import { join, dirname, basename, extname, resolve } from 'path';
+import { join, dirname, resolve } from 'path';
 import {
   ConfigObject,
   ConfigSubObject,
@@ -10,13 +9,7 @@ import {
   loadConfig,
   loadConfigSync,
 } from './config';
-import { metaProps } from './meta';
-import {
-  findParseableFile,
-  findParseableFileSync,
-  parseFile,
-  parseFileSync,
-} from './file-loader';
+import { findParseableFile, findParseableFileSync, parseFileSync } from './file-loader';
 
 const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
 
@@ -60,23 +53,16 @@ export const loadSchemaSync = (cwd = process.cwd()): Schema => {
 
 export const validate = (
   input: Schema & LoadedConfig,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   cwd = process.cwd(),
-): [InvalidConfig, Error] | false  => {
-  const {
-    source,
-    config,
-    secrets,
-    nonSecrets,
-    schema,
-    schemaRefs = {},
-  } = input;
+): [InvalidConfig, Error] | false => {
+  const { source, config, nonSecrets, schema, schemaRefs = {} } = input;
 
   const ajv = new Ajv({
     allErrors: true,
   });
 
-  Object.entries(schemaRefs)
-    .forEach(([id, schema]) => ajv.addSchema(schema as object, id));
+  Object.entries(schemaRefs).forEach(([id, schema]) => ajv.addSchema(schema as object, id));
 
   // array of property paths that should only be present in secrets file
   const schemaSecrets: string[] = [];
@@ -108,10 +94,12 @@ export const validate = (
 
   if (source === ConfigSource.File && nonSecrets) {
     // check that the nonSecrets does not contain any properties marked as secret
-    const secretsInNonSecrets = schemaSecrets.filter((secret) => {
+    const secretsInNonSecrets = schemaSecrets.filter(secret => {
       if (_.get(nonSecrets, secret)) {
         return secret;
       }
+
+      return false;
     });
 
     if (secretsInNonSecrets.length > 0) {
@@ -168,7 +156,7 @@ const extractExternalSchemas = (schema: ConfigSubObject, cwd: string, schemas: S
     Object.entries(schema).forEach(([key, val]) => {
       if (key === '$ref' && typeof val === 'string') {
         // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-        const [_, __, filepath, ref] = val.match(/^(\.\/)?([^#]*)(#?.*)/)!;
+        const [, , filepath, ref] = /^(\.\/)?([^#]*)(#?.*)/.exec(val)!;
 
         if (filepath) {
           // we resolve filepaths so that ajv resolves them correctly

@@ -230,17 +230,15 @@ describe('load json schema', () => {
     schemaRefs: {},
   };
 
-  test('async', () => withFakeFiles([
-    ['app-config.schema.json', content],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual(expected);
-  }));
+  test('async', () =>
+    withFakeFiles([['app-config.schema.json', content]], async dir => {
+      expect(await loadSchema(dir)).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['app-config.schema.json', content],
-  ], async (dir) => {
-    expect(loadSchemaSync(dir)).toEqual(expected);
-  }));
+  test('sync', () =>
+    withFakeFiles([['app-config.schema.json', content]], async dir => {
+      expect(loadSchemaSync(dir)).toEqual(expected);
+    }));
 });
 
 describe('load toml schema', () => {
@@ -260,17 +258,15 @@ describe('load toml schema', () => {
     schemaRefs: {},
   };
 
-  test('async', () => withFakeFiles([
-    ['app-config.schema.toml', content],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual(expected);
-  }));
+  test('async', () =>
+    withFakeFiles([['app-config.schema.toml', content]], async dir => {
+      expect(await loadSchema(dir)).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['app-config.schema.toml', content],
-  ], async (dir) => {
-    expect(loadSchemaSync(dir)).toEqual(expected);
-  }));
+  test('sync', () =>
+    withFakeFiles([['app-config.schema.toml', content]], async dir => {
+      expect(loadSchemaSync(dir)).toEqual(expected);
+    }));
 });
 
 describe('load yaml schema', () => {
@@ -291,24 +287,24 @@ describe('load yaml schema', () => {
     schemaRefs: {},
   };
 
-  test('async', () => withFakeFiles([
-    ['app-config.schema.yml', content],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual(expected);
-  }));
+  test('async', () =>
+    withFakeFiles([['app-config.schema.yml', content]], async dir => {
+      expect(await loadSchema(dir)).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['app-config.schema.yml', content],
-  ], async (dir) => {
-    expect(loadSchemaSync(dir)).toEqual(expected);
-  }));
+  test('sync', () =>
+    withFakeFiles([['app-config.schema.yml', content]], async dir => {
+      expect(loadSchemaSync(dir)).toEqual(expected);
+    }));
 });
 
 describe('load extends', () => {
-  test('async', () => withFakeFiles([
-    [
-      'app-config.schema.json',
-      `
+  test('async', () =>
+    withFakeFiles(
+      [
+        [
+          'app-config.schema.json',
+          `
       {
         "app-config": {
           "extends": "other-file.yml"
@@ -318,33 +314,36 @@ describe('load extends', () => {
         }
       }
       `,
-    ],
-    [
-      'other-file.yml',
-      `
+        ],
+        [
+          'other-file.yml',
+          `
       properties:
         y:
           type: number
       `,
-    ],
-  ], async (dir) => {
-    expect(await loadSchema(dir)).toEqual({
-      schema: {
-        properties: {
-          x: { type: 'number' },
-          y: { type: 'number' },
-        },
+        ],
+      ],
+      async dir => {
+        expect(await loadSchema(dir)).toEqual({
+          schema: {
+            properties: {
+              x: { type: 'number' },
+              y: { type: 'number' },
+            },
+          },
+          schemaRefs: {},
+        });
       },
-      schemaRefs: {},
-    });
-  }));
+    ));
 });
 
 test('load validated', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.schema.json',
-      `
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -352,21 +351,24 @@ test('load validated', async () => {
         }
       }
       `,
-    ],
-    [
-      '.app-config.yml',
-      `
+      ],
+      [
+        '.app-config.yml',
+        `
       x: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(dir);
-  });
+    async dir => {
+      await loadValidated(dir);
+    },
+  );
 
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.schema.json',
-      `
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -374,23 +376,26 @@ test('load validated', async () => {
         }
       }
       `,
-    ],
-    [
-      '.app-config.yml',
-      `
+      ],
+      [
+        '.app-config.yml',
+        `
       y: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    await expect(loadValidated(dir)).rejects.toThrow();
-  });
+    async dir => {
+      await expect(loadValidated(dir)).rejects.toThrow();
+    },
+  );
 });
 
 test('load validated sync', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.schema.json',
-      `
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -398,21 +403,24 @@ test('load validated sync', async () => {
         }
       }
       `,
-    ],
-    [
-      '.app-config.yml',
-      `
+      ],
+      [
+        '.app-config.yml',
+        `
       x: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    loadValidatedSync(dir);
-  });
+    async dir => {
+      loadValidatedSync(dir);
+    },
+  );
 
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.schema.json',
-      `
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -420,23 +428,26 @@ test('load validated sync', async () => {
         }
       }
       `,
-    ],
-    [
-      '.app-config.yml',
-      `
+      ],
+      [
+        '.app-config.yml',
+        `
       y: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    expect(() => loadValidatedSync(dir)).toThrow();
-  });
+    async dir => {
+      expect(() => loadValidatedSync(dir)).toThrow();
+    },
+  );
 });
 
 test('schema ref to other file', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'app-config.schema.yml',
-      `
+      [
+        'app-config.schema.yml',
+        `
       required: [x, y, z]
       properties:
         x: { $ref: 'other.schema.yml#/Nested' }
@@ -445,35 +456,38 @@ test('schema ref to other file', async () => {
       definitions:
         N: { type: string }
       `,
-    ],
-    [
-      'other.schema.yml',
-      `
+      ],
+      [
+        'other.schema.yml',
+        `
       properties:
         x: { $ref: '#/Nested' }
       Nested:
         type: number
       `,
-    ],
-    [
-      '.app-config.yml',
-      `
+      ],
+      [
+        '.app-config.yml',
+        `
       x: 1
       y:
         x: 2
       z: string
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(dir);
-  });
+    async dir => {
+      await loadValidated(dir);
+    },
+  );
 });
 
 test('schema ref to other file sync', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'app-config.schema.yml',
-      `
+      [
+        'app-config.schema.yml',
+        `
       required: [x, y, z]
       properties:
         x: { $ref: 'other.schema.yml#/Nested' }
@@ -482,270 +496,296 @@ test('schema ref to other file sync', async () => {
       definitions:
         N: { type: string }
       `,
-    ],
-    [
-      'other.schema.yml',
-      `
+      ],
+      [
+        'other.schema.yml',
+        `
       properties:
         x: { $ref: '#/Nested' }
       Nested:
         type: number
       `,
-    ],
-    [
-      '.app-config.yml',
-      `
+      ],
+      [
+        '.app-config.yml',
+        `
       x: 1
       y:
         x: 2
       z: string
       `,
+      ],
     ],
-  ], async (dir) => {
-    loadValidatedSync(dir);
-  });
+    async dir => {
+      loadValidatedSync(dir);
+    },
+  );
 });
 
 test('schema relative ref to other file', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'nested-folder/app-config.schema.yml',
-      `
+      [
+        'nested-folder/app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: '../rootlevel.schema.yml#/Nested' }
       `,
-    ],
-    [
-      'nested-folder/app-config.yml',
-      `
+      ],
+      [
+        'nested-folder/app-config.yml',
+        `
       x: 1
       `,
-    ],
-    [
-      'rootlevel.schema.yml',
-      `
+      ],
+      [
+        'rootlevel.schema.yml',
+        `
       Nested:
         type: number
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(`${dir}/nested-folder`);
-  });
+    async dir => {
+      await loadValidated(`${dir}/nested-folder`);
+    },
+  );
 });
 
 test('schema relative ref to nested folder', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'app-config.schema.yml',
-      `
+      [
+        'app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: 'nested/other.schema.yml#/Nested' }
       `,
-    ],
-    [
-      'nested/other.schema.yml',
-      `
+      ],
+      [
+        'nested/other.schema.yml',
+        `
       Nested:
         type: number
       `,
-    ],
-    [
-      'app-config.yml',
-      `
+      ],
+      [
+        'app-config.yml',
+        `
       x: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(dir);
-  });
+    async dir => {
+      await loadValidated(dir);
+    },
+  );
 
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'app-config.schema.yml',
-      `
+      [
+        'app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: 'nested/other.schema.yml' }
       `,
-    ],
-    [
-      'nested/other.schema.yml',
-      `
+      ],
+      [
+        'nested/other.schema.yml',
+        `
       type: number
       `,
-    ],
-    [
-      'app-config.yml',
-      `
+      ],
+      [
+        'app-config.yml',
+        `
       x: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(dir);
-  });
+    async dir => {
+      await loadValidated(dir);
+    },
+  );
 
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'app-config.schema.yml',
-      `
+      [
+        'app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: './nested/other.schema.yml' }
       `,
-    ],
-    [
-      'nested/other.schema.yml',
-      `
+      ],
+      [
+        'nested/other.schema.yml',
+        `
       type: number
       `,
-    ],
-    [
-      'app-config.yml',
-      `
+      ],
+      [
+        'app-config.yml',
+        `
       x: 1
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(dir);
-  });
+    async dir => {
+      await loadValidated(dir);
+    },
+  );
 });
 
 test('schema relative ref to double parent file', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'a/nested-folder/app-config.schema.yml',
-      `
+      [
+        'a/nested-folder/app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: '../../rootlevel.schema.yml#/Nested' }
       `,
-    ],
-    [
-      'a/nested-folder/app-config.yml',
-      `
+      ],
+      [
+        'a/nested-folder/app-config.yml',
+        `
       x: 1
       `,
-    ],
-    [
-      'rootlevel.schema.yml',
-      `
+      ],
+      [
+        'rootlevel.schema.yml',
+        `
       Nested:
         type: number
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(`${dir}/a/nested-folder`);
-  });
+    async dir => {
+      await loadValidated(`${dir}/a/nested-folder`);
+    },
+  );
 });
 
 test('schema ref recursion', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'a/nested-folder/app-config.schema.yml',
-      `
+      [
+        'a/nested-folder/app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: '../../rootlevel.schema.yml#/Nested' }
       `,
-    ],
-    [
-      'a/nested-folder/app-config.yml',
-      `
+      ],
+      [
+        'a/nested-folder/app-config.yml',
+        `
       x: 1
       `,
-    ],
-    [
-      'rootlevel.schema.yml',
-      `
+      ],
+      [
+        'rootlevel.schema.yml',
+        `
       Nested:
         $ref: './b/nested/schema.yml'
       `,
-    ],
-    [
-      'b/nested/schema.yml',
-      `
+      ],
+      [
+        'b/nested/schema.yml',
+        `
       required: [x]
       properties:
         x: { type: "number" }
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(`${dir}/a/nested-folder`);
-  });
+    async dir => {
+      await loadValidated(`${dir}/a/nested-folder`);
+    },
+  );
 });
 
 test('deep ref recursion', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'a/app-config.schema.yml',
-      `
+      [
+        'a/app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: '../root.yml' }
       `,
-    ],
-    [
-      'root.yml',
-      `
+      ],
+      [
+        'root.yml',
+        `
       required: [y]
       properties:
         y: { $ref: 'b/-/-/1.yml' }
       `,
-    ],
-    [
-      'b/-/-/1.yml',
-      `
+      ],
+      [
+        'b/-/-/1.yml',
+        `
       required: [z]
       properties:
         z: { $ref: '../../2.yml' }
       `,
-    ],
-    [
-      'b/2.yml',
-      `
+      ],
+      [
+        'b/2.yml',
+        `
       type: array
       items: { type: number }
       `,
-    ],
-    [
-      'a/app-config.yml',
-      `
+      ],
+      [
+        'a/app-config.yml',
+        `
       x:
         y:
           z: [0]
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(`${dir}/a`);
-  });
+    async dir => {
+      await loadValidated(`${dir}/a`);
+    },
+  );
 });
 
 test('schema relative ref to file with space in filepath', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      'nested-folder/app-config.schema.yml',
-      `
+      [
+        'nested-folder/app-config.schema.yml',
+        `
       required: [x]
       properties:
         x: { $ref: '../my schema.yml#/Nested' }
       `,
-    ],
-    [
-      'nested-folder/app-config.yml',
-      `
+      ],
+      [
+        'nested-folder/app-config.yml',
+        `
       x: 1
       `,
-    ],
-    [
-      'my schema.yml',
-      `
+      ],
+      [
+        'my schema.yml',
+        `
       Nested:
         type: number
       `,
+      ],
     ],
-  ], async (dir) => {
-    await loadValidated(`${dir}/nested-folder`);
-  });
+    async dir => {
+      await loadValidated(`${dir}/nested-folder`);
+    },
+  );
 });

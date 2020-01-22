@@ -1,4 +1,4 @@
-import { basename, extname, dirname, join } from 'path';
+import { extname, dirname, join } from 'path';
 import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
@@ -15,12 +15,7 @@ export enum FileType {
 }
 
 const envTypeVarNames = ['APP_CONFIG_ENV', 'ENV', 'NODE_ENV'];
-const defaultFileTypes = [
-  FileType.JSON,
-  FileType.JSON5,
-  FileType.TOML,
-  FileType.YAML,
-];
+const defaultFileTypes = [FileType.JSON, FileType.JSON5, FileType.TOML, FileType.YAML];
 
 export const getEnvType = () => {
   const [envType] = envTypeVarNames
@@ -70,6 +65,7 @@ export const fileTypeToExt = (fileType: FileType): string[] => {
     case FileType.TOML:
       return ['toml'];
     case FileType.YAML:
+    default:
       return ['yml', 'yaml'];
   }
 };
@@ -78,22 +74,30 @@ export const guessFileType = (contents: string): FileType => {
   try {
     JSON.parse(contents);
     return FileType.JSON;
-  } catch (_) {}
+  } catch (_) {
+    /* expected */
+  }
 
   try {
     JSON5.parse(contents);
     return FileType.JSON5;
-  } catch (_) {}
+  } catch (_) {
+    /* expected */
+  }
 
   try {
     TOML.parse(contents);
     return FileType.TOML;
-  } catch (_) {}
+  } catch (_) {
+    /* expected */
+  }
 
   try {
     YAML.safeLoad(contents);
     return FileType.YAML;
-  } catch (_) {}
+  } catch (_) {
+    /* expected */
+  }
 
   throw new Error('contents were not a valid FileType');
 };
@@ -133,21 +137,28 @@ export const parseFile = async (
   let file = filePath;
 
   if (await pathExists(filePath)) {
-    ext = extname(filePath).toLowerCase().slice(1);
+    ext = extname(filePath)
+      .toLowerCase()
+      .slice(1);
   } else {
-    const found = await Promise.all(supportedFileTypes
-      .map(async (fileType) => {
+    const found = await Promise.all(
+      supportedFileTypes.map(async fileType => {
         const exts = fileTypeToExt(fileType);
-        const found = (await Promise.all(exts.map(async extension =>
-          (await pathExists(`${filePath}.${extension}`)) ? extension : false,
-        ))).filter(e => !!e);
+        const found = (
+          await Promise.all(
+            exts.map(async extension =>
+              (await pathExists(`${filePath}.${extension}`)) ? extension : false,
+            ),
+          )
+        ).filter(e => !!e);
 
         if (found.length > 1) {
           console.warn(`found multiple valid ${fileType} files ${filePath}`);
         }
 
         return found[0] || false;
-      }));
+      }),
+    );
 
     const valid = found.filter(e => !!e);
 
@@ -166,8 +177,11 @@ export const parseFile = async (
   // this is for node-dev, so that it knows that app-config is a dependency
   // this should have no effect on performance and is virtually side effect free
   try {
+    // eslint-disable-next-line import/no-dynamic-require,global-require
     require(file);
-  } catch (_) {}
+  } catch (_) {
+    /* expected */
+  }
 
   const contents = (await readFile(file)).toString('utf8');
   const fileType = extToFileType(ext, contents);
@@ -184,7 +198,7 @@ export const parseFile = async (
 
     for (const filename of extend) {
       try {
-        const [_, __, ext] = await parseFile(
+        const [, , ext] = await parseFile(
           join(dirname(file), filename),
           supportedFileTypes,
           envOverride,
@@ -214,12 +228,14 @@ export const parseFileSync = (
   let file = filePath;
 
   if (pathExistsSync(filePath)) {
-    ext = extname(filePath).toLowerCase().slice(1);
+    ext = extname(filePath)
+      .toLowerCase()
+      .slice(1);
   } else {
-    const found = supportedFileTypes.map((fileType) => {
-      const found = fileTypeToExt(fileType).map(extension =>
-        (pathExistsSync(`${filePath}.${extension}`)) ? extension : false,
-      ).filter(e => !!e);
+    const found = supportedFileTypes.map(fileType => {
+      const found = fileTypeToExt(fileType)
+        .map(extension => (pathExistsSync(`${filePath}.${extension}`) ? extension : false))
+        .filter(e => !!e);
 
       if (found.length > 1) {
         console.warn(`found multiple valid ${fileType} files ${filePath}`);
@@ -245,8 +261,11 @@ export const parseFileSync = (
   // this is for node-dev, so that it knows that app-config is a dependency
   // this should have no effect on performance and is virtually side effect free
   try {
+    // eslint-disable-next-line import/no-dynamic-require,global-require
     require(file);
-  } catch (_) {}
+  } catch (_) {
+    /* expected */
+  }
 
   const contents = readFileSync(file).toString('utf8');
   const fileType = extToFileType(ext, contents);
@@ -263,7 +282,7 @@ export const parseFileSync = (
 
     for (const filename of extend) {
       try {
-        const [_, __, ext] = parseFileSync(
+        const [, , ext] = parseFileSync(
           join(dirname(file), filename),
           supportedFileTypes,
           envOverride,
@@ -289,20 +308,26 @@ export const findParseableFile = async (
   supportedFileTypes: FileType[] = defaultFileTypes,
   envOverride?: string,
 ): Promise<[FileType, Path, ConfigObject] | undefined> => {
-  const [valid, ...others] = (await Promise.all(files.map(async (filename) => {
-    return parseFile(filename, supportedFileTypes, envOverride).catch((e) => {
-      if (!(e instanceof FileNotFound)) {
-        throw e;
-      }
+  const [valid, ...others] = (
+    await Promise.all(
+      files.map(async filename => {
+        return parseFile(filename, supportedFileTypes, envOverride).catch(e => {
+          if (!(e instanceof FileNotFound)) {
+            throw e;
+          }
 
-      return undefined;
-    });
-  }))).filter(c => !!c);
+          return undefined;
+        });
+      }),
+    )
+  ).filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${
-      [valid, ...others].map(file => file![1]).join(', ')
-    })`);
+    console.warn(
+      `found multiple valid files, only expected one. (${[valid, ...others]
+        .map(file => file![1])
+        .join(', ')})`,
+    );
   }
 
   return valid;
@@ -313,22 +338,26 @@ export const findParseableFileSync = (
   supportedFileTypes: FileType[] = defaultFileTypes,
   envOverride?: string,
 ): [FileType, Path, ConfigObject] | undefined => {
-  const [valid, ...others] = files.map((filename) => {
-    try {
-      return parseFileSync(filename, supportedFileTypes, envOverride);
-    } catch (e) {
-      if (!(e instanceof FileNotFound)) {
-        throw e;
-      }
+  const [valid, ...others] = files
+    .map(filename => {
+      try {
+        return parseFileSync(filename, supportedFileTypes, envOverride);
+      } catch (e) {
+        if (!(e instanceof FileNotFound)) {
+          throw e;
+        }
 
-      return undefined;
-    }
-  }).filter(c => !!c);
+        return undefined;
+      }
+    })
+    .filter(c => !!c);
 
   if (others.length) {
-    console.warn(`found multiple valid files, only expected one. (${
-      [valid, ...others].map(file => file![1]).join(', ')
-    })`);
+    console.warn(
+      `found multiple valid files, only expected one. (${[valid, ...others]
+        .map(file => file![1])
+        .join(', ')})`,
+    );
   }
 
   return valid;
@@ -355,7 +384,8 @@ export const parseString = (
       const [config, meta] = stripMetaProps(mappedConfig);
       return [FileType.TOML, config, meta];
     }
-    case FileType.YAML: {
+    case FileType.YAML:
+    default: {
       const mappedConfig = mapObject(YAML.safeLoad(contents) || {}, envOverride);
       const [config, meta] = stripMetaProps(mappedConfig);
       return [FileType.YAML, config, meta];
@@ -363,10 +393,7 @@ export const parseString = (
   }
 };
 
-export const stringify = (
-  config: ConfigObject,
-  fileType: FileType,
-): string => {
+export const stringify = (config: ConfigObject, fileType: FileType): string => {
   switch (fileType) {
     case FileType.JSON: {
       return JSON.stringify(config, null, 2);
@@ -377,7 +404,8 @@ export const stringify = (
     case FileType.TOML: {
       return TOML.stringify(config as any);
     }
-    case FileType.YAML: {
+    case FileType.YAML:
+    default: {
       return YAML.safeDump(config);
     }
   }
@@ -424,7 +452,7 @@ const mapObject = (config: any, envOverride?: string, context?: string): any => 
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
           value = mapObject(value.replace(fullMatch, fallback), envOverride);
         } else if (varName === 'APP_CONFIG_ENV') {
-          const envType = envOverride || getEnvType();
+          const envType = envOverride ?? getEnvType();
 
           if (!envType) {
             throw new Error(`Could not find environment variable ${varName}`);
@@ -458,26 +486,26 @@ const mapObject = (config: any, envOverride?: string, context?: string): any => 
   for (const [key, value] of Object.entries(config)) {
     // we map $env: { production: 12, development: 14 } to 12 or 14
     if (key === '$env') {
-      const rawEnv = envOverride || getEnvType();
+      const rawEnv = envOverride ?? getEnvType();
       const envVariations = [rawEnv].concat(envAliases[rawEnv as any]).filter(env => !!env);
       const envValues = value as any;
 
       if (typeof envValues !== 'object') {
         throw new Error(
-          '$env value must be an object with keys being \'default\' or an environment name',
+          "$env value must be an object with keys being 'default' or an environment name",
         );
       }
 
       let envSpecificValue: any;
 
-      envVariations.forEach((env) => {
+      envVariations.forEach(env => {
         const envValue = envValues[env as any];
 
         if (envValue !== undefined) {
           if (envSpecificValue !== undefined) {
             throw new Error(
               `More than one value found for environment '${rawEnv}'. ` +
-              'Remove additional declarations (includes aliases).',
+                'Remove additional declarations (includes aliases).',
             );
           }
 
@@ -494,27 +522,25 @@ const mapObject = (config: any, envOverride?: string, context?: string): any => 
       if (envSpecificValue === undefined) {
         if (rawEnv) {
           throw new Error(
-            `No matching environment option found for '${rawEnv}' (${context || 'root'}). ` +
-            `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
+            `No matching environment option found for '${rawEnv}' (${context ?? 'root'}). ` +
+              `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
           );
         } else {
           throw new Error(
-            `No environment provided, and no default option provided (${context || 'root'}). ` +
-            'Please provide one.',
+            `No environment provided, and no default option provided (${context ?? 'root'}). ` +
+              'Please provide one.',
           );
         }
       }
 
       if (
-        typeof envSpecificValue === 'object'
-          && envSpecificValue !== null
-          && !Array.isArray(envSpecificValue)
+        typeof envSpecificValue === 'object' &&
+        envSpecificValue !== null &&
+        !Array.isArray(envSpecificValue)
       ) {
-        delete config['$env'];
-        mergeWith(
-          config,
-          mapObject(envSpecificValue, envOverride),
-          (a, b) => Array.isArray(b) ? b : undefined,
+        delete config.$env;
+        mergeWith(config, mapObject(envSpecificValue, envOverride), (a, b) =>
+          Array.isArray(b) ? b : undefined,
         );
       } else {
         return mapObject(envSpecificValue, envOverride);
@@ -523,7 +549,7 @@ const mapObject = (config: any, envOverride?: string, context?: string): any => 
       const newVal = mapObject(value, envOverride, key);
 
       if (typeof newVal === 'object' && newVal !== null && !Array.isArray(newVal)) {
-        config[key] = mergeWith(config[key], newVal, (a, b) => Array.isArray(b) ? b : undefined);
+        config[key] = mergeWith(config[key], newVal, (a, b) => (Array.isArray(b) ? b : undefined));
       } else {
         config[key] = newVal;
       }

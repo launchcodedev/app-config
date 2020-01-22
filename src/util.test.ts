@@ -10,12 +10,7 @@ const person = {
 };
 
 const restaurant = {
-  foods: [
-    'pasta',
-    'pizza',
-    'taco',
-    'salad',
-  ],
+  foods: ['pasta', 'pizza', 'taco', 'salad'],
 };
 
 const zoo = {
@@ -86,9 +81,7 @@ describe('flattenObjectTree()', () => {
 
   test('Custom key formatter produces expected keys', () => {
     const stripVowels: KeyFormatter = (key: string) => {
-      return key
-        .replace(/[aeiou]/ig, '')
-        .toLowerCase();
+      return key.replace(/[aeiou]/gi, '').toLowerCase();
     };
 
     const flattenedObject = flattenObjectTree(person, '', '_', stripVowels);

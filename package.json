@@ -14,12 +14,36 @@
     "url": "https://lc.dev"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc",
-    "cli": "ts-node src/cli.ts",
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint --ext .ts,.tsx src",
+    "fix": "eslint --ext .ts,.tsx src --fix",
     "test": "jest",
-    "lint": "tslint src/**/*.ts src/*.ts",
-    "fix": "yarn lint --fix",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn clean && yarn build"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "8",
+    "@lcdev/commitlint": "1",
+    "@lcdev/eslint-config": "0.2",
+    "@lcdev/jest": "0.1",
+    "@lcdev/prettier": "0.1",
+    "@lcdev/tsconfig": "0.1",
+    "@types/common-tags": "1",
+    "@types/fs-extra": "8",
+    "@types/jest": "24",
+    "@types/js-yaml": "3",
+    "@types/json-schema": "7",
+    "@types/json5": "0.0.30",
+    "@types/lodash": "4",
+    "@types/node": "8",
+    "@types/tmp": "0.0.33",
+    "@types/yargs": "13",
+    "eslint": "6",
+    "husky": "3",
+    "jest": "24",
+    "prettier": "1",
+    "tmp-promise": "1",
+    "typescript": "3"
   },
   "dependencies": {
     "@iarna/toml": "2",
@@ -35,37 +59,21 @@
     "quicktype-core": "6",
     "yargs": "13"
   },
-  "devDependencies": {
-    "@types/common-tags": "1",
-    "@types/fs-extra": "8",
-    "@types/jest": "24",
-    "@types/js-yaml": "3",
-    "@types/json-schema": "^7.0.2",
-    "@types/json5": "0.0.30",
-    "@types/lodash": "4",
-    "@types/node": "8",
-    "@types/tmp": "0.0.33",
-    "@types/yargs": "13",
-    "jest": "24",
-    "tmp-promise": "1",
-    "ts-jest": "24",
-    "ts-node": "8",
-    "tslint": "5",
-    "tslint-config-airbnb": "5",
-    "tslint-eslint-rules": "5",
-    "typescript": "3"
+  "prettier": "@lcdev/prettier",
+  "eslintConfig": {
+    "extends": "@lcdev"
   },
   "jest": {
-    "preset": "ts-jest",
-    "testMatch": null,
-    "testRegex": "(tests/.*|src/.*\\.test)\\.(ts|js)$",
-    "testPathIgnorePatterns": [
-      "node_modules",
-      ".yarn-cache"
-    ],
-    "modulePathIgnorePatterns": [
-      "node_modules",
-      ".yarn-cache"
+    "preset": "@lcdev/jest"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@lcdev/commitlint"
     ]
   }
 }

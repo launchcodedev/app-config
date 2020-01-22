@@ -23,27 +23,35 @@ describe('ext to file type', () => {
 });
 
 describe('guess file type', () => {
-  expect(guessFileType(`
+  expect(
+    guessFileType(`
     {
       "foo": "bar"
     }
-  `)).toEqual(FileType.JSON);
+  `),
+  ).toEqual(FileType.JSON);
 
-  expect(guessFileType(`
+  expect(
+    guessFileType(`
     {
       "foo": "bar",
     }
-  `)).toEqual(FileType.JSON5);
+  `),
+  ).toEqual(FileType.JSON5);
 
-  expect(guessFileType(`
+  expect(
+    guessFileType(`
     [foo]
     bar = true
-  `)).toEqual(FileType.TOML);
+  `),
+  ).toEqual(FileType.TOML);
 
-  expect(guessFileType(`
+  expect(
+    guessFileType(`
     bar:
       - foo: true
-  `)).toEqual(FileType.YAML);
+  `),
+  ).toEqual(FileType.YAML);
 
   expect(guessFileType('"string"')).toEqual(FileType.JSON);
 
@@ -70,44 +78,40 @@ describe('load toml file', () => {
     },
   };
 
-  test('file w/ extension', () => withFakeFiles([
-    ['nested/dir/fake-file.toml', content],
-  ], async (dir) => {
-    const [fileType, file, obj] = await parseFile(join(dir, 'nested/dir/fake-file.toml'));
+  test('file w/ extension', () =>
+    withFakeFiles([['nested/dir/fake-file.toml', content]], async dir => {
+      const [fileType, file, obj] = await parseFile(join(dir, 'nested/dir/fake-file.toml'));
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(file).toBe(join(dir, 'nested/dir/fake-file.toml'));
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(file).toBe(join(dir, 'nested/dir/fake-file.toml'));
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/ extension sync', () => withFakeFiles([
-    ['nested/dir/fake-file.toml', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.toml'));
+  test('file w/ extension sync', () =>
+    withFakeFiles([['nested/dir/fake-file.toml', content]], async dir => {
+      const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.toml'));
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/o extension', () => withFakeFiles([
-    ['nested/dir/fake-file', content],
-  ], async (dir) => {
-    const [fileType, file, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
+  test('file w/o extension', () =>
+    withFakeFiles([['nested/dir/fake-file', content]], async dir => {
+      const [fileType, file, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(file).toBe(join(dir, 'nested/dir/fake-file'));
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(file).toBe(join(dir, 'nested/dir/fake-file'));
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/o extension sync', () => withFakeFiles([
-    ['nested/dir/fake-file', content],
-  ], async (dir) => {
-    const [fileType, file, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
+  test('file w/o extension sync', () =>
+    withFakeFiles([['nested/dir/fake-file', content]], async dir => {
+      const [fileType, file, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(file).toBe(join(dir, 'nested/dir/fake-file'));
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(file).toBe(join(dir, 'nested/dir/fake-file'));
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('load json file', () => {
@@ -135,41 +139,37 @@ describe('load json file', () => {
     },
   };
 
-  test('file w/ extension', () => withFakeFiles([
-    ['nested/dir/fake-file.json', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file.json'));
+  test('file w/ extension', () =>
+    withFakeFiles([['nested/dir/fake-file.json', content]], async dir => {
+      const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file.json'));
 
-    expect(fileType).toBe(FileType.JSON);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/ extension sync', () => withFakeFiles([
-    ['nested/dir/fake-file.json', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.json'));
+  test('file w/ extension sync', () =>
+    withFakeFiles([['nested/dir/fake-file.json', content]], async dir => {
+      const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.json'));
 
-    expect(fileType).toBe(FileType.JSON);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/o extension', () => withFakeFiles([
-    ['nested/dir/fake-file', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
+  test('file w/o extension', () =>
+    withFakeFiles([['nested/dir/fake-file', content]], async dir => {
+      const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
-    expect(fileType).toBe(FileType.JSON);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/o extension sync', () => withFakeFiles([
-    ['nested/dir/fake-file', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
+  test('file w/o extension sync', () =>
+    withFakeFiles([['nested/dir/fake-file', content]], async dir => {
+      const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
-    expect(fileType).toBe(FileType.JSON);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('load yaml file', () => {
@@ -192,41 +192,37 @@ describe('load yaml file', () => {
     },
   };
 
-  test('file w/ extension', () => withFakeFiles([
-    ['nested/dir/fake-file.yml', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file.yml'));
+  test('file w/ extension', () =>
+    withFakeFiles([['nested/dir/fake-file.yml', content]], async dir => {
+      const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file.yml'));
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/ extension sync', () => withFakeFiles([
-    ['nested/dir/fake-file.yml', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.yml'));
+  test('file w/ extension sync', () =>
+    withFakeFiles([['nested/dir/fake-file.yml', content]], async dir => {
+      const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file.yml'));
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/o extension', () => withFakeFiles([
-    ['nested/dir/fake-file', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
+  test('file w/o extension', () =>
+    withFakeFiles([['nested/dir/fake-file', content]], async dir => {
+      const [fileType, _, obj] = await parseFile(join(dir, 'nested/dir/fake-file'));
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('file w/o extension sync', () => withFakeFiles([
-    ['nested/dir/fake-file', content],
-  ], async (dir) => {
-    const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
+  test('file w/o extension sync', () =>
+    withFakeFiles([['nested/dir/fake-file', content]], async dir => {
+      const [fileType, _, obj] = parseFileSync(join(dir, 'nested/dir/fake-file'));
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('find toml file', () => {
@@ -238,37 +234,35 @@ describe('find toml file', () => {
     foo: 'bar',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename2.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename0.toml'),
-      join(dir, 'nested/dir/filename1.toml'),
-      join(dir, 'nested/dir/filename2.toml'),
-      join(dir, 'nested/dir/filename3.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename2.toml', content]], async dir => {
+      const found = await findParseableFile([
+        join(dir, 'nested/dir/filename0.toml'),
+        join(dir, 'nested/dir/filename1.toml'),
+        join(dir, 'nested/dir/filename2.toml'),
+        join(dir, 'nested/dir/filename3.toml'),
+      ]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename2.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename0.toml'),
-      join(dir, 'nested/dir/filename1.toml'),
-      join(dir, 'nested/dir/filename2.toml'),
-      join(dir, 'nested/dir/filename3.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename2.toml', content]], async dir => {
+      const found = findParseableFileSync([
+        join(dir, 'nested/dir/filename0.toml'),
+        join(dir, 'nested/dir/filename1.toml'),
+        join(dir, 'nested/dir/filename2.toml'),
+        join(dir, 'nested/dir/filename3.toml'),
+      ]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('find yaml file', () => {
@@ -280,37 +274,35 @@ describe('find yaml file', () => {
     foo: 'bar',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename2.yml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename0.yml'),
-      join(dir, 'nested/dir/filename1.yml'),
-      join(dir, 'nested/dir/filename2.yml'),
-      join(dir, 'nested/dir/filename3.yml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename2.yml', content]], async dir => {
+      const found = await findParseableFile([
+        join(dir, 'nested/dir/filename0.yml'),
+        join(dir, 'nested/dir/filename1.yml'),
+        join(dir, 'nested/dir/filename2.yml'),
+        join(dir, 'nested/dir/filename3.yml'),
+      ]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename2.yml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename0.yml'),
-      join(dir, 'nested/dir/filename1.yml'),
-      join(dir, 'nested/dir/filename2.yml'),
-      join(dir, 'nested/dir/filename3.yml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename2.yml', content]], async dir => {
+      const found = findParseableFileSync([
+        join(dir, 'nested/dir/filename0.yml'),
+        join(dir, 'nested/dir/filename1.yml'),
+        join(dir, 'nested/dir/filename2.yml'),
+        join(dir, 'nested/dir/filename3.yml'),
+      ]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('find json file', () => {
@@ -324,39 +316,37 @@ describe('find json file', () => {
     foo: 'bar',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename2.json', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename0.json'),
-      join(dir, 'nested/dir/filename1.json'),
-      join(dir, 'nested/dir/filename2.json'),
-      join(dir, 'nested/dir/filename3.json'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename2.json', content]], async dir => {
+      const found = await findParseableFile([
+        join(dir, 'nested/dir/filename0.json'),
+        join(dir, 'nested/dir/filename1.json'),
+        join(dir, 'nested/dir/filename2.json'),
+        join(dir, 'nested/dir/filename3.json'),
+      ]);
 
-    const [fileType, file, obj] = found!;
+      const [fileType, file, obj] = found!;
 
-    expect(fileType).toBe(FileType.JSON);
-    expect(file).toBe(join(dir, 'nested/dir/filename2.json'));
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON);
+      expect(file).toBe(join(dir, 'nested/dir/filename2.json'));
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename2.json', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename0.json'),
-      join(dir, 'nested/dir/filename1.json'),
-      join(dir, 'nested/dir/filename2.json'),
-      join(dir, 'nested/dir/filename3.json'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename2.json', content]], async dir => {
+      const found = findParseableFileSync([
+        join(dir, 'nested/dir/filename0.json'),
+        join(dir, 'nested/dir/filename1.json'),
+        join(dir, 'nested/dir/filename2.json'),
+        join(dir, 'nested/dir/filename3.json'),
+      ]);
 
-    const [fileType, file, obj] = found!;
+      const [fileType, file, obj] = found!;
 
-    expect(fileType).toBe(FileType.JSON);
-    expect(file).toBe(join(dir, 'nested/dir/filename2.json'));
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON);
+      expect(file).toBe(join(dir, 'nested/dir/filename2.json'));
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('find json5 file', () => {
@@ -370,79 +360,85 @@ describe('find json5 file', () => {
     foo: 'bar',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename2.json5', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename0.json5'),
-      join(dir, 'nested/dir/filename1.json5'),
-      join(dir, 'nested/dir/filename2.json5'),
-      join(dir, 'nested/dir/filename3.json5'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename2.json5', content]], async dir => {
+      const found = await findParseableFile([
+        join(dir, 'nested/dir/filename0.json5'),
+        join(dir, 'nested/dir/filename1.json5'),
+        join(dir, 'nested/dir/filename2.json5'),
+        join(dir, 'nested/dir/filename3.json5'),
+      ]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.JSON5);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON5);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename2.json5', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename0.json5'),
-      join(dir, 'nested/dir/filename1.json5'),
-      join(dir, 'nested/dir/filename2.json5'),
-      join(dir, 'nested/dir/filename3.json5'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename2.json5', content]], async dir => {
+      const found = findParseableFileSync([
+        join(dir, 'nested/dir/filename0.json5'),
+        join(dir, 'nested/dir/filename1.json5'),
+        join(dir, 'nested/dir/filename2.json5'),
+        join(dir, 'nested/dir/filename3.json5'),
+      ]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.JSON5);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.JSON5);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('find no files', () => {
-  test('async', () => withFakeFiles([], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/fake-file1.yml'),
-      join(dir, 'nested/dir/fake-file2.yml'),
-      join(dir, 'nested/dir/fake-file3.yml'),
-      join(dir, 'nested/dir/fake-file4.yml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([], async dir => {
+      const found = await findParseableFile([
+        join(dir, 'nested/dir/fake-file1.yml'),
+        join(dir, 'nested/dir/fake-file2.yml'),
+        join(dir, 'nested/dir/fake-file3.yml'),
+        join(dir, 'nested/dir/fake-file4.yml'),
+      ]);
 
-    expect(found).toBe(undefined);
-  }));
+      expect(found).toBe(undefined);
+    }));
 
-  test('sync', () => withFakeFiles([], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/fake-file1.yml'),
-      join(dir, 'nested/dir/fake-file2.yml'),
-      join(dir, 'nested/dir/fake-file3.yml'),
-      join(dir, 'nested/dir/fake-file4.yml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([], async dir => {
+      const found = findParseableFileSync([
+        join(dir, 'nested/dir/fake-file1.yml'),
+        join(dir, 'nested/dir/fake-file2.yml'),
+        join(dir, 'nested/dir/fake-file3.yml'),
+        join(dir, 'nested/dir/fake-file4.yml'),
+      ]);
 
-    expect(found).toBe(undefined);
-  }));
+      expect(found).toBe(undefined);
+    }));
 });
 
 describe('invalid file parsing', () => {
-  test('toml', () => withFakeFiles([
-    [
-      'nested/dir/fake-file3.toml',
-      `
+  test('toml', () =>
+    withFakeFiles(
+      [
+        [
+          'nested/dir/fake-file3.toml',
+          `
       invalid key = "val"
       `,
-    ],
-  ], async (dir) => {
-    await expect(findParseableFile([
-      join(dir, 'nested/dir/fake-file1.toml'),
-      join(dir, 'nested/dir/fake-file2.toml'),
-      join(dir, 'nested/dir/fake-file3.toml'),
-      join(dir, 'nested/dir/fake-file4.toml'),
-    ])).rejects.toThrow();
-  }));
+        ],
+      ],
+      async dir => {
+        await expect(
+          findParseableFile([
+            join(dir, 'nested/dir/fake-file1.toml'),
+            join(dir, 'nested/dir/fake-file2.toml'),
+            join(dir, 'nested/dir/fake-file3.toml'),
+            join(dir, 'nested/dir/fake-file4.toml'),
+          ]),
+        ).rejects.toThrow();
+      },
+    ));
 });
 
 describe('embedded env var', () => {
@@ -455,10 +451,10 @@ describe('embedded env var', () => {
   });
 
   const content = `
-    foo = "$\{FOO\}"
+    foo = "$\{FOO}"
 
     [[nested.deep]]
-    foo = "$\{FOO\}"
+    foo = "$\{FOO}"
     baz = "$FOO"
   `;
 
@@ -474,39 +470,33 @@ describe('embedded env var', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('embedded env var with fallback', () => {
   const content = `
-    foo = "$\{FOO:-bar\}"
+    foo = "$\{FOO:-bar}"
 
     [[nested.deep]]
-    foo = "$\{FOO:-bar\}"
+    foo = "$\{FOO:-bar}"
   `;
 
   const expected = {
@@ -520,39 +510,33 @@ describe('embedded env var with fallback', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('embedded env var with empty fallback', () => {
   const content = `
-    foo = "$\{FOO:-\}"
+    foo = "$\{FOO:-}"
 
     [[nested.deep]]
-    foo = "$\{FOO:-\}"
+    foo = "$\{FOO:-}"
   `;
 
   const expected = {
@@ -566,31 +550,25 @@ describe('embedded env var with empty fallback', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('embedded env var with env fallback', () => {
@@ -603,11 +581,11 @@ describe('embedded env var with env fallback', () => {
   });
 
   const content = `
-    foo = "$\{FOO:-$\{BAR\}\}"
+    foo = "$\{FOO:-$\{BAR}}"
 
     [[nested.deep]]
-    foo = "$\{FOO:-$\{BAR\}\}"
-    baz = "$\{FOO:-bar\} $\{FOO:-$\{BAR\}\}"
+    foo = "$\{FOO:-$\{BAR}}"
+    baz = "$\{FOO:-bar} $\{FOO:-$\{BAR}}"
   `;
 
   const expected = {
@@ -622,31 +600,25 @@ describe('embedded env var with env fallback', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('empty embedded env var', () => {
@@ -659,38 +631,32 @@ describe('empty embedded env var', () => {
   });
 
   const content = `
-    foo = "$\{FOO\}"
+    foo = "$\{FOO}"
   `;
 
   const expected = {
     foo: '',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('embedded env var in array', () => {
@@ -703,38 +669,32 @@ describe('embedded env var in array', () => {
   });
 
   const content = `
-    foo = ["$\{FOO\}"]
+    foo = ["$\{FOO}"]
   `;
 
   const expected = {
     foo: ['bar'],
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('embedded env var mid string', () => {
@@ -747,10 +707,10 @@ describe('embedded env var mid string', () => {
   });
 
   const content = `
-    foo = " surrounding $\{FOOBAR\} context"
-    bar = "B$\{INV:-fallback\}"
-    baz = "$\{INV:-$\{FOOBAR\}\} plus"
-    bat = "_$\{INV:-$\{INV2:-$\{FOOBAR\}\}\}_"
+    foo = " surrounding $\{FOOBAR} context"
+    bar = "B$\{INV:-fallback}"
+    baz = "$\{INV:-$\{FOOBAR}} plus"
+    bat = "_$\{INV:-$\{INV2:-$\{FOOBAR}}}_"
   `;
 
   const expected = {
@@ -760,31 +720,25 @@ describe('embedded env var mid string', () => {
     bat: '_bar_',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('APP_CONFIG_ENV', () => {
@@ -797,38 +751,32 @@ describe('APP_CONFIG_ENV', () => {
   });
 
   const content = `
-    foo = "$\{APP_CONFIG_ENV\}"
+    foo = "$\{APP_CONFIG_ENV}"
   `;
 
   const expected = {
     foo: 'production',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('APP_CONFIG_ENV shorthand', () => {
@@ -841,38 +789,32 @@ describe('APP_CONFIG_ENV shorthand', () => {
   });
 
   const content = `
-    foo = "$\{APP_CONFIG_ENV\}"
+    foo = "$\{APP_CONFIG_ENV}"
   `;
 
   const expected = {
     foo: 'development',
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.toml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.toml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.toml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.toml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.TOML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.TOML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('resolving $env value', () => {
@@ -902,31 +844,25 @@ describe('resolving $env value', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('resolving $env default value', () => {
@@ -958,31 +894,25 @@ describe('resolving $env default value', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('$env with null', () => {
@@ -1012,31 +942,25 @@ describe('$env with null', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('$env supports environment aliases', () => {
@@ -1066,31 +990,25 @@ describe('$env supports environment aliases', () => {
     },
   };
 
-  test('async', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = await findParseableFile([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('async', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = await findParseableFile([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles([
-    ['nested/dir/filename.yml', content],
-  ], async (dir) => {
-    const found = findParseableFileSync([
-      join(dir, 'nested/dir/filename.yml'),
-    ]);
+  test('sync', () =>
+    withFakeFiles([['nested/dir/filename.yml', content]], async dir => {
+      const found = findParseableFileSync([join(dir, 'nested/dir/filename.yml')]);
 
-    const [fileType, _, obj] = found!;
+      const [fileType, _, obj] = found!;
 
-    expect(fileType).toBe(FileType.YAML);
-    expect(obj).toEqual(expected);
-  }));
+      expect(fileType).toBe(FileType.YAML);
+      expect(obj).toEqual(expected);
+    }));
 });
 
 describe('extends with an $env value', () => {
@@ -1133,45 +1051,49 @@ describe('extends with an $env value', () => {
     delete process.env.APP_CONFIG_ENV;
   });
 
-  test('async development', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'development';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async development', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'development';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(devExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(devExpected);
+    }));
 
-  test('async default', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'triggers-default';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async default', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'triggers-default';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(defaultExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(defaultExpected);
+    }));
 
-  test('sync development', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'development';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync development', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'development';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(devExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(devExpected);
+    }));
 
-  test('sync default', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'triggers-default';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync default', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'triggers-default';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(defaultExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(defaultExpected);
+    }));
 });
 
 describe('app-config with $env value containing extends', () => {
@@ -1215,45 +1137,49 @@ describe('app-config with $env value containing extends', () => {
     delete process.env.APP_CONFIG_ENV;
   });
 
-  test('async development', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'development';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async development', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'development';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(devExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(devExpected);
+    }));
 
-  test('async default', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'triggers-default';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async default', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'triggers-default';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(defaultExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(defaultExpected);
+    }));
 
-  test('sync development', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'development';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync development', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'development';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(devExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(devExpected);
+    }));
 
-  test('sync default', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'triggers-default';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync default', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'triggers-default';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(defaultExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(defaultExpected);
+    }));
 });
 
 describe('$env containing app-config with extends', () => {
@@ -1298,45 +1224,49 @@ describe('$env containing app-config with extends', () => {
     delete process.env.APP_CONFIG_ENV;
   });
 
-  test('async development', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'development';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async development', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'development';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(devExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(devExpected);
+    }));
 
-  test('async default', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'triggers-default';
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async default', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'triggers-default';
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(defaultExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(defaultExpected);
+    }));
 
-  test('sync development', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'development';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync development', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'development';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(devExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(devExpected);
+    }));
 
-  test('sync default', () => withFakeFiles(files, async (dir) => {
-    process.env.APP_CONFIG_ENV = 'triggers-default';
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync default', () =>
+    withFakeFiles(files, async dir => {
+      process.env.APP_CONFIG_ENV = 'triggers-default';
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(defaultExpected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(defaultExpected);
+    }));
 });
 
 describe('extends $env with root level $env merge objects properly', () => {
@@ -1372,26 +1302,28 @@ describe('extends $env with root level $env merge objects properly', () => {
     },
   };
 
-  test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(expected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(expected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
 });
 
-describe('$env deep-merge arrays don\'t merge; last occurance overwrites', () => {
+describe("$env deep-merge arrays don't merge; last occurance overwrites", () => {
   const files: [string, string][] = [
     [
       '.app-config.yml',
@@ -1417,23 +1349,25 @@ describe('$env deep-merge arrays don\'t merge; last occurance overwrites', () =>
     },
   };
 
-  test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(expected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(expected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
 });
 
 describe('$env merges work regardless of occurance in file', () => {
@@ -1469,21 +1403,23 @@ describe('$env merges work regardless of occurance in file', () => {
     },
   };
 
-  test('async', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = await loadConfig(dir);
+  test('async', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = await loadConfig(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(expected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
 
-  test('sync', () => withFakeFiles(files, async (dir) => {
-    const { config, secrets, fileType, source } = loadConfigSync(dir);
+  test('sync', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
-    expect(source).toBe(ConfigSource.File);
-    expect(fileType).toBe(FileType.YAML);
-    expect(secrets).toEqual({});
-    expect(config).toEqual(expected);
-  }));
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
 });

@@ -26,14 +26,11 @@ export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
     const { 'app-config': config } = await readJson(join(packageRoot, 'package.json'));
 
     packageConfig = config;
-  } catch (_) {}
+  } catch (_) {
+    /* allowed */
+  }
 
-  return _.merge(
-    {},
-    metaProps,
-    packageConfig || {},
-    meta ? meta[2] : {},
-  ) as MetaProps;
+  return _.merge({}, metaProps, packageConfig || {}, meta ? meta[2] : {}) as MetaProps;
 };
 
 export const loadMetaSync = (cwd = process.cwd()): MetaProps => {
@@ -45,12 +42,9 @@ export const loadMetaSync = (cwd = process.cwd()): MetaProps => {
     const { 'app-config': config } = readJsonSync(join(packageRoot, 'package.json'));
 
     packageConfig = config;
-  } catch (_) {}
+  } catch (_) {
+    /* allowed */
+  }
 
-  return _.merge(
-    {},
-    metaProps,
-    packageConfig || {},
-    meta ? meta[2] : {},
-  ) as MetaProps;
+  return _.merge({}, metaProps, packageConfig || {}, meta ? meta[2] : {}) as MetaProps;
 };

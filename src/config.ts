@@ -24,15 +24,15 @@ export enum ConfigSource {
 }
 
 export type LoadedConfig<Conf = ConfigObject> = {
-  source: ConfigSource,
-  fileType: FileType,
+  source: ConfigSource;
+  fileType: FileType;
   fileSource?: string;
-  config: Conf,
-  secrets?: ConfigObject,
-  nonSecrets: ConfigObject,
+  config: Conf;
+  secrets?: ConfigObject;
+  nonSecrets: ConfigObject;
 };
 
-export const envAliases: {[ key: string ]: string[]} = {
+export const envAliases: { [key: string]: string[] } = {
   production: ['prod'],
   development: ['dev'],
 };
@@ -44,9 +44,10 @@ const getEnvFileNames = (files: string[], envType = getEnvType()) => {
 
   const envFiles = [envType].concat(envAliases[envType]);
 
-  return envFiles.reduce((filenames: string[], envFile) => filenames.concat(
-    files.map(f => `${f}.${envFile}`),
-  ), []);
+  return envFiles.reduce(
+    (filenames: string[], envFile) => filenames.concat(files.map(f => `${f}.${envFile}`)),
+    [],
+  );
 };
 
 export const loadConfig = async <C = ConfigObject>(
@@ -55,8 +56,8 @@ export const loadConfig = async <C = ConfigObject>(
     fileNameOverride,
     envOverride,
   }: {
-    fileNameOverride?: string,
-    envOverride?: string,
+    fileNameOverride?: string;
+    envOverride?: string;
   } = {},
 ): Promise<LoadedConfig<C>> => {
   const [envVarConfig] = envVarNames
@@ -68,13 +69,13 @@ export const loadConfig = async <C = ConfigObject>(
 
     return {
       fileType,
-      config: config as unknown as C,
+      config: (config as unknown) as C,
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
   }
 
-  const configFileName = fileNameOverride || defaultConfigFileName;
+  const configFileName = fileNameOverride ?? defaultConfigFileName;
 
   const configFileNames = [`.${configFileName}`, configFileName];
   const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
@@ -102,14 +103,22 @@ export const loadConfig = async <C = ConfigObject>(
       .concat(getEnvFileNames(configFileNames, 'staging'))
       .concat(getEnvFileNames(configFileNames, 'test'));
 
-    const found = await findParseableFile(tryFiles.map(f => join(cwd, f)), undefined, envOverride);
+    const found = await findParseableFile(
+      tryFiles.map(f => join(cwd, f)),
+      undefined,
+      envOverride,
+    );
 
     if (found && !(envOverride || getEnvType())) {
-      throw new Error('Could not find app config. '
-        + `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`);
+      throw new Error(
+        'Could not find app config. ' +
+          `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`,
+      );
     } else if (found) {
-      throw new Error('Could not find app config. '
-        + `Found ${found[1]}, but your environment was ${(envOverride || getEnvType())}.`);
+      throw new Error(
+        'Could not find app config. ' +
+          `Found ${found[1]}, but your environment was ${envOverride ?? getEnvType()}.`,
+      );
     }
 
     throw new Error('Could not find app config. Expected an environment variable or file.');
@@ -130,7 +139,7 @@ export const loadConfig = async <C = ConfigObject>(
     fileSource,
     secrets,
     nonSecrets,
-    config: _.merge({}, nonSecrets, secrets) as unknown as C,
+    config: (_.merge({}, nonSecrets, secrets) as unknown) as C,
     source: ConfigSource.File,
   };
 };
@@ -141,8 +150,8 @@ export const loadConfigSync = <C = ConfigObject>(
     fileNameOverride,
     envOverride,
   }: {
-    fileNameOverride?: string,
-    envOverride?: string,
+    fileNameOverride?: string;
+    envOverride?: string;
   } = {},
 ): LoadedConfig<C> => {
   const [envVarConfig] = envVarNames
@@ -154,13 +163,13 @@ export const loadConfigSync = <C = ConfigObject>(
 
     return {
       fileType,
-      config: config as unknown as C,
+      config: (config as unknown) as C,
       source: ConfigSource.EnvVar,
       nonSecrets: config,
     };
   }
 
-  const configFileName = fileNameOverride || defaultConfigFileName;
+  const configFileName = fileNameOverride ?? defaultConfigFileName;
 
   const configFileNames = [`.${configFileName}`, configFileName];
   const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
@@ -188,14 +197,22 @@ export const loadConfigSync = <C = ConfigObject>(
       .concat(getEnvFileNames(configFileNames, 'staging'))
       .concat(getEnvFileNames(configFileNames, 'test'));
 
-    const found = findParseableFileSync(tryFiles.map(f => join(cwd, f)), undefined, envOverride);
+    const found = findParseableFileSync(
+      tryFiles.map(f => join(cwd, f)),
+      undefined,
+      envOverride,
+    );
 
     if (found && !(envOverride || getEnvType())) {
-      throw new Error('Could not find app config. '
-        + `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`);
+      throw new Error(
+        'Could not find app config. ' +
+          `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`,
+      );
     } else if (found) {
-      throw new Error('Could not find app config. '
-        + `Found ${found[1]}, but your environment was ${envOverride || getEnvType()}.`);
+      throw new Error(
+        'Could not find app config. ' +
+          `Found ${found[1]}, but your environment was ${envOverride ?? getEnvType()}.`,
+      );
     }
 
     throw new Error('Could not find app config. Expected an environment variable or file.');
@@ -216,7 +233,7 @@ export const loadConfigSync = <C = ConfigObject>(
     fileSource,
     secrets,
     nonSecrets,
-    config: _.merge({}, nonSecrets, secrets) as unknown as C,
+    config: (_.merge({}, nonSecrets, secrets) as unknown) as C,
     source: ConfigSource.File,
   };
 };

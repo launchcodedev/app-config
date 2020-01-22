@@ -12,45 +12,42 @@ import { loadValidated } from './schema';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
 
-const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) =>
-  async (arg: Yargs.Arguments<T>) => {
+const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) => async (
+  arg: Yargs.Arguments<T>,
+) => {
+  try {
+    await cmd(arg);
+  } catch (err) {
+    console.log();
+    console.error(new PrettyError().render(err));
+
+    let name = process.cwd();
+
     try {
-      await cmd(arg);
-    } catch (err) {
-      console.log();
-      console.error(new PrettyError().render(err));
-
-      let name = process.cwd();
-
-      try {
-        name = require(`${process.cwd()}/package.json`).name;
-      } catch (_) {}
-
-      console.error(`Error occurred in ${name}`);
-      process.exit(1);
+      // eslint-disable-next-line import/no-dynamic-require,global-require
+      name = require(`${process.cwd()}/package.json`).name;
+    } catch (_) {
+      /* allowed */
     }
-  };
 
-const flattenConfig = (loaded: LoadedConfig, argv: { secrets: boolean, prefix: string }) => {
-  const {
-    secrets,
-    prefix,
-  } = argv;
+    console.error(`Error occurred in ${name}`);
+    process.exit(1);
+  }
+};
 
-  const {
-    config: fullConfig,
-    nonSecrets,
-  } = loaded;
+const flattenConfig = (loaded: LoadedConfig, argv: { secrets: boolean; prefix: string }) => {
+  const { secrets, prefix } = argv;
+
+  const { config: fullConfig, nonSecrets } = loaded;
 
   const config = (secrets ? fullConfig : nonSecrets) as any;
 
   return [config, flattenObjectTree(config, prefix)];
 };
 
-type BaseArgs = { cwd: string, secrets: boolean };
+type BaseArgs = { cwd: string; secrets: boolean };
 
-const argv = Yargs
-  .usage('Usage: $0 <command>')
+const { argv: _ } = Yargs.usage('Usage: $0 <command>')
   .usage('')
   .option('cwd', {
     alias: 'C',
@@ -69,19 +66,20 @@ const argv = Yargs
   .command<BaseArgs & { prefix: string }>(
     ['variables', 'vars', 'v'],
     'Print out the generated environment variables',
-    (yargs: Yargs.Argv<BaseArgs>) => yargs
-      .option('prefix', {
-        alias: 'p',
-        default: 'APP_CONFIG',
-        nargs: 1,
-        type: 'string',
-        description: 'Prefix environment variables',
-      })
-      .example(
-        'export $($0 vars | xargs)',
-        'Export the generated environment variables to the current shell',
-      ),
-    wrapCommand<BaseArgs & { prefix: string }>(async (argv) => {
+    (yargs: Yargs.Argv<BaseArgs>) =>
+      yargs
+        .option('prefix', {
+          alias: 'p',
+          default: 'APP_CONFIG',
+          nargs: 1,
+          type: 'string',
+          description: 'Prefix environment variables',
+        })
+        .example(
+          'export $($0 vars | xargs)',
+          'Export the generated environment variables to the current shell',
+        ),
+    wrapCommand<BaseArgs & { prefix: string }>(async argv => {
       const loaded = await loadValidated(argv.cwd);
 
       const [_, flattenedConfig] = flattenConfig(loaded, argv);
@@ -93,32 +91,30 @@ const argv = Yargs
       );
     }),
   )
-  .command<BaseArgs & { format: string, select: string }>(
+  .command<BaseArgs & { format: string; select: string }>(
     ['create', 'c'],
     'Outputs the current configuration in a specific format',
-    (yargs: Yargs.Argv<BaseArgs>) => yargs
-      .example(
-        '$0 --format json',
-        'Print out the configuration in json format',
-      )
-      .example(
-        '$0 --format json --select "#/kubernetes"',
-        'Print out only the value of config.kubernetes',
-      )
-      .option('format', {
-        alias: 'f',
-        default: 'yaml',
-        nargs: 1,
-        type: 'string',
-        description: 'yaml/toml/json',
-      })
-      .option('select', {
-        default: '#',
-        nargs: 1,
-        type: 'string',
-        description: 'a json pointer for what to select in the config',
-      }),
-    wrapCommand<BaseArgs & { format: string, select: string }>(async (argv) => {
+    (yargs: Yargs.Argv<BaseArgs>) =>
+      yargs
+        .example('$0 --format json', 'Print out the configuration in json format')
+        .example(
+          '$0 --format json --select "#/kubernetes"',
+          'Print out only the value of config.kubernetes',
+        )
+        .option('format', {
+          alias: 'f',
+          default: 'yaml',
+          nargs: 1,
+          type: 'string',
+          description: 'yaml/toml/json',
+        })
+        .option('select', {
+          default: '#',
+          nargs: 1,
+          type: 'string',
+          description: 'a json pointer for what to select in the config',
+        }),
+    wrapCommand<BaseArgs & { format: string; select: string }>(async argv => {
       const { cwd, format, select, secrets } = argv;
       const { config, nonSecrets } = await loadValidated(cwd);
 
@@ -145,8 +141,8 @@ const argv = Yargs
   .command<BaseArgs & { force: boolean }>(
     ['init'],
     'Creates the boilerplate for your project',
-    (yargs: Yargs.Argv<BaseArgs>) => yargs
-      .option('force', {
+    (yargs: Yargs.Argv<BaseArgs>) =>
+      yargs.option('force', {
         default: false,
         type: 'boolean',
       }),
@@ -155,7 +151,7 @@ const argv = Yargs
 
       await loadConfig()
         .catch(_ => null)
-        .then((res) => {
+        .then(res => {
           if (res !== null && res.source === ConfigSource.File && !force) {
             throw new Error('an app config file already existed');
           }
@@ -167,14 +163,17 @@ const argv = Yargs
       await outputFile('.app-config.secrets.yml', '');
       console.log('.app-config.secrets.yml file written');
 
-      await outputFile('.app-config.schema.yml', stripIndent`
+      await outputFile(
+        '.app-config.schema.yml',
+        stripIndent`
         $schema: http://json-schema.org/draft-07/schema#
 
         type: object
         required: []
         properties: {}
         definitions: {}
-      `);
+      `,
+      );
       console.log('.app-config.schema.yml file written');
 
       if (await pathExists('.gitignore')) {
@@ -184,29 +183,30 @@ const argv = Yargs
       }
     }),
   )
-  .command<BaseArgs & { prefix: string, format: string }>(
+  .command<BaseArgs & { prefix: string; format: string }>(
     '*',
     'Exports config as individual environment variables for the specified command',
-    (yargs: Yargs.Argv<BaseArgs>) => yargs
-      .option('prefix', {
-        alias: 'p',
-        default: 'APP_CONFIG',
-        nargs: 1,
-        type: 'string',
-        description: 'Prefix environment variables',
-      })
-      .option('format', {
-        alias: 'f',
-        default: 'yaml',
-        nargs: 1,
-        type: 'string',
-        description: 'yaml/toml/json',
-      })
-      .example(
-        '$0 -- docker-compose up -d',
-        'Run Docker Compose with the generated environment variables',
-      ),
-    wrapCommand<BaseArgs & { prefix: string, format: string }>(async (argv) => {
+    (yargs: Yargs.Argv<BaseArgs>) =>
+      yargs
+        .option('prefix', {
+          alias: 'p',
+          default: 'APP_CONFIG',
+          nargs: 1,
+          type: 'string',
+          description: 'Prefix environment variables',
+        })
+        .option('format', {
+          alias: 'f',
+          default: 'yaml',
+          nargs: 1,
+          type: 'string',
+          description: 'yaml/toml/json',
+        })
+        .example(
+          '$0 -- docker-compose up -d',
+          'Run Docker Compose with the generated environment variables',
+        ),
+    wrapCommand<BaseArgs & { prefix: string; format: string }>(async argv => {
       const { _, cwd, prefix, format } = argv;
       const [command, ...args] = _;
 
@@ -219,17 +219,13 @@ const argv = Yargs
 
       const [config, flattenedConfig] = flattenConfig(loaded, argv);
 
-      await execa(
-        command,
-        args,
-        {
-          env: {
-            [prefix]: stringify(config, extToFileType(format)),
-            ...flattenedConfig,
-          },
-          stdio: 'inherit',
+      await execa(command, args, {
+        env: {
+          [prefix]: stringify(config, extToFileType(format)),
+          ...flattenedConfig,
         },
-      ).catch((err) => {
+        stdio: 'inherit',
+      }).catch(err => {
         if (err.failed) {
           console.error(`Failed to run command '${err.command}': Error code ${err.exitCode}`);
         } else {
@@ -241,5 +237,4 @@ const argv = Yargs
   )
   .version()
   .help()
-  .strict()
-  .argv;
+  .strict();

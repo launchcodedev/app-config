@@ -1,9 +1,19 @@
-src/
-coverage/
-.editorconfig
-tsconfig.json
-tslint.json
-yarn-error.log
-.DS_Store
+# please upstream changes!
+# https://gitlab.servalldatasystems.com/meat-n-potatoes/dotfiles
 
+src/
+yarn.lock
+
+tsconfig.json
+*.tsbuildinfo
+.editorconfig
 .app-config.*
+app-config.*
+
+.DS_Store
+coverage/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*

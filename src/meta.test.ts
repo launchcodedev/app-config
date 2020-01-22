@@ -4,10 +4,11 @@ import { withFakeFiles } from './test-util';
 import { generateTypeFiles } from './generate';
 
 test('meta property in config', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.schema.json',
-      `
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -15,10 +16,10 @@ test('meta property in config', async () => {
         }
       }
       `,
-    ],
-    [
-      '.app-config.json',
-      `
+      ],
+      [
+        '.app-config.json',
+        `
       {
         "app-config": {
           "generate": [
@@ -30,29 +31,32 @@ test('meta property in config', async () => {
         }
       }
       `,
+      ],
     ],
-  ], async (dir) => {
-    const output = await generateTypeFiles(dir);
-    expect(output.length).toBe(1);
+    async dir => {
+      const output = await generateTypeFiles(dir);
+      expect(output.length).toBe(1);
 
-    const config = (await readFile(join(dir, 'config2.ts'))).toString('utf8');
+      const config = (await readFile(join(dir, 'config2.ts'))).toString('utf8');
 
-    expect(config).toBeTruthy();
-    expect(config).toMatch('x: number;');
-    expect(config).toMatch('interface Config2 {');
-  });
+      expect(config).toBeTruthy();
+      expect(config).toMatch('x: number;');
+      expect(config).toMatch('interface Config2 {');
+    },
+  );
 });
 
 test('meta property in schema', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.yml',
-      `
+      [
+        '.app-config.yml',
+        `
       `,
-    ],
-    [
-      '.app-config.schema.json',
-      `
+      ],
+      [
+        '.app-config.schema.json',
+        `
       {
         "app-config": {
           "generate": [
@@ -68,28 +72,31 @@ test('meta property in schema', async () => {
         }
       }
       `,
+      ],
     ],
-  ], async (dir) => {
-    const output = await generateTypeFiles(dir);
-    expect(output.length).toBe(1);
+    async dir => {
+      const output = await generateTypeFiles(dir);
+      expect(output.length).toBe(1);
 
-    const config = (await readFile(join(dir, 'config.ts'))).toString('utf8');
+      const config = (await readFile(join(dir, 'config.ts'))).toString('utf8');
 
-    expect(config).toBeTruthy();
-    expect(config).toMatch('x: number;');
-  });
+      expect(config).toBeTruthy();
+      expect(config).toMatch('x: number;');
+    },
+  );
 });
 
 test('meta config file', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.yml',
-      `
+      [
+        '.app-config.yml',
+        `
       `,
-    ],
-    [
-      '.app-config.schema.json',
-      `
+      ],
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -97,10 +104,10 @@ test('meta config file', async () => {
         }
       }
       `,
-    ],
-    [
-      '.app-config.meta.json',
-      `
+      ],
+      [
+        '.app-config.meta.json',
+        `
       {
         "generate": [
           {
@@ -110,28 +117,31 @@ test('meta config file', async () => {
         ]
       }
       `,
+      ],
     ],
-  ], async (dir) => {
-    const output = await generateTypeFiles(dir);
-    expect(output.length).toBe(1);
+    async dir => {
+      const output = await generateTypeFiles(dir);
+      expect(output.length).toBe(1);
 
-    const config = (await readFile(join(dir, 'config3.ts'))).toString('utf8');
+      const config = (await readFile(join(dir, 'config3.ts'))).toString('utf8');
 
-    expect(config).toBeTruthy();
-    expect(config).toMatch('x: number;');
-  });
+      expect(config).toBeTruthy();
+      expect(config).toMatch('x: number;');
+    },
+  );
 });
 
 test('meta info in package.json', async () => {
-  await withFakeFiles([
+  await withFakeFiles(
     [
-      '.app-config.yml',
-      `
+      [
+        '.app-config.yml',
+        `
       `,
-    ],
-    [
-      '.app-config.schema.json',
-      `
+      ],
+      [
+        '.app-config.schema.json',
+        `
       {
         "required": ["x"],
         "properties": {
@@ -139,10 +149,10 @@ test('meta info in package.json', async () => {
         }
       }
       `,
-    ],
-    [
-      'package.json',
-      `
+      ],
+      [
+        'package.json',
+        `
       {
         "app-config": {
           "generate": [
@@ -154,14 +164,16 @@ test('meta info in package.json', async () => {
         }
       }
       `,
+      ],
     ],
-  ], async (dir) => {
-    const output = await generateTypeFiles(dir);
-    expect(output.length).toBe(1);
+    async dir => {
+      const output = await generateTypeFiles(dir);
+      expect(output.length).toBe(1);
 
-    const config = (await readFile(join(dir, 'config4.ts'))).toString('utf8');
+      const config = (await readFile(join(dir, 'config4.ts'))).toString('utf8');
 
-    expect(config).toBeTruthy();
-    expect(config).toMatch('x: number;');
-  });
+      expect(config).toBeTruthy();
+      expect(config).toMatch('x: number;');
+    },
+  );
 });
