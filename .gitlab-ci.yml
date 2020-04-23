@@ -1,5 +1,3 @@
-# Our Gitlab CI is internal to Launchcode - see TravisCI file for public releases!
-
 include:
   - project: 'meat-n-potatoes/ci'
     file: 'all.yml'
@@ -26,3 +24,14 @@ test:
 publish:
   extends: .node-publish-tag
   stage: publish
+
+publish-public:
+  extends: .node-publish-tag-public
+  stage: publish
+
+sync-github-repo:
+  extends: .sync-github-repo
+  stage: publish
+  only: [master]
+  variables:
+    GITHUB_SSH_URL: git@github.com:servall/app-config.git
