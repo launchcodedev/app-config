@@ -18,9 +18,6 @@ yarn test
 
 # runs our linter
 yarn lint
-
-# runs the app-config cli, build not required
-yarn cli
 ```
 
 ### Pull Request
