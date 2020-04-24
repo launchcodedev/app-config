@@ -4,6 +4,7 @@
   "version": "1.0.10",
   "license": "MPL-2.0",
   "main": "dist/index.js",
+  "module": "dist/es/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "app-config": "dist/cli.js"
@@ -15,11 +16,12 @@
   },
   "scripts": {
     "build": "tsc -b",
+    "build:es": "tsc -b tsconfig.es.json",
     "clean": "rm -rf dist *.tsbuildinfo",
     "lint": "eslint --ext .ts,.tsx src",
     "fix": "eslint --ext .ts,.tsx src --fix",
     "test": "jest",
-    "prepublishOnly": "yarn clean && yarn build"
+    "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "devDependencies": {
     "@commitlint/cli": "8",
@@ -61,7 +63,10 @@
   },
   "prettier": "@lcdev/prettier",
   "eslintConfig": {
-    "extends": "@lcdev"
+    "extends": "@lcdev",
+    "parserOptions": {
+      "project": "./tsconfig.eslint.json"
+    }
   },
   "jest": {
     "preset": "@lcdev/jest"
