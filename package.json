@@ -8,7 +8,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    "!*.tsbuildinfo"
+    "!*.tsbuildinfo",
+    "!*.test.*"
   ],
   "bin": {
     "app-config": "dist/cli.js"
@@ -71,10 +72,7 @@
   },
   "prettier": "@lcdev/prettier",
   "eslintConfig": {
-    "extends": "@lcdev",
-    "parserOptions": {
-      "project": "./tsconfig.eslint.json"
-    }
+    "extends": "@lcdev"
   },
   "jest": {
     "preset": "@lcdev/jest"
