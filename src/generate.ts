@@ -132,20 +132,26 @@ const generateQuicktype = async (
     () => new JSONSchemaInput(new FetchingJSONSchemaStore(), []),
   );
 
+  if (leadingComments === undefined) {
+    leadingComments = [
+      'AUTO GENERATED CODE',
+      "Run app-config with 'generate' command to regenerate this file",
+    ];
+  }
+
   const { lines } = await quicktype({
     inputData,
     lang: type,
     indentation: '  ',
-    leadingComments: leadingComments ?? [
-      'AUTO GENERATED CODE',
-      "Run app-config with 'generate' command to regenerate this file",
-    ],
+    leadingComments,
     rendererOptions: {
       'just-types': 'true',
       'runtime-typecheck': 'false',
       ...rendererOptions,
     },
   });
+
+  lines.splice(leadingComments.length, 0, '', "import '@lcdev/app-config';");
 
   // some configs are empty, so just mark them as an empty object
   if (!lines.some(line => line.startsWith('export'))) {
@@ -155,8 +161,6 @@ const generateQuicktype = async (
   if (type === 'ts' && augmentModule !== false) {
     lines.push(
       ...[
-        "import '@lcdev/app-config';",
-        '',
         '// augment the default export from app-config',
         "declare module '@lcdev/app-config' {",
         `  export interface ExportedConfig extends ${name} {}`,

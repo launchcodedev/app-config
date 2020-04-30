@@ -164,6 +164,10 @@ test('deep ref recursion in generation', async () => {
       expect(output.length).toBe(1);
 
       const config = (await readFile(join(dir, 'a/types.ts'))).toString('utf8');
+      // just want to verify that the import is at the beginning of the file
+      expect(config).toMatch(
+        /\/\/ AUTO GENERATED CODE\n+\/\/ Run app-config with 'generate' command to regenerate this file\n+import '@lcdev\/app-config';/,
+      );
       expect(config).toMatch("\nimport '@lcdev/app-config';");
       expect(config).toMatch('export interface CustomTypes');
       expect(config).toMatch('x: X');
