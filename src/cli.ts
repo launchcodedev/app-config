@@ -145,7 +145,7 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
         }),
     wrapCommand<BaseArgs & { format: string; select: string }>(async argv => {
       const { cwd, format, select } = argv;
-      const { schema, schemaRefs } = await loadSchema(cwd);
+      const { schema } = await loadSchema(cwd);
 
       const normalized = await refParser.dereference(schema);
       const refs = await refParser.resolve(normalized);
