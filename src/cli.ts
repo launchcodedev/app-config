@@ -8,7 +8,7 @@ import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
 import { loadConfig, LoadedConfig, ConfigSource } from './config';
-import { loadValidated } from './schema';
+import { loadValidated, loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
 
@@ -120,6 +120,35 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
 
       const output = secrets ? config : nonSecrets;
       const refs = await refParser.resolve(output);
+
+      console.log(stringify(refs.get(select) as any, extToFileType(format)));
+    }),
+  )
+  .command<BaseArgs & { format: string; select: string }>(
+    ['create-schema'],
+    'Outputs the current schema in a specific format',
+    (yargs: Yargs.Argv<BaseArgs>) =>
+      yargs
+        .example('$0 --format json', 'Print out the schema in json format')
+        .option('format', {
+          alias: 'f',
+          default: 'yaml',
+          nargs: 1,
+          type: 'string',
+          description: 'yaml/toml/json',
+        })
+        .option('select', {
+          default: '#',
+          nargs: 1,
+          type: 'string',
+          description: 'a json pointer for what to select in the schema',
+        }),
+    wrapCommand<BaseArgs & { format: string; select: string }>(async argv => {
+      const { cwd, format, select } = argv;
+      const { schema, schemaRefs } = await loadSchema(cwd);
+
+      const normalized = await refParser.dereference(schema);
+      const refs = await refParser.resolve(normalized);
 
       console.log(stringify(refs.get(select) as any, extToFileType(format)));
     }),
