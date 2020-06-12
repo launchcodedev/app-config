@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { FileType } from './file-loader';
-import { loadConfig, loadConfigSync, ConfigSource } from './config';
+import { loadConfig, ConfigSource } from './config';
 import { withFakeFiles } from './test-util';
 
 describe('load env config', () => {
@@ -23,15 +23,6 @@ describe('load env config', () => {
 
   test('async', async () => {
     const { config, secrets, fileType, source } = await loadConfig();
-
-    expect(config).toEqual(expected);
-    expect(secrets).toBe(undefined);
-    expect(fileType).toBe(FileType.TOML);
-    expect(source).toBe(ConfigSource.EnvVar);
-  });
-
-  test('sync', async () => {
-    const { config, secrets, fileType, source } = loadConfigSync();
 
     expect(config).toEqual(expected);
     expect(secrets).toBe(undefined);
@@ -64,16 +55,6 @@ describe('load unhidden config file', () => {
       expect(secrets).toEqual({});
       expect(config).toEqual(expected);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.TOML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
 });
 
 describe('load toml config file', () => {
@@ -100,16 +81,6 @@ describe('load toml config file', () => {
       expect(secrets).toEqual({});
       expect(config).toEqual(expected);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.TOML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
 });
 
 describe('load env override files', () => {
@@ -127,19 +98,6 @@ describe('load env override files', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir, {
-        fileNameOverride: 'custom-name',
-        envOverride: 'qa',
-      });
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir, {
         fileNameOverride: 'custom-name',
         envOverride: 'qa',
       });
@@ -173,19 +131,6 @@ describe('load env override files', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir, {
-        fileNameOverride: 'custom-name',
-        envOverride: 'qa',
-      });
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir, {
         fileNameOverride: 'custom-name',
         envOverride: 'qa',
       });
@@ -225,19 +170,6 @@ describe('load env override from within extends', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir, {
-        fileNameOverride: 'custom-name',
-        envOverride: 'qa',
-      });
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir, {
         fileNameOverride: 'custom-name',
         envOverride: 'qa',
       });
@@ -365,16 +297,6 @@ describe('load yaml config file', () => {
       expect(secrets).toEqual({});
       expect(config).toEqual(expected);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
 });
 
 describe('load json config file', () => {
@@ -396,16 +318,6 @@ describe('load json config file', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.JSON);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.JSON);
@@ -439,16 +351,6 @@ describe('load json5 config file', () => {
       expect(secrets).toEqual({});
       expect(config).toEqual(expected);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.JSON5);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
 });
 
 describe('config file source', () => {
@@ -457,14 +359,6 @@ describe('config file source', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { fileSource, fileType } = await loadConfig(dir);
-
-      expect(fileSource).toBe(join(dir, 'app-config.json5'));
-      expect(fileType).toBe(FileType.JSON5);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { fileSource, fileType } = loadConfigSync(dir);
 
       expect(fileSource).toBe(join(dir, 'app-config.json5'));
       expect(fileType).toBe(FileType.JSON5);
@@ -511,16 +405,6 @@ describe('load secrets file', () => {
       expect(secrets).toEqual(expectedSecrets);
       expect(config).toEqual(expected);
     }));
-
-  test('async', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.TOML);
-      expect(secrets).toEqual(expectedSecrets);
-      expect(config).toEqual(expected);
-    }));
 });
 
 describe('extends in env var', () => {
@@ -532,18 +416,6 @@ describe('extends in env var', () => {
 
     // we can't extend files in an env config
     await expect(loadConfig()).rejects.toThrow();
-
-    delete process.env.APP_CONFIG;
-  });
-
-  test('sync', () => {
-    process.env.APP_CONFIG = `
-      [app-config]
-      extends = ["invalid.toml"]
-    `;
-
-    // we can't extend files in an env config
-    expect(() => loadConfigSync()).toThrow();
 
     delete process.env.APP_CONFIG;
   });
@@ -582,16 +454,6 @@ describe('load config w/ one file extends', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.TOML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -657,16 +519,6 @@ describe('load config w/ multiple file extends', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.TOML);
-      expect(secrets).toEqual({});
-      expect(config).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -743,17 +595,6 @@ describe('load env config and secrets w/ file extends', () => {
       expect(secrets).toEqual(expectedSecrets);
       expect(nonSecrets).toEqual(expected);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      process.env.NODE_ENV = 'production';
-      const { nonSecrets, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.TOML);
-      expect(secrets).toEqual(expectedSecrets);
-      expect(nonSecrets).toEqual(expected);
-    }));
 });
 
 describe('extending from env var', () => {
@@ -799,16 +640,6 @@ describe('extending from env var', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, secrets, fileType, source } = await loadConfig(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual(expectedSecrets);
-      expect(config).toEqual(expectedConfig);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -866,16 +697,6 @@ describe('extending secret from env var', () => {
       expect(secrets).toEqual(expectedSecrets);
       expect(config).toEqual(expectedConfig);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual(expectedSecrets);
-      expect(config).toEqual(expectedConfig);
-    }));
 });
 
 describe('extending blank config from env var', () => {
@@ -901,15 +722,6 @@ describe('extending blank config from env var', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, fileType, source } = await loadConfig(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(config).toEqual(expectedConfig);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, fileType, source } = loadConfigSync(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -961,16 +773,6 @@ describe('extending from env var without nesting', () => {
       expect(secrets).toEqual(expectedSecrets);
       expect(config).toEqual(expectedConfig);
     }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(secrets).toEqual(expectedSecrets);
-      expect(config).toEqual(expectedConfig);
-    }));
 });
 
 describe('load environment specific config', () => {
@@ -1014,17 +816,6 @@ describe('load environment specific config', () => {
         expect(secrets).toEqual({});
         expect(config).toEqual(expected);
       }));
-
-    test('sync', () =>
-      withFakeFiles(files, async dir => {
-        process.env.NODE_ENV = env;
-        const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-        expect(source).toBe(ConfigSource.File);
-        expect(fileType).toBe(FileType.TOML);
-        expect(secrets).toEqual({});
-        expect(config).toEqual(expected);
-      }));
   });
 });
 
@@ -1053,17 +844,6 @@ describe('load environment specific config with alias', () => {
       withFakeFiles(files, async dir => {
         process.env.NODE_ENV = env;
         const { config, secrets, fileType, source } = await loadConfig(dir);
-
-        expect(source).toBe(ConfigSource.File);
-        expect(fileType).toBe(FileType.TOML);
-        expect(secrets).toEqual({});
-        expect(config).toEqual(expected);
-      }));
-
-    test('sync', () =>
-      withFakeFiles(files, async dir => {
-        process.env.NODE_ENV = env;
-        const { config, secrets, fileType, source } = loadConfigSync(dir);
 
         expect(source).toBe(ConfigSource.File);
         expect(fileType).toBe(FileType.TOML);
@@ -1130,17 +910,6 @@ describe('load environment specific config with secrets', () => {
         expect(secrets).toEqual({ secret: expected.secret });
         expect(config).toEqual(expected);
       }));
-
-    test('sync', () =>
-      withFakeFiles(files, async dir => {
-        process.env.NODE_ENV = env;
-        const { config, secrets, fileType, source } = loadConfigSync(dir);
-
-        expect(source).toBe(ConfigSource.File);
-        expect(fileType).toBe(FileType.TOML);
-        expect(secrets).toEqual({ secret: expected.secret });
-        expect(config).toEqual(expected);
-      }));
   });
 });
 
@@ -1170,19 +939,6 @@ describe('load environment specific config with alternate env variables', () => 
       withFakeFiles(files, async dir => {
         process.env[envName] = 'production';
         const { config, secrets, fileType, source } = await loadConfig(dir);
-
-        expect(source).toBe(ConfigSource.File);
-        expect(fileType).toBe(FileType.YAML);
-        expect(secrets).toEqual({});
-        expect(config).toEqual(expected);
-      }));
-  });
-
-  envs.forEach(envName => {
-    test('sync', () =>
-      withFakeFiles(files, async dir => {
-        process.env[envName] = 'production';
-        const { config, secrets, fileType, source } = loadConfigSync(dir);
 
         expect(source).toBe(ConfigSource.File);
         expect(fileType).toBe(FileType.YAML);
@@ -1226,15 +982,6 @@ describe('extending with env', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       const { config, fileType, source } = await loadConfig(dir);
-
-      expect(source).toBe(ConfigSource.File);
-      expect(fileType).toBe(FileType.YAML);
-      expect(config).toEqual(expectedConfig);
-    }));
-
-  test('sync', () =>
-    withFakeFiles(files, async dir => {
-      const { config, fileType, source } = loadConfigSync(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);

@@ -9,6 +9,7 @@ import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
 import { loadConfig, LoadedConfig, ConfigSource } from './config';
 import { loadValidated, loadSchema } from './schema';
+import { encryptText, decryptText } from './secrets';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
 
@@ -151,6 +152,26 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
       const refs = await refParser.resolve(normalized);
 
       console.log(stringify(refs.get(select) as any, extToFileType(format)));
+    }),
+  )
+  .command<BaseArgs & { format: string; select: string }>(
+    ['encrypt'],
+    'Encrypts a secret',
+    (yargs: Yargs.Argv<BaseArgs>) => yargs
+      .usage('$0 [secret]')
+      .demand(1, 'Give us a secret to encrypt')
+    ,
+    wrapCommand<BaseArgs & {}>(async argv => {
+      const [, ...secret] = argv._;
+      const text = secret.join(' ');
+
+      const encrypted = await encryptText(text);
+
+      console.log(encrypted);
+
+      const decrypted = await decryptText(encrypted);
+
+      console.log('decrypted:', decrypted);
     }),
   )
   .command<BaseArgs>(

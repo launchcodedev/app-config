@@ -7,9 +7,8 @@ import {
   ConfigSource,
   LoadedConfig,
   loadConfig,
-  loadConfigSync,
 } from './config';
-import { findParseableFile, findParseableFileSync, parseFileSync } from './file-loader';
+import { findParseableFile, parseFile } from './file-loader';
 
 const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
 
@@ -33,20 +32,7 @@ export const loadSchema = async (cwd = process.cwd()): Promise<Schema> => {
   }
 
   const schema = found[2];
-  const schemaRefs = extractExternalSchemas(schema, cwd);
-
-  return { schema, schemaRefs };
-};
-
-export const loadSchemaSync = (cwd = process.cwd()): Schema => {
-  const found = findParseableFileSync(schemaFileNames.map(f => join(cwd, f)));
-
-  if (!found) {
-    throw new Error('Could not find app config schema.');
-  }
-
-  const schema = found[2];
-  const schemaRefs = extractExternalSchemas(schema, cwd);
+  const schemaRefs = await extractExternalSchemas(schema, cwd);
 
   return { schema, schemaRefs };
 };
@@ -138,22 +124,9 @@ export const loadValidated = async (cwd = process.cwd()) => {
   return loaded;
 };
 
-export const loadValidatedSync = (cwd = process.cwd()) => {
-  const loaded = loadConfigSync(cwd);
-  const schema = loadSchemaSync(cwd);
-
-  const validation = validate({ ...schema, ...loaded }, cwd);
-
-  if (validation) {
-    throw validation[1];
-  }
-
-  return loaded;
-};
-
-const extractExternalSchemas = (schema: ConfigSubObject, cwd: string, schemas: SchemaRefs = {}) => {
+const extractExternalSchemas = async (schema: ConfigSubObject, cwd: string, schemas: SchemaRefs = {}) => {
   if (schema && typeof schema === 'object') {
-    Object.entries(schema).forEach(([key, val]) => {
+    for (const [key, val] of Object.entries(schema)) {
       if (key === '$ref' && typeof val === 'string') {
         // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
         const [, , filepath, ref] = /^(\.\/)?([^#]*)(#?.*)/.exec(val)!;
@@ -162,7 +135,7 @@ const extractExternalSchemas = (schema: ConfigSubObject, cwd: string, schemas: S
           // we resolve filepaths so that ajv resolves them correctly
           const resolvePath = resolve(join(cwd, filepath));
           const resolvePathEncoded = encodeURI(resolvePath);
-          const child = parseFileSync(resolvePath)[2];
+          const [,,child] = await parseFile(resolvePath);
 
           extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
 
@@ -176,7 +149,7 @@ const extractExternalSchemas = (schema: ConfigSubObject, cwd: string, schemas: S
       } else {
         extractExternalSchemas(val, cwd, schemas);
       }
-    });
+    }
   }
 
   return schemas;

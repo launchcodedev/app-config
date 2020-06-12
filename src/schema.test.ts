@@ -4,9 +4,7 @@ import {
   InvalidConfig,
   validate,
   loadSchema,
-  loadSchemaSync,
   loadValidated,
-  loadValidatedSync,
 } from './schema';
 import { withFakeFiles } from './test-util';
 
@@ -234,11 +232,6 @@ describe('load json schema', () => {
     withFakeFiles([['app-config.schema.json', content]], async dir => {
       expect(await loadSchema(dir)).toEqual(expected);
     }));
-
-  test('sync', () =>
-    withFakeFiles([['app-config.schema.json', content]], async dir => {
-      expect(loadSchemaSync(dir)).toEqual(expected);
-    }));
 });
 
 describe('load toml schema', () => {
@@ -261,11 +254,6 @@ describe('load toml schema', () => {
   test('async', () =>
     withFakeFiles([['app-config.schema.toml', content]], async dir => {
       expect(await loadSchema(dir)).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles([['app-config.schema.toml', content]], async dir => {
-      expect(loadSchemaSync(dir)).toEqual(expected);
     }));
 });
 
@@ -290,11 +278,6 @@ describe('load yaml schema', () => {
   test('async', () =>
     withFakeFiles([['app-config.schema.yml', content]], async dir => {
       expect(await loadSchema(dir)).toEqual(expected);
-    }));
-
-  test('sync', () =>
-    withFakeFiles([['app-config.schema.yml', content]], async dir => {
-      expect(loadSchemaSync(dir)).toEqual(expected);
     }));
 });
 
@@ -390,58 +373,6 @@ test('load validated', async () => {
   );
 });
 
-test('load validated sync', async () => {
-  await withFakeFiles(
-    [
-      [
-        '.app-config.schema.json',
-        `
-      {
-        "required": ["x"],
-        "properties": {
-          "x": { "type": "number" }
-        }
-      }
-      `,
-      ],
-      [
-        '.app-config.yml',
-        `
-      x: 1
-      `,
-      ],
-    ],
-    async dir => {
-      loadValidatedSync(dir);
-    },
-  );
-
-  await withFakeFiles(
-    [
-      [
-        '.app-config.schema.json',
-        `
-      {
-        "required": ["x"],
-        "properties": {
-          "x": { "type": "number" }
-        }
-      }
-      `,
-      ],
-      [
-        '.app-config.yml',
-        `
-      y: 1
-      `,
-      ],
-    ],
-    async dir => {
-      expect(() => loadValidatedSync(dir)).toThrow();
-    },
-  );
-});
-
 test('schema ref to other file', async () => {
   await withFakeFiles(
     [
@@ -478,46 +409,6 @@ test('schema ref to other file', async () => {
     ],
     async dir => {
       await loadValidated(dir);
-    },
-  );
-});
-
-test('schema ref to other file sync', async () => {
-  await withFakeFiles(
-    [
-      [
-        'app-config.schema.yml',
-        `
-      required: [x, y, z]
-      properties:
-        x: { $ref: 'other.schema.yml#/Nested' }
-        y: { $ref: 'other.schema.yml' }
-        z: { $ref: '#/definitions/N' }
-      definitions:
-        N: { type: string }
-      `,
-      ],
-      [
-        'other.schema.yml',
-        `
-      properties:
-        x: { $ref: '#/Nested' }
-      Nested:
-        type: number
-      `,
-      ],
-      [
-        '.app-config.yml',
-        `
-      x: 1
-      y:
-        x: 2
-      z: string
-      `,
-      ],
-    ],
-    async dir => {
-      loadValidatedSync(dir);
     },
   );
 });
