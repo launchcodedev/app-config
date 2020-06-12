@@ -7,7 +7,10 @@ import { GenerateFile } from './generate';
 
 const metaFileNames = ['.app-config.meta', 'app-config.meta'];
 
-type MetaProps = { generate: GenerateFile[] };
+type MetaProps = {
+  generate?: GenerateFile[];
+  teamMembers?: string[];
+};
 
 export const metaProps: any = {};
 
@@ -17,8 +20,12 @@ export const resetMetaProps = () => {
   }
 };
 
+export const findMetaFile = async (cwd = process.cwd()) => {
+  return findParseableFile(metaFileNames.map(f => join(cwd, f)));
+};
+
 export const loadMeta = async (cwd = process.cwd()): Promise<MetaProps> => {
-  const meta = await findParseableFile(metaFileNames.map(f => join(cwd, f)));
+  const meta = await findMetaFile(cwd);
 
   let packageConfig;
   try {

@@ -1,57 +1,93 @@
 import { join } from 'path';
 import { homedir } from 'os';
 import * as fs from 'fs-extra';
-import { key, message, generateKey, encrypt, decrypt, util } from 'openpgp';
+import { key, message, generateKey, encrypt, decrypt } from 'openpgp';
 import * as prompts from 'prompts';
+import { stringify, FileType } from './file-loader';
+import { loadMeta, findMetaFile } from './meta';
 
-// TODO: init a certificate
-// TODO: add user to certificate
+// TODO: non-string encrypted secrets
 // TODO: revocation
+// TODO: anyone can encrypt secrets if they have the team members list
 
-const keychainDir = join(homedir(), '.app-config', 'keychain');
-const privateKeyPath = join(keychainDir, 'private-key.asc');
-const publicKeyPath = join(keychainDir, 'public-key.asc');
-const revocationCertPath = join(keychainDir, 'revocation.asc');
+export const dirs = {
+  get keychain() {
+    return join(homedir(), '.app-config', 'keychain');
+  },
+  get privateKey() {
+    return join(dirs.keychain, 'private-key.asc');
+  },
+  get publicKey() {
+    return join(dirs.keychain, 'public-key.asc');
+  },
+  get revocationCert() {
+    return join(dirs.keychain, 'revocation.asc');
+  },
+};
 
-export const initializeSecrets = async (cwd: string) => {
-  if (!(await fs.pathExists(keychainDir))) {
-    const { name, email, passphrase } = await prompts([
-      { name: 'name', message: 'Your name', type: 'text' },
-      { name: 'email', message: 'Your email', type: 'text' },
-      { name: 'passphrase', message: 'Passphrase', type: 'password' },
-    ]);
+export const initializeKeys = async (withPassphrase: boolean = true) => {
+  const { name, email } = await prompts([
+    { name: 'name', message: 'Your name', type: 'text' },
+    { name: 'email', message: 'Your email', type: 'text' },
+  ]);
 
-    const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await generateKey({
-      curve: 'ed25519',
-      userIds: [{ name, email }],
-      passphrase,
-    });
+  let passphrase;
 
-    await fs.mkdirp(keychainDir);
-
-    // TODO: umask these
-    await Promise.all([
-      fs.writeFile(privateKeyPath, privateKeyArmored),
-      fs.writeFile(publicKeyPath, publicKeyArmored),
-      fs.writeFile(revocationCertPath, revocationCertificate),
-    ]);
+  if (withPassphrase) {
+    ({ passphrase } = await prompts({
+      name: 'passphrase',
+      message: 'Passphrase',
+      type: 'password',
+    }));
   }
+
+  const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await generateKey({
+    curve: 'ed25519',
+    userIds: [{ name, email }],
+    passphrase,
+  });
+
+  return {
+    privateKeyArmored,
+    publicKeyArmored,
+    revocationCertificate,
+  };
 };
 
-export const loadPrivateKey = async () => {
-  const {
-    keys: [privateKey],
-  } = await key.readArmored(await fs.readFile(privateKeyPath));
+export const initializeLocalKeys = async () => {
+  if (await fs.pathExists(dirs.keychain)) {
+    return false;
+  }
 
-  return privateKey;
+  const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await initializeKeys();
+
+  const prevUmask = process.umask(0o077);
+
+  await fs.mkdirp(dirs.keychain);
+
+  process.umask(0o177);
+
+  await Promise.all([
+    fs.writeFile(dirs.privateKey, privateKeyArmored),
+    fs.writeFile(dirs.publicKey, publicKeyArmored),
+    fs.writeFile(dirs.revocationCert, revocationCertificate),
+  ]);
+
+  process.umask(prevUmask);
+
+  return { publicKeyArmored };
 };
 
-export const loadPublicKey = async () => {
-  const {
-    keys: [publicKey],
-  } = await key.readArmored(await fs.readFile(publicKeyPath));
+export const resetKeys = async () => {
+  await fs.remove(dirs.keychain);
+};
 
-  return publicKey;
+export const loadKey = async (contents: string | Buffer) => {
+  const { err, keys } = await key.readArmored(contents);
+
+  if (err) throw err[0];
+
+  return keys[0];
 };
 
 let privateKey: key.Key | undefined;
@@ -59,46 +95,74 @@ let publicKey: key.Key | undefined;
 
 export const loadPrivateKeyLazy = async () => {
   if (!privateKey) {
-    await initializeSecrets(process.cwd());
+    if (process.env.APP_CONFIG_SECRETS_KEY) {
+      privateKey = await loadKey(process.env.APP_CONFIG_SECRETS_KEY);
+    } else {
+      if (process.env.CI) {
+        console.warn(
+          'Warning! Trying to load encryption keys from home folder in a CI environment',
+        );
+      }
 
-    privateKey = await loadPrivateKey();
+      await initializeLocalKeys();
+      privateKey = await loadKey(await fs.readFile(dirs.privateKey));
+
+      if (!privateKey.isDecrypted()) {
+        const { passphrase } = await prompts([
+          { name: 'passphrase', message: 'Passphrase', type: 'password' },
+        ]);
+
+        await privateKey.decrypt(passphrase);
+      }
+    }
   }
 
   return privateKey;
-}
+};
 
 export const loadPublicKeyLazy = async () => {
   if (!publicKey) {
-    await initializeSecrets(process.cwd());
+    if (process.env.APP_CONFIG_SECRETS_PUBLIC_KEY) {
+      publicKey = await loadKey(process.env.APP_CONFIG_SECRETS_PUBLIC_KEY);
+    } else {
+      if (process.env.CI) {
+        console.warn(
+          'Warning! Trying to load encryption keys from home folder in a CI environment',
+        );
+      }
 
-    publicKey = await loadPublicKey();
+      await initializeLocalKeys();
+      publicKey = await loadKey(await fs.readFile(dirs.publicKey));
+    }
   }
 
   return publicKey;
-}
+};
 
-export const loadSharedKey = async () => {
-  const publicKey = await loadPublicKeyLazy();
-  const myUser = await publicKey.getPrimaryUser().then(u => util.parseUserId(u.user.userId.userid));
+const loadTeamMembers = async () => {
+  const { teamMembers = [] } = await loadMeta();
 
-  console.log(myUser)
-  const { publicKeyArmored } = await generateKey({
-    userIds: [myUser],
-  });
+  const allKeys = [];
 
-  const {
-    keys: [sharedKey],
-  } = await key.readArmored(publicKeyArmored);
+  for (const teamMember of teamMembers) {
+    const { keys, err } = await key.readArmored(teamMember);
+    if (err) throw err[0];
 
-  return sharedKey;
+    allKeys.push(...keys);
+  }
+
+  return allKeys;
 };
 
 export const encryptText = async (text: string) => {
-  const publicKey = await loadSharedKey();
+  const allKeys = await loadTeamMembers();
+  // TODO: sign with private key
+  // const privateKey = await loadPrivateKeyLazy();
 
   const { data } = await encrypt({
     message: message.fromText(text),
-    publicKeys: [publicKey],
+    publicKeys: [...allKeys],
+    // privateKeys: [privateKey],
   });
 
   return data;
@@ -106,19 +170,41 @@ export const encryptText = async (text: string) => {
 
 export const decryptText = async (text: string) => {
   const privateKey = await loadPrivateKeyLazy();
-
-  if (!privateKey.isDecrypted()) {
-    const { passphrase } = await prompts([
-      { name: 'passphrase', message: 'Passphrase', type: 'password' },
-    ]);
-
-    await privateKey.decrypt(passphrase);
-  }
+  // TODO: verify signature against team members
+  // const allKeys = await loadTeamMembers();
 
   const { data } = await decrypt({
     message: await message.readArmored(text),
     privateKeys: [privateKey],
+    // publicKeys: [...allKeys],
   });
 
   return data;
+};
+
+export const trustTeamMember = async (publicKey: string) => {
+  const { keys, err } = await key.readArmored(publicKey);
+  if (err) throw err[0];
+
+  const { teamMembers = [], ...meta } = await loadMeta();
+
+  for (const key of keys) {
+    if (key.isPrivate()) {
+      throw new Error(
+        'A private key was passed in as a team member. Only public keys should be in team members.',
+      );
+    }
+
+    teamMembers.push(key.armor());
+  }
+
+  const foundMeta = await findMetaFile();
+
+  if (!foundMeta) {
+    await fs.writeFile('.app-config.meta.yml', stringify({ teamMembers }, FileType.YAML));
+  } else {
+    await fs.writeFile(foundMeta[1], stringify({ ...meta, teamMembers } as any, foundMeta[0]));
+  }
+
+  // TODO: rewrite every embedded secret
 };

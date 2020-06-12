@@ -4,14 +4,23 @@ import * as execa from 'execa';
 import * as Yargs from 'yargs';
 import * as refParser from 'json-schema-ref-parser';
 import * as PrettyError from 'pretty-error';
+import * as prompts from 'prompts';
 import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
 import { loadConfig, LoadedConfig, ConfigSource } from './config';
 import { loadValidated, loadSchema } from './schema';
-import { encryptText, decryptText } from './secrets';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
+import {
+  initializeKeys,
+  initializeLocalKeys,
+  loadKey,
+  resetKeys,
+  encryptText,
+  trustTeamMember,
+  dirs as keyDirs,
+} from './secrets';
 
 const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) => async (
   arg: Yargs.Arguments<T>,
@@ -154,26 +163,6 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
       console.log(stringify(refs.get(select) as any, extToFileType(format)));
     }),
   )
-  .command<BaseArgs & { format: string; select: string }>(
-    ['encrypt'],
-    'Encrypts a secret',
-    (yargs: Yargs.Argv<BaseArgs>) => yargs
-      .usage('$0 [secret]')
-      .demand(1, 'Give us a secret to encrypt')
-    ,
-    wrapCommand<BaseArgs & {}>(async argv => {
-      const [, ...secret] = argv._;
-      const text = secret.join(' ');
-
-      const encrypted = await encryptText(text);
-
-      console.log(encrypted);
-
-      const decrypted = await decryptText(encrypted);
-
-      console.log('decrypted:', decrypted);
-    }),
-  )
   .command<BaseArgs>(
     ['generate', 'gen', 'g'],
     'Run code generation as specified by the app-config file',
@@ -188,6 +177,80 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
       }
     }),
   )
+  .command<BaseArgs>({
+    command: 'secret',
+    aliases: ['s'],
+    describe: 'Encryption subcommands',
+    handler() {},
+    builder: yargs =>
+      yargs
+        .demand(1, 'Secret requires a subcommand')
+        .command<BaseArgs>({
+          command: 'init',
+          describe: 'Initializes your secret keychain',
+          async handler() {
+            const initialized = await initializeLocalKeys();
+
+            if (initialized === false) {
+              console.log('Secrets were already initialized');
+            } else {
+              console.log(`Your app-config key was set up in ${keyDirs.keychain}`);
+
+              console.log();
+              console.log(initialized.publicKeyArmored);
+            }
+          },
+        })
+        .command<BaseArgs>({
+          command: 'reset',
+          describe: 'Removes your secrets key',
+          async handler() {
+            const { confirm } = await prompts({
+              name: 'confirm',
+              type: 'confirm',
+              message: 'Are you sure? You wont be able to decrypt secrets that were signed for you',
+              initial: true,
+            });
+
+            if (confirm) {
+              await resetKeys();
+              console.log('Your keys are removed');
+            }
+          },
+        })
+        .command<BaseArgs>({
+          command: 'ci',
+          describe: 'Initializes your a trusted key for CI',
+          async handler() {
+            const { privateKeyArmored, publicKeyArmored } = await initializeKeys(false);
+
+            await trustTeamMember(publicKeyArmored);
+
+            console.log();
+            console.log(publicKeyArmored);
+            console.log();
+            console.log(privateKeyArmored);
+          },
+        })
+        .command<BaseArgs & { keyPath: string }>({
+          command: 'trust [keyPath]',
+          describe: 'Trusts a person, via their public key',
+          async handler({ keyPath }) {
+            const key = await loadKey(await readFile(keyPath));
+
+            await trustTeamMember(key.armor());
+
+            console.log(`Trusted ${key.getUserIds().join(', ')}`);
+          },
+        })
+        .command<BaseArgs & { secretText: string }>({
+          command: 'encrypt [secretText]',
+          describe: 'Encrypt a secret',
+          async handler(argv) {
+            console.log(await encryptText(argv.secretText));
+          },
+        }),
+  })
   .command<BaseArgs & { force: boolean }>(
     ['init'],
     'Creates the boilerplate for your project',

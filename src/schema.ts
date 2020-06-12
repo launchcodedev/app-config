@@ -1,13 +1,7 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { join, dirname, resolve } from 'path';
-import {
-  ConfigObject,
-  ConfigSubObject,
-  ConfigSource,
-  LoadedConfig,
-  loadConfig,
-} from './config';
+import { ConfigObject, ConfigSubObject, ConfigSource, LoadedConfig, loadConfig } from './config';
 import { findParseableFile, parseFile } from './file-loader';
 
 const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
@@ -81,6 +75,7 @@ export const validate = (
   if (source === ConfigSource.File && nonSecrets) {
     // check that the nonSecrets does not contain any properties marked as secret
     const secretsInNonSecrets = schemaSecrets.filter(secret => {
+      // TODO: we need to let through secrets that were encrypted
       if (_.get(nonSecrets, secret)) {
         return secret;
       }
@@ -124,7 +119,11 @@ export const loadValidated = async (cwd = process.cwd()) => {
   return loaded;
 };
 
-const extractExternalSchemas = async (schema: ConfigSubObject, cwd: string, schemas: SchemaRefs = {}) => {
+const extractExternalSchemas = async (
+  schema: ConfigSubObject,
+  cwd: string,
+  schemas: SchemaRefs = {},
+) => {
   if (schema && typeof schema === 'object') {
     for (const [key, val] of Object.entries(schema)) {
       if (key === '$ref' && typeof val === 'string') {
@@ -135,9 +134,9 @@ const extractExternalSchemas = async (schema: ConfigSubObject, cwd: string, sche
           // we resolve filepaths so that ajv resolves them correctly
           const resolvePath = resolve(join(cwd, filepath));
           const resolvePathEncoded = encodeURI(resolvePath);
-          const [,,child] = await parseFile(resolvePath);
+          const [, , child] = await parseFile(resolvePath);
 
-          extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
+          await extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
 
           if (!Array.isArray(schema)) {
             // replace the $ref inline with the resolvePath
@@ -147,7 +146,7 @@ const extractExternalSchemas = async (schema: ConfigSubObject, cwd: string, sche
           schemas[resolvePathEncoded] = child;
         }
       } else {
-        extractExternalSchemas(val, cwd, schemas);
+        await extractExternalSchemas(val, cwd, schemas);
       }
     }
   }

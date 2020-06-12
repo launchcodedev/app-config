@@ -1,11 +1,6 @@
 import { ConfigSource } from './config';
 import { FileType } from './file-loader';
-import {
-  InvalidConfig,
-  validate,
-  loadSchema,
-  loadValidated,
-} from './schema';
+import { InvalidConfig, validate, loadSchema, loadValidated } from './schema';
 import { withFakeFiles } from './test-util';
 
 test('parse schema', () => {

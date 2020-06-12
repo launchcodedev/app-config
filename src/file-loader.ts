@@ -311,8 +311,16 @@ const mapObject = async (config: any, envOverride?: string, context?: string): P
   if (typeof config === 'string') {
     let value: string = config;
 
-    if (value.startsWith('ENCRYPTED:')) {
-      return decryptText(value.substr('ENCRYPTED:'.length));
+    if (value.startsWith('-----BEGIN PGP MESSAGE-----')) {
+      return decryptText(value);
+    }
+
+    if (value.startsWith('encrypt:')) {
+      const base64 = value.substring(8);
+
+      return decryptText(
+        `${'-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n'}${base64}\n-----END PGP PUBLIC KEY BLOCK-----`,
+      );
     }
 
     // this regex matches:
