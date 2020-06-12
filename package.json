@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Configuration file loader with JSON schema support",
-  "version": "1.0.22",
+  "version": "2.0.0-alpha.0",
   "license": "MPL-2.0",
   "main": "dist/index.js",
   "module": "dist/es/index.js",
@@ -47,6 +47,8 @@
     "@types/json5": "0.0.30",
     "@types/lodash": "4",
     "@types/node": "8",
+    "@types/openpgp": "4",
+    "@types/prompts": "2",
     "@types/tmp": "0.0.33",
     "@types/yargs": "13",
     "eslint": "6",
@@ -66,7 +68,9 @@
     "json-schema-ref-parser": "6",
     "json5": "2",
     "lodash": "4",
+    "openpgp": "4",
     "pretty-error": "2",
+    "prompts": "2",
     "quicktype-core": "6.0.57",
     "yargs": "13"
   },

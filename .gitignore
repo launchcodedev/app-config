@@ -1,6 +1,7 @@
 node_modules/
 
 # config
+.app-config.*
 *.secrets.*
 
 # common build sites

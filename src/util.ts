@@ -56,3 +56,27 @@ export const findPackageRootSync = (cwd = process.cwd()): string => {
 
   return cwd;
 };
+
+export const findGitRoot = async (cwd = process.cwd()): Promise<string> => {
+  if (!(await fs.pathExists(join(cwd, '.git')))) {
+    if (join(cwd, '..') === cwd) {
+      throw new Error('no git root found in pwd or its parents');
+    }
+
+    return findGitRoot(join(cwd, '..'));
+  }
+
+  return cwd;
+};
+
+export const findGitRootSync = (cwd = process.cwd()): string => {
+  if (!fs.pathExistsSync(join(cwd, '.git'))) {
+    if (join(cwd, '..') === cwd) {
+      throw new Error('no git root found in pwd or its parents');
+    }
+
+    return findGitRootSync(join(cwd, '..'));
+  }
+
+  return cwd;
+};

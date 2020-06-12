@@ -1,12 +1,6 @@
 import * as _ from 'lodash';
 import { join } from 'path';
-import {
-  parseEnv,
-  getEnvType,
-  findParseableFile,
-  findParseableFileSync,
-  FileType,
-} from './file-loader';
+import { parseEnv, getEnvType, findParseableFile, FileType } from './file-loader';
 
 const envVarNames = ['APP_CONFIG'];
 const defaultConfigFileName = 'app-config';
@@ -60,9 +54,11 @@ export const loadConfig = async <C = ConfigObject>(
     envOverride?: string;
   } = {},
 ): Promise<LoadedConfig<C>> => {
-  const [envVarConfig] = envVarNames
-    .filter(name => !!process.env[name])
-    .map(envVar => parseEnv(envVar, undefined, envOverride));
+  const [envVarConfig] = await Promise.all(
+    envVarNames
+      .filter(name => !!process.env[name])
+      .map(envVar => parseEnv(envVar, undefined, envOverride)),
+  );
 
   if (envVarConfig) {
     const [fileType, config] = envVarConfig;
@@ -126,103 +122,11 @@ export const loadConfig = async <C = ConfigObject>(
 
   const [fileType, fileSource, nonSecrets] = mainConfig;
 
-  const [globalConfigExtend] = globalConfigExtends
-    .filter(name => !!process.env[name])
-    .map(envVar => parseEnv(envVar, undefined, envOverride));
-
-  if (globalConfigExtend) {
-    assignProperties(globalConfigExtend[1], nonSecrets as object, secrets as object);
-  }
-
-  return {
-    fileType,
-    fileSource,
-    secrets,
-    nonSecrets,
-    config: (_.merge({}, nonSecrets, secrets) as unknown) as C,
-    source: ConfigSource.File,
-  };
-};
-
-export const loadConfigSync = <C = ConfigObject>(
-  cwd = process.cwd(),
-  {
-    fileNameOverride,
-    envOverride,
-  }: {
-    fileNameOverride?: string;
-    envOverride?: string;
-  } = {},
-): LoadedConfig<C> => {
-  const [envVarConfig] = envVarNames
-    .filter(name => !!process.env[name])
-    .map(envVar => parseEnv(envVar, undefined, envOverride));
-
-  if (envVarConfig) {
-    const [fileType, config] = envVarConfig;
-
-    return {
-      fileType,
-      config: (config as unknown) as C,
-      source: ConfigSource.EnvVar,
-      nonSecrets: config,
-    };
-  }
-
-  const configFileName = fileNameOverride ?? defaultConfigFileName;
-
-  const configFileNames = [`.${configFileName}`, configFileName];
-  const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
-
-  const secretEnvConfigFileNames = getEnvFileNames(secretsFileNames, envOverride);
-  const secretsConfig = findParseableFileSync(
-    secretEnvConfigFileNames.concat(secretsFileNames).map(f => join(cwd, f)),
-    undefined,
-    envOverride,
+  const [globalConfigExtend] = await Promise.all(
+    globalConfigExtends
+      .filter(name => !!process.env[name])
+      .map(envVar => parseEnv(envVar, undefined, envOverride)),
   );
-  const secrets = secretsConfig ? secretsConfig[2] : {};
-
-  const envConfigFileNames = getEnvFileNames(configFileNames, envOverride);
-  const mainConfig = findParseableFileSync(
-    envConfigFileNames.concat(configFileNames).map(f => join(cwd, f)),
-    undefined,
-    envOverride,
-  );
-
-  if (!mainConfig) {
-    // make a best attempt at detecting env files without a main one
-    const tryFiles = ([] as string[])
-      .concat(getEnvFileNames(configFileNames, 'development'))
-      .concat(getEnvFileNames(configFileNames, 'production'))
-      .concat(getEnvFileNames(configFileNames, 'staging'))
-      .concat(getEnvFileNames(configFileNames, 'test'));
-
-    const found = findParseableFileSync(
-      tryFiles.map(f => join(cwd, f)),
-      undefined,
-      envOverride,
-    );
-
-    if (found && !(envOverride || getEnvType())) {
-      throw new Error(
-        'Could not find app config. ' +
-          `Found ${found[1]}, but you did not define an env (APP_CONFIG_ENV || ENV || NODE_ENV).`,
-      );
-    } else if (found) {
-      throw new Error(
-        'Could not find app config. ' +
-          `Found ${found[1]}, but your environment was ${envOverride ?? getEnvType()}.`,
-      );
-    }
-
-    throw new Error('Could not find app config. Expected an environment variable or file.');
-  }
-
-  const [fileType, fileSource, nonSecrets] = mainConfig;
-
-  const [globalConfigExtend] = globalConfigExtends
-    .filter(name => !!process.env[name])
-    .map(envVar => parseEnv(envVar, undefined, envOverride));
 
   if (globalConfigExtend) {
     assignProperties(globalConfigExtend[1], nonSecrets as object, secrets as object);

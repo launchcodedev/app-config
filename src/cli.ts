@@ -4,6 +4,7 @@ import * as execa from 'execa';
 import * as Yargs from 'yargs';
 import * as refParser from 'json-schema-ref-parser';
 import * as PrettyError from 'pretty-error';
+import * as prompts from 'prompts';
 import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
@@ -11,6 +12,20 @@ import { loadConfig, LoadedConfig, ConfigSource } from './config';
 import { loadValidated, loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
+import {
+  initializeKeys,
+  initializeLocalKeys,
+  loadPublicKeyLazy,
+  loadKey,
+  resetKeys,
+  encryptValue,
+  decryptText,
+  trustTeamMember,
+  untrustTeamMember,
+  createSymmetricKey,
+  saveSymmetricKey,
+  dirs as keyDirs,
+} from './secrets';
 
 const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) => async (
   arg: Yargs.Arguments<T>,
@@ -167,6 +182,140 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
       }
     }),
   )
+  .command<BaseArgs>({
+    command: 'secret',
+    aliases: ['s'],
+    describe: 'Encryption subcommands',
+    handler() {},
+    builder: yargs =>
+      yargs
+        .demand(1, 'Secret requires a subcommand')
+        .command<BaseArgs>({
+          command: 'init',
+          describe: 'Initializes your secret keychain',
+          async handler() {
+            const initialized = await initializeLocalKeys();
+
+            if (initialized === false) {
+              console.log('Secrets were already initialized');
+              process.exit(1);
+            } else {
+              console.log(`Your app-config key was set up in ${keyDirs.keychain}`);
+
+              console.log();
+              console.log(initialized.publicKeyArmored);
+            }
+          },
+        })
+        .command<BaseArgs>({
+          command: 'init-repo',
+          describe: 'Creates initial team members and symmetric key',
+          async handler() {
+            const myKey = await loadPublicKeyLazy();
+
+            await trustTeamMember(myKey.armor());
+            console.log('Initialized team members and a symmetric key');
+          },
+        })
+        .command<BaseArgs>({
+          command: 'init-key',
+          describe: 'Creates a new symmetric key, for any new secrets',
+          async handler() {
+            const { revision } = await saveSymmetricKey(await createSymmetricKey());
+
+            console.log(`A new symmetric key ${revision} was added to the repository.`)
+          },
+        })
+        .command<BaseArgs>({
+          command: 'reset',
+          describe: 'Removes your secrets key',
+          async handler() {
+            const { confirm } = await prompts({
+              name: 'confirm',
+              type: 'confirm',
+              message: 'Are you sure? You wont be able to decrypt secrets that were signed for you',
+              initial: true,
+            });
+
+            if (confirm) {
+              await resetKeys();
+              console.log('Your keys are removed');
+            }
+          },
+        })
+        .command<BaseArgs>({
+          command: 'key',
+          describe: 'View your public key',
+          async handler() {
+            const key = await loadPublicKeyLazy();
+
+            console.log(key.armor());
+          },
+        })
+        .command<BaseArgs & { path: string }>({
+          command: 'export [path]',
+          describe: 'Writes your public key to a file',
+          async handler({ path }) {
+            const key = await loadPublicKeyLazy();
+
+            await outputFile(path, key.armor());
+          },
+        })
+        .command<BaseArgs>({
+          command: 'ci',
+          describe: 'Initializes a trusted key for CI',
+          async handler() {
+            const { privateKeyArmored, publicKeyArmored } = await initializeKeys(false);
+
+            await trustTeamMember(publicKeyArmored);
+
+            console.log();
+            console.log(publicKeyArmored);
+            console.log();
+            console.log(privateKeyArmored);
+            console.log();
+
+            console.log('Public and private keys are printed above.');
+            console.log('To use them, add CI variables called APP_CONFIG_SECRETS_KEY and APP_CONFIG_SECRETS_PUBLIC_KEY.');
+          },
+        })
+        .command<BaseArgs & { keyPath: string }>({
+          command: 'trust [keyPath]',
+          describe: 'Trusts a person, via their public key',
+          async handler({ keyPath }) {
+            const key = await loadKey(await readFile(keyPath));
+
+            await trustTeamMember(key.armor());
+
+            console.log(`Trusted ${key.getUserIds().join(', ')}`);
+          },
+        })
+        .command<BaseArgs & { email: string }>({
+          command: 'untrust [email]',
+          describe: 'Revokes trust for a team member',
+          async handler({ email }) {
+            await untrustTeamMember(email);
+          },
+        })
+        .command<BaseArgs & { secretValue: string }>({
+          command: 'encrypt [secretValue]',
+          describe: 'Encrypt a secret',
+          async handler(argv) {
+            try {
+              console.log(await encryptValue(JSON.parse(argv.secretValue)));
+            } catch {
+              console.log(await encryptValue(argv.secretValue));
+            }
+          },
+        })
+        .command<BaseArgs & { secretText: string }>({
+          command: 'decrypt [secretText]',
+          describe: 'Decrypt a secret',
+          async handler(argv) {
+            console.log(await decryptText(argv.secretText));
+          },
+        }),
+  })
   .command<BaseArgs & { force: boolean }>(
     ['init'],
     'Creates the boilerplate for your project',
