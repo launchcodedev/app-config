@@ -4348,10 +4348,10 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-quicktype-core@6.0.52:
-  version "6.0.52"
-  resolved "https://registry.yarnpkg.com/quicktype-core/-/quicktype-core-6.0.52.tgz#d646473fd4116ca627c08ace71ed2501437230f4"
-  integrity sha512-SGYbekWPukIumxpIRAaSq0t12VH3uCl0OHnzFSXFu+cfW5ibo2Z9FktX5lhX291eYs/LXRe2vneZ49i2Z2Qm5Q==
+quicktype-core@6.0.56:
+  version "6.0.56"
+  resolved "https://registry.yarnpkg.com/quicktype-core/-/quicktype-core-6.0.56.tgz#aaa527cc7a438737d11567dbe4770e284d394006"
+  integrity sha512-B9VvjLyK7RrOZN8ATzWl1oeS5DdzLIhTMPN14YUqciikUszZ2Uwa8/Px5jfRVKZr8nE/NyztbfKzgUlAD3tGNA==
   dependencies:
     "@mark.probst/unicode-properties" "~1.1.0"
     "@types/urijs" "^1.19.1"

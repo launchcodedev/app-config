@@ -67,7 +67,7 @@
     "json5": "2",
     "lodash": "4",
     "pretty-error": "2",
-    "quicktype-core": "6.0.52",
+    "quicktype-core": "6.0.57",
     "yargs": "13"
   },
   "prettier": "@lcdev/prettier",
