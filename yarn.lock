@@ -685,10 +685,10 @@
   resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.0.33.tgz#1073c4bc824754ae3d10cfab88ab0237ba964e4d"
   integrity sha1-EHPEvIJHVK49EM+riKsCN7qWTk0=
 
-"@types/urijs@^1.19.8":
-  version "1.19.8"
-  resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.8.tgz#a66b2fd8b1d3cf3ef5bae7ca093b7d1b50e48c0a"
-  integrity sha512-SVQd2Qq0oL+b8VtJbQyv0cMIdU7fbRDcg2JIpcBvv+GUayJ3c5Ll1K+iivZl6ifcI6NbYcwjqDjljDFSiSGOeA==
+"@types/urijs@^1.19.1":
+  version "1.19.9"
+  resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.9.tgz#cedccc8e69677080cc8bb2e9ec50c6dd6093429e"
+  integrity sha512-/tiJyrc0GPcsReHzgC0SXwOmoPjLqYe01W7dLYB0yasQXMbcRee+ZIk+g8MIQhoBS8fPoBQO3Y93+aeBrI93Ug==
 
 "@types/yargs-parser@*":
   version "15.0.0"
@@ -4348,13 +4348,13 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-quicktype-core@6:
-  version "6.0.57"
-  resolved "https://registry.yarnpkg.com/quicktype-core/-/quicktype-core-6.0.57.tgz#7b33ca84295f347ed1e0c9e6db1be7a0d2341a64"
-  integrity sha512-cRfJ4jac7lj9E7nm7ydNJAnVRMgVqCNTc2wQ/GaJ+S9bMKl+RulMQVYJ3kfAXgGxBRWm/50DPQLJNsoo5KfmVA==
+quicktype-core@6.0.52:
+  version "6.0.52"
+  resolved "https://registry.yarnpkg.com/quicktype-core/-/quicktype-core-6.0.52.tgz#d646473fd4116ca627c08ace71ed2501437230f4"
+  integrity sha512-SGYbekWPukIumxpIRAaSq0t12VH3uCl0OHnzFSXFu+cfW5ibo2Z9FktX5lhX291eYs/LXRe2vneZ49i2Z2Qm5Q==
   dependencies:
     "@mark.probst/unicode-properties" "~1.1.0"
-    "@types/urijs" "^1.19.8"
+    "@types/urijs" "^1.19.1"
     collection-utils "^1.0.1"
     js-base64 "^2.4.3"
     pako "^1.0.6"
