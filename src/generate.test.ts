@@ -275,10 +275,7 @@ test('generate config file select', async () => {
 test('date type in typescript', async () => {
   await withFakeFiles(
     [
-      [
-        '.app-config.yml',
-        ``,
-      ],
+      ['.app-config.yml', ``],
       [
         '.app-config.schema.json5',
         `{
