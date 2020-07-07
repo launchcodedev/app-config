@@ -271,3 +271,44 @@ test('generate config file select', async () => {
     },
   );
 });
+
+test('date type in typescript', async () => {
+  await withFakeFiles(
+    [
+      [
+        '.app-config.yml',
+        ``,
+      ],
+      [
+        '.app-config.schema.json5',
+        `{
+           "properties": {
+             "x": { "type": "string", "format": "date" }
+           },
+         }`,
+      ],
+      [
+        '.app-config.meta.json',
+        `
+      {
+        "generate": [
+          {
+            "type": "ts",
+            "file": "config3.ts"
+          }
+        ]
+      }
+      `,
+      ],
+    ],
+    async dir => {
+      const output = await generateTypeFiles(dir);
+      expect(output.length).toBe(1);
+
+      const config = (await readFile(join(dir, 'config3.ts'))).toString('utf8');
+
+      expect(config).toBeTruthy();
+      expect(config).toMatch('x?: string');
+    },
+  );
+});

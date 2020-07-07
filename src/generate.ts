@@ -174,6 +174,7 @@ const generateQuicktype = async (
       lines
         // this is a fix for quicktype, which adds an Object postfix, sometimes
         .map(line => line.replace(`interface ${name}Object`, `interface ${name}`))
+        .map(line => line.replace(`: Date`, `: string`))
         .map(line => line.replace(/: +(\w)/, ': $1'))
     );
   }
