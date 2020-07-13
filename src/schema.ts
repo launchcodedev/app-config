@@ -125,11 +125,11 @@ export const validate = (
   return false;
 };
 
-export const loadValidated = async (cwd = process.cwd()) => {
-  const loaded = await loadConfig(cwd);
-  const schema = await loadSchema(cwd);
+export const loadValidated = async (configCwd = process.cwd(), schemaCwd = configCwd) => {
+  const loaded = await loadConfig(configCwd);
+  const schema = await loadSchema(schemaCwd);
 
-  const validation = validate({ ...schema, ...loaded }, cwd);
+  const validation = validate({ ...schema, ...loaded }, schemaCwd);
 
   if (validation) {
     throw validation[1];
@@ -138,11 +138,11 @@ export const loadValidated = async (cwd = process.cwd()) => {
   return loaded;
 };
 
-export const loadValidatedSync = (cwd = process.cwd()) => {
-  const loaded = loadConfigSync(cwd);
-  const schema = loadSchemaSync(cwd);
+export const loadValidatedSync = (configCwd = process.cwd(), schemaCwd = configCwd) => {
+  const loaded = loadConfigSync(configCwd);
+  const schema = loadSchemaSync(schemaCwd);
 
-  const validation = validate({ ...schema, ...loaded }, cwd);
+  const validation = validate({ ...schema, ...loaded }, schemaCwd);
 
   if (validation) {
     throw validation[1];

@@ -3,7 +3,10 @@ import { loadValidatedSync } from './schema';
 let config;
 
 if (process.env.APP_CONFIG_DISABLE !== '1') {
-  config = loadValidatedSync().config;
+  const configCwd = process.env.APP_CONFIG_CWD ?? process.cwd();
+  const schemaCwd = process.env.APP_CONFIG_SCHEMA_CWD ?? configCwd;
+
+  config = loadValidatedSync(configCwd, schemaCwd).config;
 } else {
   config = undefined as any;
 }
