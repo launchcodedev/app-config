@@ -216,6 +216,54 @@ export const parseFile = async (
     delete meta.extends;
   }
 
+  if (meta.override) {
+    const extend = (Array.isArray(meta.override) ? meta.override : [meta.override]) as string[];
+
+    for (const filename of extend) {
+      try {
+        const [, , override] = await parseFile(
+          join(dirname(file), filename),
+          supportedFileTypes,
+          envOverride,
+        );
+        config = merge(config, override);
+      } catch (e) {
+        if (e instanceof FileNotFound) {
+          throw new Error(`could not find override: ${filename}`);
+        }
+
+        throw e;
+      }
+    }
+
+    delete meta.override;
+  }
+
+  if (meta.overrideOptional) {
+    const extend = (Array.isArray(meta.overrideOptional)
+      ? meta.overrideOptional
+      : [meta.overrideOptional]) as string[];
+
+    for (const filename of extend) {
+      try {
+        const [, , overrideOptional] = await parseFile(
+          join(dirname(file), filename),
+          supportedFileTypes,
+          envOverride,
+        );
+        config = merge(config, overrideOptional);
+      } catch (e) {
+        if (e instanceof FileNotFound) {
+          continue; // this is expected, since it's overrideOptional
+        }
+
+        throw e;
+      }
+    }
+
+    delete meta.overrideOptional;
+  }
+
   return [fileType, file, config];
 };
 
@@ -298,6 +346,54 @@ export const parseFileSync = (
     }
 
     delete meta.extends;
+  }
+
+  if (meta.override) {
+    const extend = (Array.isArray(meta.override) ? meta.override : [meta.override]) as string[];
+
+    for (const filename of extend) {
+      try {
+        const [, , override] = parseFileSync(
+          join(dirname(file), filename),
+          supportedFileTypes,
+          envOverride,
+        );
+        config = merge(config, override);
+      } catch (e) {
+        if (e instanceof FileNotFound) {
+          throw new Error(`could not find override: ${filename}`);
+        }
+
+        throw e;
+      }
+    }
+
+    delete meta.override;
+  }
+
+  if (meta.overrideOptional) {
+    const extend = (Array.isArray(meta.overrideOptional)
+      ? meta.overrideOptional
+      : [meta.overrideOptional]) as string[];
+
+    for (const filename of extend) {
+      try {
+        const [, , overrideOptional] = parseFileSync(
+          join(dirname(file), filename),
+          supportedFileTypes,
+          envOverride,
+        );
+        config = merge(config, overrideOptional);
+      } catch (e) {
+        if (e instanceof FileNotFound) {
+          continue; // this is expected, since it's overrideOptional
+        }
+
+        throw e;
+      }
+    }
+
+    delete meta.overrideOptional;
   }
 
   return [fileType, file, config];

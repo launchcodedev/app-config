@@ -1423,3 +1423,135 @@ describe('$env merges work regardless of occurance in file', () => {
       expect(config).toEqual(expected);
     }));
 });
+
+describe('overrides', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      app-config:
+        override:
+          - 'overrider.yml'
+      value1: 'foo'
+      value2: 'foo'
+      `,
+    ],
+    [
+      'overrider.yml',
+      `
+      value2: 'bar'
+      `,
+    ],
+  ];
+
+  const expected = {
+    value1: 'foo',
+    value2: 'bar',
+  };
+
+  test('async', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+
+  test('sync', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+});
+
+describe('overrides optional', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      app-config:
+        overrideOptional:
+          - 'overrider.yml'
+      value1: 'foo'
+      value2: 'foo'
+      `,
+    ],
+    [
+      'overrider.yml',
+      `
+      value2: 'bar'
+      `,
+    ],
+  ];
+
+  const expected = {
+    value1: 'foo',
+    value2: 'bar',
+  };
+
+  test('async', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+
+  test('sync', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+});
+
+describe('overrides optional missing', () => {
+  const files: [string, string][] = [
+    [
+      '.app-config.yml',
+      `
+      app-config:
+        overrideOptional:
+          - 'overrider.yml'
+      value1: 'foo'
+      value2: 'foo'
+      `,
+    ],
+  ];
+
+  const expected = {
+    value1: 'foo',
+    value2: 'foo',
+  };
+
+  test('async', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = await loadConfig(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+
+  test('sync', () =>
+    withFakeFiles(files, async dir => {
+      const { config, secrets, fileType, source } = loadConfigSync(dir);
+
+      expect(source).toBe(ConfigSource.File);
+      expect(fileType).toBe(FileType.YAML);
+      expect(secrets).toEqual({});
+      expect(config).toEqual(expected);
+    }));
+});
