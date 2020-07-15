@@ -1,4 +1,4 @@
-import { extname, dirname, join } from 'path';
+import { extname, dirname, join, isAbsolute } from 'path';
 import { readFile, readFileSync, pathExists, pathExistsSync } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
@@ -198,11 +198,8 @@ export const parseFile = async (
 
     for (const filename of extend) {
       try {
-        const [, , ext] = await parseFile(
-          join(dirname(file), filename),
-          supportedFileTypes,
-          envOverride,
-        );
+        const filepath = isAbsolute(filename) ? filename : join(dirname(file), filename);
+        const [, , ext] = await parseFile(filepath, supportedFileTypes, envOverride);
         config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -221,11 +218,8 @@ export const parseFile = async (
 
     for (const filename of extend) {
       try {
-        const [, , override] = await parseFile(
-          join(dirname(file), filename),
-          supportedFileTypes,
-          envOverride,
-        );
+        const filepath = isAbsolute(filename) ? filename : join(dirname(file), filename);
+        const [, , override] = await parseFile(filepath, supportedFileTypes, envOverride);
         config = merge(config, override);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -246,11 +240,8 @@ export const parseFile = async (
 
     for (const filename of extend) {
       try {
-        const [, , overrideOptional] = await parseFile(
-          join(dirname(file), filename),
-          supportedFileTypes,
-          envOverride,
-        );
+        const filepath = isAbsolute(filename) ? filename : join(dirname(file), filename);
+        const [, , overrideOptional] = await parseFile(filepath, supportedFileTypes, envOverride);
         config = merge(config, overrideOptional);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -330,11 +321,8 @@ export const parseFileSync = (
 
     for (const filename of extend) {
       try {
-        const [, , ext] = parseFileSync(
-          join(dirname(file), filename),
-          supportedFileTypes,
-          envOverride,
-        );
+        const filepath = isAbsolute(filename) ? filename : join(dirname(file), filename);
+        const [, , ext] = parseFileSync(filepath, supportedFileTypes, envOverride);
         config = merge(ext, config);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -353,11 +341,8 @@ export const parseFileSync = (
 
     for (const filename of extend) {
       try {
-        const [, , override] = parseFileSync(
-          join(dirname(file), filename),
-          supportedFileTypes,
-          envOverride,
-        );
+        const filepath = isAbsolute(filename) ? filename : join(dirname(file), filename);
+        const [, , override] = parseFileSync(filepath, supportedFileTypes, envOverride);
         config = merge(config, override);
       } catch (e) {
         if (e instanceof FileNotFound) {
@@ -378,11 +363,8 @@ export const parseFileSync = (
 
     for (const filename of extend) {
       try {
-        const [, , overrideOptional] = parseFileSync(
-          join(dirname(file), filename),
-          supportedFileTypes,
-          envOverride,
-        );
+        const filepath = isAbsolute(filename) ? filename : join(dirname(file), filename);
+        const [, , overrideOptional] = parseFileSync(filepath, supportedFileTypes, envOverride);
         config = merge(config, overrideOptional);
       } catch (e) {
         if (e instanceof FileNotFound) {
