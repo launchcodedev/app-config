@@ -1,5 +1,8 @@
 import { loadValidatedSync } from './schema';
 
+// the config type that is exported to consumers and can be augmented
+import { ExportedConfig } from './exports';
+
 let config;
 
 if (process.env.APP_CONFIG_DISABLE !== '1') {
@@ -8,7 +11,5 @@ if (process.env.APP_CONFIG_DISABLE !== '1') {
   config = undefined as any;
 }
 
-// the config type that is exported to consumers and can be augmented
-export interface ExportedConfig {}
 export default config as ExportedConfig;
 export * from './exports';
