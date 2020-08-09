@@ -263,7 +263,7 @@ export const createSymmetricKey = async (
   }
 
   if (!teamMembers) teamMembers = await loadTeamMembersLazy();
-  const password = crypto.random.getRandomBytes(2048);
+  const password = await crypto.random.getRandomBytes(2048); // eslint-disable-line @typescript-eslint/await-thenable
   const passwordWithRevision = encodeRevisionInPassword(password, revision);
 
   if (teamMembers.length === 0) {
