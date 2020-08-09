@@ -462,7 +462,7 @@ export const reencryptSymmetricKey = async (
   teamMembers: Key[],
 ): Promise<SymmetricKey> => {
   const { data: key } = await encrypt({
-    message: message.fromBinary(password),
+    message: message.fromText(password),
     publicKeys: [...teamMembers],
   });
 
