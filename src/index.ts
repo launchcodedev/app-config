@@ -7,7 +7,7 @@ export interface ExportedConfig {}
 
 let realConfigValue: ExportedConfig;
 
-let config: ExportedConfig = new Proxy(
+const config: ExportedConfig = new Proxy(
   { APP_CONFIG_WAS_NOT_LOADED_YET_LOOK_AT_THE_DOCS: true },
   {
     get(target, ...args) {
@@ -26,4 +26,4 @@ export async function loadConfig(): Promise<ExportedConfig> {
   return realConfigValue;
 }
 
-export default config as ExportedConfig;
+export default config;

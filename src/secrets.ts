@@ -147,8 +147,6 @@ export const loadPrivateKeyLazy = async (): Promise<Key> => {
 };
 
 export const loadPublicKeyLazy = async (): Promise<Key> => {
-  const privateKey = await loadPrivateKeyLazy();
-
   if (!publicKey) {
     if (process.env.APP_CONFIG_SECRETS_PUBLIC_KEY) {
       publicKey = loadKey(process.env.APP_CONFIG_SECRETS_PUBLIC_KEY);
@@ -265,7 +263,7 @@ export const createSymmetricKey = async (
   }
 
   if (!teamMembers) teamMembers = await loadTeamMembersLazy();
-  const password = await crypto.random.getRandomBytes(2048);
+  const password = crypto.random.getRandomBytes(2048);
   const passwordWithRevision = encodeRevisionInPassword(password, revision);
 
   if (teamMembers.length === 0) {
@@ -426,7 +424,7 @@ export const untrustTeamMember = async (email: string) => {
   // we do this solely to make it harder to go back in time and get old secrets
   // of course, nothing stops users from having previously copy-pasted secrets, so they should always be rotated when untrusting old users
   // reason being, they had previous access to the actual private symmetric key
-  let newEncryptionKeys = [];
+  const newEncryptionKeys = [];
 
   for (const { revision } of encryptionKeys) {
     const key = await loadSymmetricKey(revision);
@@ -475,7 +473,7 @@ const stringAsTypedArray = (str: string) => {
   const buf = new ArrayBuffer(str.length * 2);
   const bufView = new Uint16Array(buf);
 
-  for (var i = 0, strLen = str.length; i < strLen; i++) {
+  for (let i = 0, strLen = str.length; i < strLen; i += 1) {
     bufView[i] = str.charCodeAt(i);
   }
 

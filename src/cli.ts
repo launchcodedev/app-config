@@ -223,7 +223,7 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
           async handler() {
             const { revision } = await saveSymmetricKey(await createSymmetricKey());
 
-            console.log(`A new symmetric key ${revision} was added to the repository.`)
+            console.log(`A new symmetric key ${revision} was added to the repository.`);
           },
         })
         .command<BaseArgs>({
@@ -276,7 +276,9 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
             console.log();
 
             console.log('Public and private keys are printed above.');
-            console.log('To use them, add CI variables called APP_CONFIG_SECRETS_KEY and APP_CONFIG_SECRETS_PUBLIC_KEY.');
+            console.log(
+              'To use them, add CI variables called APP_CONFIG_SECRETS_KEY and APP_CONFIG_SECRETS_PUBLIC_KEY.',
+            );
           },
         })
         .command<BaseArgs & { keyPath: string }>({

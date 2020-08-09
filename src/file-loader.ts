@@ -317,7 +317,7 @@ export const parseString = async (
     case FileType.YAML:
     default: {
       const mappedConfig = await mapObject(
-        YAML.safeLoad(contents) || {},
+        YAML.safeLoad(contents) ?? {},
         doDecryption,
         envOverride,
       );
