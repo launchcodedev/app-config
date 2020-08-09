@@ -184,7 +184,7 @@ describe('create-schema', () => {
           `,
         ],
       ],
-      async (dir) => {
+      async dir => {
         {
           const { stdout } = await runCli(['-C', dir, 'create-schema']);
 
@@ -192,13 +192,27 @@ describe('create-schema', () => {
         }
 
         {
-          const { stdout } = await runCli(['-C', dir, 'create-schema', '--select', '#/properties/foo']);
+          const { stdout } = await runCli([
+            '-C',
+            dir,
+            'create-schema',
+            '--select',
+            '#/properties/foo',
+          ]);
 
           expect(stdout).toMatchSnapshot();
         }
 
         {
-          const { stdout } = await runCli(['-C', dir, 'create-schema', '--select', '#/properties/foo', '--format', 'json']);
+          const { stdout } = await runCli([
+            '-C',
+            dir,
+            'create-schema',
+            '--select',
+            '#/properties/foo',
+            '--format',
+            'json',
+          ]);
 
           expect(stdout).toMatchSnapshot();
         }
@@ -225,12 +239,9 @@ describe('run', () => {
             foo: bar
           `,
         ],
-        [
-          '.app-config.schema.yml',
-          `type: object`,
-        ],
+        ['.app-config.schema.yml', `type: object`],
       ],
-      async (dir) => {
+      async dir => {
         {
           const { stdout } = await runCli(['-C', dir, '--', 'env']);
           const variables = stdout.split('\n');
@@ -246,7 +257,16 @@ describe('run', () => {
         }
 
         {
-          const { stdout } = await runCli(['-C', dir, '--prefix', 'PREFIX', '--format', 'json', '--', 'env']);
+          const { stdout } = await runCli([
+            '-C',
+            dir,
+            '--prefix',
+            'PREFIX',
+            '--format',
+            'json',
+            '--',
+            'env',
+          ]);
           const variables = stdout.split('\n');
           expect(variables.includes('PREFIX_FOO=bar')).toBe(true);
           expect(variables.includes('PREFIX={"foo":"bar"}')).toBe(true);

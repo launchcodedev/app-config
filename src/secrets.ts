@@ -228,11 +228,11 @@ export const loadSymmetricKey = async (revision: number): Promise<LoadedSymmetri
     const teamMembersString = teamMembers.map(m => m.getUserIds().join(', ')).join(', ');
 
     throw new Error(
-      oneLine`
+      `${oneLine`
         There was an error loading a symmetric key (${revision}) used for encrypted secrets.
         You most likely haven\'t been trusted.
         For help, you might want to contact one of the trusted team members: ${teamMembersString}
-      ` + `\nOriginal error: ${err}`,
+      `}\nOriginal error: ${err}`,
     );
   }
 };

@@ -1,6 +1,5 @@
-import { encryptValue } from './secrets';
+import {} from './secrets';
 
 describe('encryption', () => {
-  test('encrypt value', async () => {
-  });
+  test('encrypt value', async () => {});
 });

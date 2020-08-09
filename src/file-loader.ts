@@ -327,7 +327,11 @@ export const parseString = async (
   }
 };
 
-export const stringify = (config: ConfigObject, fileType: FileType, minimal: boolean = false): string => {
+export const stringify = (
+  config: ConfigObject,
+  fileType: FileType,
+  minimal: boolean = false,
+): string => {
   switch (fileType) {
     case FileType.JSON: {
       return JSON.stringify(config, null, minimal ? 0 : 2);
