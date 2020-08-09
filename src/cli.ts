@@ -52,12 +52,11 @@ const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) 
 
 const flattenConfig = (loaded: LoadedConfig, argv: { secrets: boolean; prefix: string }) => {
   const { secrets, prefix } = argv;
-
   const { config: fullConfig, nonSecrets } = loaded;
 
   const config = (secrets ? fullConfig : nonSecrets) as any;
 
-  return [config, flattenObjectTree(config, prefix)];
+  return [config, flattenObjectTree(config, prefix)] as const;
 };
 
 type BaseArgs = { cwd: string; secrets: boolean };
@@ -213,6 +212,7 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
           async handler() {
             const myKey = await loadPublicKeyLazy();
 
+            // setups up a bad initial key
             await trustTeamMember(myKey.armor());
             console.log('Initialized team members and a symmetric key');
           },
@@ -346,13 +346,13 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
       await outputFile(
         '.app-config.schema.yml',
         stripIndent`
-        $schema: http://json-schema.org/draft-07/schema#
+          $schema: http://json-schema.org/draft-07/schema#
 
-        type: object
-        required: []
-        properties: {}
-        definitions: {}
-      `,
+          type: object
+          required: []
+          properties: {}
+          definitions: {}
+        `,
       );
       console.log('.app-config.schema.yml file written');
 
@@ -401,7 +401,7 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
 
       await execa(command, args, {
         env: {
-          [prefix]: stringify(config, extToFileType(format)),
+          [prefix]: stringify(config, extToFileType(format), true),
           ...flattenedConfig,
         },
         stdio: 'inherit',
@@ -411,6 +411,7 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
         } else {
           console.error(err.message);
         }
+
         process.exit(1);
       });
     }),

@@ -8,10 +8,13 @@ import { stringify, FileType } from './file-loader';
 import { loadMeta, findMetaFile } from './meta';
 
 export interface SymmetricKey {
-  // what "version" of the key is it
   revision: number;
-  // this is in encrypted form, decrypt using any team member's private key
   key: string;
+}
+
+export interface LoadedSymmetricKey {
+  revision: number;
+  password: string;
 }
 
 export interface TeamMember {
@@ -200,7 +203,7 @@ export const loadSymmetricKeysLazy = async (): Promise<SymmetricKey[]> => {
   return encryptionKeys;
 };
 
-export const loadSymmetricKey = async (revision: number): Promise<SymmetricKey> => {
+export const loadSymmetricKey = async (revision: number): Promise<LoadedSymmetricKey> => {
   const encryptionKeys = await loadSymmetricKeysLazy();
   const found = encryptionKeys.find(k => k.revision === revision);
 
@@ -211,28 +214,30 @@ export const loadSymmetricKey = async (revision: number): Promise<SymmetricKey> 
   const privateKey = await loadPrivateKeyLazy();
 
   try {
-    const { data: key } = await decrypt({
+    const { data: password } = await decrypt({
       message: await message.readArmored(found.key),
       privateKeys: [privateKey],
       format: 'utf8',
     });
 
-    verifyEncodedRevision(key, revision);
+    verifyEncodedRevision(password, revision);
 
-    return { key, revision };
+    return { revision, password };
   } catch (err) {
     const teamMembers = await loadTeamMembersLazy();
     const teamMembersString = teamMembers.map(m => m.getUserIds().join(', ')).join(', ');
 
-    throw new Error(oneLine`
-      There was an error decrypting secrets that are present in app-config.
-      You most likely haven\'t been trusted.
-      For help, you might want to contact one of the trusted team members: ${teamMembersString}
-    `);
+    throw new Error(
+      oneLine`
+        There was an error loading a symmetric key (${revision}) used for encrypted secrets.
+        You most likely haven\'t been trusted.
+        For help, you might want to contact one of the trusted team members: ${teamMembersString}
+      ` + `\nOriginal error: ${err}`,
+    );
   }
 };
 
-export const loadLatestSymmetricKey = async (): Promise<SymmetricKey> => {
+export const loadLatestSymmetricKey = async (): Promise<LoadedSymmetricKey> => {
   const encryptionKeys = await loadSymmetricKeysLazy();
 
   encryptionKeys.sort((a, b) => a.revision - b.revision);
@@ -263,8 +268,8 @@ export const createSymmetricKey = async (
   }
 
   if (!teamMembers) teamMembers = await loadTeamMembersLazy();
-  const password = await crypto.random.getRandomBytes(2048); // eslint-disable-line @typescript-eslint/await-thenable
-  const passwordWithRevision = encodeRevisionInPassword(password, revision);
+  const rawPassword = await crypto.random.getRandomBytes(2048); // eslint-disable-line @typescript-eslint/await-thenable
+  const passwordWithRevision = encodeRevisionInPassword(rawPassword, revision);
 
   if (teamMembers.length === 0) {
     throw new Error('Cannot create a symmetric key with no teamMembers');
@@ -299,11 +304,11 @@ type Json = string | number | null | { [k: string]: Json } | Json[];
 
 export const encryptValue = async (value: Json): Promise<string> => {
   const text = JSON.stringify(value);
-  const { revision, key } = await loadLatestSymmetricKey();
+  const { revision, password } = await loadLatestSymmetricKey();
 
   const { data } = await encrypt({
     message: message.fromText(text),
-    passwords: [key],
+    passwords: [password],
   });
 
   const extracted = base64Regex.exec(data.toString());
@@ -319,14 +324,14 @@ export const encryptValue = async (value: Json): Promise<string> => {
 
 export const decryptText = async (text: string): Promise<string> => {
   const [, revision, base64] = text.split(':');
-  const { key } = await loadSymmetricKey(parseFloat(revision));
+  const { password } = await loadSymmetricKey(parseFloat(revision));
 
   const armored = `${'-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n'}${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
 
   try {
     const { data } = await decrypt({
       message: await message.readArmored(armored),
-      passwords: [key],
+      passwords: [password],
       format: 'utf8',
     });
 
@@ -453,15 +458,15 @@ export const untrustTeamMember = async (email: string) => {
 };
 
 export const reencryptSymmetricKey = async (
-  { revision, key }: SymmetricKey,
+  { revision, password }: LoadedSymmetricKey,
   teamMembers: Key[],
-) => {
-  const { data } = await encrypt({
-    message: message.fromText(key),
+): Promise<SymmetricKey> => {
+  const { data: key } = await encrypt({
+    message: message.fromBinary(password),
     publicKeys: [...teamMembers],
   });
 
-  return { revision, key: data };
+  return { revision, key };
 };
 
 const decodeTypedArray = (buf: ArrayBuffer) => {

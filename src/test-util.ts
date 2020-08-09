@@ -8,12 +8,16 @@ export const withFakeFiles = async (
 ) => {
   const { path: tmp } = await dir();
   const filenames = files.map(([name]) => join(tmp, name));
+
   await Promise.all(
     filenames.map(async (name, i) => {
       await outputFile(name, files[i][1]);
     }),
   );
 
-  await cb(tmp);
-  await remove(tmp);
+  try {
+    await cb(tmp);
+  } finally {
+    await remove(tmp);
+  }
 };

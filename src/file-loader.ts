@@ -327,13 +327,13 @@ export const parseString = async (
   }
 };
 
-export const stringify = (config: ConfigObject, fileType: FileType): string => {
+export const stringify = (config: ConfigObject, fileType: FileType, minimal: boolean = false): string => {
   switch (fileType) {
     case FileType.JSON: {
-      return JSON.stringify(config, null, 2);
+      return JSON.stringify(config, null, minimal ? 0 : 2);
     }
     case FileType.JSON5: {
-      return JSON5.stringify(config, null, 2);
+      return JSON5.stringify(config, null, minimal ? 0 : 2);
     }
     case FileType.TOML: {
       return TOML.stringify(config as any);

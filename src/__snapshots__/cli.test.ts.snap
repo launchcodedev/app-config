@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`create basic 1`] = `
+"foo: bar
+"
+`;
+
+exports[`create basic 2`] = `
+"{
+  \\"foo\\": \\"bar\\"
+}"
+`;
+
+exports[`create basic 3`] = `
+"{
+  foo: 'bar',
+}"
+`;
+
+exports[`create basic 4`] = `
+"foo = \\"bar\\"
+"
+`;
+
+exports[`create selects 1`] = `
+"bar:
+  baz: 42
+"
+`;
+
+exports[`create selects 2`] = `
+"baz: 42
+"
+`;
+
+exports[`create selects 3`] = `
+"baz: 42
+secretValue: 99
+"
+`;
+
+exports[`create-schema resolve references 1`] = `
+"type: object
+properties:
+  foo:
+    type: string
+    format: uri
+"
+`;
+
+exports[`create-schema resolve references 2`] = `
+"type: string
+format: uri
+"
+`;
+
+exports[`create-schema resolve references 3`] = `
+"{
+  \\"type\\": \\"string\\",
+  \\"format\\": \\"uri\\"
+}"
+`;

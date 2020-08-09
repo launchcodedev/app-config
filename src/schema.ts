@@ -76,7 +76,9 @@ export const validate = (
     // check that the nonSecrets does not contain any properties marked as secret
     const secretsInNonSecrets = schemaSecrets.filter(secret => {
       // TODO: we need to let through secrets that were encrypted
-      if (_.get(nonSecrets, secret)) {
+      const found = _.get(nonSecrets, secret);
+
+      if (found) {
         return secret;
       }
 
