@@ -1,7 +1,7 @@
 import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { join, dirname, resolve } from 'path';
-import { ConfigObject, ConfigSubObject, ConfigSource, LoadedConfig, loadConfig } from './config';
+import { ConfigObject, ConfigSubObject, ConfigSource, LoadedConfig, loadConfigRaw } from './config';
 import { findParseableFile, parseFile } from './file-loader';
 
 const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
@@ -107,7 +107,7 @@ export const validate = (
 };
 
 export const loadValidated = async (cwd = process.cwd()) => {
-  const loaded = await loadConfig(cwd);
+  const loaded = await loadConfigRaw(cwd);
   const schema = await loadSchema(cwd);
 
   const validation = validate({ ...schema, ...loaded }, cwd);

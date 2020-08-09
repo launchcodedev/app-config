@@ -8,7 +8,7 @@ import * as prompts from 'prompts';
 import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
-import { loadConfig, LoadedConfig, ConfigSource } from './config';
+import { loadConfigRaw, LoadedConfig, ConfigSource } from './config';
 import { loadValidated, loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { stringify, extToFileType } from './file-loader';
@@ -327,7 +327,7 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
     wrapCommand<BaseArgs & { force: boolean }>(async ({ cwd, force }) => {
       process.chdir(cwd);
 
-      await loadConfig()
+      await loadConfigRaw()
         .catch(_ => null)
         .then(res => {
           if (res !== null && res.source === ConfigSource.File && !force) {

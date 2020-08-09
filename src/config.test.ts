@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { FileType } from './file-loader';
-import { loadConfig, ConfigSource } from './config';
+import { loadConfigRaw, ConfigSource } from './config';
 import { withFakeFiles } from './test-util';
 
 describe('load env config', () => {
@@ -22,7 +22,7 @@ describe('load env config', () => {
   };
 
   test('async', async () => {
-    const { config, secrets, fileType, source } = await loadConfig();
+    const { config, secrets, fileType, source } = await loadConfigRaw();
 
     expect(config).toEqual(expected);
     expect(secrets).toBe(undefined);
@@ -48,7 +48,7 @@ describe('load unhidden config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -74,7 +74,7 @@ describe('load toml config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -97,7 +97,7 @@ describe('load env override files', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
         envOverride: 'qa',
       });
@@ -130,7 +130,7 @@ describe('load env override files', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
         envOverride: 'qa',
       });
@@ -169,7 +169,7 @@ describe('load env override from within extends', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
         envOverride: 'qa',
       });
@@ -204,7 +204,7 @@ describe('load custom named yaml config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
       });
 
@@ -216,7 +216,7 @@ describe('load custom named yaml config file', () => {
 
   test('sync', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
       });
 
@@ -250,7 +250,7 @@ describe('load hidden custom named yaml config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
       });
 
@@ -262,7 +262,7 @@ describe('load hidden custom named yaml config file', () => {
 
   test('sync', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir, {
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir, {
         fileNameOverride: 'custom-name',
       });
 
@@ -290,7 +290,7 @@ describe('load yaml config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -317,7 +317,7 @@ describe('load json config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.JSON);
@@ -344,7 +344,7 @@ describe('load json5 config file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.JSON5);
@@ -358,7 +358,7 @@ describe('config file source', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { fileSource, fileType } = await loadConfig(dir);
+      const { fileSource, fileType } = await loadConfigRaw(dir);
 
       expect(fileSource).toBe(join(dir, 'app-config.json5'));
       expect(fileType).toBe(FileType.JSON5);
@@ -398,7 +398,7 @@ describe('load secrets file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -415,7 +415,7 @@ describe('extends in env var', () => {
     `;
 
     // we can't extend files in an env config
-    await expect(loadConfig()).rejects.toThrow();
+    await expect(loadConfigRaw()).rejects.toThrow();
 
     delete process.env.APP_CONFIG;
   });
@@ -453,7 +453,7 @@ describe('load config w/ one file extends', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -518,7 +518,7 @@ describe('load config w/ multiple file extends', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -588,7 +588,7 @@ describe('load env config and secrets w/ file extends', () => {
   test('async', () =>
     withFakeFiles(files, async dir => {
       process.env.NODE_ENV = 'production';
-      const { nonSecrets, secrets, fileType, source } = await loadConfig(dir);
+      const { nonSecrets, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.TOML);
@@ -639,7 +639,7 @@ describe('extending from env var', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -690,7 +690,7 @@ describe('extending secret from env var', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -721,7 +721,7 @@ describe('extending blank config from env var', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, fileType, source } = await loadConfig(dir);
+      const { config, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -766,7 +766,7 @@ describe('extending from env var without nesting', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -809,7 +809,7 @@ describe('load environment specific config', () => {
     test('async', () =>
       withFakeFiles(files, async dir => {
         process.env.NODE_ENV = env;
-        const { config, secrets, fileType, source } = await loadConfig(dir);
+        const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
         expect(source).toBe(ConfigSource.File);
         expect(fileType).toBe(FileType.TOML);
@@ -843,7 +843,7 @@ describe('load environment specific config with alias', () => {
     test('async', () =>
       withFakeFiles(files, async dir => {
         process.env.NODE_ENV = env;
-        const { config, secrets, fileType, source } = await loadConfig(dir);
+        const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
         expect(source).toBe(ConfigSource.File);
         expect(fileType).toBe(FileType.TOML);
@@ -903,7 +903,7 @@ describe('load environment specific config with secrets', () => {
     test('async', () =>
       withFakeFiles(files, async dir => {
         process.env.NODE_ENV = env;
-        const { config, secrets, fileType, source } = await loadConfig(dir);
+        const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
         expect(source).toBe(ConfigSource.File);
         expect(fileType).toBe(FileType.TOML);
@@ -938,7 +938,7 @@ describe('load environment specific config with alternate env variables', () => 
     test('async', () =>
       withFakeFiles(files, async dir => {
         process.env[envName] = 'production';
-        const { config, secrets, fileType, source } = await loadConfig(dir);
+        const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
         expect(source).toBe(ConfigSource.File);
         expect(fileType).toBe(FileType.YAML);
@@ -981,7 +981,7 @@ describe('extending with env', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, fileType, source } = await loadConfig(dir);
+      const { config, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);

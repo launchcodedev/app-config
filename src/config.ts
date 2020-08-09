@@ -44,7 +44,7 @@ const getEnvFileNames = (files: string[], envType = getEnvType()) => {
   );
 };
 
-export const loadConfig = async <C = ConfigObject>(
+export const loadConfigRaw = async <C = ConfigObject>(
   cwd = process.cwd(),
   {
     fileNameOverride,

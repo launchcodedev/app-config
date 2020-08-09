@@ -7,7 +7,7 @@ import {
   findParseableFile,
 } from './file-loader';
 import { withFakeFiles } from './test-util';
-import { loadConfig, ConfigSource } from './config';
+import { loadConfigRaw, ConfigSource } from './config';
 
 describe('ext to file type', () => {
   expect(extToFileType('toml')).toBe(FileType.TOML);
@@ -800,7 +800,7 @@ describe('extends with an $env value', () => {
   test('async development', () =>
     withFakeFiles(files, async dir => {
       process.env.APP_CONFIG_ENV = 'development';
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -811,7 +811,7 @@ describe('extends with an $env value', () => {
   test('async default', () =>
     withFakeFiles(files, async dir => {
       process.env.APP_CONFIG_ENV = 'triggers-default';
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -864,7 +864,7 @@ describe('app-config with $env value containing extends', () => {
   test('async development', () =>
     withFakeFiles(files, async dir => {
       process.env.APP_CONFIG_ENV = 'development';
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -875,7 +875,7 @@ describe('app-config with $env value containing extends', () => {
   test('async default', () =>
     withFakeFiles(files, async dir => {
       process.env.APP_CONFIG_ENV = 'triggers-default';
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -929,7 +929,7 @@ describe('$env containing app-config with extends', () => {
   test('async development', () =>
     withFakeFiles(files, async dir => {
       process.env.APP_CONFIG_ENV = 'development';
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -940,7 +940,7 @@ describe('$env containing app-config with extends', () => {
   test('async default', () =>
     withFakeFiles(files, async dir => {
       process.env.APP_CONFIG_ENV = 'triggers-default';
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -984,7 +984,7 @@ describe('extends $env with root level $env merge objects properly', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -1021,7 +1021,7 @@ describe("$env deep-merge arrays don't merge; last occurance overwrites", () => 
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -1065,7 +1065,7 @@ describe('$env merges work regardless of occurance in file', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -1101,7 +1101,7 @@ describe('overrides', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -1137,7 +1137,7 @@ describe('overrides optional', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);
@@ -1167,7 +1167,7 @@ describe('overrides optional missing', () => {
 
   test('async', () =>
     withFakeFiles(files, async dir => {
-      const { config, secrets, fileType, source } = await loadConfig(dir);
+      const { config, secrets, fileType, source } = await loadConfigRaw(dir);
 
       expect(source).toBe(ConfigSource.File);
       expect(fileType).toBe(FileType.YAML);

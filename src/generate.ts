@@ -11,7 +11,7 @@ import {
   InputData,
 } from 'quicktype-core';
 import { stringify, extToFileType } from './file-loader';
-import { loadConfig, ConfigObject } from './config';
+import { loadConfigRaw, ConfigObject } from './config';
 import { loadSchema, SchemaRefs } from './schema';
 import { loadMeta, resetMetaProps } from './meta';
 
@@ -37,7 +37,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
 
   // call loadConfig so that loadMeta is populated, but it could fail for legit reasons
   try {
-    await loadConfig(cwd);
+    await loadConfigRaw(cwd);
   } catch {
     /* expected */
   }
@@ -73,7 +73,7 @@ export const generateTypeFiles = async (cwd = process.cwd()) => {
           case 'toml':
           case 'yml':
           case 'yaml': {
-            const { config, nonSecrets } = await loadConfig(cwd);
+            const { config, nonSecrets } = await loadConfigRaw(cwd);
             const output = includeSecrets ? config : nonSecrets;
             const refs = await refParser.resolve(output);
             const selected = refs.get(select);
