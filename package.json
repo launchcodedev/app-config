@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "@iarna/toml": "2",
+    "@types/openpgp": "4",
     "ajv": "6",
     "common-tags": "1",
     "execa": "3",
