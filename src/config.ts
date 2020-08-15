@@ -3,7 +3,7 @@ import { join } from 'path';
 import { parseEnv, getEnvType, findParseableFile, FileType } from './file-loader';
 
 const envVarNames = ['APP_CONFIG'];
-const defaultConfigFileName = 'app-config';
+const configFileName = 'app-config';
 const globalConfigExtends = ['APP_CONFIG_CI', 'APP_CONFIG_EXTEND'];
 
 interface ConfigObjectArr extends Array<ConfigSubObject> {}
@@ -47,10 +47,8 @@ const getEnvFileNames = (files: string[], envType = getEnvType()) => {
 export const loadConfigRaw = async <C = ConfigObject>(
   cwd = process.cwd(),
   {
-    fileNameOverride,
     envOverride,
   }: {
-    fileNameOverride?: string;
     envOverride?: string;
   } = {},
 ): Promise<LoadedConfig<C>> => {
@@ -70,8 +68,6 @@ export const loadConfigRaw = async <C = ConfigObject>(
       nonSecrets: config,
     };
   }
-
-  const configFileName = fileNameOverride ?? defaultConfigFileName;
 
   const configFileNames = [`.${configFileName}`, configFileName];
   const secretsFileNames = [`.${configFileName}.secrets`, `${configFileName}.secrets`];
