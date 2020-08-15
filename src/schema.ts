@@ -18,15 +18,8 @@ export type Schema = {
   schemaRefs?: SchemaRefs;
 };
 
-export const loadSchema = async (
-  cwd = process.cwd(),
-  { envOverride }: { envOverride?: string } = {},
-): Promise<Schema> => {
-  const found = await findParseableFile(
-    schemaFileNames.map(f => join(cwd, f)),
-    undefined,
-    envOverride,
-  );
+export const loadSchema = async (cwd = process.cwd()): Promise<Schema> => {
+  const found = await findParseableFile(schemaFileNames.map(f => join(cwd, f)));
 
   if (!found) {
     throw new Error('Could not find app config schema.');
@@ -115,12 +108,9 @@ export const validate = (
   return false;
 };
 
-export const loadValidated = async (
-  cwd = process.cwd(),
-  { envOverride }: { envOverride?: string } = {},
-) => {
-  const loaded = await loadConfigRaw(cwd, { envOverride });
-  const schema = await loadSchema(cwd, { envOverride });
+export const loadValidated = async (cwd = process.cwd()) => {
+  const loaded = await loadConfigRaw(cwd);
+  const schema = await loadSchema(cwd);
 
   const validation = validate({ ...schema, ...loaded }, cwd);
 
