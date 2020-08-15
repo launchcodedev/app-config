@@ -115,7 +115,8 @@ export const validate = (
   return false;
 };
 
-export const loadValidated = async (cwd = process.cwd(),
+export const loadValidated = async (
+  cwd = process.cwd(),
   { envOverride }: { envOverride?: string } = {},
 ) => {
   const loaded = await loadConfigRaw(cwd, { envOverride });
