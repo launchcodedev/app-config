@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/servall/app-config/master/img/app-config.png" width="40%" align="center" alt="app-config">
+  <img src="https://raw.githubusercontent.com/launchcodedev/app-config/master/img/app-config.png" width="40%" align="center" alt="app-config">
 </div>
 <br />
 
 # App Config
 [![Licensed under MPL 2.0](https://img.shields.io/badge/license-MPL_2.0-green.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
-[![Build Status](https://github.com/servall/app-config/workflows/CI/badge.svg)](https://github.com/servall/app-config/actions)
+[![Build Status](https://github.com/launchcodedev/app-config/workflows/CI/badge.svg)](https://github.com/launchcodedev/app-config/actions)
 [![npm](https://img.shields.io/npm/v/@lcdev/app-config.svg)](https://www.npmjs.com/package/@lcdev/app-config)
 
 Simple configuration loader for node. Comes with strong typing, schema validation,
