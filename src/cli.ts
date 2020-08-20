@@ -5,6 +5,7 @@ import * as Yargs from 'yargs';
 import * as refParser from 'json-schema-ref-parser';
 import * as PrettyError from 'pretty-error';
 import * as prompts from 'prompts';
+import * as clipboardy from 'clipboardy';
 import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
 import { flattenObjectTree } from './util';
@@ -300,14 +301,28 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
             await untrustTeamMember(email);
           },
         })
-        .command<BaseArgs & { secretValue: string }>({
+        .command<BaseArgs & { secretValue: string; clipboard: boolean }>({
           command: 'encrypt [secretValue]',
           describe: 'Encrypt a secret',
+          builder: {
+            clipboard: { type: 'boolean', describe: 'Copies to system clipboard' },
+          },
           async handler(argv) {
+            let value;
+
             try {
-              console.log(await encryptValue(JSON.parse(argv.secretValue)));
+              value = JSON.parse(argv.secretValue);
             } catch {
-              console.log(await encryptValue(argv.secretValue));
+              value = argv.secretValue;
+            }
+
+            const encrypted = await encryptValue(value);
+
+            console.log(encrypted);
+
+            if (argv.clipboard) {
+              await clipboardy.write(encrypted);
+              console.log('Copied to clipboard!');
             }
           },
         })

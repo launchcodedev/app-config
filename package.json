@@ -63,6 +63,7 @@
     "@iarna/toml": "2",
     "@types/openpgp": "4",
     "ajv": "6",
+    "clipboardy": "2",
     "common-tags": "1",
     "execa": "3",
     "fs-extra": "8",
