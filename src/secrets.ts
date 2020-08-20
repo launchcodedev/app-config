@@ -4,6 +4,7 @@ import * as fs from 'fs-extra';
 import { key, message, generateKey, encrypt, decrypt, crypto } from 'openpgp';
 import * as prompts from 'prompts';
 import { oneLine } from 'common-tags';
+import { connectToAgentLazy, requestDecryption } from './secret-key-agent';
 import { stringify, FileType } from './file-loader';
 import { loadMeta, findMetaFile } from './meta';
 
@@ -213,17 +214,7 @@ export const loadSymmetricKey = async (revision: number): Promise<LoadedSymmetri
 
   const privateKey = await loadPrivateKeyLazy();
 
-  try {
-    const { data: password } = await decrypt({
-      message: await message.readArmored(found.key),
-      privateKeys: [privateKey],
-      format: 'utf8',
-    });
-
-    verifyEncodedRevision(password, revision);
-
-    return { revision, password };
-  } catch (err) {
+  return loadSymmetricKeyRaw(revision, found.key).catch(async (err) => {
     const teamMembers = await loadTeamMembersLazy();
     const teamMembersString = teamMembers.map(m => m.getUserIds().join(', ')).join(', ');
 
@@ -234,7 +225,21 @@ export const loadSymmetricKey = async (revision: number): Promise<LoadedSymmetri
         For help, you might want to contact one of the trusted team members: ${teamMembersString}
       `}\nOriginal error: ${err}`,
     );
-  }
+  });
+};
+
+export const loadSymmetricKeyRaw = async (revision: number, encryptedSymmetricKey: string): Promise<LoadedSymmetricKey> => {
+  const privateKey = await loadPrivateKeyLazy();
+
+  const { data: password } = await decrypt({
+    message: await message.readArmored(encryptedSymmetricKey),
+    privateKeys: [privateKey],
+    format: 'utf8',
+  });
+
+  verifyEncodedRevision(password, revision);
+
+  return { revision, password };
 };
 
 export const loadLatestSymmetricKey = async (): Promise<LoadedSymmetricKey> => {
@@ -323,25 +328,35 @@ export const encryptValue = async (value: Json): Promise<string> => {
 };
 
 export const decryptText = async (text: string): Promise<string> => {
+  const client = await connectToAgentLazy();
+
+  if (client) {
+    return requestDecryption(client, text);
+  }
+
   const [, revision, base64] = text.split(':');
+
   const { password } = await loadSymmetricKey(parseFloat(revision));
 
-  const armored = `${'-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n'}${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
-
-  try {
-    const { data } = await decrypt({
-      message: await message.readArmored(armored),
-      passwords: [password],
-      format: 'utf8',
-    });
-
-    return JSON.parse(data);
-  } catch (err) {
+  return decryptTextRaw(base64, password).catch(() => {
     throw new Error(oneLine`
       There was an error decrypting a secret, which was encrypted with key ${revision}.
       Were you trusted with this key?
     `);
-  }
+  });
+};
+
+export const decryptTextRaw = async (base64: string, password: string): Promise<string> => {
+  const armored = `-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
+  const parsed = await message.readArmored(armored);
+
+  const { data } = await decrypt({
+    message: parsed,
+    passwords: [password],
+    format: 'utf8',
+  });
+
+  return JSON.parse(data);
 };
 
 export const trustTeamMember = async (publicKey: string) => {

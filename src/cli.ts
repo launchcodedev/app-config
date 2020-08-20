@@ -26,6 +26,7 @@ import {
   saveSymmetricKey,
   dirs as keyDirs,
 } from './secrets';
+import { startAgent } from './secret-key-agent';
 
 const wrapCommand = <T>(cmd: (arg: Yargs.Arguments<T>) => Promise<void> | void) => async (
   arg: Yargs.Arguments<T>,
@@ -315,6 +316,13 @@ const { argv: _ } = Yargs.usage('Usage: $0 <command>')
           describe: 'Decrypt a secret',
           async handler(argv) {
             console.log(await decryptText(argv.secretText));
+          },
+        })
+        .command<BaseArgs>({
+          command: 'agent',
+          describe: 'Starts the background agent',
+          async handler() {
+            await startAgent();
           },
         }),
   })
