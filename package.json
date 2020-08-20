@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Configuration file loader with JSON schema support",
-  "version": "2.0.0-alpha.9",
+  "version": "2.0.0-alpha.10",
   "license": "MPL-2.0",
   "main": "dist/index.js",
   "module": "dist/es/index.js",
