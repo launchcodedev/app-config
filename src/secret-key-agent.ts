@@ -43,7 +43,9 @@ let agentIsRunning = false;
 export async function startAgent() {
   agentIsRunning = true;
 
-  const privateKey = await loadPrivateKeyLazy();
+  // eagerly load private key, so passphrase is entered
+  await loadPrivateKeyLazy();
+
   const websocket = new WS.Server({ port });
 
   let connections: WS[] = [];

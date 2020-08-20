@@ -212,9 +212,7 @@ export const loadSymmetricKey = async (revision: number): Promise<LoadedSymmetri
     throw new Error(`No symmetric key ${revision} found`);
   }
 
-  const privateKey = await loadPrivateKeyLazy();
-
-  return loadSymmetricKeyRaw(revision, found.key).catch(async (err) => {
+  return loadSymmetricKeyRaw(revision, found.key).catch(async err => {
     const teamMembers = await loadTeamMembersLazy();
     const teamMembersString = teamMembers.map(m => m.getUserIds().join(', ')).join(', ');
 
@@ -228,7 +226,10 @@ export const loadSymmetricKey = async (revision: number): Promise<LoadedSymmetri
   });
 };
 
-export const loadSymmetricKeyRaw = async (revision: number, encryptedSymmetricKey: string): Promise<LoadedSymmetricKey> => {
+export const loadSymmetricKeyRaw = async (
+  revision: number,
+  encryptedSymmetricKey: string,
+): Promise<LoadedSymmetricKey> => {
   const privateKey = await loadPrivateKeyLazy();
 
   const { data: password } = await decrypt({
