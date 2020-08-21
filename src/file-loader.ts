@@ -1,4 +1,5 @@
 import { extname, dirname, join, isAbsolute } from 'path';
+import { inspect } from 'util';
 import { readFile, pathExists } from 'fs-extra';
 import * as TOML from '@iarna/toml';
 import * as YAML from 'js-yaml';
@@ -362,14 +363,14 @@ const mapObject = async (
   config: any,
   doDecryption: boolean,
   envOverride?: string,
-  context?: string,
+  context?: { key: string },
 ): Promise<any> => {
   if (typeof config === 'string') {
     let value: string = config;
 
     if (doDecryption) {
       if (value.startsWith('encrypted:')) {
-        return decryptText(value);
+        return new EncryptedValue(await decryptText(value));
       }
     }
 
@@ -428,11 +429,13 @@ const mapObject = async (
     return Promise.all(config.map(v => mapObject(v, doDecryption, envOverride)));
   }
 
-  if (typeof config !== 'object') {
+  if (!isPojo(config)) {
     return config;
   }
 
   for (const [key, value] of Object.entries(config)) {
+    const contextKey = context?.key ? `${context.key}.${key}` : 'root';
+
     // we map $env: { production: 12, development: 14 } to 12 or 14
     if (key === '$env') {
       const rawEnv = envOverride ?? getEnvType();
@@ -453,8 +456,7 @@ const mapObject = async (
         if (envValue !== undefined) {
           if (envSpecificValue !== undefined) {
             throw new Error(
-              `More than one value found for environment '${rawEnv}'. ` +
-                'Remove additional declarations (includes aliases).',
+              `More than one value found for environment '${rawEnv}'. Remove additional declarations (includes aliases).`,
             );
           }
 
@@ -462,8 +464,7 @@ const mapObject = async (
         }
       });
 
-      // $env: { default: value, ...} gets chosen when a matching environment
-      // is not found in the provided options
+      // $env: { default: value, ...} gets chosen when a matching environment is not found in the provided options
       if (envSpecificValue === undefined) {
         envSpecificValue = envValues.default;
       }
@@ -471,23 +472,20 @@ const mapObject = async (
       if (envSpecificValue === undefined) {
         if (rawEnv) {
           throw new Error(
-            `No matching environment option found for '${rawEnv}' (${context ?? 'root'}). ` +
+            `No matching environment option found for '${rawEnv}' (${contextKey}). ` +
               `Please provide '${rawEnv}', an alias to '${rawEnv}', or 'default' option.`,
           );
         } else {
           throw new Error(
-            `No environment provided, and no default option provided (${context ?? 'root'}). ` +
-              'Please provide one.',
+            `No environment provided, and no default option provided (${contextKey}). Please provide one.`,
           );
         }
       }
 
-      if (
-        typeof envSpecificValue === 'object' &&
-        envSpecificValue !== null &&
-        !Array.isArray(envSpecificValue)
-      ) {
+      if (isPojo(envSpecificValue)) {
         delete config.$env;
+
+        // is was an object, so we have to keep recursing
         mergeWith(config, await mapObject(envSpecificValue, doDecryption, envOverride), (a, b) =>
           Array.isArray(b) ? b : undefined,
         );
@@ -495,9 +493,9 @@ const mapObject = async (
         return mapObject(envSpecificValue, doDecryption, envOverride);
       }
     } else {
-      const newVal = await mapObject(value, doDecryption, envOverride, key);
+      const newVal = await mapObject(value, doDecryption, envOverride, { key: contextKey });
 
-      if (typeof newVal === 'object' && newVal !== null && !Array.isArray(newVal)) {
+      if (isPojo(newVal)) {
         config[key] = mergeWith(config[key], newVal, (a, b) => (Array.isArray(b) ? b : undefined));
       } else {
         config[key] = newVal;
@@ -507,3 +505,19 @@ const mapObject = async (
 
   return config;
 };
+
+function isPojo(v: any) {
+  return typeof v === 'object' && v !== null && !Array.isArray(v) && !(v instanceof EncryptedValue);
+}
+
+export class EncryptedValue {
+  constructor(private readonly value: any) {}
+
+  [inspect.custom]() {
+    return `EncryptedValue {${this.value}}`;
+  }
+
+  toJSON() {
+    return this.value;
+  }
+}

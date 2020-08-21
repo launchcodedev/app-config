@@ -2,7 +2,7 @@ import * as Ajv from 'ajv';
 import * as _ from 'lodash';
 import { join, dirname, resolve } from 'path';
 import { ConfigObject, ConfigSubObject, ConfigSource, LoadedConfig, loadConfigRaw } from './config';
-import { findParseableFile, parseFile } from './file-loader';
+import { findParseableFile, parseFile, EncryptedValue } from './file-loader';
 
 const schemaFileNames = ['.app-config.schema', 'app-config.schema'];
 
@@ -76,16 +76,28 @@ export const validate = (
     schema.$schema = 'http://json-schema.org/draft-07/schema#';
   }
 
+  // we have to convert our config into a POJO - we could have have EncryptedValue instances inside before
+  Object.assign(config, JSON.parse(JSON.stringify(config)));
+
   const validate = ajv.compile(schema);
   const valid = validate(config);
+
+  if (!valid) {
+    const err = new Error(
+      `Config is invalid: ${ajv.errorsText(validate.errors, { dataVar: 'config' })}`,
+    );
+
+    err.stack = undefined;
+
+    return [InvalidConfig.SchemaValidation, err];
+  }
 
   if (source === ConfigSource.File && nonSecrets) {
     // check that the nonSecrets does not contain any properties marked as secret
     const secretsInNonSecrets = schemaSecrets.filter(secret => {
-      // TODO: we need to let through secrets that were encrypted
       const found = _.get(nonSecrets, secret);
 
-      if (found) {
+      if (found && !(found instanceof EncryptedValue)) {
         return secret;
       }
 
@@ -100,16 +112,6 @@ export const validate = (
         ),
       ];
     }
-  }
-
-  if (!valid) {
-    const err = new Error(
-      `Config is invalid: ${ajv.errorsText(validate.errors, { dataVar: 'config' })}`,
-    );
-
-    err.stack = undefined;
-
-    return [InvalidConfig.SchemaValidation, err];
   }
 
   return false;

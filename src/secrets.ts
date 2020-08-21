@@ -328,7 +328,7 @@ export const encryptValue = async (value: Json): Promise<string> => {
   return `encrypted:${revision}:${base64.split('\r\n').join('')}`;
 };
 
-export const decryptText = async (text: string): Promise<string> => {
+export const decryptText = async (text: string): Promise<any> => {
   const client = await connectToAgentLazy();
 
   if (client) {
@@ -347,7 +347,7 @@ export const decryptText = async (text: string): Promise<string> => {
   });
 };
 
-export const decryptTextRaw = async (base64: string, password: string): Promise<string> => {
+export const decryptTextRaw = async (base64: string, password: string): Promise<any> => {
   const armored = `-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
   const parsed = await message.readArmored(armored);
 
