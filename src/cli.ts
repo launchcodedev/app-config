@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import * as execa from 'execa';
+import execa from 'execa';
 import * as Yargs from 'yargs';
-import * as refParser from 'json-schema-ref-parser';
-import * as PrettyError from 'pretty-error';
-import * as prompts from 'prompts';
+import refParser from 'json-schema-ref-parser';
+import PrettyError from 'pretty-error';
+import prompts from 'prompts';
 import * as clipboardy from 'clipboardy';
 import { stripIndent } from 'common-tags';
 import { pathExists, readFile, outputFile } from 'fs-extra';
@@ -63,7 +63,7 @@ const flattenConfig = (loaded: LoadedConfig, argv: { secrets: boolean; prefix: s
 
 type BaseArgs = { cwd: string; secrets: boolean };
 
-const { argv: _ } = Yargs.usage('Usage: $0 <command>')
+const _ = Yargs.usage('Usage: $0 <command>')
   .usage('')
   .option('cwd', {
     alias: 'C',

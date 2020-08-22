@@ -38,7 +38,7 @@
     "@lcdev/eslint-config": "0.2",
     "@lcdev/jest": "0.1",
     "@lcdev/prettier": "0.1",
-    "@lcdev/tsconfig": "0.1",
+    "@lcdev/tsconfig": "0.2",
     "@types/common-tags": "1",
     "@types/fs-extra": "8",
     "@types/jest": "24",

@@ -1,4 +1,4 @@
-import * as WS from 'ws';
+import WS from 'ws';
 import { nanoid } from 'nanoid';
 import {
   loadPrivateKeyLazy,

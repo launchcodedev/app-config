@@ -1,6 +1,6 @@
 import { join, basename, extname } from 'path';
 import { outputFile } from 'fs-extra';
-import * as refParser from 'json-schema-ref-parser';
+import refParser from 'json-schema-ref-parser';
 import {
   quicktype,
   RendererOptions,

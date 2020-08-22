@@ -2,7 +2,7 @@ import { join, resolve } from 'path';
 import { homedir } from 'os';
 import * as fs from 'fs-extra';
 import { key, message, generateKey, encrypt, decrypt, crypto } from 'openpgp';
-import * as prompts from 'prompts';
+import prompts from 'prompts';
 import { oneLine } from 'common-tags';
 import { connectToAgentLazy, requestDecryption } from './secret-key-agent';
 import { stringify, FileType } from './file-loader';

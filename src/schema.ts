@@ -1,4 +1,4 @@
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 import * as _ from 'lodash';
 import { join, dirname, resolve } from 'path';
 import { ConfigObject, ConfigSubObject, ConfigSource, LoadedConfig, loadConfigRaw } from './config';

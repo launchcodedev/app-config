@@ -530,10 +530,10 @@
   resolved "https://registry.yarnpkg.com/@lcdev/prettier/-/prettier-0.1.2.tgz#169396347de8aaded7bbea1fba1edb7af88ec46d"
   integrity sha512-Xhx4jy296lc+/9dFB9qPNy5qAEh53rg2W/rCtedeBgVhaqCJfn6M23KjH1ZcZD9n1qq01c2759rS5e/Xd0tMUA==
 
-"@lcdev/tsconfig@0.1":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@lcdev/tsconfig/-/tsconfig-0.1.3.tgz#e5b665edb4f555f0052e652eb7a9a6f2d0e42169"
-  integrity sha512-GSCGxMXfnpjvpT0r1rC3ku7HVbUPui/SSulq94qDh88Zi1QoJ/FAYf6+zzP7YEYJdK8/nluCUohpZOdLN4UFKw==
+"@lcdev/tsconfig@0.2":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@lcdev/tsconfig/-/tsconfig-0.2.0.tgz#a0fcbb2c4a83c870454ac4bf2d60cfcd8c8ab7b2"
+  integrity sha512-HuFlyAfNsKVCTYZdvRyjFQPtRr9mjbm7yM7WBtqruMRDeOBMnf3fL35eTHKiN/OW8ywvkt+w0WQFEKRCDuyDFQ==
 
 "@marionebl/sander@^0.6.0":
   version "0.6.1"

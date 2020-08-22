@@ -1,4 +1,4 @@
-import * as execa from 'execa';
+import execa from 'execa';
 import { join } from 'path';
 import { withFakeFiles } from './test-util';
 
