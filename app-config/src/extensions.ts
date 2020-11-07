@@ -22,9 +22,11 @@ type TransformParentOptions = {
   override?: boolean;
 };
 
-export type FileParsingExtension = (key: string) => false | FileParsingExtensionTransform;
-export type FileParsingExtensionTransform = (
+export type FileParsingExtension = (
+  key: string,
   value: Json,
+) => false | FileParsingExtensionTransform;
+export type FileParsingExtensionTransform = (
   context: ConfigSource,
   extensions: FileParsingExtension[],
 ) => PromiseOrNot<[Json | ParsedValue, TransformParentOptions]>;
@@ -34,9 +36,10 @@ function fileReferenceDirective(
   keyName: string,
   options: TransformParentOptions,
 ): FileParsingExtension {
-  return (key) => {
+  return (key, extend) => {
     if (key !== keyName) return false;
-    return async (extend, context, extensions) => {
+
+    return async (context, extensions) => {
       let filepath: string;
       let isOptional = false;
       let subselector: string | undefined;
@@ -105,10 +108,10 @@ export function overrideDirective(): FileParsingExtension {
 export function envDirective(aliases: EnvironmentAliases = defaultAliases): FileParsingExtension {
   const environment = currentEnvironment(aliases);
 
-  return (key) => {
+  return (key, obj) => {
     if (key !== '$env') return false;
 
-    return (obj) => {
+    return () => {
       if (!isObject(obj)) throw new Error('An $env directive was used with a non-object value');
 
       if (!environment) {
@@ -181,10 +184,10 @@ export function environmentVariableSubstitution(
     return text;
   };
 
-  return (key) => {
+  return (key, value) => {
     if (key !== '$substitute' && key !== '$subs') return false;
 
-    return (value) => {
+    return () => {
       if (typeof value !== 'string') throw new Error('$substitute expects a string value');
 
       return [performAllSubstitutions(value), { flatten: true }];
@@ -193,15 +196,13 @@ export function environmentVariableSubstitution(
 }
 
 export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): FileParsingExtension {
-  return () => {
-    return async (value) => {
-      if (typeof value === 'string' && value.startsWith('enc:')) {
-        const decrypted = await decryptValue(value, symmetricKey);
+  return (_, value) => {
+    if (typeof value !== 'string' || !value.startsWith('enc:')) return false;
 
-        return [ParsedValue.fromEncrypted(decrypted), {}];
-      }
+    return async () => {
+      const decrypted = await decryptValue(value, symmetricKey);
 
-      return [value, {}];
+      return [ParsedValue.fromEncrypted(decrypted), {}];
     };
   };
 }

@@ -148,13 +148,13 @@ async function parseValue(
 
       // go through extensions, and perform their transforms if applicable
       for (const ext of extensions) {
-        const apply = ext(key);
+        const apply = ext(key, value);
         if (!apply) continue;
 
         const [
           transformed,
           { flatten, merge: shouldMerge, override: shouldOverride },
-        ] = await apply(value, source, extensions);
+        ] = await apply(source, extensions);
 
         shouldFlatten = shouldFlatten || flatten || false;
 
@@ -162,7 +162,6 @@ async function parseValue(
 
         if (transformed instanceof ParsedValue) {
           Object.assign(metadata, transformed.meta);
-
           transformedValue = transformed.toJSON();
         } else {
           transformedValue = transformed;
@@ -191,6 +190,7 @@ async function parseValue(
         parsedValue = await parseValue(value, source, extensions);
       }
 
+      // we passthrough any metadata (like parsedFromEncryptedValue) into the final value
       parsedValue.setMeta(metadata);
 
       if (shouldFlatten) return parsedValue;

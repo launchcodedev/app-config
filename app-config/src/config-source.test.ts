@@ -9,17 +9,17 @@ import {
 import { FileParsingExtension } from './extensions';
 import { withTempFiles } from './test-util';
 
-const flattenExtension: FileParsingExtension = (key) => {
+const flattenExtension: FileParsingExtension = (key, value) => {
   if (key !== '$flatten') return false;
-  return (value) => [value, { flatten: true }];
+  return () => [value, { flatten: true }];
 };
 
-const uppercaseExtension: FileParsingExtension = () => (value) => {
-  if (typeof value === 'string') {
-    return [value.toUpperCase(), {}];
-  }
+const uppercaseExtension: FileParsingExtension = (_, value) => {
+  if (typeof value !== 'string') return false;
 
-  return [value, {}];
+  return () => {
+    return [value.toUpperCase(), {}];
+  };
 };
 
 describe('Parsing', () => {
