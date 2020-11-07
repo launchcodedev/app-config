@@ -2,6 +2,7 @@ import merge from 'lodash.merge';
 import { JsonObject, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { FlexibleFileSource, EnvironmentSource, NotFoundError } from './config-source';
+import { defaultExtensions } from './extensions';
 import { loadSchema } from './schema';
 
 export interface Configuration {
@@ -40,8 +41,8 @@ export async function loadConfig(
   const secretsSource = new FlexibleFileSource(`${fileName}.secrets`, environmentOverride);
 
   const [nonSecrets, secrets] = await Promise.all([
-    source.read(),
-    secretsSource.read().catch((error) => {
+    source.read(defaultExtensions),
+    secretsSource.read(defaultExtensions).catch((error) => {
       // NOTE: secrets are optional, so not finding them is normal
       if (error instanceof NotFoundError) return undefined;
 

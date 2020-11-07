@@ -12,7 +12,7 @@ export interface Schema {
 }
 
 export async function loadSchema(
-  fileName = '.app-config',
+  fileName = '.app-config.schema',
   environmentOverride?: string,
 ): Promise<Schema> {
   const source = new FlexibleFileSource(fileName, environmentOverride);

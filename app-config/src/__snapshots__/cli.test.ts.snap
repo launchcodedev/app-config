@@ -1,0 +1,122 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`create can select a nested property 1`] = `
+"{
+  \\"b\\": {
+    \\"c\\": true
+  }
+}"
+`;
+
+exports[`create can select a nested property 2`] = `
+"{
+  \\"c\\": true
+}"
+`;
+
+exports[`create can select a nested property 3`] = `"true"`;
+
+exports[`create prints JSON format 1`] = `
+"{
+  \\"foo\\": true
+}"
+`;
+
+exports[`create prints JSON5 format 1`] = `
+"{
+  foo: true,
+}"
+`;
+
+exports[`create prints TOML format 1`] = `
+"foo = true
+"
+`;
+
+exports[`create prints YAML format 1`] = `
+"foo: true
+"
+`;
+
+exports[`create prints simple app-config file 1`] = `
+"foo: true
+"
+`;
+
+exports[`create-schema can select a nested property 1`] = `
+"type: object
+properties:
+  foo:
+    type: boolean
+"
+`;
+
+exports[`create-schema can select a nested property 2`] = `
+"type: object
+properties:
+  bar:
+    type: boolean
+"
+`;
+
+exports[`create-schema prints JSON format 1`] = `
+"{
+  \\"type\\": \\"object\\",
+  \\"properties\\": {
+    \\"foo\\": {
+      \\"type\\": \\"boolean\\"
+    }
+  },
+  \\"$schema\\": \\"http://json-schema.org/draft-07/schema#\\"
+}"
+`;
+
+exports[`create-schema prints JSON5 format 1`] = `
+"{
+  type: 'object',
+  properties: {
+    foo: {
+      type: 'boolean',
+    },
+  },
+  $schema: 'http://json-schema.org/draft-07/schema#',
+}"
+`;
+
+exports[`create-schema prints TOML format 1`] = `
+"type = \\"object\\"
+\\"$schema\\" = \\"http://json-schema.org/draft-07/schema#\\"
+
+[properties.foo]
+type = \\"boolean\\"
+"
+`;
+
+exports[`create-schema prints YAML format 1`] = `
+"type: object
+properties:
+  foo:
+    type: boolean
+$schema: 'http://json-schema.org/draft-07/schema#'
+"
+`;
+
+exports[`create-schema prints simple app-config schema 1`] = `
+"type: object
+properties:
+  foo:
+    type: boolean
+$schema: 'http://json-schema.org/draft-07/schema#'
+"
+`;
+
+exports[`vars prints only nonSecrets without --secrets option 1`] = `"APP_CONFIG_NON_SECRET=true"`;
+
+exports[`vars prints only nonSecrets without --secrets option 2`] = `
+"APP_CONFIG_NON_SECRET=true
+APP_CONFIG_SECRET=true"
+`;
+
+exports[`vars prints simple app-config file 1`] = `"APP_CONFIG_FOO=true"`;
+
+exports[`vars uses provided environment variable prefix 1`] = `"MY_CONFIG_FOO=true"`;

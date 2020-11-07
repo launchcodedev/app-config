@@ -41,6 +41,7 @@
     "@types/openpgp": "4",
     "@types/prompts": "2",
     "@types/tmp": "0.2",
+    "execa": "4",
     "tmp-promise": "3"
   },
   "dependencies": {
@@ -54,7 +55,8 @@
     "lodash.merge": "4",
     "openpgp": "4",
     "prompts": "2",
-    "text-encoding-utf-8": "1"
+    "text-encoding-utf-8": "1",
+    "yargs": "16"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

@@ -5,6 +5,14 @@ import { ParsedValue, ParsedValueMetadata } from './parsed-value';
 import { ConfigSource, FileSource, NotFoundError } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 
+export const defaultExtensions = [
+  envDirective(),
+  extendsDirective(),
+  overrideDirective(),
+  encryptedDirective(),
+  environmentVariableSubstitution(),
+];
+
 type TransformParentOptions = {
   /**
    * This option governs whether the returned value should be set as its parent (remove the key, set parent as child's value).
@@ -34,6 +42,127 @@ export type FileParsingExtensionTransform = (
   context: ConfigSource,
   extensions: FileParsingExtension[],
 ) => PromiseOrNot<[Json | ParsedValue, TransformParentOptions]>;
+
+/** Uses another file as a "base", and extends on top of it */
+export function extendsDirective(): FileParsingExtension {
+  return fileReferenceDirective('$extends', { flatten: true, merge: true });
+}
+
+/** Uses another file as overriding values, layering them on top of current file */
+export function overrideDirective(): FileParsingExtension {
+  return fileReferenceDirective('$override', { flatten: true, override: true });
+}
+
+/** Looks up an environment-specific value ($env) */
+export function envDirective(aliases: EnvironmentAliases = defaultAliases): FileParsingExtension {
+  const environment = currentEnvironment(aliases);
+
+  return (key, obj) => {
+    if (key !== '$env') return false;
+
+    return () => {
+      if (!isObject(obj)) throw new Error('An $env directive was used with a non-object value');
+
+      if (!environment) {
+        if (obj.default) return [obj.default, { flatten: true, merge: true }];
+
+        throw new Error(
+          `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
+        );
+      }
+
+      for (const [envName, value] of Object.entries(obj)) {
+        if (envName === environment || aliases[envName] === environment) {
+          return [value, { flatten: true, merge: true }];
+        }
+      }
+
+      if ('default' in obj) {
+        return [obj.default, { flatten: true, merge: true }];
+      }
+
+      const found = Object.keys(obj).join(', ');
+
+      throw new Error(
+        `An $env directive was used, but none matched the current environment (wanted ${environment}, got ${found})`,
+      );
+    };
+  };
+}
+
+/** Decrypts inline encrypted values */
+export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): FileParsingExtension {
+  return (_, value) => {
+    if (typeof value !== 'string' || !value.startsWith('enc:')) return false;
+
+    return async () => {
+      const decrypted = await decryptValue(value, symmetricKey);
+
+      return [ParsedValue.fromEncrypted(decrypted), {}];
+    };
+  };
+}
+
+/** Substitues environment variables found in strings (similar to bash variable substitution) */
+export function environmentVariableSubstitution(
+  aliases: EnvironmentAliases = defaultAliases,
+): FileParsingExtension {
+  const performAllSubstitutions = (text: string): string => {
+    // this regex matches:
+    //   $FOO
+    //   ${FOO}
+    //   ${FOO:-fallback}
+    //   ${FOO:-${FALLBACK}}
+    //
+    // var name is group 1 || 2
+    // fallback value is group 3
+    // https://regex101.com/r/6ZMmx7/3
+    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g;
+
+    while (true) {
+      const match = envVar.exec(text);
+      if (!match) break;
+
+      const fullMatch = match[0];
+      const varName = match[1] || match[2];
+      const fallback = match[3];
+
+      if (varName) {
+        const env = process.env[varName];
+
+        if (env !== undefined) {
+          text = text.replace(fullMatch, env);
+        } else if (fallback !== undefined) {
+          // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+          text = performAllSubstitutions(text.replace(fullMatch, fallback));
+        } else if (varName === 'APP_CONFIG_ENV') {
+          const envType = currentEnvironment(aliases);
+
+          if (!envType) {
+            throw new Error(`Could not find environment variable ${varName}`);
+          }
+
+          // there's a special case for APP_CONFIG_ENV, which is always the envType
+          text = text.replace(fullMatch, envType);
+        } else {
+          throw new Error(`Could not find environment variable ${varName}`);
+        }
+      }
+    }
+
+    return text;
+  };
+
+  return (key, value) => {
+    if (key !== '$substitute' && key !== '$subs') return false;
+
+    return () => {
+      if (typeof value !== 'string') throw new Error('$substitute expects a string value');
+
+      return [performAllSubstitutions(value), { flatten: true }];
+    };
+  };
+}
 
 // common logic for $extends and $override
 function fileReferenceDirective(
@@ -95,118 +224,6 @@ function fileReferenceDirective(
       }
 
       return [parsed, options];
-    };
-  };
-}
-
-// uses another file as a "base", and extends on top of it
-export function extendsDirective(): FileParsingExtension {
-  return fileReferenceDirective('$extends', { flatten: true, merge: true });
-}
-
-// uses another file as overriding values, layering them on top of current file
-export function overrideDirective(): FileParsingExtension {
-  return fileReferenceDirective('$override', { flatten: true, override: true });
-}
-
-export function envDirective(aliases: EnvironmentAliases = defaultAliases): FileParsingExtension {
-  const environment = currentEnvironment(aliases);
-
-  return (key, obj) => {
-    if (key !== '$env') return false;
-
-    return () => {
-      if (!isObject(obj)) throw new Error('An $env directive was used with a non-object value');
-
-      if (!environment) {
-        if (obj.default) return [obj.default, { flatten: true, merge: true }];
-
-        throw new Error(
-          `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
-        );
-      }
-
-      for (const [envName, value] of Object.entries(obj)) {
-        if (envName === environment || aliases[envName] === environment) {
-          return [value, { flatten: true, merge: true }];
-        }
-      }
-
-      if (obj.default) return [obj.default, { flatten: true, merge: true }];
-
-      throw new Error('An $env directive was used, but none matched the current environment');
-    };
-  };
-}
-
-export function environmentVariableSubstitution(
-  aliases: EnvironmentAliases = defaultAliases,
-): FileParsingExtension {
-  const performAllSubstitutions = (text: string): string => {
-    // this regex matches:
-    //   $FOO
-    //   ${FOO}
-    //   ${FOO:-fallback}
-    //   ${FOO:-${FALLBACK}}
-    //
-    // var name is group 1 || 2
-    // fallback value is group 3
-    // https://regex101.com/r/6ZMmx7/3
-    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g;
-
-    while (true) {
-      const match = envVar.exec(text);
-      if (!match) break;
-
-      const fullMatch = match[0];
-      const varName = match[1] || match[2];
-      const fallback = match[3];
-
-      if (varName) {
-        const env = process.env[varName];
-
-        if (env !== undefined) {
-          text = text.replace(fullMatch, env);
-        } else if (fallback !== undefined) {
-          // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          text = performAllSubstitutions(text.replace(fullMatch, fallback));
-        } else if (varName === 'APP_CONFIG_ENV') {
-          const envType = currentEnvironment(aliases);
-
-          if (!envType) {
-            throw new Error(`Could not find environment variable ${varName}`);
-          }
-
-          // there's a special case for APP_CONFIG_ENV, which is always the envType
-          text = text.replace(fullMatch, envType);
-        } else {
-          throw new Error(`Could not find environment variable ${varName}`);
-        }
-      }
-    }
-
-    return text;
-  };
-
-  return (key, value) => {
-    if (key !== '$substitute' && key !== '$subs') return false;
-
-    return () => {
-      if (typeof value !== 'string') throw new Error('$substitute expects a string value');
-
-      return [performAllSubstitutions(value), { flatten: true }];
-    };
-  };
-}
-
-export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): FileParsingExtension {
-  return (_, value) => {
-    if (typeof value !== 'string' || !value.startsWith('enc:')) return false;
-
-    return async () => {
-      const decrypted = await decryptValue(value, symmetricKey);
-
-      return [ParsedValue.fromEncrypted(decrypted), {}];
     };
   };
 }
