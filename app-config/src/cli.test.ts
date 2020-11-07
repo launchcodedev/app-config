@@ -7,19 +7,19 @@ const run = async (argv: string[], options?: execa.Options) =>
 
 describe('vars', () => {
   it('fails with no app-config', async () => {
-    await expect(run(['vars'])).rejects.toThrow();
+    await expect(run(['vars', '-q'])).rejects.toThrow();
   });
 
   it('prints simple app-config file', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['vars', '-q'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('uses provided environment variable prefix', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars', '--prefix', 'MY_CONFIG'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['vars', '-q', '--prefix', 'MY_CONFIG'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
@@ -35,10 +35,10 @@ describe('vars', () => {
         `,
       },
       async (inDir) => {
-        const { stdout: withoutSecrets } = await run(['vars', '-C', inDir('.')]);
+        const { stdout: withoutSecrets } = await run(['vars', '-q', '-C', inDir('.')]);
         expect(withoutSecrets).toMatchSnapshot();
 
-        const { stdout: withSecrets } = await run(['vars', '--secrets', '-C', inDir('.')]);
+        const { stdout: withSecrets } = await run(['vars', '-q', '--secrets', '-C', inDir('.')]);
         expect(withSecrets).toMatchSnapshot();
       },
     );
@@ -52,56 +52,62 @@ describe('create', () => {
 
   it('prints simple app-config file', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['create', '-q'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints YAML format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '--format', 'yaml'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['create', '-q', '--format', 'yaml'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints JSON format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '--format', 'json'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['create', '-q', '--format', 'json'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints JSON5 format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '--format', 'json5'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['create', '-q', '--format', 'json5'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints TOML format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '--format', 'toml'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['create', '-q', '--format', 'toml'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('can select a nested property', async () => {
     const APP_CONFIG = JSON.stringify({ a: { b: { c: true } } });
-    const { stdout: nested1 } = await run(['create', '--format', 'json', '--select', '#/a'], {
+    const { stdout: nested1 } = await run(['create', '-q', '--format', 'json', '--select', '#/a'], {
       env: { APP_CONFIG },
     });
 
     expect(nested1).toMatchSnapshot();
 
-    const { stdout: nested2 } = await run(['create', '--format', 'json', '--select', '#/a/b'], {
-      env: { APP_CONFIG },
-    });
+    const { stdout: nested2 } = await run(
+      ['create', '-q', '--format', 'json', '--select', '#/a/b'],
+      {
+        env: { APP_CONFIG },
+      },
+    );
 
     expect(nested2).toMatchSnapshot();
 
-    const { stdout: nested3 } = await run(['create', '--format', 'json', '--select', '#/a/b/c'], {
-      env: { APP_CONFIG },
-    });
+    const { stdout: nested3 } = await run(
+      ['create', '-q', '--format', 'json', '--select', '#/a/b/c'],
+      {
+        env: { APP_CONFIG },
+      },
+    );
 
     expect(nested3).toMatchSnapshot();
   });
@@ -110,7 +116,7 @@ describe('create', () => {
     const APP_CONFIG = JSON.stringify({ a: true });
 
     await expect(
-      run(['create', '--format', 'json', '--select', '#/b'], {
+      run(['create', '-q', '--format', 'json', '--select', '#/b'], {
         env: { APP_CONFIG },
       }),
     ).rejects.toThrow();
@@ -262,26 +268,26 @@ describe('create-schema', () => {
 
 describe('nested commands', () => {
   it('fails with no app-config', async () => {
-    await expect(run(['--', 'env'])).rejects.toThrow();
+    await expect(run(['-q', '--', 'env'])).rejects.toThrow();
   });
 
   it('passes environment variables down', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['--', 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['-q', '--', 'env'], { env: { APP_CONFIG } });
 
     expect(stdout.includes('APP_CONFIG_FOO=true')).toBe(true);
   });
 
   it('uses prefix in environment variables', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-p', 'MY_CONFIG', '--', 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['-q', '-p', 'MY_CONFIG', '--', 'env'], { env: { APP_CONFIG } });
 
     expect(stdout.includes('MY_CONFIG_FOO=true')).toBe(true);
   });
 
   it('uses file format in main environment variable', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['--format', 'json', '--', 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['-q', '--format', 'json', '--', 'env'], { env: { APP_CONFIG } });
 
     expect(stdout.includes('APP_CONFIG={"foo":true}')).toBe(true);
   });

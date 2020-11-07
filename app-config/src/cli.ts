@@ -5,7 +5,7 @@ import execa from 'execa';
 import { resolve } from 'json-schema-ref-parser';
 import { flattenObjectTree, Json, JsonObject } from './common';
 import { FileType, stringify } from './config-source';
-import { Configuration, loadConfig } from './config';
+import { Configuration, loadConfig, loadValidatedConfig } from './config';
 import { loadSchema } from './schema';
 
 function subcommand<Options extends { [name: string]: yargs.Options }>(
@@ -46,6 +46,19 @@ function subcommand<Options extends { [name: string]: yargs.Options }>(
   };
 }
 
+async function loadConfigOptionalValidation(noSchema: boolean) {
+  if (noSchema) return loadConfig();
+  return loadValidatedConfig();
+}
+
+const noSchemaOption = {
+  alias: 'q',
+  nargs: 0,
+  type: 'boolean',
+  default: false,
+  description: 'Avoids doing schema validation of your app-config (dangerous!)',
+} as const;
+
 const secretsOption = {
   alias: 's',
   nargs: 0,
@@ -75,14 +88,14 @@ const selectOption = {
   description: 'A JSON pointer to select a nested property in the object',
 } as const;
 
-function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
+function selectSecretsOrNot(config: Configuration, secrets: boolean) {
   const { fullConfig, parsedNonSecrets } = config;
 
   if (secrets || !parsedNonSecrets) {
     return fullConfig;
   }
 
-  return parsedNonSecrets.toJSON() as JsonObject;
+  return parsedNonSecrets.toJSON();
 }
 
 function fileTypeForFormatOption(option: string): FileType {
@@ -122,9 +135,13 @@ const { argv: _ } = yargs
       {
         secrets: secretsOption,
         prefix: prefixOption,
+        noSchema: noSchemaOption,
       },
       async (opts) => {
-        const toPrint = selectSecretsOrNot(await loadConfig(), opts.secrets);
+        const toPrint = selectSecretsOrNot(
+          await loadConfigOptionalValidation(opts.noSchema),
+          opts.secrets,
+        ) as JsonObject;
 
         process.stdout.write(
           Object.entries(flattenObjectTree(toPrint, opts.prefix))
@@ -150,12 +167,16 @@ const { argv: _ } = yargs
         secrets: secretsOption,
         format: formatOption,
         select: selectOption,
+        noSchema: noSchemaOption,
       },
       async (opts) => {
-        let toPrint: Json = selectSecretsOrNot(await loadConfig(), opts.secrets);
+        let toPrint = selectSecretsOrNot(
+          await loadConfigOptionalValidation(opts.noSchema),
+          opts.secrets,
+        ) as JsonObject;
 
         if (opts.select) {
-          toPrint = (await resolve(toPrint)).get(opts.select);
+          toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
           if (toPrint === undefined) throw new Error(`Failed to select property ${opts.select}`);
         }
 
@@ -225,9 +246,13 @@ const { argv: _ } = yargs
         prefix: prefixOption,
         format: { ...formatOption, default: 'json' },
         select: selectOption,
+        noSchema: noSchemaOption,
       },
       async (opts) => {
-        let toPrint: JsonObject = selectSecretsOrNot(await loadConfig(), opts.secrets);
+        let toPrint = selectSecretsOrNot(
+          await loadConfigOptionalValidation(opts.noSchema),
+          opts.secrets,
+        ) as JsonObject;
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;

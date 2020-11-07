@@ -1,17 +1,15 @@
-import merge from 'lodash.merge';
-import { JsonObject, isObject } from './common';
+import { Json, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { FlexibleFileSource, EnvironmentSource, NotFoundError } from './config-source';
-import { defaultExtensions } from './extensions';
+import { defaultExtensions, FileParsingExtension } from './extensions';
 import { loadSchema } from './schema';
 
 export interface Configuration {
-  /** actual parsed and transformed JSON */
-  fullConfig: JsonObject;
-
-  /** properties that were specifically parsed as "secrets" */
+  /** full configuration plain JSON, with secrets and nonSecrets */
+  fullConfig: Json;
+  /** parsed configuration value, with metadata (like ConfigSource) still attached */
+  parsed: ParsedValue;
   parsedSecrets?: ParsedValue;
-  /** properties that were specifically parsed as non-"secrets" */
   parsedNonSecrets?: ParsedValue;
 }
 
@@ -25,41 +23,31 @@ export async function loadConfig(
 
   try {
     const parsed = await env.read();
-    const fullConfig = parsed.toJSON();
-
-    if (!isObject(fullConfig)) throw new Error('Config was not an object');
-
-    return {
-      fullConfig,
-    };
+    return { parsed, fullConfig: parsed.toJSON() };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
     if (!(error instanceof NotFoundError)) throw error;
   }
 
-  const source = new FlexibleFileSource(fileName, environmentOverride);
-  const secretsSource = new FlexibleFileSource(`${fileName}.secrets`, environmentOverride);
-
   const [nonSecrets, secrets] = await Promise.all([
-    source.read(defaultExtensions),
-    secretsSource.read(defaultExtensions).catch((error) => {
-      // NOTE: secrets are optional, so not finding them is normal
-      if (error instanceof NotFoundError) return undefined;
+    new FlexibleFileSource(fileName, environmentOverride).read(defaultExtensions),
+    new FlexibleFileSource(`${fileName}.secrets`, environmentOverride)
+      .read(defaultExtensions.concat(markAllValuesAsSecret))
+      .catch((error) => {
+        // NOTE: secrets are optional, so not finding them is normal
+        if (error instanceof NotFoundError) return undefined;
 
-      throw error;
-    }),
+        throw error;
+      }),
   ]);
 
-  const nonSecretsValue = nonSecrets.toJSON();
-  const secretsValue = secrets?.toJSON();
-
-  if (!isObject(nonSecretsValue)) throw new Error('Config was not an object');
-  if (secretsValue && !isObject(secretsValue)) throw new Error('Config was not an object');
+  const parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
 
   return {
+    parsed,
     parsedSecrets: secrets,
     parsedNonSecrets: nonSecrets,
-    fullConfig: merge({}, nonSecretsValue, secretsValue),
+    fullConfig: parsed.toJSON(),
   };
 }
 
@@ -68,12 +56,18 @@ export async function loadValidatedConfig(
   environmentVariableName = 'APP_CONFIG',
   environmentOverride?: string,
 ): Promise<Configuration> {
-  const [{ validate }, { fullConfig, parsedSecrets, parsedNonSecrets }] = await Promise.all([
+  const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
     loadSchema(),
     loadConfig(fileName, environmentVariableName, environmentOverride),
   ]);
 
-  validate(fullConfig, parsedNonSecrets);
+  if (!isObject(fullConfig)) throw new Error('Config was not an object');
+  validate(fullConfig, parsed);
 
-  return { fullConfig, parsedSecrets, parsedNonSecrets };
+  return { fullConfig, parsed, ...rest };
 }
+
+const markAllValuesAsSecret: FileParsingExtension = (_, value) => () => [
+  value,
+  { metadata: { fromSecrets: true } },
+];

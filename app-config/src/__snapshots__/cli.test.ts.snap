@@ -113,8 +113,8 @@ $schema: 'http://json-schema.org/draft-07/schema#'
 exports[`vars prints only nonSecrets without --secrets option 1`] = `"APP_CONFIG_NON_SECRET=true"`;
 
 exports[`vars prints only nonSecrets without --secrets option 2`] = `
-"APP_CONFIG_NON_SECRET=true
-APP_CONFIG_SECRET=true"
+"APP_CONFIG_SECRET=true
+APP_CONFIG_NON_SECRET=true"
 `;
 
 exports[`vars prints simple app-config file 1`] = `"APP_CONFIG_FOO=true"`;

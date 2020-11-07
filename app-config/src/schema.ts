@@ -4,7 +4,7 @@ import { JsonObject, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { FlexibleFileSource, FileSource } from './config-source';
 
-export type Validate = (fullConfig: JsonObject, nonSecrets?: ParsedValue) => void;
+export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 
 export interface Schema {
   value: JsonObject;
@@ -48,7 +48,7 @@ export async function loadSchema(
 
   return {
     value: parsed,
-    validate(fullConfig, nonSecrets) {
+    validate(fullConfig, parsed) {
       const valid = validate(fullConfig);
 
       if (!valid) {
@@ -61,12 +61,11 @@ export async function loadSchema(
         throw err;
       }
 
-      if (nonSecrets) {
-        // check that the nonSecrets does not contain any properties marked as secret
+      if (parsed) {
+        // check that any properties marked as secret were from secrets file
         const secretsInNonSecrets = schemaSecrets.filter((path) => {
-          const found = nonSecrets.property(path);
-
-          if (found) return !found.meta.parsedFromEncryptedValue;
+          const found = parsed.property(path);
+          if (found) return !found.meta.fromSecrets;
 
           return false;
         });

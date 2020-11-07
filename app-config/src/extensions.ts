@@ -98,7 +98,7 @@ export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): FilePa
     return async () => {
       const decrypted = await decryptValue(value, symmetricKey);
 
-      return [ParsedValue.fromEncrypted(decrypted), {}];
+      return [decrypted, { metadata: { parsedFromEncryptedValue: true, fromSecrets: true } }];
     };
   };
 }

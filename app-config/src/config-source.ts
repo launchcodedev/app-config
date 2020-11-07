@@ -79,9 +79,13 @@ export class FlexibleFileSource extends ConfigSource {
     const filesToTry = [];
 
     for (const ext of ['yml', 'yaml', 'json', 'toml', 'json5']) {
-      filesToTry.push(`${this.filePath}.${ext}`);
       if (environment) filesToTry.push(`${this.filePath}.${environment}.${ext}`);
       if (environmentAlias) filesToTry.push(`${this.filePath}.${environmentAlias}.${ext}`);
+    }
+
+    // try these after trying environments
+    for (const ext of ['yml', 'yaml', 'json', 'toml', 'json5']) {
+      filesToTry.push(`${this.filePath}.${ext}`);
     }
 
     for (const filepath of filesToTry) {
@@ -148,17 +152,29 @@ export class CombinedSource extends ConfigSource {
 
   async readValue(): Promise<Json> {
     const values = await Promise.all(this.sources.map((source) => source.readValue()));
-    const output = {};
 
-    values.forEach((v) => merge(output, v));
-
-    return output;
+    return values.reduce((acc, v) => merge(acc, v), {});
   }
 
   async readContents(): Promise<[string, FileType]> {
     const value = await this.readValue();
 
     return [JSON.stringify(value), FileType.JSON];
+  }
+
+  async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+    const values = await Promise.all(this.sources.map((source) => source.read(extensions)));
+
+    const merged = values.reduce<ParsedValue | undefined>((acc, parsed) => {
+      if (!acc) return parsed;
+      return acc.merge(parsed);
+    }, undefined);
+
+    if (!merged) throw new Error('Unreachable');
+
+    Object.assign(merged, { source: this });
+
+    return merged;
   }
 }
 

@@ -42,9 +42,60 @@ export class ParsedValue {
     return parseValue(raw, new LiteralSource(raw), extensions);
   }
 
-  /** Constructs a ParsedValue from a plain JSON object, which was known to have come from an encrypted value */
-  static fromEncrypted(raw: Json): ParsedValue {
-    return ParsedValue.literal(raw).setMeta({ parsedFromEncryptedValue: true });
+  static merge(a: ParsedValue, b: ParsedValue) {
+    if (
+      // an array or primitive value overrides us
+      Array.isArray(b.value) ||
+      typeof b.value !== 'object' ||
+      b.value === null ||
+      // if we were an array or primitive, they override us
+      Array.isArray(a.value) ||
+      typeof a.value !== 'object' ||
+      a.value === null
+    ) {
+      return new ParsedValue(b.source, b.rawValue, b.value).setMeta(merge(a.meta, b.meta));
+    }
+
+    const newValue = {};
+    const keys = new Set(Object.keys(b.value).concat(Object.keys(a.value)));
+
+    for (const key of keys) {
+      let newValueK;
+
+      if (a.value[key] && b.value[key]) {
+        newValueK = a.value[key].merge(b.value[key]);
+      } else {
+        newValueK = b.value[key] ?? a.value[key];
+      }
+
+      Object.assign(newValue, { [key]: newValueK });
+    }
+
+    let newRawValue: Json = {};
+
+    if (isObject(a.rawValue) && isObject(b.rawValue)) {
+      const rawKeys = new Set(Object.keys(b.rawValue).concat(Object.keys(a.rawValue)));
+
+      for (const key of rawKeys) {
+        let newRawValueK;
+
+        if (a.rawValue[key] && b.rawValue[key]) {
+          newRawValueK = merge({}, a.rawValue[key], b.rawValue[key]);
+        } else {
+          newRawValueK = b.rawValue[key] ?? a.rawValue[key];
+        }
+
+        Object.assign(newRawValue, { [key]: newRawValueK });
+      }
+    } else {
+      newRawValue = b.rawValue;
+    }
+
+    return new ParsedValue(a.source, newRawValue, newValue).setMeta(merge(a.meta, b.meta));
+  }
+
+  merge(value: ParsedValue): ParsedValue {
+    return ParsedValue.merge(this, value);
   }
 
   setMeta(metadata: ParsedValueMetadata) {
@@ -92,6 +143,10 @@ export class ParsedValue {
   [inspect.custom]() {
     if (this.meta.parsedFromEncryptedValue) {
       return `ParsedValue(encrypted) <${this.toString()}>`;
+    }
+
+    if (this.meta.fromSecrets) {
+      return `ParsedValue(secret) <${this.toString()}>`;
     }
 
     return `ParsedValue <${this.toString()}>`;
