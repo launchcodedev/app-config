@@ -142,14 +142,14 @@ export class ParsedValue {
 
   [inspect.custom]() {
     if (this.meta.parsedFromEncryptedValue) {
-      return `ParsedValue(encrypted) <${this.toString()}>`;
+      return `ParsedValue(encrypted) <${inspect(this.value)}>`;
     }
 
     if (this.meta.fromSecrets) {
-      return `ParsedValue(secret) <${this.toString()}>`;
+      return `ParsedValue(secret) <${inspect(this.value)}>`;
     }
 
-    return `ParsedValue <${this.toString()}>`;
+    return `ParsedValue <${inspect(this.value)}>`;
   }
 
   toString() {
