@@ -1,7 +1,7 @@
 import { join, dirname } from 'path';
 import { isObject, Json, PromiseOrNot } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsedValue } from './parsed-value';
+import { ParsedValue, ParsedValueMetadata } from './parsed-value';
 import { ConfigSource, FileSource, NotFoundError } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 
@@ -20,6 +20,10 @@ type TransformParentOptions = {
    * When flattening, should the value replace parent's existing values?
    */
   override?: boolean;
+  /**
+   * Metadata to pass on to ParsedValues.
+   */
+  metadata?: ParsedValueMetadata;
 };
 
 export type FileParsingExtension = (

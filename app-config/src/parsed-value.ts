@@ -153,7 +153,7 @@ async function parseValue(
 
         const [
           transformed,
-          { flatten, merge: shouldMerge, override: shouldOverride },
+          { flatten, merge: shouldMerge, override: shouldOverride, metadata: newMetadata },
         ] = await apply(source, extensions);
 
         shouldFlatten = shouldFlatten || flatten || false;
@@ -165,6 +165,10 @@ async function parseValue(
           transformedValue = transformed.toJSON();
         } else {
           transformedValue = transformed;
+        }
+
+        if (newMetadata) {
+          Object.assign(metadata, newMetadata);
         }
 
         if (isObject(transformedValue)) {

@@ -1,4 +1,5 @@
 import { ParsedValue } from './parsed-value';
+import { FileParsingExtension } from './extensions';
 
 describe('ParsedValue', () => {
   it('creates a value from literal JSON', () => {
@@ -28,5 +29,37 @@ describe('ParsedValue', () => {
     expect(jsonified).not.toBe(literal);
     expect(jsonified.a).not.toBe(literal.a);
     expect(jsonified.a.b).not.toBe(literal.a.b);
+  });
+});
+
+describe('Extensions', () => {
+  it('passes through metadata', async () => {
+    const mockExtension: FileParsingExtension = (key, value) => {
+      if (key !== '$mock') return false;
+      return () => {
+        return [value, { metadata: { newProperty: true }, flatten: true, merge: true }];
+      };
+    };
+
+    const value = await ParsedValue.parseLiteral(
+      {
+        a: {
+          b: {
+            $mock: {
+              c: true,
+            },
+          },
+        },
+      },
+      [mockExtension],
+    );
+
+    expect(value.property(['a'])?.meta).toEqual({});
+    expect(value.property(['a', 'b'])?.meta).toEqual({ newProperty: true });
+    expect(value.property(['a', 'b', 'c'])?.meta).toEqual({});
+
+    expect(value.property(['a'])?.toJSON()).toEqual({ b: { c: true } });
+    expect(value.property(['a', 'b'])?.toJSON()).toEqual({ c: true });
+    expect(value.property(['a', 'b', 'c'])?.toJSON()).toEqual(true);
   });
 });
