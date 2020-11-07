@@ -7,6 +7,7 @@ import { flattenObjectTree, Json, JsonObject } from './common';
 import { FileType, stringify } from './config-source';
 import { Configuration, loadConfig, loadValidatedConfig } from './config';
 import { loadSchema } from './schema';
+import { logger } from './logging';
 
 function subcommand<Options extends { [name: string]: yargs.Options }>(
   {
@@ -274,9 +275,9 @@ const { argv: _ } = yargs
           },
         }).catch((err) => {
           if (err.exitCode) {
-            console.error(`${err.message} - Exit code ${err.exitCode}`);
+            logger.error(`${err.message} - Exit code ${err.exitCode}`);
           } else {
-            console.error(err.message);
+            logger.error(err.message);
           }
 
           if (err.exitCode) {

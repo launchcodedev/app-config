@@ -41,13 +41,13 @@
     "@types/openpgp": "4",
     "@types/prompts": "2",
     "@types/tmp": "0.2",
-    "execa": "4",
     "tmp-promise": "3"
   },
   "dependencies": {
     "@iarna/toml": "3",
     "ajv": "6",
     "common-tags": "1",
+    "execa": "4",
     "fs-extra": "9",
     "js-yaml": "3",
     "json-schema-ref-parser": "9",

@@ -3,6 +3,14 @@ import Ajv from 'ajv';
 import { JsonObject, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { FlexibleFileSource, FileSource } from './config-source';
+import { FileParsingExtension } from './extensions';
+
+export interface Options {
+  directory?: string;
+  fileNameBase?: string;
+  environmentOverride?: string;
+  fileExtensions?: FileParsingExtension[];
+}
 
 export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 
@@ -11,12 +19,14 @@ export interface Schema {
   validate: Validate;
 }
 
-export async function loadSchema(
-  fileName = '.app-config.schema',
-  environmentOverride?: string,
-): Promise<Schema> {
-  const source = new FlexibleFileSource(fileName, environmentOverride);
-  const parsed = await source.readToJSON();
+export async function loadSchema({
+  directory = '.',
+  fileNameBase = '.app-config.schema',
+  environmentOverride,
+  fileExtensions = [],
+}: Options = {}): Promise<Schema> {
+  const source = new FlexibleFileSource(join(directory, fileNameBase), environmentOverride);
+  const parsed = await source.readToJSON(fileExtensions);
 
   if (!isObject(parsed)) throw new Error('JSON Schema was not an object');
 

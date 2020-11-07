@@ -20,7 +20,7 @@ describe('Schema Loading', () => {
         `,
       },
       async (inDir) => {
-        const { value } = await loadSchema(inDir('.app-config.schema'));
+        const { value } = await loadSchema({ directory: inDir('.') });
 
         expect(value).toMatchObject({
           type: 'object',
@@ -43,7 +43,7 @@ describe('Schema Loading', () => {
         `,
       },
       async (inDir) => {
-        const { validate } = await loadSchema(inDir('.app-config.schema'));
+        const { validate } = await loadSchema({ directory: inDir('.') });
 
         expect(() => validate({})).toThrow();
         expect(() => validate({ foo: true })).toThrow();
@@ -67,7 +67,7 @@ describe('Secrets', () => {
         `,
       },
       async (inDir) => {
-        const { validate } = await loadSchema(inDir('.app-config.schema'));
+        const { validate } = await loadSchema({ directory: inDir('.') });
 
         expect(() => validate({ foo: '', bar: '' })).not.toThrow();
         expect(() => validate({ foo: '', bar: '' }, ParsedValue.literal({}))).not.toThrow();
@@ -90,7 +90,7 @@ describe('Secrets', () => {
         `,
       },
       async (inDir) => {
-        const { validate } = await loadSchema(inDir('.app-config.schema'));
+        const { validate } = await loadSchema({ directory: inDir('.') });
         const symmetricKey = await generateSymmetricKey(1);
 
         const parsed = await ParsedValue.parseLiteral(
