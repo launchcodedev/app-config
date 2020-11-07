@@ -1,82 +1,33 @@
 {
-  "name": "@lcdev/app-config",
-  "description": "Configuration file loader with JSON schema support",
-  "version": "1.0.22",
-  "license": "MPL-2.0",
-  "main": "dist/index.js",
-  "module": "dist/es/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "/dist",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+  "name": "@lcdev/app-config-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "app-config"
   ],
-  "bin": {
-    "app-config": "dist/cli.js"
-  },
-  "author": {
-    "name": "Launchcode",
-    "email": "admin@lc.dev",
-    "url": "https://lc.dev"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/launchcodedev/app-config.git"
-  },
   "scripts": {
-    "build": "tsc -b",
-    "build:es": "tsc -b tsconfig.es.json",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "eslint --ext .ts,.tsx src",
-    "fix": "eslint --ext .ts,.tsx src --fix",
-    "test": "jest",
-    "prepublishOnly": "yarn clean && yarn build && yarn build:es"
+    "cli": "yarn --cwd ./app-config cli",
+    "build": "yarn workspaces run build",
+    "clean": "yarn workspaces run clean",
+    "test": "yarn workspaces run test",
+    "lint": "yarn workspaces run lint",
+    "fix": "yarn workspaces run fix"
   },
   "devDependencies": {
-    "@commitlint/cli": "8",
+    "@commitlint/cli": "9",
     "@lcdev/commitlint": "1",
-    "@lcdev/eslint-config": "0.2",
-    "@lcdev/jest": "0.1",
+    "@lcdev/eslint-config": "0.3",
+    "@lcdev/jest": "0.3",
     "@lcdev/prettier": "0.1",
-    "@lcdev/tsconfig": "0.1",
-    "@types/common-tags": "1",
-    "@types/fs-extra": "8",
-    "@types/jest": "24",
-    "@types/js-yaml": "3",
-    "@types/json-schema": "7",
-    "@types/json5": "0.0.30",
-    "@types/lodash": "4",
-    "@types/node": "8",
-    "@types/tmp": "0.0.33",
-    "@types/yargs": "13",
-    "eslint": "6",
-    "husky": "3",
-    "jest": "24",
-    "prettier": "1",
-    "tmp-promise": "1",
-    "typescript": "3"
-  },
-  "dependencies": {
-    "@iarna/toml": "2",
-    "ajv": "6",
-    "common-tags": "1",
-    "execa": "3",
-    "fs-extra": "8",
-    "js-yaml": "3",
-    "json-schema-ref-parser": "6",
-    "json5": "2",
-    "lodash": "4",
-    "pretty-error": "2",
-    "quicktype-core": "6.0.57",
-    "yargs": "13"
+    "@lcdev/tsconfig": "0.2",
+    "@types/jest": "26",
+    "eslint": "7",
+    "husky": "4",
+    "jest": "26",
+    "prettier": "2",
+    "typescript": "4"
   },
   "prettier": "@lcdev/prettier",
-  "eslintConfig": {
-    "extends": "@lcdev"
-  },
-  "jest": {
-    "preset": "@lcdev/jest"
-  },
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
