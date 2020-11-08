@@ -281,7 +281,7 @@ describe('FallbackSource', () => {
 
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.source).toBe(source.sources[0]);
     expect(parsed.toJSON()).toEqual({ foo: 1 });
   });
 
@@ -294,7 +294,7 @@ describe('FallbackSource', () => {
 
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.source).toBe(source.sources[1]);
     expect(parsed.toJSON()).toEqual({ bar: 2 });
   });
 });

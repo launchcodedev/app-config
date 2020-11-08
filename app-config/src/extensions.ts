@@ -2,8 +2,9 @@ import { join, dirname } from 'path';
 import { isObject, Json, PromiseOrNot } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
 import { ParsedValue, ParsedValueMetadata } from './parsed-value';
-import { ConfigSource, FileSource, NotFoundError } from './config-source';
+import { ConfigSource, FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
+import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
 
 export const defaultExtensions = [
   envDirective(),
@@ -61,12 +62,13 @@ export function envDirective(aliases: EnvironmentAliases = defaultAliases): File
     if (key !== '$env') return false;
 
     return () => {
-      if (!isObject(obj)) throw new Error('An $env directive was used with a non-object value');
+      if (!isObject(obj))
+        throw new AppConfigError('An $env directive was used with a non-object value');
 
       if (!environment) {
         if (obj.default) return [obj.default, { flatten: true, merge: true }];
 
-        throw new Error(
+        throw new AppConfigError(
           `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
         );
       }
@@ -83,7 +85,7 @@ export function envDirective(aliases: EnvironmentAliases = defaultAliases): File
 
       const found = Object.keys(obj).join(', ');
 
-      throw new Error(
+      throw new AppConfigError(
         `An $env directive was used, but none matched the current environment (wanted ${environment}, got ${found})`,
       );
     };
@@ -139,13 +141,13 @@ export function environmentVariableSubstitution(
           const envType = currentEnvironment(aliases);
 
           if (!envType) {
-            throw new Error(`Could not find environment variable ${varName}`);
+            throw new AppConfigError(`Could not find environment variable ${varName}`);
           }
 
           // there's a special case for APP_CONFIG_ENV, which is always the envType
           text = text.replace(fullMatch, envType);
         } else {
-          throw new Error(`Could not find environment variable ${varName}`);
+          throw new AppConfigError(`Could not find environment variable ${varName}`);
         }
       }
     }
@@ -157,7 +159,7 @@ export function environmentVariableSubstitution(
     if (key !== '$substitute' && key !== '$subs') return false;
 
     return () => {
-      if (typeof value !== 'string') throw new Error('$substitute expects a string value');
+      if (typeof value !== 'string') throw new AppConfigError('$substitute expects a string value');
 
       return [performAllSubstitutions(value), { flatten: true }];
     };
@@ -183,22 +185,22 @@ function fileReferenceDirective(
         const { path, optional, select } = extend;
 
         if (!path || typeof path !== 'string') {
-          throw new Error(`Invalid ${keyName} path found`);
+          throw new AppConfigError(`Invalid ${keyName} filepath found`);
         }
 
         if (select !== undefined && typeof select !== 'string') {
-          throw new Error(`Invalid ${keyName} select found`);
+          throw new AppConfigError(`Invalid ${keyName} select found`);
         }
 
         if (optional !== undefined && typeof optional !== 'boolean') {
-          throw new Error(`Invalid ${keyName} optional found`);
+          throw new AppConfigError(`Invalid ${keyName} optional found`);
         }
 
         filepath = path;
         isOptional = optional || false;
         subselector = select || undefined;
       } else {
-        throw new Error(`${keyName} was provided an invalid option`);
+        throw new AppConfigError(`${keyName} was provided an invalid option`);
       }
 
       if (context instanceof FileSource) {
@@ -218,7 +220,9 @@ function fileReferenceDirective(
       if (subselector) {
         const found = parsed.property(subselector.split('.'));
 
-        if (!found) throw new Error(`Failed to select ${subselector} in ${filepath}`);
+        if (!found) {
+          throw new FailedToSelectSubObject(`Failed to select ${subselector} in ${filepath}`);
+        }
 
         return [found, options];
       }

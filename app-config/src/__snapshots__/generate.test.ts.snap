@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TypeScript File Generation creates a simple TypeScript file 1`] = `
+Array [
+  "// AUTO GENERATED CODE",
+  "// Run app-config with 'generate' command to regenerate this file",
+  "",
+  "import '@lcdev/app-config';",
+  "",
+  "export interface Configuration {",
+  "  foo?: string;",
+  "}",
+  "",
+  "// augment the default export from app-config",
+  "declare module '@lcdev/app-config' {",
+  "  export interface ExportedConfig extends Configuration {}",
+  "}",
+]
+`;

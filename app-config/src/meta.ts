@@ -1,5 +1,6 @@
-import { FlexibleFileSource, FileSource, FileType, NotFoundError } from './config-source';
+import { FlexibleFileSource, FileSource, FileType } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
+import { NotFoundError } from './errors';
 import { GenerateFile } from './generate';
 
 export interface TeamMember {
@@ -25,10 +26,11 @@ export async function loadMetaConfig(fileName = '.app-config.meta'): Promise<Met
   try {
     const parsed = await source.read();
     const value = parsed.toJSON() as MetaProperties;
+    const { filePath, fileType } = parsed.source as FileSource;
 
     return {
-      filePath: (parsed.source as FileSource).filePath,
-      fileType: (parsed.source as FileSource).fileType,
+      filePath,
+      fileType,
       value,
     };
   } catch (error) {

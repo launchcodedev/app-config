@@ -1,10 +1,11 @@
-import { FileSource, LiteralSource, NotFoundError } from './config-source';
+import { FileSource, LiteralSource } from './config-source';
 import {
   envDirective,
   environmentVariableSubstitution,
   extendsDirective,
   overrideDirective,
 } from './extensions';
+import { NotFoundError } from './errors';
 import { withTempFiles } from './test-util';
 
 describe('$extends directive', () => {

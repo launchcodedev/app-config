@@ -4,6 +4,7 @@ import { JsonObject, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { FlexibleFileSource, FileSource } from './config-source';
 import { FileParsingExtension } from './extensions';
+import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
 
 export interface Options {
   directory?: string;
@@ -31,7 +32,7 @@ export async function loadSchema({
   const source = new FlexibleFileSource(join(directory, fileNameBase), environmentOverride);
   const parsed = await source.readToJSON(parsingExtensions);
 
-  if (!isObject(parsed)) throw new Error('JSON Schema was not an object');
+  if (!isObject(parsed)) throw new WasNotObject('JSON Schema was not an object');
 
   const ajv = new Ajv({ allErrors: true });
 
@@ -66,7 +67,7 @@ export async function loadSchema({
       const valid = validate(fullConfig);
 
       if (!valid) {
-        const err = new Error(
+        const err = new ValidationError(
           `Config is invalid: ${ajv.errorsText(validate.errors, { dataVar: 'config' })}`,
         );
 
@@ -85,7 +86,7 @@ export async function loadSchema({
         });
 
         if (secretsInNonSecrets.length > 0) {
-          throw new Error(
+          throw new SecretsInNonSecrets(
             `Found ${secretsInNonSecrets
               .map((s) => `'.${s.join('.')}'`)
               .join(', ')} in non secrets file`,

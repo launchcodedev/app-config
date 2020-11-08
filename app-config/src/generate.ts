@@ -22,7 +22,7 @@ export interface GenerateFile {
   type?: string;
   augmentModule?: boolean;
   leadingComments?: string[];
-  rendererOptions?: { [key: string]: string };
+  rendererOptions?: RendererOptions;
 }
 
 export const generateTypeFiles = async () => {
@@ -51,13 +51,12 @@ export const generateTypeFiles = async () => {
         logger.info(`Generating ${file} as ${type}`);
         const lines = await generateQuicktype(
           schema,
-          schemaRefs,
-          file,
           type,
           name,
           augmentModule,
           leadingComments,
           rendererOptions,
+          schemaRefs,
         );
 
         await outputFile(file, `${lines.join('\n')}${'\n'}`);
@@ -68,16 +67,18 @@ export const generateTypeFiles = async () => {
   return generate;
 };
 
-async function generateQuicktype(
+export async function generateQuicktype(
   schema: JsonObject,
-  schemaRefs: JsonObject | undefined,
-  file: string,
   type: string,
   name: string,
-  augmentModule: boolean,
-  leadingComments: string[] | undefined,
-  rendererOptions: RendererOptions,
-) {
+  augmentModule: boolean = true,
+  leadingComments: string[] = [
+    'AUTO GENERATED CODE',
+    "Run app-config with 'generate' command to regenerate this file",
+  ],
+  rendererOptions: RendererOptions = {},
+  schemaRefs: JsonObject = {},
+): Promise<string[]> {
   const src: JSONSchemaSourceData = {
     name,
     schema: JSON.stringify(schema),
@@ -95,13 +96,6 @@ async function generateQuicktype(
     src,
     () => new JSONSchemaInput(new FetchingJSONSchemaStore(), []),
   );
-
-  if (leadingComments === undefined) {
-    leadingComments = [
-      'AUTO GENERATED CODE',
-      "Run app-config with 'generate' command to regenerate this file",
-    ];
-  }
 
   const { lines } = await quicktype({
     inputData,

@@ -1,9 +1,10 @@
 import { join } from 'path';
 import { Json, isObject } from './common';
 import { ParsedValue } from './parsed-value';
-import { FlexibleFileSource, EnvironmentSource, NotFoundError } from './config-source';
+import { FlexibleFileSource, EnvironmentSource } from './config-source';
 import { defaultExtensions, FileParsingExtension } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
+import { NotFoundError, WasNotObject } from './errors';
 
 export interface Options {
   directory?: string;
@@ -84,7 +85,7 @@ export async function loadValidatedConfig(
   ]);
 
   if (!isObject(fullConfig)) {
-    throw new Error('Config was not an object');
+    throw new WasNotObject('Configuration was not an object');
   }
 
   validate(fullConfig, parsed);

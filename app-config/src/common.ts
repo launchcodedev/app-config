@@ -14,19 +14,18 @@ export interface JsonArray extends Array<Json> {}
 export type Json = JsonPrimitive | JsonArray | JsonObject;
 
 export function isObject(obj: Json): obj is JsonObject {
-  return typeof obj === 'object' && obj !== null;
+  return typeof obj === 'object' && !Array.isArray(obj) && obj !== null;
 }
 
 export type KeyFormatter = (key: string, separator: string) => string;
 
-export const camelToScreamingCase: KeyFormatter = (key: string, separator: string) => {
-  // splits on capital letters, joins with a separator, and converts to uppercase
+export function camelToScreamingCase(key: string, separator: string = '_'): string {
   return key
-    .split(/(?=[A-Z])/)
-    .join(separator)
+    .replace(/([^A-Z]+)([A-Z][a-z])/g, `$1${separator}$2`)
+    .replace(/([^0-9]+)([0-9]+)/g, `$1${separator}$2`)
     .replace(/-/g, separator)
     .toUpperCase();
-};
+}
 
 export const flattenObjectTree = (
   obj: JsonObject,
@@ -41,6 +40,12 @@ export const flattenObjectTree = (
 
     if (isObject(value)) {
       flattenedObject = flattenObjectTree(value, flatKey, separator, formatter);
+    } else if (Array.isArray(value)) {
+      const flattenedArray = value.reduce<JsonObject>((acc, val, ind) => {
+        return Object.assign(acc, { [ind]: val });
+      }, {});
+
+      flattenedObject = flattenObjectTree(flattenedArray, flatKey, separator, formatter);
     } else {
       flattenedObject = {
         [flatKey]: value,
@@ -51,8 +56,8 @@ export const flattenObjectTree = (
   }, {});
 };
 
-export async function promptUser<T>(o: Omit<prompts.PromptObject, 'name'>): Promise<T> {
-  const { named } = await prompts({ ...o, name: 'named' });
+export async function promptUser<T>(options: Omit<prompts.PromptObject, 'name'>): Promise<T> {
+  const { named } = await prompts({ ...options, name: 'named' });
 
   return named as T;
 }
@@ -62,13 +67,11 @@ export async function consumeStdin(): Promise<string> {
     const rl = readline.createInterface({ input: process.stdin });
 
     let buffer = '';
-    rl.on('error', reject);
     rl.on('line', (line) => {
       buffer += line;
     });
 
-    rl.on('close', () => {
-      resolve(buffer);
-    });
+    rl.on('error', reject);
+    rl.on('close', () => resolve(buffer));
   });
 }

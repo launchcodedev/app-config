@@ -6,12 +6,16 @@ import { oneLine } from 'common-tags';
 import { Json, promptUser } from './common';
 import { stringify, FileType } from './config-source';
 import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
+import {
+  AppConfigError,
+  EmptyStdinOrPromptResponse,
+  InvalidEncryptionKey,
+  EncryptionEncoding,
+  SecretsRequireTTYError,
+} from './errors';
 import { logger, checkTTY } from './logging';
 
 export type Key = key.Key;
-
-/** For encrypting and decrypting secrets, stdin is required for prompts sometimes */
-export class SecretsRequireTTYError extends Error {}
 
 export const keyDirs = {
   get keychain() {
@@ -70,9 +74,9 @@ export const initializeKeys = async (withPassphrase: boolean = true) => {
     passphrase = await promptUser<string>({ message: 'Passphrase', type: 'password' });
   }
 
-  if (!name) throw new Error('No name given');
-  if (!email) throw new Error('No email given');
-  if (withPassphrase && !passphrase) throw new Error('No passphrase given');
+  if (!name) throw new EmptyStdinOrPromptResponse('No name given');
+  if (!email) throw new EmptyStdinOrPromptResponse('No email given');
+  if (withPassphrase && !passphrase) throw new EmptyStdinOrPromptResponse('No passphrase given');
 
   return initializeKeysManually({ name, email, passphrase });
 };
@@ -134,7 +138,8 @@ export async function loadPrivateKey(
     key = await loadKey(await fs.readFile(keyDirs.privateKey));
   }
 
-  if (!key.isPrivate()) throw new Error('Tried to load a public key as a private key');
+  if (!key.isPrivate())
+    throw new InvalidEncryptionKey('Tried to load a public key as a private key');
 
   if (!key.isDecrypted()) {
     if (!checkTTY()) throw new SecretsRequireTTYError();
@@ -162,7 +167,8 @@ export async function loadPublicKey(
     key = await loadKey(await fs.readFile(keyDirs.publicKey));
   }
 
-  if (key.isPrivate()) throw new Error('Tried to load a private key as a public key');
+  if (key.isPrivate())
+    throw new InvalidEncryptionKey('Tried to load a private key as a public key');
 
   return key;
 }
@@ -212,7 +218,7 @@ export async function encryptSymmetricKey(
   teamMembers: Key[],
 ): Promise<EncryptedSymmetricKey> {
   if (teamMembers.length === 0) {
-    throw new Error('Cannot create a symmetric key with no teamMembers');
+    throw new AppConfigError('Cannot create a symmetric key with no teamMembers');
   }
 
   const { data: key } = await encrypt({
@@ -273,7 +279,7 @@ export async function loadSymmetricKey(
   const symmetricKeys = await loadSymmetricKeys(lazyMeta);
   const symmetricKey = symmetricKeys.find((k) => k.revision === revision);
 
-  if (!symmetricKey) throw new Error(`Could not find symmetric key ${revision}`);
+  if (!symmetricKey) throw new InvalidEncryptionKey(`Could not find symmetric key ${revision}`);
 
   return decryptSymmetricKey(symmetricKey, privateKey);
 }
@@ -318,7 +324,7 @@ export async function encryptValue(
   const extracted = base64Regex.exec(data.toString());
 
   if (!extracted) {
-    throw new Error('Invalid message was formed in encryption');
+    throw new EncryptionEncoding('Invalid message was formed in encryption');
   }
 
   const base64 = extracted[1].split('\r\n').join('');
@@ -347,7 +353,7 @@ export async function decryptValue(
   const { data } = decrypted as { data: string };
 
   if (!data || data.length === 0) {
-    throw new Error('Data in decryption returned back a zero-length string');
+    throw new EncryptionEncoding('Data in decryption returned back a zero-length string');
   }
 
   // all encrypted data is JSON encoded
@@ -376,7 +382,7 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
   const teamMembers = await loadTeamMembersLazy();
 
   if (newTeamMember.isPrivate()) {
-    throw new Error(
+    throw new InvalidEncryptionKey(
       'A private key was passed in as a team member. Only public keys should be in team members.',
     );
   }
@@ -422,11 +428,13 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
   });
 
   if (newTeamMembers.length === teamMembers.length) {
-    throw new Error(`There were no team members with the email ${email}`);
+    throw new AppConfigError(`There were no team members with the email ${email}`);
   }
 
   if (newTeamMembers.length === 0) {
-    throw new Error('You cannot remove the last team member, since there would be no one to trust');
+    throw new AppConfigError(
+      'You cannot remove the last team member, since there would be no one to trust',
+    );
   }
 
   // re-encrypt symmetric keys without the team member
@@ -462,7 +470,7 @@ export function latestSymmetricKeyRevision(
 ): number {
   keys.sort((a, b) => a.revision - b.revision);
 
-  if (keys.length === 0) throw new Error('No symmetric keys found');
+  if (keys.length === 0) throw new InvalidEncryptionKey('No symmetric keys were found');
 
   return keys[keys.length - 1].revision;
 }
@@ -537,7 +545,7 @@ function verifyEncodedRevision(password: Uint8Array, expectedRevision: number) {
   const revision = decodeTypedArray(revisionBytes);
 
   if (parseFloat(revision) !== expectedRevision) {
-    throw new Error(oneLine`
+    throw new EncryptionEncoding(oneLine`
       We detected tampering in the encryption key, revision ${expectedRevision}!
       This error occurs when the revision in the 'encryptionKeys' does not match the one that was embedded into the key.
       It might not be safe to continue using this encryption key.

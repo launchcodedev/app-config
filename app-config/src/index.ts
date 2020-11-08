@@ -1,5 +1,6 @@
 import { inspect } from 'util';
 import { loadValidatedConfig, Options } from './config';
+import { AppConfigError, AccessingAppConfig } from './errors';
 
 // the config type that is exported to consumers and can be augmented
 export interface ExportedConfig {}
@@ -8,7 +9,9 @@ export interface ExportedConfig {}
 let loadedConfig: ExportedConfig | undefined;
 
 const assertLoaded = () => {
-  if (!loadedConfig) throw new Error('Tried to read app-config value before calling loadConfig!');
+  if (!loadedConfig) {
+    throw new AccessingAppConfig('Tried to read app-config value before calling loadConfig!');
+  }
 };
 
 export async function loadConfig(options?: Options): Promise<ExportedConfig> {
@@ -52,13 +55,13 @@ export const config: ExportedConfig = new Proxy(
       return Object.getOwnPropertyDescriptor(loadedConfig!, key);
     },
     set() {
-      throw new Error('Setting properties on app-config is not allowed');
+      throw new AppConfigError('Setting properties on app-config is not allowed');
     },
     defineProperty() {
-      throw new Error('Setting properties on app-config is not allowed');
+      throw new AppConfigError('Setting properties on app-config is not allowed');
     },
     deleteProperty() {
-      throw new Error('Deleting properties from app-config is not allowed');
+      throw new AppConfigError('Deleting properties from app-config is not allowed');
     },
     isExtensible() {
       return false;

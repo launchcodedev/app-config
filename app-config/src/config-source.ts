@@ -8,9 +8,7 @@ import { Json, JsonObject } from './common';
 import { currentEnvironment, defaultAliases } from './environment';
 import { FileParsingExtension } from './extensions';
 import { ParsedValue } from './parsed-value';
-import { logger } from './logging';
-
-export class NotFoundError extends Error {}
+import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
 
 export enum FileType {
   YAML = 'YAML',
@@ -21,21 +19,24 @@ export enum FileType {
 
 /** Base class for "sources", which are strategies to read configuration (eg. files, environment variables) */
 export abstract class ConfigSource {
+  /** Only method that is *required* for all ConfigSources, which is built on in readValue, read, and readToJSON */
   protected abstract readContents(): Promise<[string, FileType]>;
 
+  /** Parses contents of the source */
   async readValue(): Promise<Json> {
     const [contents, fileType] = await this.readContents();
 
     return parseRawString(contents, fileType);
   }
 
+  /** Reads the contents of the source into a full ParsedValue (not the raw JSON, like readValue) */
   async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
-    logger.verbose('Reading ConfigSource');
     const rawValue = await this.readValue();
 
     return ParsedValue.parse(rawValue, this, extensions);
   }
 
+  /** Ergonomic helper for chaining `source.read(extensions).then(v => v.toJSON())` */
   async readToJSON(extensions?: FileParsingExtension[]): Promise<Json> {
     const parsed = await this.read(extensions);
 
@@ -43,7 +44,7 @@ export abstract class ConfigSource {
   }
 }
 
-/** Read configuration from file */
+/** Read configuration from a single file */
 export class FileSource extends ConfigSource {
   public readonly filePath: string;
   public readonly fileType: FileType;
@@ -68,25 +69,25 @@ export class FileSource extends ConfigSource {
   }
 }
 
-/** Read configuration from a file, found via "glob-like" search */
+/** Read configuration from a file, found via "glob-like" search (any file format, with support for environment specific files) */
 export class FlexibleFileSource extends ConfigSource {
   constructor(private readonly filePath: string, private readonly environmentOverride?: string) {
     super();
   }
 
-  private async resolveSource() {
+  private async resolveSource(): Promise<FileSource> {
     const environment = this.environmentOverride ?? currentEnvironment();
     const environmentAlias = Object.entries(defaultAliases).find(([, v]) => v === environment)?.[0];
 
     const filesToTry = [];
 
-    for (const ext of ['yml', 'yaml', 'json', 'toml', 'json5']) {
+    for (const ext of ['yml', 'yaml', 'toml', 'json', 'json5']) {
       if (environment) filesToTry.push(`${this.filePath}.${environment}.${ext}`);
       if (environmentAlias) filesToTry.push(`${this.filePath}.${environmentAlias}.${ext}`);
     }
 
-    // try these after trying environments
-    for (const ext of ['yml', 'yaml', 'json', 'toml', 'json5']) {
+    // try these after trying environments, which take precedent
+    for (const ext of ['yml', 'yaml', 'toml', 'json', 'json5']) {
       filesToTry.push(`${this.filePath}.${ext}`);
     }
 
@@ -96,7 +97,9 @@ export class FlexibleFileSource extends ConfigSource {
       }
     }
 
-    throw new NotFoundError(`FlexibleFileSource could not find file with ${this.filePath}.{ext}`);
+    throw new NotFoundError(
+      `FlexibleFileSource could not find file with ${this.filePath}.{yml|yaml|toml|json|json5}`,
+    );
   }
 
   async readContents(): Promise<[string, FileType]> {
@@ -135,33 +138,35 @@ export class LiteralSource extends ConfigSource {
     super();
   }
 
-  async readValue(): Promise<Json> {
-    return this.value; // overriden to avoid stringify-parse cycle
-  }
-
   async readContents(): Promise<[string, FileType]> {
     return [JSON.stringify(this.value), FileType.JSON];
+  }
+
+  async readValue(): Promise<Json> {
+    return this.value; // overriden just for performance
   }
 }
 
 /** Read configuration from many ConfigSources and merge them */
 export class CombinedSource extends ConfigSource {
-  constructor(private readonly sources: ConfigSource[]) {
+  constructor(public readonly sources: ConfigSource[]) {
     super();
 
-    if (sources.length === 0) throw new Error('CombinedSource requires at least one source');
-  }
-
-  async readValue(): Promise<Json> {
-    const values = await Promise.all(this.sources.map((source) => source.readValue()));
-
-    return values.reduce((acc, v) => merge(acc, v), {});
+    if (sources.length === 0) {
+      throw new AppConfigError('CombinedSource requires at least one source');
+    }
   }
 
   async readContents(): Promise<[string, FileType]> {
     const value = await this.readValue();
 
     return [JSON.stringify(value), FileType.JSON];
+  }
+
+  async readValue(): Promise<Json> {
+    const values = await Promise.all(this.sources.map((source) => source.readValue()));
+
+    return values.reduce((acc, v) => merge(acc, v), {});
   }
 
   async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
@@ -172,7 +177,7 @@ export class CombinedSource extends ConfigSource {
       return acc.merge(parsed);
     }, undefined);
 
-    if (!merged) throw new Error('Unreachable');
+    if (!merged) throw new AppConfigError('CombinedSource ended up merging into falsey value');
 
     Object.assign(merged, { source: this });
 
@@ -182,12 +187,22 @@ export class CombinedSource extends ConfigSource {
 
 /** Read configuration from the first ConfigSource that doesn't fail */
 export class FallbackSource extends ConfigSource {
-  constructor(private readonly sources: ConfigSource[]) {
+  constructor(public readonly sources: ConfigSource[]) {
     super();
 
-    if (sources.length === 0) throw new Error('FallbackSource requires at least one source');
+    if (sources.length === 0) {
+      throw new AppConfigError('FallbackSource requires at least one source');
+    }
   }
 
+  // overriden only because it's part of the class signature, normally would never be called
+  async readContents(): Promise<[string, FileType]> {
+    const value = await this.readValue();
+
+    return [JSON.stringify(value), FileType.JSON];
+  }
+
+  // override because readContents uses it (which is backwards from super class)
   async readValue(): Promise<Json> {
     // take the first value that comes back without an error
     for (const source of this.sources) {
@@ -204,10 +219,40 @@ export class FallbackSource extends ConfigSource {
     throw new NotFoundError('FallbackSource found no valid ConfigSource');
   }
 
-  async readContents(): Promise<[string, FileType]> {
-    const value = await this.readValue();
+  // override so that ParsedValue is directly from the originating ConfigSource
+  async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+    // take the first value that comes back without an error
+    for (const source of this.sources) {
+      try {
+        const value = await source.read(extensions);
 
-    return [JSON.stringify(value), FileType.JSON];
+        return value;
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw new NotFoundError('FallbackSource found no valid ConfigSource');
+  }
+}
+
+export function stringify(config: Json, fileType: FileType, minimal: boolean = false): string {
+  switch (fileType) {
+    case FileType.JSON:
+      return JSON.stringify(config, null, minimal ? 0 : 2);
+    case FileType.JSON5:
+      return stringifyJSON5(config, null, minimal ? 0 : 2);
+    case FileType.TOML:
+      return stringifyTOML(config as any);
+    case FileType.YAML:
+      return stringifyYAML(config);
+
+    default:
+      throw new BadFileType(`Unsupported FileType '${fileType as string}'`);
   }
 }
 
@@ -223,13 +268,13 @@ export function filePathAssumedType(filePath: string): FileType {
     case 'json5':
       return FileType.JSON5;
     default:
-      throw new Error(
+      throw new BadFileType(
         `The file path "${filePath}" has an ambiguous file type, and a FileType could not be inferred`,
       );
   }
 }
 
-async function parseRawString(contents: string, fileType: FileType): Promise<Json> {
+export async function parseRawString(contents: string, fileType: FileType): Promise<Json> {
   switch (fileType) {
     case FileType.JSON:
       return JSON.parse(contents) as JsonObject;
@@ -240,56 +285,20 @@ async function parseRawString(contents: string, fileType: FileType): Promise<Jso
     case FileType.JSON5:
       return parseJSON5(contents) as JsonObject;
     default:
-      throw new Error(`Unsupported FileType '${fileType as string}'`);
+      throw new BadFileType(`Unsupported FileType '${fileType as string}'`);
   }
 }
 
-async function guessFileType(contents: string): Promise<FileType> {
-  try {
-    await parseRawString(contents, FileType.JSON);
-    return FileType.JSON;
-  } catch {
-    /* expected */
-  }
+export async function guessFileType(contents: string): Promise<FileType> {
+  for (const tryType of [FileType.JSON, FileType.TOML, FileType.JSON5, FileType.YAML]) {
+    try {
+      await parseRawString(contents, tryType);
 
-  try {
-    await parseRawString(contents, FileType.TOML);
-    return FileType.TOML;
-  } catch {
-    /* expected */
-  }
-
-  try {
-    await parseRawString(contents, FileType.JSON5);
-    return FileType.JSON5;
-  } catch {
-    /* expected */
-  }
-
-  try {
-    await parseRawString(contents, FileType.YAML);
-    return FileType.YAML;
-  } catch {
-    /* expected */
-  }
-
-  throw new Error(`app-config was not in a parseable format`);
-}
-
-export function stringify(config: Json, fileType: FileType, minimal: boolean = false): string {
-  switch (fileType) {
-    case FileType.JSON: {
-      return JSON.stringify(config, null, minimal ? 0 : 2);
-    }
-    case FileType.JSON5: {
-      return stringifyJSON5(config, null, minimal ? 0 : 2);
-    }
-    case FileType.TOML: {
-      return stringifyTOML(config as any);
-    }
-    case FileType.YAML:
-    default: {
-      return stringifyYAML(config);
+      return tryType;
+    } catch {
+      // parsing errors are expected
     }
   }
+
+  throw new ParsingError(`The provided configuration was not in a detectable/parseable format`);
 }

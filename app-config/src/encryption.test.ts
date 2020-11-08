@@ -1,5 +1,5 @@
+import { SecretsRequireTTYError } from './errors';
 import {
-  SecretsRequireTTYError,
   initializeKeysManually,
   loadPrivateKey,
   loadPublicKey,

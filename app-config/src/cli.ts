@@ -31,6 +31,18 @@ import {
 import { loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { checkTTY, logger, LogLevel } from './logging';
+import { AppConfigError, FailedToSelectSubObject, EmptyStdinOrPromptResponse } from './errors';
+
+type SubcommandOptions<
+  Options extends { [name: string]: yargs.Options },
+  PositionalOptions extends { [name: string]: yargs.PositionalOptions }
+> = {
+  name: string | string[];
+  description?: string;
+  examples?: [string, string][];
+  options?: Options;
+  positional?: PositionalOptions;
+};
 
 type SubcommandFn<Options extends { [name: string]: yargs.Options }> = (
   args: yargs.InferredOptionTypes<Options> & { _: string[] },
@@ -40,21 +52,10 @@ function subcommand<
   Options extends { [name: string]: yargs.Options },
   PositionalOptions extends { [name: string]: yargs.PositionalOptions }
 >(
-  {
-    name,
-    description,
-    examples = [],
-    options,
-    positional,
-  }: {
-    name: string | string[];
-    description?: string;
-    examples?: [string, string][];
-    options?: Options;
-    positional?: PositionalOptions;
-  },
-  fn: SubcommandFn<Options & PositionalOptions>,
+  desc: SubcommandOptions<Options, PositionalOptions>,
+  run: SubcommandFn<Options & PositionalOptions>,
 ): yargs.CommandModule {
+  const { name, description, examples = [], options, positional } = desc;
   const [command, ...aliases] = Array.isArray(name) ? name : [name];
 
   return {
@@ -66,38 +67,44 @@ function subcommand<
         args.positional(key, opt);
       }
 
-      return args
-        .options(options ?? {})
-        .options({
-          cwd: {
-            alias: 'C',
-            nargs: 1,
-            type: 'string',
-            description: 'Run app-config in the context of this directory',
-          },
-          verbose: {
-            type: 'boolean',
-            description: 'Perform verbose logging',
-          },
-        })
-        .example(examples);
+      args.options(options ?? {}).options({
+        cwd: {
+          alias: 'C',
+          nargs: 1,
+          type: 'string',
+          description: 'Run app-config in the context of this directory',
+        },
+        verbose: {
+          type: 'boolean',
+          description: 'Perform verbose logging',
+        },
+        quiet: {
+          type: 'boolean',
+          description: 'Only logs errors',
+        },
+        silent: {
+          type: 'boolean',
+          description: 'Never logs anything (expect command output)',
+        },
+      });
+
+      args.example(examples);
+
+      return args;
     },
     async handler(args) {
       if (typeof args.cwd === 'string') process.chdir(args.cwd);
       if (args.verbose) logger.setLevel(LogLevel.Verbose);
-      await fn(args as any);
+      if (args.quiet) logger.setLevel(LogLevel.Error);
+      if (args.silent) logger.setLevel(LogLevel.None);
+
+      await run(args as typeof args & yargs.InferredOptionTypes<Options & PositionalOptions>);
     },
   };
 }
 
-async function loadConfigOptionalValidation(noSchema: boolean) {
-  if (noSchema) return loadConfig();
-  return loadValidatedConfig();
-}
-
 const noSchemaOption = {
   alias: 'q',
-  nargs: 0,
   type: 'boolean',
   default: false,
   description: 'Avoids doing schema validation of your app-config (dangerous!)',
@@ -105,7 +112,6 @@ const noSchemaOption = {
 
 const secretsOption = {
   alias: 's',
-  nargs: 0,
   type: 'boolean',
   default: false,
   description: 'Include secrets in the output',
@@ -120,26 +126,24 @@ const prefixOption = {
 
 const formatOption = {
   alias: 'f',
-  nargs: 1,
   type: 'string',
   default: 'yaml' as string,
   choices: ['yaml', 'yml', 'json', 'json5', 'toml'],
 } as const;
 
 const selectOption = {
-  nargs: 1,
   type: 'string',
   description: 'A JSON pointer to select a nested property in the object',
 } as const;
 
-function selectSecretsOrNot(config: Configuration, secrets: boolean) {
+function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
   const { fullConfig, parsedNonSecrets } = config;
 
   if (secrets || !parsedNonSecrets) {
-    return fullConfig;
+    return fullConfig as JsonObject;
   }
 
-  return parsedNonSecrets.toJSON();
+  return parsedNonSecrets.toJSON() as JsonObject;
 }
 
 function fileTypeForFormatOption(option: string): FileType {
@@ -152,9 +156,15 @@ function fileTypeForFormatOption(option: string): FileType {
       return FileType.TOML;
     case 'yml':
     case 'yaml':
-    default:
       return FileType.YAML;
+    default:
+      throw new AppConfigError(`${option} is not a valid file type`);
   }
+}
+
+function loadConfigConditionalValidation(noSchema: boolean): typeof loadConfig {
+  if (noSchema) return loadConfig;
+  return loadValidatedConfig;
 }
 
 const { argv: _ } = yargs
@@ -166,7 +176,7 @@ const { argv: _ } = yargs
   .command(
     subcommand(
       {
-        name: ['vars', 'variables', 'v', 'env'],
+        name: ['vars', 'variables', 'v'],
         description: 'Prints out the generated environment variables',
         examples: [
           ['$0 vars --secrets > .env', 'Prints all environment variables, including secret values'],
@@ -183,9 +193,9 @@ const { argv: _ } = yargs
       },
       async (opts) => {
         const toPrint = selectSecretsOrNot(
-          await loadConfigOptionalValidation(opts.noSchema),
+          await loadConfigConditionalValidation(opts.noSchema)(),
           opts.secrets,
-        ) as JsonObject;
+        );
 
         process.stdout.write(
           Object.entries(flattenObjectTree(toPrint, opts.prefix))
@@ -215,13 +225,16 @@ const { argv: _ } = yargs
       },
       async (opts) => {
         let toPrint = selectSecretsOrNot(
-          await loadConfigOptionalValidation(opts.noSchema),
+          await loadConfigConditionalValidation(opts.noSchema)(),
           opts.secrets,
-        ) as JsonObject;
+        );
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
-          if (toPrint === undefined) throw new Error(`Failed to select property ${opts.select}`);
+
+          if (toPrint === undefined) {
+            throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
+          }
         }
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
@@ -254,7 +267,10 @@ const { argv: _ } = yargs
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select);
-          if (toPrint === undefined) throw new Error(`Failed to select property ${opts.select}`);
+
+          if (toPrint === undefined) {
+            throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
+          }
         }
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
@@ -298,7 +314,7 @@ const { argv: _ } = yargs
               const initialized = await initializeLocalKeys();
 
               if (initialized === false) {
-                throw new Error(
+                throw new AppConfigError(
                   'Secrets were already initialized. Reset them if you want to create a new key.',
                 );
               }
@@ -396,6 +412,7 @@ const { argv: _ } = yargs
               const key = await loadPublicKeyLazy();
 
               await outputFile(opts.path, key.armor());
+              logger.info(`The file ${opts.path} was written with your public key`);
             },
           ),
         )
@@ -519,7 +536,9 @@ const { argv: _ } = yargs
                 }
               }
 
-              if (!secretValue) throw new Error('Failed to read from stdin or prompt');
+              if (!secretValue) {
+                throw new EmptyStdinOrPromptResponse('Failed to read from stdin or prompt');
+              }
 
               if (typeof secretValue === 'string') {
                 const isJson = secretValue.startsWith('{') && secretValue.endsWith('}');
@@ -586,7 +605,9 @@ const { argv: _ } = yargs
                 }
               }
 
-              if (!encryptedText) throw new Error('Failed to read from stdin or prompt');
+              if (!encryptedText) {
+                throw new EmptyStdinOrPromptResponse('Failed to read from stdin or prompt');
+              }
 
               process.stdout.write(JSON.stringify(await decryptValue(encryptedText)));
               process.stdout.write('\n');
@@ -610,7 +631,7 @@ const { argv: _ } = yargs
           // users are directed to these examples when just running app-config, so let's show some other subcommands
           ['$0 vars --secrets', 'Prints app config environment variables, including secret values'],
           ['$0 create -f json5', 'Prints app config as a format like YAML or JSON'],
-          ['$0 generate', 'Run code generation as specified by the app-config file'],
+          ['$0 generate', 'Run code generation as specified by the app-config meta file'],
         ],
         options: {
           secrets: secretsOption,
@@ -621,21 +642,24 @@ const { argv: _ } = yargs
         },
       },
       async (opts) => {
-        let toPrint = selectSecretsOrNot(
-          await loadConfigOptionalValidation(opts.noSchema),
-          opts.secrets,
-        ) as JsonObject;
-
-        if (opts.select) {
-          toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
-          if (toPrint === undefined) throw new Error(`Failed to select property ${opts.select}`);
-        }
-
         const [command, ...args] = opts._;
 
         if (!command) {
           yargs.showHelp();
           process.exit(1);
+        }
+
+        let toPrint = selectSecretsOrNot(
+          await loadConfigConditionalValidation(opts.noSchema)(),
+          opts.secrets,
+        );
+
+        if (opts.select) {
+          toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
+
+          if (toPrint === undefined) {
+            throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
+          }
         }
 
         await execa(command, args, {
@@ -645,17 +669,13 @@ const { argv: _ } = yargs
             ...flattenObjectTree(toPrint, opts.prefix),
           },
         }).catch((err) => {
-          if (err.exitCode) {
-            logger.error(`${err.message} - Exit code ${err.exitCode}`);
-          } else {
-            logger.error(err.message);
-          }
+          logger.error(err.message);
 
           if (err.exitCode) {
             process.exit(err.exitCode);
           }
 
-          throw err;
+          return Promise.reject(err);
         });
       },
     ),
