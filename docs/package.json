@@ -1,0 +1,16 @@
+{
+  "name": "@lcdev/app-config-docs",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "scripts": {
+    "dev": "vuepress dev .",
+    "build": "vuepress build .",
+    "lint": "exit 0",
+    "fix": "exit 0",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "vuepress": "1"
+  }
+}

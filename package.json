@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
+    "docs",
+    "examples/*",
     "app-config",
-    "app-config-webpack-plugin",
-    "examples/*"
+    "app-config-webpack-plugin"
   ],
   "scripts": {
     "cli": "yarn --cwd ./app-config cli",
+    "docs:build": "yarn --cwd ./docs build",
     "build": "yarn workspaces run build",
     "clean": "yarn workspaces run clean",
     "test": "yarn workspaces run test",
