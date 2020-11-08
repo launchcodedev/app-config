@@ -5,6 +5,7 @@ import { FlexibleFileSource, EnvironmentSource } from './config-source';
 import { defaultExtensions, FileParsingExtension } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject } from './errors';
+import { logger } from './logging';
 
 export interface Options {
   directory?: string;
@@ -38,6 +39,7 @@ export async function loadConfig({
 }: Options = {}): Promise<Configuration> {
   // before trying to read .app-config files, we check for the APP_CONFIG environment variable
   const env = new EnvironmentSource(environmentVariableName);
+  logger.verbose(`Trying to read ${environmentVariableName} for configuration`);
 
   try {
     const parsed = await env.read(environmentExtensions);
@@ -47,6 +49,8 @@ export async function loadConfig({
     if (!(error instanceof NotFoundError)) throw error;
   }
 
+  logger.verbose(`Trying to read files for configuration`);
+
   const [nonSecrets, secrets] = await Promise.all([
     new FlexibleFileSource(join(directory, fileNameBase), environmentOverride).read(
       parsingExtensions,
@@ -55,7 +59,10 @@ export async function loadConfig({
       .read(secretsFileExtensions)
       .catch((error) => {
         // NOTE: secrets are optional, so not finding them is normal
-        if (error instanceof NotFoundError) return undefined;
+        if (error instanceof NotFoundError) {
+          logger.verbose('Did not find secrets file');
+          return undefined;
+        }
 
         throw error;
       }),
@@ -88,6 +95,7 @@ export async function loadValidatedConfig(
     throw new WasNotObject('Configuration was not an object');
   }
 
+  logger.verbose('Config was loaded, validating now');
   validate(fullConfig, parsed);
 
   return { fullConfig, parsed, ...rest };

@@ -133,7 +133,9 @@ export class EnvironmentSource extends ConfigSource {
 
     const inferredFileType = await guessFileType(value);
 
-    logger.verbose(`EnvironmentSource guessed that ${this.variableName} is ${inferredFileType} FileType`);
+    logger.verbose(
+      `EnvironmentSource guessed that ${this.variableName} is ${inferredFileType} FileType`,
+    );
 
     return [value, inferredFileType];
   }
@@ -179,7 +181,7 @@ export class CombinedSource extends ConfigSource {
 
     const merged = values.reduce<ParsedValue | undefined>((acc, parsed) => {
       if (!acc) return parsed;
-      return acc.merge(parsed);
+      return ParsedValue.merge(acc, parsed);
     }, undefined);
 
     if (!merged) throw new AppConfigError('CombinedSource ended up merging into falsey value');

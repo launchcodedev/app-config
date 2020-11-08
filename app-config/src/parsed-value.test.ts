@@ -34,7 +34,7 @@ describe('ParsedValue', () => {
   it('merges two parsed values', () => {
     const a = ParsedValue.literal({ a: { b: { c: true } } });
     const b = ParsedValue.literal({ a: { b: { d: true } } });
-    const merged = a.merge(b);
+    const merged = ParsedValue.merge(a, b);
 
     expect(a.toJSON()).toEqual({ a: { b: { c: true } } });
     expect(b.toJSON()).toEqual({ a: { b: { d: true } } });
@@ -45,7 +45,7 @@ describe('ParsedValue', () => {
   it('overrides properties when merging', () => {
     const a = ParsedValue.literal({ a: true, b: true });
     const b = ParsedValue.literal({ a: { b: { d: true } } });
-    const value = a.merge(b);
+    const value = ParsedValue.merge(a, b);
 
     expect(a).not.toEqual(value);
     expect(b).not.toEqual(value);
@@ -57,7 +57,7 @@ describe('ParsedValue', () => {
   it('merges meta properties', () => {
     const a = ParsedValue.literal({ a: true, b: true }).setMeta({ specialK: true });
     const b = ParsedValue.literal({ a: { b: { d: true } } }).setMeta({ specialP: true });
-    const value = a.merge(b);
+    const value = ParsedValue.merge(a, b);
 
     expect(value.meta).toEqual({ specialK: true, specialP: true });
   });

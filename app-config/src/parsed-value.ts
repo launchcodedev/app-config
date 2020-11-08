@@ -63,7 +63,7 @@ export class ParsedValue {
       let newValueK;
 
       if (a.value[key] && b.value[key]) {
-        newValueK = a.value[key].merge(b.value[key]);
+        newValueK = ParsedValue.merge(a.value[key], b.value[key]);
       } else {
         newValueK = b.value[key] ?? a.value[key];
       }
@@ -92,10 +92,6 @@ export class ParsedValue {
     }
 
     return new ParsedValue(a.source, newRawValue, newValue).setMeta(merge(a.meta, b.meta));
-  }
-
-  merge(value: ParsedValue): ParsedValue {
-    return ParsedValue.merge(this, value);
   }
 
   setMeta(metadata: ParsedValueMetadata) {

@@ -5,6 +5,7 @@ import { ParsedValue, ParsedValueMetadata } from './parsed-value';
 import { ConfigSource, FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
+import { logger } from './logging';
 
 export const defaultExtensions = [
   envDirective(),
@@ -110,6 +111,8 @@ export function environmentVariableSubstitution(
   aliases: EnvironmentAliases = defaultAliases,
 ): FileParsingExtension {
   const performAllSubstitutions = (text: string): string => {
+    let output = text;
+
     // this regex matches:
     //   $FOO
     //   ${FOO}
@@ -122,7 +125,7 @@ export function environmentVariableSubstitution(
     const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g;
 
     while (true) {
-      const match = envVar.exec(text);
+      const match = envVar.exec(output);
       if (!match) break;
 
       const fullMatch = match[0];
@@ -133,10 +136,10 @@ export function environmentVariableSubstitution(
         const env = process.env[varName];
 
         if (env !== undefined) {
-          text = text.replace(fullMatch, env);
+          output = output.replace(fullMatch, env);
         } else if (fallback !== undefined) {
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          text = performAllSubstitutions(text.replace(fullMatch, fallback));
+          output = performAllSubstitutions(output.replace(fullMatch, fallback));
         } else if (varName === 'APP_CONFIG_ENV') {
           const envType = currentEnvironment(aliases);
 
@@ -145,14 +148,16 @@ export function environmentVariableSubstitution(
           }
 
           // there's a special case for APP_CONFIG_ENV, which is always the envType
-          text = text.replace(fullMatch, envType);
+          output = output.replace(fullMatch, envType);
         } else {
           throw new AppConfigError(`Could not find environment variable ${varName}`);
         }
       }
     }
 
-    return text;
+    logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
+
+    return output;
   };
 
   return (key, value) => {
@@ -206,6 +211,8 @@ function fileReferenceDirective(
       if (context instanceof FileSource) {
         filepath = join(dirname(context.filePath), filepath);
       }
+
+      logger.verbose(`Loading file for ${keyName}: ${filepath}`);
 
       const source = new FileSource(filepath);
 

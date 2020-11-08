@@ -138,8 +138,9 @@ export async function loadPrivateKey(
     key = await loadKey(await fs.readFile(keyDirs.privateKey));
   }
 
-  if (!key.isPrivate())
+  if (!key.isPrivate()) {
     throw new InvalidEncryptionKey('Tried to load a public key as a private key');
+  }
 
   if (!key.isDecrypted()) {
     if (!checkTTY()) throw new SecretsRequireTTYError();
@@ -177,6 +178,7 @@ let privateKey: Promise<Key> | undefined;
 
 export async function loadPrivateKeyLazy(): Promise<Key> {
   if (!privateKey) {
+    logger.verbose('Loading local private key');
     // help the end user, if they haven't initialized their local keys yet
     privateKey = initializeLocalKeys().then(() => loadPrivateKey());
   }
@@ -188,6 +190,7 @@ let publicKey: Promise<Key> | undefined;
 
 export async function loadPublicKeyLazy(): Promise<Key> {
   if (!publicKey) {
+    logger.verbose('Loading local public key');
     // help the end user, if they haven't initialized their local keys yet
     publicKey = initializeLocalKeys().then(() => loadPublicKey());
   }
@@ -256,17 +259,11 @@ export async function saveNewSymmetricKey(symmetricKey: DecryptedSymmetricKey, t
 
 export async function loadSymmetricKeys(lazy = true): Promise<EncryptedSymmetricKey[]> {
   // flag is here mostly for testing
-  if (lazy) {
-    const {
-      value: { encryptionKeys = [] },
-    } = await loadMetaConfigLazy();
-
-    return encryptionKeys;
-  }
+  const loadMeta = lazy ? loadMetaConfigLazy : loadMetaConfig;
 
   const {
     value: { encryptionKeys = [] },
-  } = await loadMetaConfig();
+  } = await loadMeta();
 
   return encryptionKeys;
 }
@@ -280,6 +277,8 @@ export async function loadSymmetricKey(
   const symmetricKey = symmetricKeys.find((k) => k.revision === revision);
 
   if (!symmetricKey) throw new InvalidEncryptionKey(`Could not find symmetric key ${revision}`);
+
+  logger.verbose(`Loading symmetric key r${symmetricKey.revision}`);
 
   return decryptSymmetricKey(symmetricKey, privateKey);
 }

@@ -2,6 +2,7 @@ import { FlexibleFileSource, FileSource, FileType } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
 import { NotFoundError } from './errors';
 import { GenerateFile } from './generate';
+import { logger } from './logging';
 
 export interface TeamMember {
   userId: string;
@@ -27,6 +28,8 @@ export async function loadMetaConfig(fileName = '.app-config.meta'): Promise<Met
     const parsed = await source.read();
     const value = parsed.toJSON() as MetaProperties;
     const { filePath, fileType } = parsed.source as FileSource;
+
+    logger.verbose(`Meta file was loaded from ${filePath}`);
 
     return {
       filePath,
