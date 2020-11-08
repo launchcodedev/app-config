@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "app-config"
+    "app-config",
+    "app-config-webpack-plugin",
+    "examples/*"
   ],
   "scripts": {
     "cli": "yarn --cwd ./app-config cli",

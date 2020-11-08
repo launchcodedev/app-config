@@ -2,7 +2,7 @@ import { join } from 'path';
 import { Json, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
-import { FlexibleFileSource, EnvironmentSource } from './config-source';
+import { FlexibleFileSource, FileSource, EnvironmentSource } from './config-source';
 import { defaultExtensions, ParsingExtension } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject } from './errors';
@@ -27,6 +27,8 @@ export interface Configuration {
   parsed: ParsedValue;
   parsedSecrets?: ParsedValue;
   parsedNonSecrets?: ParsedValue;
+  /** non-exhaustive list of files that were read (useful for reloading in plugins) */
+  filePaths?: string[];
 }
 
 export async function loadConfig({
@@ -79,12 +81,22 @@ export async function loadConfig({
   ]);
 
   const parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
+  const filePaths = [];
+
+  if (nonSecrets.source instanceof FileSource) {
+    filePaths.push(nonSecrets.source.filePath);
+  }
+
+  if (secrets && secrets.source instanceof FileSource) {
+    filePaths.push(secrets.source.filePath);
+  }
 
   return {
     parsed,
     parsedSecrets: secrets,
     parsedNonSecrets: nonSecrets,
     fullConfig: parsed.toJSON(),
+    filePaths,
   };
 }
 

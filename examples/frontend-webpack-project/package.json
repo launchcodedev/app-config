@@ -1,0 +1,23 @@
+{
+  "name": "frontend-webpack-project",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "scripts": {
+    "dev": "ENV=dev webpack-dev-server",
+    "build": "webpack --mode production",
+    "lint": "exit 0",
+    "fix": "exit 0",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "@lcdev/app-config": "2 || 2.0.0-dev"
+  },
+  "devDependencies": {
+    "@lcdev/app-config-webpack-plugin": "2 || 2.0.0-dev",
+    "html-webpack-plugin": "4",
+    "webpack": "4",
+    "webpack-cli": "3",
+    "webpack-dev-server": "3"
+  }
+}

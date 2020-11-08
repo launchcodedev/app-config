@@ -29,19 +29,9 @@
     "build:es": "tsc -b tsconfig.es.json",
     "clean": "rm -rf dist *.tsbuildinfo",
     "lint": "eslint src",
-    "fix": "eslint src --fix",
+    "fix": "eslint --fix src",
     "test": "jest",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
-  },
-  "devDependencies": {
-    "@types/common-tags": "1",
-    "@types/fs-extra": "9",
-    "@types/js-yaml": "3",
-    "@types/lodash.merge": "4",
-    "@types/openpgp": "4",
-    "@types/prompts": "2",
-    "@types/tmp": "0.2",
-    "tmp-promise": "3"
   },
   "dependencies": {
     "@iarna/toml": "3",
@@ -61,6 +51,16 @@
     "quicktype-core": "6.0.69",
     "text-encoding-utf-8": "1",
     "yargs": "16"
+  },
+  "devDependencies": {
+    "@types/common-tags": "1",
+    "@types/fs-extra": "9",
+    "@types/js-yaml": "3",
+    "@types/lodash.merge": "4",
+    "@types/openpgp": "4",
+    "@types/prompts": "2",
+    "@types/tmp": "0.2",
+    "tmp-promise": "3"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
