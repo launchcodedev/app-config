@@ -1,5 +1,5 @@
 import { ParsedValue } from './parsed-value';
-import { FileParsingExtension } from './extensions';
+import { ParsingExtension } from './extensions';
 
 describe('ParsedValue', () => {
   it('creates a value from literal JSON', () => {
@@ -65,7 +65,7 @@ describe('ParsedValue', () => {
 
 describe('Extensions', () => {
   it('passes through metadata', async () => {
-    const mockExtension: FileParsingExtension = (key, value) => {
+    const mockExtension: ParsingExtension = (key, value) => {
       if (key !== '$mock') return false;
       return () => {
         return [value, { metadata: { newProperty: true }, flatten: true, merge: true }];

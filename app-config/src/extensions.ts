@@ -36,27 +36,24 @@ type TransformParentOptions = {
   metadata?: ParsedValueMetadata;
 };
 
-export type FileParsingExtension = (
-  key: string,
-  value: Json,
-) => false | FileParsingExtensionTransform;
-export type FileParsingExtensionTransform = (
+export type ParsingExtension = (key: string, value: Json) => false | ParsingExtensionTransform;
+export type ParsingExtensionTransform = (
   context: ConfigSource,
-  extensions: FileParsingExtension[],
+  extensions: ParsingExtension[],
 ) => PromiseOrNot<[Json | ParsedValue, TransformParentOptions]>;
 
 /** Uses another file as a "base", and extends on top of it */
-export function extendsDirective(): FileParsingExtension {
+export function extendsDirective(): ParsingExtension {
   return fileReferenceDirective('$extends', { flatten: true, merge: true });
 }
 
 /** Uses another file as overriding values, layering them on top of current file */
-export function overrideDirective(): FileParsingExtension {
+export function overrideDirective(): ParsingExtension {
   return fileReferenceDirective('$override', { flatten: true, override: true });
 }
 
 /** Looks up an environment-specific value ($env) */
-export function envDirective(aliases: EnvironmentAliases = defaultAliases): FileParsingExtension {
+export function envDirective(aliases: EnvironmentAliases = defaultAliases): ParsingExtension {
   const environment = currentEnvironment(aliases);
 
   return (key, obj) => {
@@ -94,7 +91,7 @@ export function envDirective(aliases: EnvironmentAliases = defaultAliases): File
 }
 
 /** Decrypts inline encrypted values */
-export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): FileParsingExtension {
+export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): ParsingExtension {
   return (_, value) => {
     if (typeof value !== 'string' || !value.startsWith('enc:')) return false;
 
@@ -109,7 +106,7 @@ export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): FilePa
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
 export function environmentVariableSubstitution(
   aliases: EnvironmentAliases = defaultAliases,
-): FileParsingExtension {
+): ParsingExtension {
   const performAllSubstitutions = (text: string): string => {
     let output = text;
 
@@ -175,7 +172,7 @@ export function environmentVariableSubstitution(
 function fileReferenceDirective(
   keyName: string,
   options: TransformParentOptions,
-): FileParsingExtension {
+): ParsingExtension {
   return (key, extend) => {
     if (key !== keyName) return false;
 

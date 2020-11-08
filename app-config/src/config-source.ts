@@ -4,8 +4,8 @@ import { parse as parseTOML, stringify as stringifyTOML } from '@iarna/toml';
 import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
 import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
 import { Json, JsonObject } from './common';
-import { currentEnvironment, defaultAliases } from './environment';
-import { FileParsingExtension } from './extensions';
+import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
+import { ParsingExtension } from './extensions';
 import { ParsedValue } from './parsed-value';
 import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
 import { logger } from './logging';
@@ -30,14 +30,14 @@ export abstract class ConfigSource {
   }
 
   /** Reads the contents of the source into a full ParsedValue (not the raw JSON, like readValue) */
-  async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
     const rawValue = await this.readValue();
 
     return ParsedValue.parse(rawValue, this, extensions);
   }
 
   /** Ergonomic helper for chaining `source.read(extensions).then(v => v.toJSON())` */
-  async readToJSON(extensions?: FileParsingExtension[]): Promise<Json> {
+  async readToJSON(extensions?: ParsingExtension[]): Promise<Json> {
     const parsed = await this.read(extensions);
 
     return parsed.toJSON();
@@ -72,13 +72,19 @@ export class FileSource extends ConfigSource {
 
 /** Read configuration from a file, found via "glob-like" search (any file format, with support for environment specific files) */
 export class FlexibleFileSource extends ConfigSource {
-  constructor(private readonly filePath: string, private readonly environmentOverride?: string) {
+  constructor(
+    private readonly filePath: string,
+    private readonly environmentOverride?: string,
+    private readonly environmentAliases: EnvironmentAliases = defaultAliases,
+  ) {
     super();
   }
 
   private async resolveSource(): Promise<FileSource> {
-    const environment = this.environmentOverride ?? currentEnvironment();
-    const environmentAlias = Object.entries(defaultAliases).find(([, v]) => v === environment)?.[0];
+    const environment = this.environmentOverride ?? currentEnvironment(this.environmentAliases);
+    const environmentAlias = Object.entries(this.environmentAliases).find(
+      ([, v]) => v === environment,
+    )?.[0];
 
     const filesToTry = [];
 
@@ -111,7 +117,7 @@ export class FlexibleFileSource extends ConfigSource {
     return this.resolveSource().then((source) => source.readContents());
   }
 
-  async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
     const source = await this.resolveSource();
 
     return source.read(extensions);
@@ -176,7 +182,7 @@ export class CombinedSource extends ConfigSource {
     return this.readToJSON();
   }
 
-  async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
     const values = await Promise.all(this.sources.map((source) => source.read(extensions)));
 
     const merged = values.reduce<ParsedValue | undefined>((acc, parsed) => {
@@ -228,7 +234,7 @@ export class FallbackSource extends ConfigSource {
   }
 
   // override so that ParsedValue is directly from the originating ConfigSource
-  async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
     // take the first value that comes back without an error
     for (const source of this.sources) {
       try {

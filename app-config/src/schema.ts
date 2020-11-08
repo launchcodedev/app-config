@@ -2,15 +2,17 @@ import { resolve, join, dirname } from 'path';
 import Ajv from 'ajv';
 import { JsonObject, isObject } from './common';
 import { ParsedValue } from './parsed-value';
+import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource } from './config-source';
-import { FileParsingExtension } from './extensions';
+import { ParsingExtension } from './extensions';
 import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
 
 export interface Options {
   directory?: string;
   fileNameBase?: string;
   environmentOverride?: string;
-  parsingExtensions?: FileParsingExtension[];
+  environmentAliases?: EnvironmentAliases;
+  parsingExtensions?: ParsingExtension[];
 }
 
 export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
@@ -27,9 +29,14 @@ export async function loadSchema({
   directory = '.',
   fileNameBase = '.app-config.schema',
   environmentOverride,
+  environmentAliases = defaultAliases,
   parsingExtensions = [],
 }: Options = {}): Promise<Schema> {
-  const source = new FlexibleFileSource(join(directory, fileNameBase), environmentOverride);
+  const source = new FlexibleFileSource(
+    join(directory, fileNameBase),
+    environmentOverride,
+    environmentAliases,
+  );
   const parsed = await source.readToJSON(parsingExtensions);
 
   if (!isObject(parsed)) throw new WasNotObject('JSON Schema was not an object');

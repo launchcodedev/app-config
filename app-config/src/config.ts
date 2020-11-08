@@ -1,8 +1,9 @@
 import { join } from 'path';
 import { Json, isObject } from './common';
 import { ParsedValue } from './parsed-value';
+import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, EnvironmentSource } from './config-source';
-import { defaultExtensions, FileParsingExtension } from './extensions';
+import { defaultExtensions, ParsingExtension } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject } from './errors';
 import { logger } from './logging';
@@ -13,9 +14,10 @@ export interface Options {
   secretsFileNameBase?: string;
   environmentVariableName?: string;
   environmentOverride?: string;
-  parsingExtensions?: FileParsingExtension[];
-  secretsFileExtensions?: FileParsingExtension[];
-  environmentExtensions?: FileParsingExtension[];
+  environmentAliases?: EnvironmentAliases;
+  parsingExtensions?: ParsingExtension[];
+  secretsFileExtensions?: ParsingExtension[];
+  environmentExtensions?: ParsingExtension[];
 }
 
 export interface Configuration {
@@ -33,8 +35,9 @@ export async function loadConfig({
   secretsFileNameBase = `${fileNameBase}.secrets`,
   environmentVariableName = 'APP_CONFIG',
   environmentOverride,
+  environmentAliases = defaultAliases,
   parsingExtensions = defaultExtensions,
-  secretsFileExtensions = defaultExtensions.concat(markAllValuesAsSecret),
+  secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret),
   environmentExtensions = [],
 }: Options = {}): Promise<Configuration> {
   // before trying to read .app-config files, we check for the APP_CONFIG environment variable
@@ -52,10 +55,17 @@ export async function loadConfig({
   logger.verbose(`Trying to read files for configuration`);
 
   const [nonSecrets, secrets] = await Promise.all([
-    new FlexibleFileSource(join(directory, fileNameBase), environmentOverride).read(
-      parsingExtensions,
-    ),
-    new FlexibleFileSource(join(directory, secretsFileNameBase), environmentOverride)
+    new FlexibleFileSource(
+      join(directory, fileNameBase),
+      environmentOverride,
+      environmentAliases,
+    ).read(parsingExtensions),
+
+    new FlexibleFileSource(
+      join(directory, secretsFileNameBase),
+      environmentOverride,
+      environmentAliases,
+    )
       .read(secretsFileExtensions)
       .catch((error) => {
         // NOTE: secrets are optional, so not finding them is normal
@@ -86,6 +96,7 @@ export async function loadValidatedConfig(
     loadSchema({
       directory: options?.directory,
       environmentOverride: options?.environmentOverride,
+      environmentAliases: options?.environmentAliases,
       ...schemaOptions,
     }),
     loadConfig(options),
@@ -101,7 +112,7 @@ export async function loadValidatedConfig(
   return { fullConfig, parsed, ...rest };
 }
 
-const markAllValuesAsSecret: FileParsingExtension = (_, value) => () => [
+const markAllValuesAsSecret: ParsingExtension = (_, value) => () => [
   value,
   { metadata: { fromSecrets: true } },
 ];

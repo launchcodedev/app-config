@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import merge from 'lodash.merge';
 import { Json, JsonPrimitive, isObject } from './common';
 import { ConfigSource, LiteralSource } from './config-source';
-import { FileParsingExtension } from './extensions';
+import { ParsingExtension } from './extensions';
 
 type ParsedValueInner = JsonPrimitive | { [k: string]: ParsedValue } | ParsedValue[];
 
@@ -29,16 +29,13 @@ export class ParsedValue {
   static async parse(
     raw: Json,
     source: ConfigSource,
-    extensions: FileParsingExtension[] = [],
+    extensions: ParsingExtension[] = [],
   ): Promise<ParsedValue> {
     return parseValue(raw, source, extensions);
   }
 
   /** Parses (with extensions) from a plain JSON object */
-  static async parseLiteral(
-    raw: Json,
-    extensions: FileParsingExtension[] = [],
-  ): Promise<ParsedValue> {
+  static async parseLiteral(raw: Json, extensions: ParsingExtension[] = []): Promise<ParsedValue> {
     return parseValue(raw, new LiteralSource(raw), extensions);
   }
 
@@ -174,7 +171,7 @@ function literalParsedValue(raw: Json, source: ConfigSource): ParsedValue {
 async function parseValue(
   raw: Json,
   source: ConfigSource,
-  extensions: FileParsingExtension[],
+  extensions: ParsingExtension[],
 ): Promise<ParsedValue> {
   if (Array.isArray(raw)) {
     const transformed = await Promise.all(raw.map((v) => parseValue(v, source, extensions)));
