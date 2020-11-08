@@ -1,3 +1,6 @@
+import readline from 'readline';
+import prompts from 'prompts';
+
 export type PromiseOrNot<T> = Promise<T> | T;
 
 export type JsonPrimitive = number | string | boolean | null;
@@ -47,3 +50,25 @@ export const flattenObjectTree = (
     return Object.assign(merged, flattenedObject);
   }, {});
 };
+
+export async function promptUser<T>(o: Omit<prompts.PromptObject, 'name'>): Promise<T> {
+  const { named } = await prompts({ ...o, name: 'named' });
+
+  return named as T;
+}
+
+export async function consumeStdin(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const rl = readline.createInterface({ input: process.stdin });
+
+    let buffer = '';
+    rl.on('error', reject);
+    rl.on('line', (line) => {
+      buffer += line;
+    });
+
+    rl.on('close', () => {
+      resolve(buffer);
+    });
+  });
+}

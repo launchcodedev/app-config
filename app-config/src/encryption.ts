@@ -1,30 +1,19 @@
 import { join, resolve } from 'path';
 import { homedir } from 'os';
 import * as fs from 'fs-extra';
-import prompts from 'prompts';
 import { generateKey, encrypt, decrypt, key, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
-import { Json } from './common';
+import { Json, promptUser } from './common';
 import { stringify, FileType } from './config-source';
 import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
-import { logger } from './logging';
+import { logger, checkTTY } from './logging';
 
 export type Key = key.Key;
-
-function checkTTY() {
-  return process.stdin.isTTY && process.stdout.isTTY;
-}
 
 /** For encrypting and decrypting secrets, stdin is required for prompts sometimes */
 export class SecretsRequireTTYError extends Error {}
 
-async function promptUser<T>(o: Omit<prompts.PromptObject, 'name'>): Promise<T> {
-  const { named } = await prompts({ ...o, name: 'named' });
-
-  return named as T;
-}
-
-export const dirs = {
+export const keyDirs = {
   get keychain() {
     if (process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER) {
       return resolve(process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER);
@@ -33,13 +22,13 @@ export const dirs = {
     return join(homedir(), '.app-config', 'keychain');
   },
   get privateKey() {
-    return join(dirs.keychain, 'private-key.asc');
+    return join(keyDirs.keychain, 'private-key.asc');
   },
   get publicKey() {
-    return join(dirs.keychain, 'public-key.asc');
+    return join(keyDirs.keychain, 'public-key.asc');
   },
   get revocationCert() {
-    return join(dirs.keychain, 'revocation.asc');
+    return join(keyDirs.keychain, 'revocation.asc');
   },
 };
 
@@ -49,6 +38,12 @@ export async function initializeKeysManually(options: {
   passphrase?: string;
 }) {
   const { name, email, passphrase } = options;
+
+  if (passphrase) {
+    logger.verbose(`Initializing a key with passphrase for ${email}`);
+  } else {
+    logger.verbose(`Initializing a key without a passphrase for ${email}`);
+  }
 
   const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await generateKey({
     curve: 'ed25519',
@@ -67,7 +62,7 @@ export const initializeKeys = async (withPassphrase: boolean = true) => {
   if (!checkTTY()) throw new SecretsRequireTTYError();
 
   const name = await promptUser<string>({ message: 'Name', type: 'text' });
-  const email = await promptUser<string>({ message: 'Name', type: 'text' });
+  const email = await promptUser<string>({ message: 'Email', type: 'text' });
 
   let passphrase;
 
@@ -83,7 +78,7 @@ export const initializeKeys = async (withPassphrase: boolean = true) => {
 };
 
 export const initializeLocalKeys = async () => {
-  if (await fs.pathExists(dirs.keychain)) {
+  if (await fs.pathExists(keyDirs.keychain)) {
     return false;
   }
 
@@ -94,15 +89,17 @@ export const initializeLocalKeys = async () => {
   const prevUmask = process.umask(0o077);
 
   try {
-    await fs.mkdirp(dirs.keychain);
+    await fs.mkdirp(keyDirs.keychain);
 
     process.umask(0o177);
 
     await Promise.all([
-      fs.writeFile(dirs.privateKey, privateKeyArmored),
-      fs.writeFile(dirs.publicKey, publicKeyArmored),
-      fs.writeFile(dirs.revocationCert, revocationCertificate),
+      fs.writeFile(keyDirs.privateKey, privateKeyArmored),
+      fs.writeFile(keyDirs.publicKey, publicKeyArmored),
+      fs.writeFile(keyDirs.revocationCert, revocationCertificate),
     ]);
+
+    logger.info(`Wrote your encryption keys in ${keyDirs.keychain}`);
   } finally {
     process.umask(prevUmask);
   }
@@ -111,7 +108,7 @@ export const initializeLocalKeys = async () => {
 };
 
 export const deleteLocalKeys = async () => {
-  await fs.remove(dirs.keychain);
+  await fs.remove(keyDirs.keychain);
 };
 
 export const loadKey = async (contents: string | Buffer): Promise<Key> => {
@@ -134,7 +131,7 @@ export async function loadPrivateKey(
       logger.info('Warning! Trying to load encryption keys from home folder in a CI environment');
     }
 
-    key = await loadKey(await fs.readFile(dirs.privateKey));
+    key = await loadKey(await fs.readFile(keyDirs.privateKey));
   }
 
   if (!key.isPrivate()) throw new Error('Tried to load a public key as a private key');
@@ -162,7 +159,7 @@ export async function loadPublicKey(
       logger.warn('Warning! Trying to load encryption keys from home folder in a CI environment');
     }
 
-    key = await loadKey(await fs.readFile(dirs.publicKey));
+    key = await loadKey(await fs.readFile(keyDirs.publicKey));
   }
 
   if (key.isPrivate()) throw new Error('Tried to load a private key as a public key');
@@ -460,7 +457,7 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
   }));
 }
 
-function latestSymmetricKeyRevision(
+export function latestSymmetricKeyRevision(
   keys: (EncryptedSymmetricKey | DecryptedSymmetricKey)[],
 ): number {
   keys.sort((a, b) => a.revision - b.revision);

@@ -2,25 +2,57 @@
 
 import * as yargs from 'yargs';
 import execa from 'execa';
+import clipboardy from 'clipboardy';
+import { outputFile, readFile } from 'fs-extra';
 import { resolve } from 'json-schema-ref-parser';
-import { flattenObjectTree, Json, JsonObject } from './common';
+import { stripIndents } from 'common-tags';
+import { consumeStdin, flattenObjectTree, Json, JsonObject, promptUser } from './common';
 import { FileType, stringify } from './config-source';
 import { Configuration, loadConfig, loadValidatedConfig } from './config';
+import {
+  keyDirs,
+  initializeLocalKeys,
+  loadPublicKeyLazy,
+  trustTeamMember,
+  loadPrivateKeyLazy,
+  loadLatestSymmetricKeyLazy,
+  encryptValue,
+  decryptValue,
+  untrustTeamMember,
+  loadKey,
+  initializeKeys,
+  deleteLocalKeys,
+  generateSymmetricKey,
+  loadSymmetricKeys,
+  latestSymmetricKeyRevision,
+  saveNewSymmetricKey,
+  loadTeamMembersLazy,
+} from './encryption';
 import { loadSchema } from './schema';
-import { logger } from './logging';
+import { checkTTY, logger, LogLevel } from './logging';
 
-function subcommand<Options extends { [name: string]: yargs.Options }>(
+type SubcommandFn<Options extends { [name: string]: yargs.Options }> = (
+  args: yargs.InferredOptionTypes<Options> & { _: string[] },
+) => Promise<void> | void;
+
+function subcommand<
+  Options extends { [name: string]: yargs.Options },
+  PositionalOptions extends { [name: string]: yargs.PositionalOptions }
+>(
   {
     name,
     description,
     examples = [],
+    options,
+    positional,
   }: {
     name: string | string[];
     description?: string;
     examples?: [string, string][];
+    options?: Options;
+    positional?: PositionalOptions;
   },
-  options: Options,
-  fn: (args: yargs.InferredOptionTypes<Options> & { _: string[] }) => Promise<void> | void,
+  fn: SubcommandFn<Options & PositionalOptions>,
 ): yargs.CommandModule {
   const [command, ...aliases] = Array.isArray(name) ? name : [name];
 
@@ -28,9 +60,13 @@ function subcommand<Options extends { [name: string]: yargs.Options }>(
     command,
     aliases,
     describe: description,
-    builder: (args) =>
-      args
-        .options(options)
+    builder: (args) => {
+      for (const [key, opt] of Object.entries(positional ?? {})) {
+        args.positional(key, opt);
+      }
+
+      return args
+        .options(options ?? {})
         .options({
           cwd: {
             alias: 'C',
@@ -38,10 +74,16 @@ function subcommand<Options extends { [name: string]: yargs.Options }>(
             type: 'string',
             description: 'Run app-config in the context of this directory',
           },
+          verbose: {
+            type: 'boolean',
+            description: 'Perform verbose logging',
+          },
         })
-        .example(examples),
+        .example(examples);
+    },
     async handler(args) {
       if (typeof args.cwd === 'string') process.chdir(args.cwd);
+      if (args.verbose) logger.setLevel(LogLevel.Verbose);
       await fn(args as any);
     },
   };
@@ -132,11 +174,11 @@ const { argv: _ } = yargs
             'Export the generated environment variables to the current shell',
           ],
         ],
-      },
-      {
-        secrets: secretsOption,
-        prefix: prefixOption,
-        noSchema: noSchemaOption,
+        options: {
+          secrets: secretsOption,
+          prefix: prefixOption,
+          noSchema: noSchemaOption,
+        },
       },
       async (opts) => {
         const toPrint = selectSecretsOrNot(
@@ -160,15 +202,15 @@ const { argv: _ } = yargs
         name: ['create', 'c'],
         description: 'Prints out the current configuration, in a file format',
         examples: [
-          ['$0 --format json', 'Prints configuration in JSON format'],
-          ['$0 --select "#/kubernetes"', 'Prints out a section of the configuration'],
+          ['$0 create --format json', 'Prints configuration in JSON format'],
+          ['$0 create --select "#/kubernetes"', 'Prints out a section of the configuration'],
         ],
-      },
-      {
-        secrets: secretsOption,
-        format: formatOption,
-        select: selectOption,
-        noSchema: noSchemaOption,
+        options: {
+          secrets: secretsOption,
+          format: formatOption,
+          select: selectOption,
+          noSchema: noSchemaOption,
+        },
       },
       async (opts) => {
         let toPrint = selectSecretsOrNot(
@@ -193,13 +235,16 @@ const { argv: _ } = yargs
         description:
           'Prints the current schema object, in a file format, with all references resolves and flattened',
         examples: [
-          ['$0 --format json', 'Prints out the schema in JSON format'],
-          ['$0 --select "#/definitions/WebServer"', 'Prints out a specific section of the schema'],
+          ['$0 create-schema --format json', 'Prints out the schema in JSON format'],
+          [
+            '$0 create-schema --select "#/definitions/WebServer"',
+            'Prints out a specific section of the schema',
+          ],
         ],
-      },
-      {
-        format: formatOption,
-        select: selectOption,
+        options: {
+          format: formatOption,
+          select: selectOption,
+        },
       },
       async (opts) => {
         const { value: schema } = await loadSchema();
@@ -217,11 +262,319 @@ const { argv: _ } = yargs
     ),
   )
   .command({
-    command: 'secret',
-    aliases: ['secrets', 's'],
+    command: 'secrets',
+    aliases: ['secret', 's'],
     describe: 'Encryption subcommands',
     handler: () => {},
-    builder: (yargs) => yargs.demandCommand(),
+    builder: (args) =>
+      args
+        .demandCommand()
+        .command(
+          subcommand(
+            {
+              name: 'init',
+              description: 'Initializes your encryption keychain',
+              examples: [['$0 secrets init', 'Sets up your machine-local encryption key']],
+            },
+            async () => {
+              const initialized = await initializeLocalKeys();
+
+              if (initialized === false) {
+                throw new Error(
+                  'Secrets were already initialized. Reset them if you want to create a new key.',
+                );
+              }
+
+              process.stdout.write(`\nYour app-config key was set up in ${keyDirs.keychain}\n\n`);
+              process.stdout.write(initialized.publicKeyArmored);
+              process.stdout.write('\n');
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'init-repo',
+              description:
+                'Creates initial symmetric key and initializes team members for a repository',
+              examples: [
+                [
+                  '$0 secrets init-repo',
+                  'Creates properties in meta file, making you the first trusted user',
+                ],
+              ],
+            },
+            async () => {
+              const myKey = await loadPublicKeyLazy();
+              const privateKey = await loadPrivateKeyLazy();
+
+              // we trust ourselves, essentially
+              await trustTeamMember(myKey, privateKey);
+              logger.info('Initialized team members and a symmetric key');
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'init-key',
+              description: 'Creates a new symmetric key for encrypting new secrets',
+              examples: [
+                [
+                  '$0 secrets init-key',
+                  'Sets up a new symmetric key with the latest revision number',
+                ],
+              ],
+            },
+            async () => {
+              const revision = latestSymmetricKeyRevision(await loadSymmetricKeys()) + 1;
+              const teamMembers = await loadTeamMembersLazy();
+
+              await saveNewSymmetricKey(await generateSymmetricKey(revision), teamMembers);
+              logger.info(`Saved a new symmetric key, revision ${revision}`);
+            },
+          ),
+        )
+        .command(
+          subcommand({ name: 'reset', description: 'Removes your encryption keys' }, async () => {
+            const confirm = await promptUser({
+              type: 'confirm',
+              initial: false,
+              message:
+                "Are you sure? You won't be able to any decrypt secrets that were signed for you.",
+            });
+
+            if (confirm) {
+              await deleteLocalKeys();
+              logger.warn('Your keys are now removed.');
+            }
+          }),
+        )
+        .command(
+          subcommand({ name: 'key', description: 'View your public key' }, async () => {
+            process.stdout.write((await loadPublicKeyLazy()).armor());
+          }),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'export <path>',
+              description: 'Writes your public key to a file',
+              examples: [
+                [
+                  '$0 secrets export /mnt/my-usb/joe-blow.asc',
+                  'Writes your public key to a file, so it can be trusted by other users',
+                ],
+              ],
+              positional: {
+                path: {
+                  type: 'string',
+                  demandOption: true,
+                  description: 'File to write key to',
+                },
+              },
+            },
+            async (opts) => {
+              const key = await loadPublicKeyLazy();
+
+              await outputFile(opts.path, key.armor());
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'ci',
+              description:
+                'Creates an encryption key that can be used without a passphrase (useful for CI)',
+            },
+            async () => {
+              logger.info('Creating a new trusted CI encryption key');
+
+              const { privateKeyArmored, publicKeyArmored } = await initializeKeys(false);
+              await trustTeamMember(await loadKey(publicKeyArmored), await loadPrivateKeyLazy());
+
+              process.stdout.write(`\n${publicKeyArmored}\n\n${privateKeyArmored}\n\n`);
+
+              process.stdout.write(
+                stripIndents`
+                  Public and private keys are printed above.
+                  To use them, add CI variables called APP_CONFIG_SECRETS_KEY and APP_CONFIG_SECRETS_PUBLIC_KEY.
+                  Ensure that (especially the private key) they are "protected" variables and not visible in logs.
+                `,
+              );
+              process.stdout.write('\n');
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'trust <keyPath>',
+              description: 'Adds a team member who can encrypt and decrypt values',
+              examples: [
+                [
+                  '$0 secrets trust /mnt/my-usb/joe-blow.asc',
+                  "Trusts a new team member's public key, allowing them to encrypt and decrypt values",
+                ],
+              ],
+              positional: {
+                keyPath: {
+                  type: 'string',
+                  demandOption: true,
+                  description: 'Filepath of public key',
+                },
+              },
+            },
+            async (opts) => {
+              const key = await loadKey(await readFile(opts.keyPath));
+              const privateKey = await loadPrivateKeyLazy();
+              await trustTeamMember(key, privateKey);
+
+              logger.info(`Trusted ${key.getUserIds().join(', ')}`);
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'untrust <email>',
+              description: 'Revokes encryption access (in future) for a trusted team member',
+              examples: [
+                [
+                  '$0 secrets untrust joe.blow@example.com',
+                  'Creates a new symmetric key for all future encryption',
+                ],
+              ],
+              positional: {
+                email: {
+                  type: 'string',
+                  demandOption: true,
+                  description: 'User ID email address',
+                },
+              },
+            },
+            async (opts) => {
+              const privateKey = await loadPrivateKeyLazy();
+              await untrustTeamMember(opts.email, privateKey);
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: ['encrypt [secretValue]', 'enc [secretValue]', 'e [secretValue]'],
+              description: 'Encrypts a secret value',
+              examples: [
+                ['$0 secrets encrypt "super-secret-value"', 'Encrypts the text given'],
+                [`$0 secrets encrypt '{ "nested": { "object": true } }'`, 'Encrypts JSON value'],
+              ],
+              positional: {
+                secretValue: {
+                  type: 'string',
+                  description: 'JSON value to encrypt',
+                },
+              },
+              options: {
+                clipboard: {
+                  alias: 'c',
+                  type: 'boolean',
+                  description: 'Copies the value to the system clipboard',
+                },
+              },
+            },
+            async (opts) => {
+              // load these right away, so user unlocks asap
+              const privateKey = await loadPrivateKeyLazy();
+              const key = await loadLatestSymmetricKeyLazy(privateKey);
+
+              let { secretValue }: { secretValue?: Json } = opts;
+
+              if (!secretValue) {
+                if (checkTTY()) {
+                  secretValue = await promptUser({
+                    type: 'password',
+                    message: 'Value to encrypt (can be JSON)',
+                  });
+                } else {
+                  secretValue = await consumeStdin();
+                }
+              }
+
+              if (!secretValue) throw new Error('Failed to read from stdin or prompt');
+
+              if (typeof secretValue === 'string') {
+                const isJson = secretValue.startsWith('{') && secretValue.endsWith('}');
+
+                try {
+                  secretValue = JSON.parse(secretValue) as Json;
+                } catch (err) {
+                  if (isJson) throw err;
+                  // only complain if it's definitely supposed to be JSON
+                }
+              }
+
+              const encrypted = await encryptValue(secretValue, key);
+
+              if (opts.clipboard) {
+                await clipboardy.write(encrypted);
+                process.stderr.write('Wrote encrypted text to system clipboard\n');
+              }
+
+              process.stdout.write(encrypted);
+              process.stdout.write('\n');
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: ['decrypt [encryptedText]', 'dec [encryptedText]', 'd [encryptedText]'],
+              description: 'Decrypts a secret value',
+              examples: [],
+              positional: {
+                encryptedText: {
+                  type: 'string',
+                  description: 'JSON value to encrypt',
+                },
+              },
+              options: {
+                clipboard: {
+                  alias: 'c',
+                  type: 'boolean',
+                  description: 'Uses the value from the system clipboard',
+                },
+              },
+            },
+            async (opts) => {
+              // load these right away, so user unlocks asap
+              await loadPrivateKeyLazy();
+
+              let { encryptedText } = opts;
+
+              if (!encryptedText && opts.clipboard) {
+                encryptedText = await clipboardy.read();
+                if (encryptedText) process.stderr.write('Read value from system clipboard\n');
+              }
+
+              if (!encryptedText) {
+                if (checkTTY()) {
+                  encryptedText = await promptUser({
+                    type: 'password',
+                    message: 'Value to decrypt',
+                  });
+                } else {
+                  encryptedText = await consumeStdin();
+                }
+              }
+
+              if (!encryptedText) throw new Error('Failed to read from stdin or prompt');
+
+              process.stdout.write(JSON.stringify(await decryptValue(encryptedText)));
+              process.stdout.write('\n');
+            },
+          ),
+        ),
   })
   .command(
     subcommand(
@@ -241,13 +594,13 @@ const { argv: _ } = yargs
           ['$0 create -f json5', 'Prints app config as a format like YAML or JSON'],
           ['$0 generate', 'Run code generation as specified by the app-config file'],
         ],
-      },
-      {
-        secrets: secretsOption,
-        prefix: prefixOption,
-        format: { ...formatOption, default: 'json' },
-        select: selectOption,
-        noSchema: noSchemaOption,
+        options: {
+          secrets: secretsOption,
+          prefix: prefixOption,
+          format: { ...formatOption, default: 'json' },
+          select: selectOption,
+          noSchema: noSchemaOption,
+        },
       },
       async (opts) => {
         let toPrint = selectSecretsOrNot(

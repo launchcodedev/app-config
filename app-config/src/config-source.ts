@@ -8,6 +8,7 @@ import { Json, JsonObject } from './common';
 import { currentEnvironment, defaultAliases } from './environment';
 import { FileParsingExtension } from './extensions';
 import { ParsedValue } from './parsed-value';
+import { logger } from './logging';
 
 export class NotFoundError extends Error {}
 
@@ -29,6 +30,7 @@ export abstract class ConfigSource {
   }
 
   async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
+    logger.verbose('Reading ConfigSource');
     const rawValue = await this.readValue();
 
     return ParsedValue.parse(rawValue, this, extensions);
