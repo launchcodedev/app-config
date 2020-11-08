@@ -1,6 +1,5 @@
 import { resolve, extname } from 'path';
 import { readFile, pathExists } from 'fs-extra';
-import merge from 'lodash.merge';
 import { parse as parseTOML, stringify as stringifyTOML } from '@iarna/toml';
 import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
 import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
@@ -9,6 +8,7 @@ import { currentEnvironment, defaultAliases } from './environment';
 import { FileParsingExtension } from './extensions';
 import { ParsedValue } from './parsed-value';
 import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
+import { logger } from './logging';
 
 export enum FileType {
   YAML = 'YAML',
@@ -59,6 +59,7 @@ export class FileSource extends ConfigSource {
   async readContents(): Promise<[string, FileType]> {
     try {
       const content = await readFile(this.filePath);
+      logger.verbose(`FileSource read ${this.filePath}`);
 
       return [content.toString('utf-8'), this.fileType];
     } catch (err) {
@@ -91,8 +92,12 @@ export class FlexibleFileSource extends ConfigSource {
       filesToTry.push(`${this.filePath}.${ext}`);
     }
 
+    logger.verbose(`FlexibleFileSource is trying to find [${filesToTry.join(', ')}]`);
+
     for (const filepath of filesToTry) {
       if (await pathExists(filepath)) {
+        logger.verbose(`FlexibleFileSource found successful match at ${filepath}`);
+
         return new FileSource(filepath);
       }
     }
@@ -127,6 +132,8 @@ export class EnvironmentSource extends ConfigSource {
     }
 
     const inferredFileType = await guessFileType(value);
+
+    logger.verbose(`EnvironmentSource guessed that ${this.variableName} is ${inferredFileType} FileType`);
 
     return [value, inferredFileType];
   }
@@ -164,9 +171,7 @@ export class CombinedSource extends ConfigSource {
   }
 
   async readValue(): Promise<Json> {
-    const values = await Promise.all(this.sources.map((source) => source.readValue()));
-
-    return values.reduce((acc, v) => merge(acc, v), {});
+    return this.readToJSON();
   }
 
   async read(extensions?: FileParsingExtension[]): Promise<ParsedValue> {
@@ -208,6 +213,7 @@ export class FallbackSource extends ConfigSource {
     for (const source of this.sources) {
       try {
         const value = await source.readValue();
+        logger.verbose(`FallbackSource found successful source`);
 
         return value;
       } catch (error) {
@@ -225,6 +231,7 @@ export class FallbackSource extends ConfigSource {
     for (const source of this.sources) {
       try {
         const value = await source.read(extensions);
+        logger.verbose(`FallbackSource found successful source`);
 
         return value;
       } catch (error) {
