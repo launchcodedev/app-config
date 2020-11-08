@@ -45,6 +45,8 @@
   },
   "dependencies": {
     "@iarna/toml": "3",
+    "@types/readable-stream": "2",
+    "@types/urijs": "1",
     "ajv": "6",
     "clipboardy": "2",
     "common-tags": "1",
@@ -56,6 +58,7 @@
     "lodash.merge": "4",
     "openpgp": "4",
     "prompts": "2",
+    "quicktype-core": "6.0.69",
     "text-encoding-utf-8": "1",
     "yargs": "16"
   },

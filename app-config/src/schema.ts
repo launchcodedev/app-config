@@ -17,6 +17,9 @@ export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 export interface Schema {
   value: JsonObject;
   validate: Validate;
+
+  /** @hidden */
+  schemaRefs: JsonObject;
 }
 
 export async function loadSchema({
@@ -58,6 +61,7 @@ export async function loadSchema({
 
   return {
     value: parsed,
+    schemaRefs,
     validate(fullConfig, parsed) {
       const valid = validate(fullConfig);
 

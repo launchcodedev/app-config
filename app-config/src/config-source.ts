@@ -211,7 +211,7 @@ export class FallbackSource extends ConfigSource {
   }
 }
 
-function filePathAssumedType(filePath: string): FileType {
+export function filePathAssumedType(filePath: string): FileType {
   switch (extname(filePath).toLowerCase().slice(1)) {
     case 'yml':
     case 'yaml':

@@ -29,6 +29,7 @@ import {
   loadTeamMembersLazy,
 } from './encryption';
 import { loadSchema } from './schema';
+import { generateTypeFiles } from './generate';
 import { checkTTY, logger, LogLevel } from './logging';
 
 type SubcommandFn<Options extends { [name: string]: yargs.Options }> = (
@@ -258,6 +259,23 @@ const { argv: _ } = yargs
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
         process.stdout.write('\n');
+      },
+    ),
+  )
+  .command(
+    subcommand(
+      {
+        name: ['generate', 'gen', 'g'],
+        description: 'Run code generation as specified by meta file',
+      },
+      async () => {
+        const output = await generateTypeFiles();
+
+        if (output.length === 0) {
+          logger.warn('No files generated - did you add the correct meta properties?');
+        } else {
+          logger.info(`Generated: [ ${output.map(({ file }) => file).join(', ')} ]`);
+        }
       },
     ),
   )

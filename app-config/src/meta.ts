@@ -1,18 +1,16 @@
 import { FlexibleFileSource, FileSource, FileType, NotFoundError } from './config-source';
+import { EncryptedSymmetricKey } from './encryption';
+import { GenerateFile } from './generate';
 
 export interface TeamMember {
   userId: string;
   publicKey: string;
 }
 
-export interface EncryptionKey {
-  revision: number;
-  key: string;
-}
-
 export interface MetaProperties {
   teamMembers?: TeamMember[];
-  encryptionKeys?: EncryptionKey[];
+  encryptionKeys?: EncryptedSymmetricKey[];
+  generate?: GenerateFile[];
 }
 
 export interface MetaConfiguration {
