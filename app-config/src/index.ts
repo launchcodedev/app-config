@@ -1,0 +1,77 @@
+import { inspect } from 'util';
+import { loadValidatedConfig, Options } from './config';
+
+// the config type that is exported to consumers and can be augmented
+export interface ExportedConfig {}
+
+// the export of this module is a proxy in front of this value
+let loadedConfig: ExportedConfig | undefined;
+
+const assertLoaded = () => {
+  if (!loadedConfig) throw new Error('Tried to read app-config value before calling loadConfig!');
+};
+
+export async function loadConfig(options?: Options): Promise<ExportedConfig> {
+  const { fullConfig } = await loadValidatedConfig(options);
+
+  loadedConfig = fullConfig as ExportedConfig;
+
+  return loadedConfig;
+}
+
+export const config: ExportedConfig = new Proxy(
+  {
+    APP_CONFIG_WAS_NOT_LOADED_YET_LOOK_AT_THE_DOCS: true,
+
+    [inspect.custom]() {
+      assertLoaded();
+
+      return inspect(loadedConfig);
+    },
+    toJSON() {
+      assertLoaded();
+
+      return loadedConfig!;
+    },
+  },
+  {
+    ownKeys() {
+      assertLoaded();
+      return Reflect.ownKeys(loadedConfig!);
+    },
+    has(_, key) {
+      assertLoaded();
+      return key in loadedConfig!;
+    },
+    get(_, prop): unknown {
+      assertLoaded();
+      return Reflect.get(loadedConfig!, prop);
+    },
+    getOwnPropertyDescriptor(_, key) {
+      assertLoaded();
+      return Object.getOwnPropertyDescriptor(loadedConfig!, key);
+    },
+    set() {
+      throw new Error('Setting properties on app-config is not allowed');
+    },
+    defineProperty() {
+      throw new Error('Setting properties on app-config is not allowed');
+    },
+    deleteProperty() {
+      throw new Error('Deleting properties from app-config is not allowed');
+    },
+    isExtensible() {
+      return false;
+    },
+  },
+);
+
+export default config;
+
+export { loadConfig as loadUnvalidatedConfig, loadValidatedConfig } from './config';
+export { loadSchema } from './schema';
+export { loadMetaConfig } from './meta';
+
+export function resetConfigInternal() {
+  loadedConfig = undefined;
+}

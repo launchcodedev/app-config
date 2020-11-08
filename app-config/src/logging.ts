@@ -11,7 +11,7 @@ export function checkTTY() {
 }
 
 let logLevel =
-  (process.env.APP_CONFIG_LOG_LEVEL as LogLevel) ?? checkTTY() ? LogLevel.Info : LogLevel.Warn;
+  (process.env.APP_CONFIG_LOG_LEVEL as LogLevel) ?? (checkTTY() ? LogLevel.Info : LogLevel.Warn);
 
 export const logger = {
   setLevel(level: LogLevel) {

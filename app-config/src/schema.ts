@@ -9,7 +9,7 @@ export interface Options {
   directory?: string;
   fileNameBase?: string;
   environmentOverride?: string;
-  fileExtensions?: FileParsingExtension[];
+  parsingExtensions?: FileParsingExtension[];
 }
 
 export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
@@ -23,10 +23,10 @@ export async function loadSchema({
   directory = '.',
   fileNameBase = '.app-config.schema',
   environmentOverride,
-  fileExtensions = [],
+  parsingExtensions = [],
 }: Options = {}): Promise<Schema> {
   const source = new FlexibleFileSource(join(directory, fileNameBase), environmentOverride);
-  const parsed = await source.readToJSON(fileExtensions);
+  const parsed = await source.readToJSON(parsingExtensions);
 
   if (!isObject(parsed)) throw new Error('JSON Schema was not an object');
 

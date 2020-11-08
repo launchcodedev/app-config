@@ -53,7 +53,9 @@ describe('Schema Loading', () => {
   });
 });
 
-describe('Schema References', () => {});
+describe('Schema References', () => {
+  // TODO
+});
 
 describe('Secrets', () => {
   it('detects when secrets are in nonSecrets', async () => {

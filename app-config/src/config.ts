@@ -3,7 +3,7 @@ import { Json, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { FlexibleFileSource, EnvironmentSource, NotFoundError } from './config-source';
 import { defaultExtensions, FileParsingExtension } from './extensions';
-import { loadSchema } from './schema';
+import { loadSchema, Options as SchemaOptions } from './schema';
 
 export interface Options {
   directory?: string;
@@ -11,7 +11,7 @@ export interface Options {
   secretsFileNameBase?: string;
   environmentVariableName?: string;
   environmentOverride?: string;
-  fileExtensions?: FileParsingExtension[];
+  parsingExtensions?: FileParsingExtension[];
   secretsFileExtensions?: FileParsingExtension[];
   environmentExtensions?: FileParsingExtension[];
 }
@@ -31,7 +31,7 @@ export async function loadConfig({
   secretsFileNameBase = `${fileNameBase}.secrets`,
   environmentVariableName = 'APP_CONFIG',
   environmentOverride,
-  fileExtensions = defaultExtensions,
+  parsingExtensions = defaultExtensions,
   secretsFileExtensions = defaultExtensions.concat(markAllValuesAsSecret),
   environmentExtensions = [],
 }: Options = {}): Promise<Configuration> {
@@ -47,7 +47,9 @@ export async function loadConfig({
   }
 
   const [nonSecrets, secrets] = await Promise.all([
-    new FlexibleFileSource(join(directory, fileNameBase), environmentOverride).read(fileExtensions),
+    new FlexibleFileSource(join(directory, fileNameBase), environmentOverride).read(
+      parsingExtensions,
+    ),
     new FlexibleFileSource(join(directory, secretsFileNameBase), environmentOverride)
       .read(secretsFileExtensions)
       .catch((error) => {
@@ -68,13 +70,23 @@ export async function loadConfig({
   };
 }
 
-export async function loadValidatedConfig(options?: Options): Promise<Configuration> {
+export async function loadValidatedConfig(
+  options?: Options,
+  schemaOptions?: SchemaOptions,
+): Promise<Configuration> {
   const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
-    loadSchema(),
+    loadSchema({
+      directory: options?.directory,
+      environmentOverride: options?.environmentOverride,
+      ...schemaOptions,
+    }),
     loadConfig(options),
   ]);
 
-  if (!isObject(fullConfig)) throw new Error('Config was not an object');
+  if (!isObject(fullConfig)) {
+    throw new Error('Config was not an object');
+  }
+
   validate(fullConfig, parsed);
 
   return { fullConfig, parsed, ...rest };
