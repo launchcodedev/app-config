@@ -13,7 +13,7 @@ describe('frontend-webpack-project example', () => {
 
   const optionsWithoutHeaderInjection = {
     mode: 'development' as const,
-    entry: join(frontendProjectExampleDir, 'src/index.js'),
+    entry: join(frontendProjectExampleDir, 'src/index.ts'),
     output: {
       filename: 'main.js',
       path: resolve(frontendProjectExampleDir, 'dist'),
@@ -28,7 +28,7 @@ describe('frontend-webpack-project example', () => {
 
   const optionsWithHeaderInjection = {
     mode: 'development' as const,
-    entry: join(frontendProjectExampleDir, 'src/index.js'),
+    entry: join(frontendProjectExampleDir, 'src/index.ts'),
     output: {
       filename: 'main.js',
       path: resolve(frontendProjectExampleDir, 'dist'),
