@@ -6,7 +6,7 @@ const { default: AppConfigPlugin } = require('@lcdev/app-config-webpack-plugin')
 // AppConfigPlugin relies on HtmlPlugin (html-webpack-plugin), when using headerInjection
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/index.ts',
   output: {
     publicPath: '/',
     filename: 'main.js',
@@ -14,6 +14,11 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
       {
         test: AppConfigPlugin.regex,
         use: { loader: AppConfigPlugin.loader, options: { headerInjection: true } },
