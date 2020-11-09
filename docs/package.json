@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vuepress dev .",
     "build": "vuepress build .",
+    "clean": "rm -rf .vuepress/dist",
     "lint": "exit 0",
     "fix": "exit 0",
     "test": "exit 0"
