@@ -8,6 +8,7 @@ import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors
 import { logger } from './logging';
 
 export const defaultExtensions = [
+  v1Compat(),
   envDirective(),
   extendsDirective(),
   overrideDirective(),
@@ -164,6 +165,51 @@ export function environmentVariableSubstitution(
       if (typeof value !== 'string') throw new AppConfigError('$substitute expects a string value');
 
       return [performAllSubstitutions(value), { flatten: true }];
+    };
+  };
+}
+
+/** V1 app-config compatibility */
+export function v1Compat(): ParsingExtension {
+  return (key, value) => {
+    if (key !== 'app-config' || !isObject(value)) return false;
+
+    return async (ctx) => {
+      if (ctx instanceof FileSource) {
+        logger.warn(
+          `Using V1 compatibility layer for special 'app-config' property in ${ctx.filePath}! This functionality is deprecated and may be removed in the future.`,
+        );
+      } else {
+        logger.warn(
+          `Using V1 compatibility layer for special 'app-config' property! This functionality is deprecated and may be removed in the future.`,
+        );
+      }
+
+      // TODO: multiple properties defined
+
+      if ('extends' in value) {
+        return [{ $extends: value.extends }, { flatten: true, merge: true }];
+      }
+
+      if ('extendsOptional' in value) {
+        return [
+          { $extends: { path: value.extendsOptional, optional: true } },
+          { flatten: true, merge: true },
+        ];
+      }
+
+      if ('override' in value) {
+        return [{ $override: value.override }, { flatten: true, merge: true }];
+      }
+
+      if ('overrideOptional' in value) {
+        return [
+          { $override: { path: value.overrideOptional, optional: true } },
+          { flatten: true, merge: true },
+        ];
+      }
+
+      return [value, {}];
     };
   };
 }
