@@ -2,7 +2,7 @@ import { join } from 'path';
 import { Json, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
-import { FlexibleFileSource, FileSource, EnvironmentSource } from './config-source';
+import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
 import { defaultExtensions, ParsingExtension } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject } from './errors';
@@ -14,6 +14,7 @@ export interface Options {
   fileNameBase?: string;
   secretsFileNameBase?: string;
   environmentVariableName?: string;
+  extensionEnvironmentVariableName?: string[];
   environmentOverride?: string;
   environmentAliases?: EnvironmentAliases;
   parsingExtensions?: ParsingExtension[];
@@ -37,6 +38,7 @@ export async function loadConfig({
   fileNameBase = '.app-config',
   secretsFileNameBase = `${fileNameBase}.secrets`,
   environmentVariableName = 'APP_CONFIG',
+  extensionEnvironmentVariableName = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
   environmentOverride,
   environmentAliases = defaultAliases,
   parsingExtensions = defaultExtensions,
@@ -81,7 +83,33 @@ export async function loadConfig({
       }),
   ]);
 
-  const parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
+  let parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
+
+  // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
+  logger.verbose(
+    `Checking [${extensionEnvironmentVariableName.join(', ')}] for configuration extension`,
+  );
+
+  const extension = new FallbackSource(
+    extensionEnvironmentVariableName.map((varName) => new EnvironmentSource(varName)),
+  );
+
+  try {
+    const parsedExtension = await extension.read(environmentExtensions);
+
+    logger.verbose(
+      `Found configuration extension in $${
+        (parsedExtension.source as EnvironmentSource).variableName
+      }`,
+    );
+
+    parsed = ParsedValue.merge(parsed, parsedExtension);
+  } catch (error) {
+    // having no APP_CONFIG environment variable is normal, and should fall through to reading files
+    if (!(error instanceof NotFoundError)) throw error;
+  }
+
+  // note that this cannot be exhaustive, because of $extends
   const filePaths = [];
 
   if (nonSecrets.source instanceof FileSource) {

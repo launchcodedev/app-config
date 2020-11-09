@@ -313,8 +313,6 @@ describe('$substitute directive', () => {
   });
 
   it('environment variable substitution fallback', async () => {
-    delete process.env.FOO;
-
     const source = new LiteralSource({
       foo: { $substitute: '${FOO:-baz}' },
     });
@@ -325,7 +323,6 @@ describe('$substitute directive', () => {
   });
 
   it('nested substitution', async () => {
-    delete process.env.FOO;
     process.env.BAR = 'qux';
 
     const source = new LiteralSource({

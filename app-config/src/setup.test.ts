@@ -1,5 +1,4 @@
 import { stripIndents } from 'common-tags';
-import { loadPrivateKey, loadPublicKey } from './encryption';
 
 beforeAll(() => {
   process.env.APP_CONFIG_SECRETS_PUBLIC_KEY = stripIndents`
@@ -40,7 +39,10 @@ beforeAll(() => {
   `;
 });
 
-test('test setup', async () => {
-  await loadPublicKey();
-  await loadPrivateKey();
+const originalEnvironment = { ...process.env };
+
+afterEach(() => {
+  process.env = { ...originalEnvironment };
 });
+
+test('stub', () => {});

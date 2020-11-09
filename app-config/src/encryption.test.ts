@@ -9,7 +9,6 @@ import {
   encryptValue,
   decryptValue,
 } from './encryption';
-import './encryption-setup.test';
 
 describe('User Keys', () => {
   it('initialize keys without passphrase', async () => {

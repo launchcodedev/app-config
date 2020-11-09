@@ -126,7 +126,7 @@ export class FlexibleFileSource extends ConfigSource {
 
 /** Read configuration from an environment variable */
 export class EnvironmentSource extends ConfigSource {
-  constructor(private readonly variableName: string) {
+  constructor(public readonly variableName: string) {
     super();
   }
 

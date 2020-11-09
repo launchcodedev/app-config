@@ -16,6 +16,36 @@ describe('Configuration Loading', () => {
   });
 });
 
+describe('CI Environment Variable Extension', () => {
+  it('merges APP_CONFIG_EXTEND values', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `foo: 42`,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_EXTEND = JSON.stringify({ bar: 88 });
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 42, bar: 88 });
+      },
+    );
+  });
+
+  it('merges APP_CONFIG_CI values', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `foo: 42`,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_CI = JSON.stringify({ bar: 88 });
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 42, bar: 88 });
+      },
+    );
+  });
+});
+
 describe('V1 Compatibility', () => {
   it('uses special app-config property for $extends', async () => {
     await withTempFiles(
