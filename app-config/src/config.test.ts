@@ -52,7 +52,10 @@ describe('CI Environment Variable Extension', () => {
       },
       async (inDir) => {
         process.env.APP_CONFIG_CI = JSON.stringify({ bar: 88 });
-        const { fullConfig } = await loadConfig({ directory: inDir('.'), extensionEnvironmentVariableName: [] });
+        const { fullConfig } = await loadConfig({
+          directory: inDir('.'),
+          extensionEnvironmentVariableNames: [],
+        });
 
         expect(fullConfig).toEqual({ foo: 42 });
       },

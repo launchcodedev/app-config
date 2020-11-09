@@ -14,7 +14,7 @@ export interface Options {
   fileNameBase?: string;
   secretsFileNameBase?: string;
   environmentVariableName?: string;
-  extensionEnvironmentVariableName?: string[];
+  extensionEnvironmentVariableNames?: string[];
   environmentOverride?: string;
   environmentAliases?: EnvironmentAliases;
   parsingExtensions?: ParsingExtension[];
@@ -38,7 +38,7 @@ export async function loadConfig({
   fileNameBase = '.app-config',
   secretsFileNameBase = `${fileNameBase}.secrets`,
   environmentVariableName = 'APP_CONFIG',
-  extensionEnvironmentVariableName = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
+  extensionEnvironmentVariableNames = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
   environmentOverride,
   environmentAliases = defaultAliases,
   parsingExtensions = defaultExtensions,
@@ -86,13 +86,13 @@ export async function loadConfig({
   let parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
 
   // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
-  if (extensionEnvironmentVariableName.length > 0) {
+  if (extensionEnvironmentVariableNames.length > 0) {
     logger.verbose(
-      `Checking [${extensionEnvironmentVariableName.join(', ')}] for configuration extension`,
+      `Checking [${extensionEnvironmentVariableNames.join(', ')}] for configuration extension`,
     );
 
     const extension = new FallbackSource(
-      extensionEnvironmentVariableName.map((varName) => new EnvironmentSource(varName)),
+      extensionEnvironmentVariableNames.map((varName) => new EnvironmentSource(varName)),
     );
 
     try {
