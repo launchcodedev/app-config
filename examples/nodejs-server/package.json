@@ -1,0 +1,23 @@
+{
+  "name": "nodejs-server",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "postinstall": "app-config generate",
+    "dev": "ts-node-dev --files ./src/index.ts",
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "exit 0",
+    "fix": "exit 0",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "@lcdev/app-config": "2 || 2.0.0-dev",
+    "fastify": "3"
+  },
+  "devDependencies": {
+    "ts-node-dev": "1"
+  }
+}

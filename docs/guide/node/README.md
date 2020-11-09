@@ -26,6 +26,7 @@ app-config files will be located alongside `package.json`. This can be overriden
 (see [API Reference](./api-reference)) if you really need to.
 
 ## Accessing Config
+
 Your application can treat the config export as an object anywhere that it needs to.
 As long as it does not read properties from that object before `loadConfig` has finished
 (watch our for race conditions!), it's safe to "just use the export" (note that `config`
@@ -37,12 +38,12 @@ is also the default export).
 
 ```yaml
 generate:
-  - { file: 'src/@types/lcdev__app-config/config.d.ts' }
+  - { file: 'src/@types/lcdev__app-config/index.d.ts' }
 ```
 
 ```sh
 npx app-config generate
 ```
 
-If your `include` section in tsconfig includes the generated `config.d.ts` file, this should
+If your `include` section in tsconfig includes the generated `index.d.ts` file, this should
 give types to the `config` export.
