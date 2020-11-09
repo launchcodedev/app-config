@@ -40,7 +40,7 @@ module.exports = {
         title: 'Releases',
         path: '/guide/release-notes',
         children: [
-          '/guide/release-notes',
+          ['/guide/release-notes', 'Release Notes'],
           '/guide/v2-migration',
         ],
       },

@@ -1,3 +1,1 @@
----
-title: Release Notes
----
+../../CHANGELOG.md
