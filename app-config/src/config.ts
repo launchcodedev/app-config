@@ -34,7 +34,6 @@ export interface Configuration {
 
 export async function loadConfig({
   directory = '.',
-  schemaDirectory = directory,
   fileNameBase = '.app-config',
   secretsFileNameBase = `${fileNameBase}.secrets`,
   environmentVariableName = 'APP_CONFIG',
@@ -108,7 +107,7 @@ export async function loadValidatedConfig(
 ): Promise<Configuration> {
   const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
     loadSchema({
-      directory: options?.schemaDirectory,
+      directory: options?.schemaDirectory ?? options?.directory,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
       ...schemaOptions,
