@@ -74,6 +74,22 @@ export default config;
 export { loadConfig as loadUnvalidatedConfig, loadValidatedConfig } from './config';
 export { loadSchema } from './schema';
 export { loadMetaConfig } from './meta';
+export { setLogLevel, LogLevel } from './logging';
+export { currentEnvironment, defaultAliases } from './environment';
+export { ParsedValue, ParsedValueMetadata } from './parsed-value';
+export {
+  ConfigSource,
+  FileSource,
+  FlexibleFileSource,
+  EnvironmentSource,
+  LiteralSource,
+  CombinedSource,
+  FallbackSource,
+  FileType,
+  stringify,
+  filePathAssumedType,
+  parseRawString,
+} from './config-source';
 
 export function resetConfigInternal() {
   loadedConfig = undefined;

@@ -52,3 +52,5 @@ export const logger = {
     }
   },
 };
+
+export const setLogLevel = (level: LogLevel) => logger.setLevel(level);

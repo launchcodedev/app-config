@@ -53,6 +53,7 @@ async function main() {
   We intend to ship a compatibility layer in v1, so that tools can rely on the v2 API without worry.
 - The environment variable name algorithm (used to flatten your config into `APP_CONFIG_FOO_BAR`) is a bit different.
   The obvious change is with numbers in variable names - `address1` now gets transformed to `ADDRESS_1` instead of `ADDDRESS1`.
+- Environment variable substitution (eg. `port: '${PORT:-3000}'`) does not happen automatically anymore. Use the `$substitute` directive instead.
 - There are some very subtle differences in the merging algorithm used when loading files
   (relevant if you have secret files that override non-secret files).
   Differences here are likely to be bugs though!
@@ -63,3 +64,13 @@ async function main() {
 - Error messages have been overhauled. Relying on them is brittle though.
 
 #### Features (v2.0.0)
+
+- Secret values can now be encrypted and placed in `.app-config.{ext}` files!
+  Check out the [encryption guide](/guide/intro/encryption/).
+- Instead of using a root-level `app-config` value, you can now use `$extends` and `$override` anywhere in the tree of configuration.
+  Check out the [parsing extensions guide](/guide/intro/extensions/).
+  Note that a compatibility layer is in place for `app-config` values, which may be removed in the future.
+- A simple logger has been added internally. The `setLogLevel` function is exported. You can set `APP_CONFIG_LOG_LEVEL` as well.
+- You can now define your own parsing extensions. This is an advanced feature, but available if you want to do powerful value transformations.
+- Primitives are available for creating your own config loading strategy. You can mix-and-match parsing, file sources, environment variables, etc.
+  Check out the [Node.js API guide](/guide/node/api-reference/) for more.
