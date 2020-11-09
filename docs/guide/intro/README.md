@@ -181,7 +181,7 @@ Again, our choice of YAML here is unimportant.
 
 We can run our `app-config` again, and should see our values.
 
-```sh
+```sh{3,5}
 $ npx app-config create -f yaml
 server:
   port: 8800
