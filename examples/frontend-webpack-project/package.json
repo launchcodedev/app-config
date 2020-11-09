@@ -4,7 +4,7 @@
   "license": "MPL-2.0",
   "private": true,
   "scripts": {
-    "postinstall": "app-config generate",
+    "config:generate": "app-config generate",
     "dev": "ENV=dev webpack-dev-server",
     "build": "webpack --mode production",
     "clean": "rm -rf ./dist",
