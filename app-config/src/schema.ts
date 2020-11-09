@@ -43,7 +43,7 @@ export async function loadSchema({
 
   const ajv = new Ajv({ allErrors: true });
 
-  const schemaRefs = await extractExternalSchemas(parsed);
+  const schemaRefs = await extractExternalSchemas(parsed, directory);
   Object.entries(schemaRefs).forEach(([id, schema]) => ajv.addSchema(schema as object, id));
 
   // array of property paths that should only be present in secrets file
@@ -106,8 +106,8 @@ export async function loadSchema({
 
 async function extractExternalSchemas(
   schema: JsonObject,
+  cwd: string,
   schemas: JsonObject = {},
-  cwd: string = process.cwd(),
 ): Promise<JsonObject> {
   if (schema && typeof schema === 'object') {
     for (const [key, val] of Object.entries(schema)) {
@@ -121,7 +121,7 @@ async function extractExternalSchemas(
           const resolvePathEncoded = encodeURI(resolvePath);
           const child = (await new FileSource(resolvePath).readToJSON()) as JsonObject;
 
-          await extractExternalSchemas(child, schemas, dirname(join(cwd, filepath)));
+          await extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
 
           if (!Array.isArray(schema)) {
             // replace the $ref inline with the resolvePath
@@ -131,7 +131,7 @@ async function extractExternalSchemas(
           schemas[resolvePathEncoded] = child;
         }
       } else if (isObject(val)) {
-        await extractExternalSchemas(val, schemas, cwd);
+        await extractExternalSchemas(val, cwd, schemas);
       }
     }
   }

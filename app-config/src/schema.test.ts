@@ -53,8 +53,26 @@ describe('Schema Loading', () => {
   });
 });
 
+// TODO
 describe('Schema References', () => {
-  // TODO
+  it('loads a schema $ref relative to itself', async () => {
+    await withTempFiles(
+      {
+        'nested-folder/.app-config.schema.yml': `
+          required: [x]
+          properties:
+            x: { $ref: '../rootlevel.schema.yml#/Nested' }
+        `,
+        'rootlevel.schema.yml': `
+          Nested:
+            type: number
+        `,
+      },
+      async (inDir) => {
+        await loadSchema({ directory: inDir('nested-folder') });
+      },
+    );
+  });
 });
 
 describe('Secrets', () => {
