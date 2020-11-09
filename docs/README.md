@@ -16,7 +16,7 @@ features:
     details: Manage your secrets in version control, backed by OpenPGP (optional). Or, keep secrets away from committed files with schema validation.
   - title: Use Your Tools
     details: Don't be constrained by your tools - export environment variables for usage anywhere.
-  - title: Multi Format
+  - title: Multi-Format
     details: Write YAML, TOML, JSON, JSON5 - whatever makes most sense for you.
 
 footer: Licensed MPL 2.0
