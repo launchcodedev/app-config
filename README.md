@@ -4,16 +4,16 @@
 
 <p align="center">
   <a href="https://www.mozilla.org/en-US/MPL/2.0/">
-    <img alt="Licensed under MPL 2.0" src="https://img.shields.io/badge/license-MPL_2.0-green.svg"/>
+    <img alt="Licensed under MPL 2.0" src="https://img.shields.io/badge/license-MPL_2.0-green.svg?style=flat-square"/>
   </a>
   <a href="https://www.npmjs.com/package/@lcdev/app-config">
-    <img alt="npm" src="https://img.shields.io/npm/v/@lcdev/app-config.svg"/>
+    <img alt="npm" src="https://img.shields.io/npm/v/@lcdev/app-config.svg?style=flat-square"/>
   </a>
   <a href="https://github.com/launchcodedev/app-config/actions">
-    <img alt="Build Status" src="https://github.com/launchcodedev/app-config/workflows/CI/badge.svg"/>
+    <img alt="Build Status" src="https://img.shields.io/github/workflow/status/launchcodedev/app-config/CI?style=flat-square"/>
   </a>
   <a href="https://app-config.netlify.app">
-    <img alt="Netlify Status" src="https://img.shields.io/netlify/8a8b48b6-cae6-4fd9-a085-a39f9d4ac140"/>
+    <img alt="Netlify Status" src="https://img.shields.io/netlify/8a8b48b6-cae6-4fd9-a085-a39f9d4ac140?style=flat-square"/>
   </a>
 </p>
 
