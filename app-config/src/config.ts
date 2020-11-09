@@ -86,27 +86,29 @@ export async function loadConfig({
   let parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
 
   // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
-  logger.verbose(
-    `Checking [${extensionEnvironmentVariableName.join(', ')}] for configuration extension`,
-  );
-
-  const extension = new FallbackSource(
-    extensionEnvironmentVariableName.map((varName) => new EnvironmentSource(varName)),
-  );
-
-  try {
-    const parsedExtension = await extension.read(environmentExtensions);
-
+  if (extensionEnvironmentVariableName.length > 0) {
     logger.verbose(
-      `Found configuration extension in $${
-        (parsedExtension.source as EnvironmentSource).variableName
-      }`,
+      `Checking [${extensionEnvironmentVariableName.join(', ')}] for configuration extension`,
     );
 
-    parsed = ParsedValue.merge(parsed, parsedExtension);
-  } catch (error) {
-    // having no APP_CONFIG environment variable is normal, and should fall through to reading files
-    if (!(error instanceof NotFoundError)) throw error;
+    const extension = new FallbackSource(
+      extensionEnvironmentVariableName.map((varName) => new EnvironmentSource(varName)),
+    );
+
+    try {
+      const parsedExtension = await extension.read(environmentExtensions);
+
+      logger.verbose(
+        `Found configuration extension in $${
+          (parsedExtension.source as EnvironmentSource).variableName
+        }`,
+      );
+
+      parsed = ParsedValue.merge(parsed, parsedExtension);
+    } catch (error) {
+      // having no APP_CONFIG environment variable is normal, and should fall through to reading files
+      if (!(error instanceof NotFoundError)) throw error;
+    }
   }
 
   // note that this cannot be exhaustive, because of $extends

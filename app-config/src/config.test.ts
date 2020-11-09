@@ -44,6 +44,20 @@ describe('CI Environment Variable Extension', () => {
       },
     );
   });
+
+  it('ignores APP_CONFIG_CI if overriden', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `foo: 42`,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_CI = JSON.stringify({ bar: 88 });
+        const { fullConfig } = await loadConfig({ directory: inDir('.'), extensionEnvironmentVariableName: [] });
+
+        expect(fullConfig).toEqual({ foo: 42 });
+      },
+    );
+  });
 });
 
 describe('V1 Compatibility', () => {
