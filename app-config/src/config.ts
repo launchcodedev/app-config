@@ -10,6 +10,7 @@ import { logger } from './logging';
 
 export interface Options {
   directory?: string;
+  schemaDirectory?: string;
   fileNameBase?: string;
   secretsFileNameBase?: string;
   environmentVariableName?: string;
@@ -33,6 +34,7 @@ export interface Configuration {
 
 export async function loadConfig({
   directory = '.',
+  schemaDirectory = directory,
   fileNameBase = '.app-config',
   secretsFileNameBase = `${fileNameBase}.secrets`,
   environmentVariableName = 'APP_CONFIG',
@@ -106,7 +108,7 @@ export async function loadValidatedConfig(
 ): Promise<Configuration> {
   const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
     loadSchema({
-      directory: options?.directory,
+      directory: options?.schemaDirectory,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
       ...schemaOptions,
