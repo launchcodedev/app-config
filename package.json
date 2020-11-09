@@ -2,20 +2,17 @@
   "name": "@lcdev/app-config-monorepo",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "app-config",
-    "app-config-webpack-plugin",
-    "examples/*",
-    "docs"
-  ],
+  "workspaces": ["app-config", "app-config-webpack-plugin", "examples/*", "docs"],
   "scripts": {
-    "cli": "yarn --cwd ./app-config cli",
-    "docs:build": "yarn --cwd ./docs build",
     "build": "yarn workspaces run build",
     "clean": "yarn workspaces run clean",
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint",
-    "fix": "yarn workspaces run fix"
+    "fix": "yarn workspaces run fix",
+
+    "cli": "yarn --cwd ./app-config cli",
+    "docs:dev": "yarn --cwd ./docs dev",
+    "docs:build": "yarn --cwd ./docs build"
   },
   "devDependencies": {
     "@commitlint/cli": "9",
@@ -38,8 +35,6 @@
     }
   },
   "commitlint": {
-    "extends": [
-      "@lcdev/commitlint"
-    ]
+    "extends": ["@lcdev/commitlint"]
   }
 }

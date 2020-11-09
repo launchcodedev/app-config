@@ -24,17 +24,25 @@ module.exports = {
       {
         title: 'Node.js',
         path: '/guide/node/',
-        children: ['/guide/node/', '/guide/node/api-reference'],
+        children: ['/guide/node/', '/guide/node/example', '/guide/node/api-reference'],
       },
       {
         title: 'Webpack',
         path: '/guide/webpack/',
-        children: ['/guide/webpack/'],
+        children: ['/guide/webpack/', '/guide/webpack/example'],
       },
       {
         title: 'React Native',
         path: '/guide/react-native/',
-        children: ['/guide/react-native/'],
+        children: ['/guide/react-native/', '/guide/react-native/example'],
+      },
+      {
+        title: 'Releases',
+        path: '/guide/release-notes',
+        children: [
+          '/guide/release-notes',
+          '/guide/v2-migration',
+        ],
       },
     ],
 

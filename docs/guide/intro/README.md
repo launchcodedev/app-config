@@ -74,7 +74,44 @@ Before you can do that though, you'll need to tell `app-config` what to expect i
 
 To do that, let's write our first [JSON Schema](https://json-schema.org/) file.
 
-pseudo
+<h4 style="text-align:center">.app-config.schema.yml</h4>
+
+```yaml
+type: object
+additionalProperties: false
+
+required:
+  - server
+  - database
+
+properties:
+  server: { $ref: '#/definitions/Server' }
+  database: { $ref: '#/definitions/Database' }
+
+  # Notice that AWS config is optional
+  aws:
+    type: object
+
+definitions:
+  Server:
+    type: object
+    additionalProperties: false
+    required: [port]
+    properties:
+      port: { $ref: '#/definitions/IpPort' }
+  Database:
+    type: object
+    additionalProperties: false
+    required: [host, port]
+    properties:
+      host: { type: string }
+      port: { $ref: '#/definitions/IpPort' }
+      database: { type: string }
+  IpPort:
+    type: integer
+    minimum: 0
+    maximum: 65535
+```
 
 Notice that we wrote some YAML above, even though we said it was JSON Schema.
 This is absolutely normal and expected when using app-config. You can use whatever

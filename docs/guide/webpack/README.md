@@ -1,3 +1,3 @@
 ---
-title: Webpack
+title: Usage in Webpack
 ---

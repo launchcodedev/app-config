@@ -1,8 +1,6 @@
 ---
-title: Node.js
+title: Usage in Node.js
 ---
-
-## Using `app-config` in Node.js
 
 ::: tip Before Reading
 Head on over to the [Introduction](../intro/) or [Quick Start](../intro/quick-start) if you haven't already.
