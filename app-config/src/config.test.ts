@@ -171,4 +171,24 @@ describe('V1 Compatibility', () => {
       },
     );
   });
+
+  it('uses an ambiguous path in special app-config property', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          app-config: { extends: "base-file" }
+          foo: 88
+        `,
+        'base-file.yml': `
+          foo: 42
+          bar: foo
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 88, bar: 'foo' });
+      },
+    );
+  });
 });

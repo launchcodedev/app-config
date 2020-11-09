@@ -1,4 +1,5 @@
-import { join, dirname } from 'path';
+import { join, dirname, extname, isAbsolute } from 'path';
+import { pathExists } from 'fs-extra';
 import { isObject, Json, PromiseOrNot } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
 import { ParsedValue, ParsedValueMetadata } from './parsed-value';
@@ -185,26 +186,67 @@ export function v1Compat(): ParsingExtension {
         );
       }
 
+      const resolveAmbiguousFilename = async (filepath: string) => {
+        // resolve filepaths that are relative to the current FileSource
+        if (ctx instanceof FileSource) {
+          filepath = join(dirname(ctx.filePath), filepath);
+        }
+
+        switch (extname(filepath)) {
+          case '.yml':
+          case '.yaml':
+          case '.json':
+          case '.json5':
+          case '.toml':
+            return filepath;
+          default: {
+            if (await pathExists(`${filepath}.yml`)) return `${filepath}.yml`;
+            if (await pathExists(`${filepath}.yaml`)) return `${filepath}.yaml`;
+            if (await pathExists(`${filepath}.json`)) return `${filepath}.json`;
+            if (await pathExists(`${filepath}.json5`)) return `${filepath}.json5`;
+            if (await pathExists(`${filepath}.toml`)) return `${filepath}.toml`;
+
+            return filepath;
+          }
+        }
+      };
+
       // TODO: multiple properties defined
 
       if ('extends' in value) {
-        return [{ $extends: value.extends }, { flatten: true, merge: true }];
+        return [
+          { $extends: await resolveAmbiguousFilename(value.extends as string) },
+          { flatten: true, merge: true },
+        ];
       }
 
       if ('extendsOptional' in value) {
         return [
-          { $extends: { path: value.extendsOptional, optional: true } },
+          {
+            $extends: {
+              path: await resolveAmbiguousFilename(value.extendsOptional as string),
+              optional: true,
+            },
+          },
           { flatten: true, merge: true },
         ];
       }
 
       if ('override' in value) {
-        return [{ $override: value.override }, { flatten: true, merge: true }];
+        return [
+          { $override: await resolveAmbiguousFilename(value.override as string) },
+          { flatten: true, merge: true },
+        ];
       }
 
       if ('overrideOptional' in value) {
         return [
-          { $override: { path: value.overrideOptional, optional: true } },
+          {
+            $override: {
+              path: await resolveAmbiguousFilename(value.overrideOptional as string),
+              optional: true,
+            },
+          },
           { flatten: true, merge: true },
         ];
       }
@@ -251,7 +293,8 @@ function fileReferenceDirective(
         throw new AppConfigError(`${keyName} was provided an invalid option`);
       }
 
-      if (context instanceof FileSource) {
+      // resolve filepaths that are relative to the current FileSource
+      if (!isAbsolute(filepath) && context instanceof FileSource) {
         filepath = join(dirname(context.filePath), filepath);
       }
 
