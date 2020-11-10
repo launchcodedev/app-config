@@ -91,7 +91,16 @@ export async function loadSchema({
         // check that any properties marked as secret were from secrets file
         const secretsInNonSecrets = schemaSecrets.filter((path) => {
           const found = parsed.property(path);
-          if (found) return !found.meta.fromSecrets;
+
+          if (found) {
+            const arr = found.asArray();
+
+            if (arr) {
+              return !arr.every((value) => value.meta.fromSecrets);
+            }
+
+            return !found.meta.fromSecrets;
+          }
 
           return false;
         });

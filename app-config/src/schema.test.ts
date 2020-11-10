@@ -351,5 +351,60 @@ describe('Validation', () => {
         },
       );
     });
+
+    it('allows encrypted values in nonSecrets when in an array', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+          type: array
+          items:
+            type: string
+            secret: true
+        `,
+        },
+        async (inDir) => {
+          const { validate } = await loadSchema({ directory: inDir('.') });
+          const symmetricKey = await generateSymmetricKey(1);
+
+          const parsed = await ParsedValue.parseLiteral(
+            [
+              await encryptValue('secret-1', symmetricKey),
+              await encryptValue('secret-2', symmetricKey),
+            ],
+            [encryptedDirective(symmetricKey)],
+          );
+
+          validate(parsed.toJSON() as JsonObject, parsed);
+        },
+      );
+    });
+
+    it('disallows one unencrypted value in nonSecrets when in an array', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+          type: array
+          items:
+            type: string
+            secret: true
+        `,
+        },
+        async (inDir) => {
+          const { validate } = await loadSchema({ directory: inDir('.') });
+          const symmetricKey = await generateSymmetricKey(1);
+
+          const parsed = await ParsedValue.parseLiteral(
+            [
+              await encryptValue('secret-1', symmetricKey),
+              'not-so-secret',
+              await encryptValue('secret-2', symmetricKey),
+            ],
+            [encryptedDirective(symmetricKey)],
+          );
+
+          expect(() => validate(parsed.toJSON() as JsonObject, parsed)).toThrow();
+        },
+      );
+    });
   });
 });

@@ -38,7 +38,12 @@ type TransformParentOptions = {
   metadata?: ParsedValueMetadata;
 };
 
-export type ParsingExtension = (key: string, value: Json) => false | ParsingExtensionTransform;
+/** Special indicator that the context of the value is in an array, not in an object */
+export const InArray = Symbol('InArray');
+export type ParsingExtension = (
+  key: string | typeof InArray,
+  value: Json,
+) => false | ParsingExtensionTransform;
 export type ParsingExtensionTransform = (
   context: ConfigSource,
   extensions: ParsingExtension[],

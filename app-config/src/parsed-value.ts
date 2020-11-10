@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import merge from 'lodash.merge';
 import { Json, JsonPrimitive, isObject } from './common';
 import { ConfigSource, LiteralSource } from './config-source';
-import { ParsingExtension } from './extensions';
+import { ParsingExtension, InArray } from './extensions';
 
 type ParsedValueInner = JsonPrimitive | { [k: string]: ParsedValue } | ParsedValue[];
 
@@ -109,6 +109,10 @@ export class ParsedValue {
     return this.value[key]?.property(rest);
   }
 
+  asArray(): ParsedValue[] | false {
+    return Array.isArray(this.value) && this.value;
+  }
+
   get raw(): Json {
     return this.rawValue;
   }
@@ -174,7 +178,33 @@ async function parseValue(
   extensions: ParsingExtension[],
 ): Promise<ParsedValue> {
   if (Array.isArray(raw)) {
-    const transformed = await Promise.all(raw.map((v) => parseValue(v, source, extensions)));
+    const transformed = await Promise.all(
+      raw.map(async (value) => {
+        let parsedValue: ParsedValue | undefined;
+
+        for (const ext of extensions) {
+          const apply = ext(InArray, value);
+          if (!apply) continue;
+
+          // note that we just ignore "flatten" and friends here
+          const [transformed, { metadata }] = await apply(source, extensions);
+
+          if (transformed instanceof ParsedValue) {
+            parsedValue = transformed;
+          } else {
+            parsedValue = await parseValue(transformed, source, extensions);
+          }
+
+          if (metadata) parsedValue.setMeta(metadata);
+        }
+
+        if (!parsedValue) {
+          parsedValue = await parseValue(value, source, extensions);
+        }
+
+        return parsedValue;
+      }),
+    );
 
     return new ParsedValue(source, raw, transformed);
   }
