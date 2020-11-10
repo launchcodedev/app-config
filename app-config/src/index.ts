@@ -71,8 +71,12 @@ export const config: ExportedConfig = new Proxy(
 
 export default config;
 
-export { loadConfig as loadUnvalidatedConfig, loadValidatedConfig } from './config';
-export { loadSchema } from './schema';
+export {
+  loadValidatedConfig,
+  loadConfig as loadUnvalidatedConfig,
+  Options as ConfigLoadingOptions,
+} from './config';
+export { loadSchema, Options as SchemaLoadingOptions } from './schema';
 export { loadMetaConfig } from './meta';
 export { setLogLevel, LogLevel } from './logging';
 export { currentEnvironment, defaultAliases } from './environment';

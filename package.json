@@ -5,6 +5,7 @@
   "workspaces": [
     "app-config",
     "app-config-webpack-plugin",
+    "app-config-inject",
     "examples/*",
     "docs"
   ],
