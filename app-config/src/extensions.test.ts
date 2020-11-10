@@ -49,6 +49,31 @@ describe('$extends directive', () => {
     );
   });
 
+  it('merges many files (flat)', async () => {
+    await withTempFiles(
+      {
+        'referenced-file-1.json': `{ "foo": true }`,
+        'referenced-file-2.json': `{ "bar": true }`,
+        'referenced-file-3.json': `{ "baz": true }`,
+
+        'test-file.json': `{
+          "qux": true,
+          "$extends": [
+            "./referenced-file-1.json",
+            "./referenced-file-2.json",
+            "./referenced-file-3.json"
+          ]
+        }`,
+      },
+      async (inDir) => {
+        const source = new FileSource(inDir('test-file.json'));
+        const parsed = await source.read([extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: true, bar: true, baz: true, qux: true });
+      },
+    );
+  });
+
   it('merges many files (recursive)', async () => {
     await withTempFiles(
       {
@@ -255,6 +280,31 @@ describe('$override directive', () => {
         const parsed = await source.read([overrideDirective()]);
 
         expect(parsed.toJSON()).toEqual({ foo: false, bar: true, baz: true, qux: true });
+      },
+    );
+  });
+
+  it('merges many files (flat)', async () => {
+    await withTempFiles(
+      {
+        'referenced-file-1.json': `{ "foo": true }`,
+        'referenced-file-2.json': `{ "bar": true }`,
+        'referenced-file-3.json': `{ "baz": true }`,
+
+        'test-file.json': `{
+          "qux": true,
+          "$override": [
+            "./referenced-file-1.json",
+            "./referenced-file-2.json",
+            "./referenced-file-3.json"
+          ]
+        }`,
+      },
+      async (inDir) => {
+        const source = new FileSource(inDir('test-file.json'));
+        const parsed = await source.read([overrideDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: true, bar: true, baz: true, qux: true });
       },
     );
   });

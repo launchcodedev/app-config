@@ -261,18 +261,51 @@ function fileReferenceDirective(
   keyName: string,
   options: TransformParentOptions,
 ): ParsingExtension {
-  return (key, extend) => {
+  return (key, value) => {
     if (key !== keyName) return false;
 
     return async (context, extensions) => {
-      let filepath: string;
-      let isOptional = false;
-      let subselector: string | undefined;
+      const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
+        // resolve filepaths that are relative to the current FileSource
+        if (!isAbsolute(filepath) && context instanceof FileSource) {
+          filepath = join(dirname(context.filePath), filepath);
+        }
 
-      if (typeof extend === 'string') {
-        filepath = extend;
-      } else if (isObject(extend)) {
-        const { path, optional, select } = extend;
+        logger.verbose(`Loading file for ${keyName}: ${filepath}`);
+
+        const source = new FileSource(filepath);
+
+        const parsed = await source.read(extensions).catch((error) => {
+          if (error instanceof NotFoundError && isOptional) {
+            return ParsedValue.literal({});
+          }
+
+          throw error;
+        });
+
+        if (subselector) {
+          const found = parsed.property(subselector.split('.'));
+
+          if (!found) {
+            throw new FailedToSelectSubObject(`Failed to select ${subselector} in ${filepath}`);
+          }
+
+          return found;
+        }
+
+        return parsed;
+      };
+
+      const forOptions = async (obj: Json) => {
+        if (typeof obj === 'string') {
+          return retrieveFile(obj);
+        }
+
+        if (!isObject(obj)) {
+          throw new AppConfigError(`${keyName} was provided an invalid option`);
+        }
+
+        const { path, optional, select } = obj;
 
         if (!path || typeof path !== 'string') {
           throw new AppConfigError(`Invalid ${keyName} filepath found`);
@@ -286,41 +319,20 @@ function fileReferenceDirective(
           throw new AppConfigError(`Invalid ${keyName} optional found`);
         }
 
-        filepath = path;
-        isOptional = optional || false;
-        subselector = select || undefined;
-      } else {
-        throw new AppConfigError(`${keyName} was provided an invalid option`);
-      }
+        return retrieveFile(path, select, optional);
+      };
 
-      // resolve filepaths that are relative to the current FileSource
-      if (!isAbsolute(filepath) && context instanceof FileSource) {
-        filepath = join(dirname(context.filePath), filepath);
-      }
+      if (Array.isArray(value)) {
+        let acc = ParsedValue.literal({});
 
-      logger.verbose(`Loading file for ${keyName}: ${filepath}`);
-
-      const source = new FileSource(filepath);
-
-      const parsed = await source.read(extensions).catch((error) => {
-        if (error instanceof NotFoundError && isOptional) {
-          return ParsedValue.literal({});
+        for (const ext of value) {
+          acc = ParsedValue.merge(acc, await forOptions(ext));
         }
 
-        throw error;
-      });
-
-      if (subselector) {
-        const found = parsed.property(subselector.split('.'));
-
-        if (!found) {
-          throw new FailedToSelectSubObject(`Failed to select ${subselector} in ${filepath}`);
-        }
-
-        return [found, options];
+        return [acc, options];
       }
 
-      return [parsed, options];
+      return [await forOptions(value), options];
     };
   };
 }
