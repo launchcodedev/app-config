@@ -55,6 +55,7 @@ async function main() {
   The obvious change is with numbers in variable names - `address1` now gets transformed to `ADDRESS_1` instead of `ADDDRESS1`.
 - Environment variable substitution (eg. `port: '${PORT:-3000}'`) does not happen automatically anymore. Use the `$substitute` directive instead.
 - The config sub-object code generation has been removed. (eg. generating a JSON file in meta properties) To our knowledge, nobody used this.
+- Schema loading no longer supports the `app-config` special property, and does not use `$extends` directive by default - use `$ref`s instead.
 - There are some very subtle differences in the merging algorithm used when loading files
   (relevant if you have secret files that override non-secret files).
   Differences here are likely to be bugs though!
