@@ -37,6 +37,7 @@ export async function loadSchema({
     environmentOverride,
     environmentAliases,
   );
+
   const parsed = await source.readToJSON(parsingExtensions);
 
   if (!isObject(parsed)) throw new WasNotObject('JSON Schema was not an object');
@@ -44,13 +45,16 @@ export async function loadSchema({
   const ajv = new Ajv({ allErrors: true });
 
   const schemaRefs = await extractExternalSchemas(parsed, directory);
-  Object.entries(schemaRefs).forEach(([id, schema]) => ajv.addSchema(schema as object, id));
+
+  Object.entries(schemaRefs).forEach(([$id, schema]) => {
+    ajv.addSchema({ $id, ...schema });
+  });
 
   // array of property paths that should only be present in secrets file
   const schemaSecrets: string[][] = [];
 
   ajv.addKeyword('secret', {
-    validate(schema: any, data: any, parentSchema?: object, dataPath?: string) {
+    validate(schema: any, _data: any, _parentSchema?: object, dataPath?: string) {
       if (!dataPath) return false;
 
       const [_, ...key] = dataPath.split('.');
@@ -107,30 +111,40 @@ export async function loadSchema({
 async function extractExternalSchemas(
   schema: JsonObject,
   cwd: string,
-  schemas: JsonObject = {},
-): Promise<JsonObject> {
-  if (schema && typeof schema === 'object') {
-    for (const [key, val] of Object.entries(schema)) {
-      if (key === '$ref' && typeof val === 'string') {
-        // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-        const [, , filepath, ref] = /^(\.\/)?([^#]*)(#?.*)/.exec(val)!;
+  schemas: { [$id: string]: JsonObject } = {},
+): Promise<{ [$id: string]: JsonObject }> {
+  if (isObject(schema)) {
+    if (schema.$ref && typeof schema.$ref === 'string') {
+      // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
+      const [, , filepath, ref] = /^(\.\/)?([^#]*)(#?.*)/.exec(schema.$ref) ?? [];
 
-        if (filepath) {
-          // we resolve filepaths so that ajv resolves them correctly
-          const resolvePath = resolve(join(cwd, filepath));
-          const resolvePathEncoded = encodeURI(resolvePath);
-          const child = (await new FileSource(resolvePath).readToJSON()) as JsonObject;
+      if (filepath) {
+        // we resolve filepaths so that ajv resolves them correctly
+        const resolvedPath = resolve(join(cwd, filepath));
+        const resolvedPathEncoded = encodeURI(resolvedPath);
 
-          await extractExternalSchemas(child, dirname(join(cwd, filepath)), schemas);
+        // here to prevent circular dependencies from creating infinite recursion
+        if (schemas[resolvedPathEncoded]) return schemas;
+        schemas[resolvedPathEncoded] = {};
 
-          if (!Array.isArray(schema)) {
-            // replace the $ref inline with the resolvePath
-            schema.$ref = `${resolvePathEncoded}${ref}`;
-          }
+        const referencedSchema = await new FileSource(resolvedPath).readToJSON();
 
-          schemas[resolvePathEncoded] = child;
+        if (isObject(referencedSchema)) {
+          // recurse into referenced schema, to retrieve any references
+          await extractExternalSchemas(referencedSchema, dirname(join(cwd, filepath)), schemas);
+
+          // replace the $ref inline with the canonical path
+          schema.$ref = `${resolvedPathEncoded}${ref}`;
+
+          // add schema to schemaRefs object, so they can be added to Ajv
+          referencedSchema.$id = resolvedPathEncoded;
+          schemas[resolvedPathEncoded] = referencedSchema;
         }
-      } else if (isObject(val)) {
+      }
+    }
+
+    for (const val of Object.values(schema)) {
+      if (isObject(val)) {
         await extractExternalSchemas(val, cwd, schemas);
       }
     }

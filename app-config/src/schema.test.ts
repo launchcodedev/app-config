@@ -53,7 +53,6 @@ describe('Schema Loading', () => {
   });
 });
 
-// TODO
 describe('Schema References', () => {
   it('loads a schema $ref relative to itself', async () => {
     await withTempFiles(
@@ -70,6 +69,56 @@ describe('Schema References', () => {
       },
       async (inDir) => {
         await loadSchema({ directory: inDir('nested-folder') });
+      },
+    );
+  });
+
+  it("loads a schema $ref relative to the file it's in", async () => {
+    await withTempFiles(
+      {
+        'nested-folder/.app-config.schema.yml': `
+          type: object
+          required: [x]
+          properties:
+            x: { $ref: '../nested-folder-2/rootlevel.schema.yml#/definitions/Nested' }
+        `,
+        'nested-folder-2/rootlevel.schema.yml': `
+          definitions:
+            Nested: { $ref: '../nested-folder-3/.app-config.schema.yml#/definitions/Nested2' }
+        `,
+        'nested-folder-3/.app-config.schema.yml': `
+          definitions:
+            Nested2:
+              type: string
+        `,
+      },
+      async (inDir) => {
+        await loadSchema({ directory: inDir('nested-folder') });
+      },
+    );
+  });
+
+  it('handles circular references', async () => {
+    await withTempFiles(
+      {
+        'a/.app-config.schema.yml': `
+          type: object
+          properties:
+            x: { $ref: '../b/.app-config.schema.yml#/definitions/B' }
+          definitions:
+            A: { type: string }
+        `,
+        'b/.app-config.schema.yml': `
+          type: object
+          properties:
+            x: { $ref: '../a/.app-config.schema.yml#/definitions/A' }
+          definitions:
+            B: { type: string }
+        `,
+      },
+      async (inDir) => {
+        await loadSchema({ directory: inDir('a') });
+        await loadSchema({ directory: inDir('b') });
       },
     );
   });
