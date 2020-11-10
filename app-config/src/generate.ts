@@ -1,4 +1,4 @@
-import { basename, extname } from 'path';
+import { basename, extname, join } from 'path';
 import { outputFile } from 'fs-extra';
 import {
   quicktype,
@@ -15,6 +15,7 @@ import { loadSchema, Options as SchemaOptions } from './schema';
 import { logger } from './logging';
 
 export interface Options {
+  directory?: string;
   schemaOptions?: SchemaOptions;
   metaOptions?: MetaOptions;
 }
@@ -30,11 +31,13 @@ export interface GenerateFile {
   rendererOptions?: RendererOptions;
 }
 
-export async function generateTypeFiles({ schemaOptions, metaOptions }: Options = {}) {
-  const { value: schema, schemaRefs } = await loadSchema(schemaOptions);
+export async function generateTypeFiles({ directory, schemaOptions, metaOptions }: Options = {}) {
+  const { value: schema, schemaRefs } = await loadSchema({ directory, ...schemaOptions });
   const {
     value: { generate = [] },
-  } = await loadMetaConfig(metaOptions);
+  } = await loadMetaConfig({ directory, ...metaOptions });
+
+  const metaDirectory = metaOptions?.directory ?? directory ?? '.';
 
   // default to PascalCase with non-word chars removed
   const normalizeName = (file: string) =>
@@ -64,7 +67,7 @@ export async function generateTypeFiles({ schemaOptions, metaOptions }: Options 
           schemaRefs,
         );
 
-        await outputFile(file, `${lines.join('\n')}${'\n'}`);
+        await outputFile(join(metaDirectory, file), `${lines.join('\n')}${'\n'}`);
       },
     ),
   );

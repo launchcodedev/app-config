@@ -1,5 +1,69 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`TypeScript File Generation corrects Date type in TypeScript files 1`] = `
+"// AUTO GENERATED CODE
+// Run app-config with 'generate' command to regenerate this file
+
+import '@lcdev/app-config';
+
+export interface MyCustomConfigName {
+  x?: string;
+}
+
+// augment the default export from app-config
+declare module '@lcdev/app-config' {
+  export interface ExportedConfig extends MyCustomConfigName {}
+}
+"
+`;
+
+exports[`TypeScript File Generation creates a TypeScript file from meta file properties 1`] = `
+"// AUTO GENERATED CODE
+// Run app-config with 'generate' command to regenerate this file
+
+import '@lcdev/app-config';
+
+export interface MyCustomConfigName {
+  x?: number;
+}
+
+// augment the default export from app-config
+declare module '@lcdev/app-config' {
+  export interface ExportedConfig extends MyCustomConfigName {}
+}
+"
+`;
+
+exports[`TypeScript File Generation creates a TypeScript file from schema with many $ref properties 1`] = `
+"// AUTO GENERATED CODE
+// Run app-config with 'generate' command to regenerate this file
+
+import '@lcdev/app-config';
+
+export interface Generated {
+  a?: A;
+  root?: boolean;
+}
+
+export interface A {
+  b: B;
+}
+
+export interface B {
+  c: C;
+}
+
+export interface C {
+  d: boolean;
+}
+
+// augment the default export from app-config
+declare module '@lcdev/app-config' {
+  export interface ExportedConfig extends Generated {}
+}
+"
+`;
+
 exports[`TypeScript File Generation creates a simple TypeScript file 1`] = `
 Array [
   "// AUTO GENERATED CODE",
