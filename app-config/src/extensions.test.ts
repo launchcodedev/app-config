@@ -439,3 +439,52 @@ describe('$substitute directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'qa' });
   });
 });
+
+describe('extension combinations', () => {
+  it('combines $env and $extends directives', async () => {
+    await withTempFiles(
+      {
+        'test-file.json': `{ "foo": true }`,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: {
+            $env: {
+              default: inDir('test-file.json'),
+            },
+          },
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: true });
+      },
+    );
+  });
+
+  it('combines $extends and $env directives', async () => {
+    await withTempFiles(
+      {
+        'test-file.json': `{ "foo": true }`,
+      },
+      async (inDir) => {
+        process.env.NODE_ENV = 'development';
+
+        const source = new LiteralSource({
+          $env: {
+            default: {
+              $extends: inDir('test-file.json'),
+            },
+            test: {
+              foo: false,
+            },
+          },
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: true });
+      },
+    );
+  });
+});

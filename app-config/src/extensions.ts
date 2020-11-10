@@ -296,16 +296,18 @@ function fileReferenceDirective(
         return parsed;
       };
 
-      const forOptions = async (obj: Json) => {
-        if (typeof obj === 'string') {
-          return retrieveFile(obj);
+      const forOptions = async (options: Json) => {
+        const parsed = (await ParsedValue.parse(options, context, extensions)).toJSON();
+
+        if (typeof parsed === 'string') {
+          return retrieveFile(parsed);
         }
 
-        if (!isObject(obj)) {
+        if (!isObject(parsed)) {
           throw new AppConfigError(`${keyName} was provided an invalid option`);
         }
 
-        const { path, optional, select } = obj;
+        const { path, optional, select } = parsed;
 
         if (!path || typeof path !== 'string') {
           throw new AppConfigError(`Invalid ${keyName} filepath found`);
