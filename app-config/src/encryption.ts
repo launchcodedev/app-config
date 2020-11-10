@@ -338,7 +338,15 @@ export async function decryptValue(
   const [, revision, base64] = text.split(':');
 
   if (!symmetricKey) {
-    symmetricKey = await loadSymmetricKeyLazy(parseFloat(revision), await loadPrivateKeyLazy());
+    const revisionNumber = parseFloat(revision);
+
+    if (Number.isNaN(revisionNumber)) {
+      throw new AppConfigError(
+        `Encrypted value was invalid, revision was not a number (${revision})`,
+      );
+    }
+
+    symmetricKey = await loadSymmetricKeyLazy(revisionNumber, await loadPrivateKeyLazy());
   }
 
   const armored = `-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
