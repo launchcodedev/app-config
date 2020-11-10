@@ -10,9 +10,14 @@ import {
   InputData,
 } from 'quicktype-core';
 import { JsonObject } from './common';
-import { loadMetaConfigLazy } from './meta';
-import { loadSchema } from './schema';
+import { loadMetaConfig, Options as MetaOptions } from './meta';
+import { loadSchema, Options as SchemaOptions } from './schema';
 import { logger } from './logging';
+
+export interface Options {
+  schemaOptions?: SchemaOptions;
+  metaOptions?: MetaOptions;
+}
 
 export interface GenerateFile {
   file: string;
@@ -25,11 +30,11 @@ export interface GenerateFile {
   rendererOptions?: RendererOptions;
 }
 
-export const generateTypeFiles = async () => {
-  const { value: schema, schemaRefs } = await loadSchema();
+export async function generateTypeFiles({ schemaOptions, metaOptions }: Options = {}) {
+  const { value: schema, schemaRefs } = await loadSchema(schemaOptions);
   const {
     value: { generate = [] },
-  } = await loadMetaConfigLazy();
+  } = await loadMetaConfig(metaOptions);
 
   // default to PascalCase with non-word chars removed
   const normalizeName = (file: string) =>
@@ -65,7 +70,7 @@ export const generateTypeFiles = async () => {
   );
 
   return generate;
-};
+}
 
 export async function generateQuicktype(
   schema: JsonObject,

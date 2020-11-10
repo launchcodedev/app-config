@@ -5,14 +5,26 @@ import { outputFile, remove } from 'fs-extra';
 // function that joins the temp dir to a filename
 type JoinDir = (filename: string) => string;
 
-export const withTempFiles = async (
+export async function withTempFiles(
   files: { [filename: string]: string },
   callback: (inDir: JoinDir) => Promise<void>,
-) => {
+): Promise<void>;
+
+export async function withTempFiles(
+  files: [string, string][],
+  callback: (inDir: JoinDir) => Promise<void>,
+): Promise<void>;
+
+export async function withTempFiles(
+  files: { [filename: string]: string } | [string, string][],
+  callback: (inDir: JoinDir) => Promise<void>,
+) {
   const { path: folder } = await dir();
 
   try {
-    for (const [filename, contents] of Object.entries(files)) {
+    const entries = Array.isArray(files) ? files : Object.entries(files);
+
+    for (const [filename, contents] of entries) {
       await outputFile(join(folder, filename), contents);
     }
 
@@ -20,4 +32,4 @@ export const withTempFiles = async (
   } finally {
     await remove(folder);
   }
-};
+}

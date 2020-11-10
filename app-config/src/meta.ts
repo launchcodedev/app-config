@@ -1,8 +1,14 @@
+import { join } from 'path';
 import { FlexibleFileSource, FileSource, FileType } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
 import { NotFoundError } from './errors';
 import { GenerateFile } from './generate';
 import { logger } from './logging';
+
+export interface Options {
+  directory?: string;
+  fileNameBase?: string;
+}
 
 export interface TeamMember {
   userId: string;
@@ -21,8 +27,11 @@ export interface MetaConfiguration {
   value: MetaProperties;
 }
 
-export async function loadMetaConfig(fileName = '.app-config.meta'): Promise<MetaConfiguration> {
-  const source = new FlexibleFileSource(fileName);
+export async function loadMetaConfig({
+  directory = '.',
+  fileNameBase = '.app-config.meta',
+}: Options = {}): Promise<MetaConfiguration> {
+  const source = new FlexibleFileSource(join(directory, fileNameBase));
 
   try {
     const parsed = await source.read();
@@ -45,9 +54,9 @@ export async function loadMetaConfig(fileName = '.app-config.meta'): Promise<Met
 
 let metaConfig: Promise<MetaConfiguration> | undefined;
 
-export async function loadMetaConfigLazy(): Promise<MetaConfiguration> {
+export async function loadMetaConfigLazy(options?: Options): Promise<MetaConfiguration> {
   if (!metaConfig) {
-    metaConfig = loadMetaConfig();
+    metaConfig = loadMetaConfig(options);
   }
 
   return metaConfig;

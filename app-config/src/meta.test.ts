@@ -19,7 +19,7 @@ describe('meta file loading', () => {
         `,
       },
       async (inDir) => {
-        const meta = await loadMetaConfig(inDir('.app-config.meta'));
+        const meta = await loadMetaConfig({ directory: inDir('.') });
 
         expect(meta.value).toEqual({ foo: 'bar' });
         expect(meta.filePath).toBe(inDir('.app-config.meta.yml'));
