@@ -2,7 +2,7 @@ import { loadConfig } from './config';
 import { withTempFiles } from './test-util';
 
 describe('Configuration Loading', () => {
-  it('loads configuration', async () => {
+  it('loads configuration from a YAML file', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `foo: 42`,
@@ -11,6 +11,99 @@ describe('Configuration Loading', () => {
         const { fullConfig } = await loadConfig({ directory: inDir('.') });
 
         expect(fullConfig).toEqual({ foo: 42 });
+      },
+    );
+  });
+
+  it('loads configuration from a TOML file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.toml': `foo = 42`,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 42 });
+      },
+    );
+  });
+
+  it('loads configuration from a JSON file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.json': `{ "foo": 42 }`,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 42 });
+      },
+    );
+  });
+
+  it('loads configuration from a JSON5 file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.json5': `{ foo: 42 }`,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 42 });
+      },
+    );
+  });
+
+  it('loads configuration from environment variable', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `foo: 42`,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG = 'foo: 88';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 88 });
+      },
+    );
+  });
+
+  it('loads environment specific configuration file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `env: default`,
+        '.app-config.dev.yml': `env: development`,
+        '.app-config.production.yml': `env: production`,
+      },
+      async (inDir) => {
+        expect((await loadConfig({ directory: inDir('.') })).fullConfig).toEqual({
+          env: 'default',
+        });
+
+        process.env.NODE_ENV = 'development';
+        expect((await loadConfig({ directory: inDir('.') })).fullConfig).toEqual({
+          env: 'development',
+        });
+
+        process.env.NODE_ENV = 'production';
+        expect((await loadConfig({ directory: inDir('.') })).fullConfig).toEqual({
+          env: 'production',
+        });
+      },
+    );
+  });
+
+  it('loads secrets configuration file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `base: present`,
+        '.app-config.secrets.yml': `secret: present`,
+      },
+      async (inDir) => {
+        expect((await loadConfig({ directory: inDir('.') })).fullConfig).toEqual({
+          base: 'present',
+          secret: 'present',
+        });
       },
     );
   });
