@@ -316,6 +316,12 @@ describe('$env directive', () => {
     await expect(source.read([envDirective()])).rejects.toThrow();
   });
 
+  it('fails when no options match current environment', async () => {
+    process.env.NODE_ENV = 'test';
+    const source = new LiteralSource({ $env: { dev: true } });
+    await expect(source.read([envDirective()])).rejects.toThrow();
+  });
+
   it('resolves to default environment', async () => {
     const source = new LiteralSource({ $env: { default: 42 } });
     const parsed = await source.read([envDirective()]);
@@ -324,10 +330,47 @@ describe('$env directive', () => {
   });
 
   it('resolves to test environment', async () => {
+    process.env.NODE_ENV = 'test';
     const source = new LiteralSource({ $env: { test: 84, default: 42 } });
     const parsed = await source.read([envDirective()]);
 
     expect(parsed.toJSON()).toEqual(84);
+  });
+
+  it('resolves to environment alias', async () => {
+    process.env.NODE_ENV = 'development';
+    const source = new LiteralSource({ $env: { dev: 84, default: 42 } });
+    const parsed = await source.read([envDirective()]);
+
+    expect(parsed.toJSON()).toEqual(84);
+  });
+
+  it('uses environment alias', async () => {
+    process.env.NODE_ENV = 'dev';
+    const source = new LiteralSource({ $env: { development: 84, default: 42 } });
+    const parsed = await source.read([envDirective()]);
+
+    expect(parsed.toJSON()).toEqual(84);
+  });
+
+  it('resolves to object', async () => {
+    process.env.NODE_ENV = 'test';
+    const source = new LiteralSource({
+      $env: { test: { testing: true }, default: { testing: false } },
+    });
+
+    const parsed = await source.read([envDirective()]);
+    expect(parsed.toJSON()).toEqual({ testing: true });
+  });
+
+  it('resolves to null', async () => {
+    process.env.NODE_ENV = 'test';
+    const source = new LiteralSource({
+      $env: { test: null },
+    });
+
+    const parsed = await source.read([envDirective()]);
+    expect(parsed.toJSON()).toEqual(null);
   });
 });
 
