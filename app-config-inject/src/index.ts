@@ -26,9 +26,9 @@ export async function injectHtml(
   let config;
 
   if (validate) {
-    config = await loadValidatedConfig(configOptions);
+    ({ fullConfig: config } = await loadValidatedConfig(configOptions));
   } else {
-    config = await loadUnvalidatedConfig(configOptions);
+    ({ fullConfig: config } = await loadUnvalidatedConfig(configOptions));
   }
 
   scriptTag.set_content(`window._appConfig=${JSON.stringify(config)}`);
