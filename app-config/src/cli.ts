@@ -136,6 +136,12 @@ const selectOption = {
   description: 'A JSON pointer to select a nested property in the object',
 } as const;
 
+const clipboardOption = {
+  alias: 'c',
+  type: 'boolean',
+  description: 'Copies the value to the system clipboard',
+} as const;
+
 function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
   const { fullConfig, parsedNonSecrets } = config;
 
@@ -511,11 +517,7 @@ const { argv: _ } = yargs
                 },
               },
               options: {
-                clipboard: {
-                  alias: 'c',
-                  type: 'boolean',
-                  description: 'Copies the value to the system clipboard',
-                },
+                clipboard: clipboardOption,
               },
             },
             async (opts) => {
@@ -576,11 +578,7 @@ const { argv: _ } = yargs
                 },
               },
               options: {
-                clipboard: {
-                  alias: 'c',
-                  type: 'boolean',
-                  description: 'Uses the value from the system clipboard',
-                },
+                clipboard: clipboardOption,
               },
             },
             async (opts) => {
