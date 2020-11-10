@@ -112,19 +112,18 @@ export function environmentVariableSubstitution(
   const performAllSubstitutions = (text: string): string => {
     let output = text;
 
-    // this regex matches:
-    //   $FOO
-    //   ${FOO}
-    //   ${FOO:-fallback}
-    //   ${FOO:-${FALLBACK}}
-    //
-    // var name is group 1 || 2
-    // fallback value is group 3
-    // https://regex101.com/r/6ZMmx7/3
-    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g;
-
     while (true) {
-      const match = envVar.exec(output);
+      // this regex matches:
+      //   $FOO
+      //   ${FOO}
+      //   ${FOO:-fallback}
+      //   ${FOO:-${FALLBACK}}
+      //
+      // var name is group 1 || 2
+      // fallback value is group 3
+      // https://regex101.com/r/6ZMmx7/3
+      const match = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g.exec(output);
+
       if (!match) break;
 
       const fullMatch = match[0];

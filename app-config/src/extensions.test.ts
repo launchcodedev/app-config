@@ -381,19 +381,21 @@ describe('$substitute directive', () => {
     await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
   });
 
-  it('simple environment variable substitution', async () => {
-    process.env.FOO = 'bar';
+  it('does simple environment variable substitution', async () => {
+    process.env.FOO = 'foo';
+    process.env.BAR = 'bar';
 
     const source = new LiteralSource({
       foo: { $substitute: '$FOO' },
+      bar: { $substitute: '$BAR' },
     });
 
     const parsed = await source.read([environmentVariableSubstitution()]);
 
-    expect(parsed.toJSON()).toEqual({ foo: 'bar' });
+    expect(parsed.toJSON()).toEqual({ foo: 'foo', bar: 'bar' });
   });
 
-  it('$subs shorthand', async () => {
+  it('uses $subs shorthand', async () => {
     process.env.FOO = 'bar';
 
     const source = new LiteralSource({
@@ -405,7 +407,7 @@ describe('$substitute directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
 
-  it('environment variable substitution fallback', async () => {
+  it('does environment variable substitution fallback', async () => {
     const source = new LiteralSource({
       foo: { $substitute: '${FOO:-baz}' },
     });
@@ -415,7 +417,29 @@ describe('$substitute directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'baz' });
   });
 
-  it('nested substitution', async () => {
+  it('does environment variable substitution with empty value', async () => {
+    process.env.FOO = '';
+
+    const source = new LiteralSource({
+      foo: { $substitute: '${FOO}' },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: '' });
+  });
+
+  it('does environment variable substitution with empty fallback', async () => {
+    const source = new LiteralSource({
+      foo: { $substitute: '${FOO:-}' },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: '' });
+  });
+
+  it('flows through nested substitution', async () => {
     process.env.BAR = 'qux';
 
     const source = new LiteralSource({
@@ -427,7 +451,56 @@ describe('$substitute directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'qux' });
   });
 
-  it('special case for APP_CONFIG_ENV', async () => {
+  it('does variable substitutions mid-string', async () => {
+    process.env.FOO = 'foo';
+
+    const source = new LiteralSource({
+      foo: { $substitute: 'bar ${FOO} bar' },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'bar foo bar' });
+  });
+
+  it('does multiple variable substitutions', async () => {
+    process.env.FOO = 'foo';
+    process.env.BAR = 'bar';
+
+    const source = new LiteralSource({
+      foo: { $substitute: '${FOO} $BAR' },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'foo bar' });
+  });
+
+  it('does multiple variable substitutions with fallbacks', async () => {
+    process.env.FOO = 'foo';
+
+    const source = new LiteralSource({
+      foo: { $substitute: '${FOO} ${BAR:-bar}' },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'foo bar' });
+  });
+
+  it('does variable substitution in array', async () => {
+    process.env.FOO = 'foo';
+
+    const source = new LiteralSource({
+      foo: [{ $substitute: '${FOO}' }, 'bar'],
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: ['foo', 'bar'] });
+  });
+
+  it('reads special case variable $APP_CONFIG_ENV', async () => {
     process.env.NODE_ENV = 'qa';
 
     const source = new LiteralSource({
