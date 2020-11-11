@@ -29,7 +29,11 @@ module.exports = {
       {
         title: 'Webpack',
         path: '/guide/webpack/',
-        children: ['/guide/webpack/', '/guide/webpack/example'],
+        children: [
+          '/guide/webpack/',
+          '/guide/webpack/inject',
+          '/guide/webpack/example',
+        ],
       },
       {
         title: 'React Native',
