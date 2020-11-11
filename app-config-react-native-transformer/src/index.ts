@@ -21,9 +21,9 @@ export const transform: Transformer['transform'] = async ({ src, filename, optio
   }
 
   // Parse config and overwrite app-config's entry point with exported config JSON
-  const { parsedNonSecrets } = await loadValidatedConfig();
+  const { fullConfig } = await loadValidatedConfig();
 
-  const modifiedSrc = `module.exports = ${JSON.stringify(parsedNonSecrets)};`;
+  const modifiedSrc = `module.exports = ${JSON.stringify(fullConfig)};`;
 
   return upstreamTransformer.transform({ src: modifiedSrc, filename, options });
 };
