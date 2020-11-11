@@ -15,7 +15,21 @@ export type TransformOptions = {
   src: string;
   filename: string;
   options: {
-    [key: string]: any;
+    customTransformOptions: {
+      [key: string]: any;
+    };
+    dev: boolean;
+    hot: boolean;
+    inlinePlatform: boolean;
+    minify: boolean;
+    platform: string;
+    experimentalImportSupport: boolean;
+    type: string;
+    inlineRequires: boolean;
+    enableBabelRCLookup: boolean;
+    enableBabelRuntime: boolean;
+    projectRoot: string;
+    publicPath: string;
   };
 };
 
