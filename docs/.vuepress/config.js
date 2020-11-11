@@ -59,4 +59,8 @@ module.exports = {
     docsDir: 'docs',
     docsBranch: 'master',
   },
+
+  plugins: [
+    ['vuepress-plugin-mermaidjs', { theme: 'base' }],
+  ],
 };
