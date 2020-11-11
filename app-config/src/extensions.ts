@@ -164,6 +164,7 @@ export function environmentVariableSubstitution(
   };
 
   return (key, value) => {
+    if (key === '$subsitute') logger.warn('Noticed a typo! Key of $subsitute was found.');
     if (key !== '$substitute' && key !== '$subs') return false;
 
     return () => {

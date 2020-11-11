@@ -592,4 +592,21 @@ describe('extension combinations', () => {
       },
     );
   });
+
+  it('combines $env and $substitute directives', async () => {
+    const source = new LiteralSource({
+      apiUrl: {
+        $env: {
+          default: {
+            $substitute: 'http://${MY_IP:-localhost}:3000',
+          },
+          qa: 'http://example.com',
+        },
+      },
+    });
+
+    const parsed = await source.read([envDirective(), environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ apiUrl: 'http://localhost:3000' });
+  });
 });
