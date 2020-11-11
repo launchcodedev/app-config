@@ -37,6 +37,11 @@ module.exports = {
         children: ['/guide/react-native/', '/guide/react-native/example'],
       },
       {
+        title: 'Deployment',
+        path: '/guide/deployment/',
+        children: ['/guide/deployment/', '/guide/deployment/kubernetes'],
+      },
+      {
         title: 'Releases',
         path: '/guide/release-notes',
         children: [
