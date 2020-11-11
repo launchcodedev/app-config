@@ -5,7 +5,7 @@ import { Transformer, upstreamTransformer } from './upstream-transformer';
 /**
  * Transform is called by Metro for each package resolved in the React Native project
  */
-export const transform: Transformer['transform'] = ({ src, filename, options }) => {
+export const transform: Transformer['transform'] = async ({ src, filename, options }) => {
   // Get the relative path to app-config's entry point
   const appConfigPath = relative(
     options.projectRoot,
@@ -15,16 +15,15 @@ export const transform: Transformer['transform'] = ({ src, filename, options }) 
     }),
   );
 
-  // If the current module isn't app-config, use the default upstream transformer
+  // If the current module isn't app-config, pass-through to the default upstream transformer
   if (filename !== appConfigPath) {
     return upstreamTransformer.transform({ src, filename, options });
   }
 
   // Parse config and overwrite app-config's entry point with exported config JSON
-  return loadValidatedConfig().then(({ parsedNonSecrets }) => {
-    const modifiedSrc = `
-      module.exports = ${JSON.stringify(parsedNonSecrets)};
-    `;
-    return upstreamTransformer.transform({ src: modifiedSrc, filename, options });
-  });
+  const { parsedNonSecrets } = await loadValidatedConfig();
+
+  const modifiedSrc = `module.exports = ${JSON.stringify(parsedNonSecrets)};`;
+
+  return upstreamTransformer.transform({ src: modifiedSrc, filename, options });
 };
