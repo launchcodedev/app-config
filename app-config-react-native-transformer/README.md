@@ -1,4 +1,5 @@
 # React Native App Config Transformer
+React Native Metro transformer that loads your `app-config` values into bundles statically.
 
 ## Installation
 

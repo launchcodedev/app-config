@@ -6,7 +6,7 @@
     "app-config",
     "app-config-webpack-plugin",
     "app-config-inject",
-    "react-native-app-config-transformer",
+    "app-config-react-native-transformer",
     "examples/*",
     "docs"
   ],
