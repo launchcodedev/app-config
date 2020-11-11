@@ -1,6 +1,6 @@
 import { resolve, join, dirname } from 'path';
 import Ajv from 'ajv';
-import { JsonObject, isObject } from './common';
+import { Json, JsonObject, isObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource } from './config-source';
@@ -118,7 +118,7 @@ export async function loadSchema({
 }
 
 async function extractExternalSchemas(
-  schema: JsonObject,
+  schema: Json,
   cwd: string,
   schemas: { [$id: string]: JsonObject } = {},
 ): Promise<{ [$id: string]: JsonObject }> {
@@ -133,21 +133,27 @@ async function extractExternalSchemas(
         const resolvedPathEncoded = encodeURI(resolvedPath);
 
         // here to prevent circular dependencies from creating infinite recursion
-        if (schemas[resolvedPathEncoded]) return schemas;
+        if (schemas[resolvedPathEncoded]) {
+          // replace the $ref inline with the canonical path
+          schema.$ref = `${resolvedPathEncoded}${ref}`;
+
+          return schemas;
+        }
+
         schemas[resolvedPathEncoded] = {};
 
         const referencedSchema = await new FileSource(resolvedPath).readToJSON();
 
         if (isObject(referencedSchema)) {
-          // recurse into referenced schema, to retrieve any references
-          await extractExternalSchemas(referencedSchema, dirname(join(cwd, filepath)), schemas);
-
           // replace the $ref inline with the canonical path
           schema.$ref = `${resolvedPathEncoded}${ref}`;
 
           // add schema to schemaRefs object, so they can be added to Ajv
           referencedSchema.$id = resolvedPathEncoded;
           schemas[resolvedPathEncoded] = referencedSchema;
+
+          // recurse into referenced schema, to retrieve any references
+          await extractExternalSchemas(referencedSchema, dirname(join(cwd, filepath)), schemas);
         }
       }
     }
@@ -155,6 +161,8 @@ async function extractExternalSchemas(
     for (const val of Object.values(schema)) {
       if (isObject(val)) {
         await extractExternalSchemas(val, cwd, schemas);
+      } else if (Array.isArray(val)) {
+        await Promise.all(val.map(v => extractExternalSchemas(v, cwd, schemas)));
       }
     }
   }

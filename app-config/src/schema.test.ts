@@ -174,6 +174,51 @@ describe('Schema Loading', () => {
       );
     });
 
+    it('resolves multiple schema $ref properties to the same schema', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              a:  { $ref: './referenced.schema.yml#/definitions/A' }
+              aa: { $ref: './referenced.schema.yml#/definitions/A' }
+              b:  { $ref: './referenced.schema.yml#/definitions/B' }
+          `,
+          'referenced.schema.yml': `
+            definitions:
+              A: { type: number }
+              B: { type: number }
+          `,
+        },
+        async (inDir) => {
+          await loadSchema({ directory: inDir('.') });
+        },
+      );
+    });
+
+    it('resolves schema $ref properties that appear in arrays', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              a:
+                oneOf:
+                  - { $ref: './referenced.schema.yml#/definitions/A' }
+                  - { $ref: './referenced.schema.yml#/definitions/B' }
+          `,
+          'referenced.schema.yml': `
+            definitions:
+              A: { type: number }
+              B: { type: number }
+          `,
+        },
+        async (inDir) => {
+          await loadSchema({ directory: inDir('.') });
+        },
+      );
+    });
+
     it('handles circular references', async () => {
       await withTempFiles(
         {
