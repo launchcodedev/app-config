@@ -14,7 +14,7 @@ FROM nginx:1.15-alpine
 
 RUN apk update && apk add nodejs npm
 
-RUN npm i -g @lcdev/app-config-inject@2.0.0-alpha.16
+RUN npm i -g @lcdev/app-config-inject@2
 
 ADD .app-config.schema.yml /etc/my-app/.app-config.schema.yml
 
