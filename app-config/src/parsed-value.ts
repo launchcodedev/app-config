@@ -2,6 +2,7 @@ import { inspect } from 'util';
 import merge from 'lodash.merge';
 import { Json, JsonObject, JsonPrimitive, PromiseOrNot, isObject } from './common';
 import { ConfigSource, LiteralSource } from './config-source';
+import { AppConfigError } from './errors';
 
 /** The property being visited was a property in an object */
 export const InObject = Symbol('InObject');
@@ -160,6 +161,41 @@ export class ParsedValue {
     if ((typeof this.value !== 'object' || this.value === null) && !Array.isArray(this.value)) {
       return this.value;
     }
+  }
+
+  cloneWhere(filter: (value: ParsedValue) => boolean): ParsedValue {
+    if (Array.isArray(this.value)) {
+      const filtered = this.value.filter(filter);
+
+      return new ParsedValue(
+        this.source,
+        filtered.map((v) => v.rawValue),
+        filtered.map((v) => v.cloneWhere(filter)),
+      );
+    }
+
+    if (typeof this.value === 'object' && this.value !== null) {
+      const value: { [k: string]: ParsedValue } = {};
+      const rawValue: JsonObject = {};
+
+      for (const [key, entry] of Object.entries(this.value)) {
+        if (filter(entry)) {
+          value[key] = entry.cloneWhere(filter);
+
+          if (isObject(this.rawValue)) {
+            rawValue[key] = this.rawValue[key];
+          }
+        }
+      }
+
+      return new ParsedValue(this.source, rawValue, value);
+    }
+
+    if (!filter(this)) {
+      throw new AppConfigError('ParsedValue::cloneWhere filtered itself out');
+    }
+
+    return new ParsedValue(this.source, this.rawValue, this.value);
   }
 
   get raw(): Json {

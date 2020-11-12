@@ -254,6 +254,16 @@ describe('ParsedValue', () => {
     expect(ParsedValue.literal('foo').asObject()).toBeUndefined();
   });
 
+  it('clones only non-secret properties', () => {
+    const value = ParsedValue.literal({ a: { b: [1, 2, 3], c: true } });
+    value.property(['a', 'c'])!.assignMeta({ fromSecrets: true });
+    value.property(['a', 'b', '1'])!.assignMeta({ fromSecrets: true });
+
+    const nonSecrets = value.cloneWhere((v) => !v.meta.fromSecrets)!;
+    expect(value.toJSON()).toEqual({ a: { b: [1, 2, 3], c: true } });
+    expect(nonSecrets.toJSON()).toEqual({ a: { b: [1, 3] } });
+  });
+
   describe('Merging', () => {
     it('merges two parsed values', () => {
       const a = ParsedValue.literal({ a: { b: { c: true } } });
