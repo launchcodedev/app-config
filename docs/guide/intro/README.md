@@ -31,6 +31,7 @@ dynamic to provide good TypeScript support. We also found a lot of libraries wit
 
 You might be interested by some of them - they might fit your use case better!
 
+- [conf](https://www.npmjs.com/package/conf)
 - [node-config-ts](https://www.npmjs.com/package/node-config-ts)
 - [dotenv](https://www.npmjs.com/package/dotenv)
 - [rc](https://www.npmjs.com/package/rc)
