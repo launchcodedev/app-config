@@ -17,6 +17,10 @@ export function isObject(obj: Json): obj is JsonObject {
   return typeof obj === 'object' && !Array.isArray(obj) && obj !== null;
 }
 
+export function isPrimitive(obj: Json): obj is JsonPrimitive {
+  return !isObject(obj) && !Array.isArray(obj);
+}
+
 export type KeyFormatter = (key: string, separator: string) => string;
 
 export function camelToScreamingCase(key: string, separator: string = '_'): string {

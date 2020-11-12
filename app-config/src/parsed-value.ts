@@ -1,14 +1,43 @@
 import { inspect } from 'util';
 import merge from 'lodash.merge';
-import { Json, JsonPrimitive, isObject } from './common';
+import { Json, JsonObject, JsonPrimitive, PromiseOrNot, isObject } from './common';
 import { ConfigSource, LiteralSource } from './config-source';
-import { ParsingExtension, InArray } from './extensions';
 
-type ParsedValueInner = JsonPrimitive | { [k: string]: ParsedValue } | ParsedValue[];
+/** The property being visited was a property in an object */
+export const InObject = Symbol('InObject');
+/** The property being visited was a value in an array */
+export const InArray = Symbol('InArray');
+/** The property being visited is the root object */
+export const Root = Symbol('Root');
+
+export type ParsingExtensionKey =
+  | [typeof InObject, string]
+  | [typeof InArray, number]
+  | [typeof Root];
+
+export type ParsingExtension = (
+  value: Json,
+  key: ParsingExtensionKey,
+  context: ParsingExtensionKey[],
+) => false | ParsingExtensionTransform;
+
+export type ParsingExtensionTransform = (
+  parse: (
+    value: Json,
+    metadata?: ParsedValueMetadata,
+    source?: ConfigSource,
+    extensions?: ParsingExtension[],
+  ) => Promise<ParsedValue>,
+  parent: JsonObject | Json[] | undefined,
+  source: ConfigSource,
+  extensions: ParsingExtension[],
+) => PromiseOrNot<ParsedValue>;
 
 export interface ParsedValueMetadata {
   [key: string]: any;
 }
+
+type ParsedValueInner = JsonPrimitive | { [k: string]: ParsedValue } | ParsedValue[];
 
 /** Wrapper abstraction of values parsed, allowing for transformations of data (while keeping original raw form) */
 export class ParsedValue {
@@ -29,9 +58,10 @@ export class ParsedValue {
   static async parse(
     raw: Json,
     source: ConfigSource,
-    extensions: ParsingExtension[] = [],
+    extensions?: ParsingExtension[],
+    metadata?: ParsedValueMetadata,
   ): Promise<ParsedValue> {
-    return parseValue(raw, source, extensions);
+    return parseValue(raw, source, extensions, metadata);
   }
 
   /** Parses (with extensions) from a plain JSON object */
@@ -98,6 +128,11 @@ export class ParsedValue {
     return this;
   }
 
+  removeMeta(key: string) {
+    delete this.meta[key];
+    return this;
+  }
+
   /** Lookup property by nested key */
   property([key, ...rest]: string[]): ParsedValue | undefined {
     if (!key || !this.value || typeof this.value !== 'object') {
@@ -109,6 +144,12 @@ export class ParsedValue {
     }
 
     return this.value[key]?.property(rest);
+  }
+
+  asObject(): { [key: string]: ParsedValue } | undefined {
+    if (typeof this.value === 'object' && this.value !== null && !Array.isArray(this.value)) {
+      return this.value;
+    }
   }
 
   asArray(): ParsedValue[] | undefined {
@@ -184,115 +225,135 @@ function literalParsedValue(raw: Json, source: ConfigSource): ParsedValue {
   return new ParsedValue(source, raw, transformed);
 }
 
-async function parseValue(
-  raw: Json,
+export async function parseValue(
+  value: Json,
+  source: ConfigSource,
+  extensions: ParsingExtension[] = [],
+  metadata: ParsedValueMetadata = {},
+): Promise<ParsedValue> {
+  return parseValueInner(value, source, extensions, metadata, [[Root]], undefined);
+}
+
+async function parseValueInner(
+  value: Json,
   source: ConfigSource,
   extensions: ParsingExtension[],
+  metadata: ParsedValueMetadata = {},
+  context: ParsingExtensionKey[],
+  parent?: JsonObject | Json[],
+  visitedExtensions: ParsingExtension[] = [],
 ): Promise<ParsedValue> {
-  if (Array.isArray(raw)) {
-    const transformed = await Promise.all(
-      raw.map(async (value) => {
-        let parsedValue: ParsedValue | undefined;
+  const [currentKey] = context.slice(-1);
+  const contextualKeys = context.slice(0, context.length - 1);
 
-        for (const ext of extensions) {
-          const apply = ext(InArray, value);
-          if (!apply) continue;
+  let applicableExtension: ParsingExtensionTransform | undefined;
 
-          // note that we just ignore "flatten" and friends here
-          const [transformed, { metadata }] = await apply(source, extensions);
+  // before anything else, we check for parsing extensions that should be applied
+  // we do this first, so that the traversal is top-down, not depth first
+  // this is a bit counter-intuitive, but an example makes this clear:
+  //   { $env: { default: { $extends: '...' }, production: { $extends: '...' } } }
+  // in this example, we don't actually want to visit "production" if we don't have to
+  //
+  // for this reason, we pass "parse" as a function to extensions, so they can recurse as needed
+  for (const extension of extensions) {
+    // we track visitedExtensions so that calling `parse` in an extension doesn't hit that same extension with the same value
+    if (visitedExtensions.includes(extension)) continue;
 
-          if (transformed instanceof ParsedValue) {
-            parsedValue = transformed;
-          } else {
-            parsedValue = await parseValue(transformed, source, extensions);
-          }
+    const applicable = extension(value, currentKey, contextualKeys);
 
-          if (metadata) parsedValue.assignMeta(metadata);
-        }
-
-        if (!parsedValue) {
-          parsedValue = await parseValue(value, source, extensions);
-        }
-
-        return parsedValue;
-      }),
-    );
-
-    return new ParsedValue(source, raw, transformed);
+    if (applicable && !applicableExtension) {
+      applicableExtension = applicable;
+      visitedExtensions.push(extension);
+    }
   }
 
-  if (isObject(raw)) {
-    const transformed: ParsedValueInner = {};
+  if (applicableExtension) {
+    const parse = (
+      inner: Json,
+      metadataOverride?: ParsedValueMetadata,
+      sourceOverride?: ConfigSource,
+      extensionsOverride?: ParsingExtension[],
+    ) =>
+      parseValueInner(
+        inner,
+        sourceOverride ?? source,
+        extensionsOverride ?? extensions,
+        metadataOverride ?? metadata,
+        context,
+        parent,
+        visitedExtensions,
+      );
 
-    let key: string;
-    let value: Json;
+    // note that we don't traverse the object is an extension applied, that's up to them (with `parse`)
+    return applicableExtension(parse, parent, source, extensions);
+  }
 
-    for ([key, value] of Object.entries(raw)) {
-      // value that should be assigned to this key, or flattened to parent if shouldFlatten
-      let parsedValue: ParsedValue | undefined;
-      // buffer the "flatten" boolean, so that all extensions run before short circuiting
-      let shouldFlatten = false;
+  // FIXME: there's an opportunity to make these parallel (shouldFlatten complicates this)
 
-      // metadata that should be forwarded into ParsedValue
-      const metadata: ParsedValueMetadata = {};
+  if (Array.isArray(value)) {
+    const output = [];
 
-      // go through extensions, and perform their transforms if applicable
-      for (const ext of extensions) {
-        const apply = ext(key, value);
-        if (!apply) continue;
-
-        const [
-          transformed,
-          { flatten, merge: shouldMerge, override: shouldOverride, metadata: newMetadata },
-        ] = await apply(source, extensions);
-
-        shouldFlatten = shouldFlatten || flatten || false;
-
-        let transformedValue: Json;
-
-        if (transformed instanceof ParsedValue) {
-          Object.assign(metadata, transformed.meta);
-          transformedValue = transformed.toJSON();
-        } else {
-          transformedValue = transformed;
-        }
-
-        if (newMetadata) {
-          Object.assign(metadata, newMetadata);
-        }
-
-        if (isObject(transformedValue)) {
-          if (shouldOverride) {
-            value = merge({}, raw, transformedValue);
-
-            // since we merged into our parent, remove the key that we used to inhabit
-            value[key] = transformedValue[key];
-            if (value[key] === undefined) delete value[key];
-          } else if (shouldMerge) {
-            value = merge({}, transformedValue, raw);
-
-            // since we merged into our parent, remove the key that we used to inhabit
-            value[key] = transformedValue[key];
-            if (value[key] === undefined) delete value[key];
-          }
-        } else {
-          value = transformedValue;
-        }
-      }
-
-      if (!parsedValue) {
-        parsedValue = await parseValue(value, source, extensions);
-      }
-
-      // we passthrough any metadata (like parsedFromEncryptedValue) into the final value
-      parsedValue.assignMeta(metadata);
-
-      if (shouldFlatten) return parsedValue;
-      transformed[key] = parsedValue;
+    for (const [index, item] of value.entries()) {
+      output.push(
+        await parseValueInner(
+          item,
+          source,
+          extensions,
+          undefined,
+          context.concat([[InArray, index]]),
+          value,
+        ),
+      );
     }
 
-    return new ParsedValue(source, raw, transformed);
+    return new ParsedValue(source, value, output).assignMeta(metadata);
   }
 
-  return new ParsedValue(source, raw, raw);
+  if (isObject(value)) {
+    const object: { [key: string]: ParsedValue } = {};
+
+    // we have to queue up merging, so that non-merging keys get assigned first
+    const toMerge = [];
+    const toOverride = [];
+
+    for (const [key, item] of Object.entries(value)) {
+      const parsed = await parseValueInner(
+        item,
+        source,
+        extensions,
+        undefined,
+        context.concat([[InObject, key]]),
+        value,
+      );
+
+      // if we got back 'shouldFlatten', jump out of the object
+      if (parsed.meta.shouldFlatten) {
+        return parsed.removeMeta('shouldFlatten').assignMeta(metadata);
+      }
+
+      if (parsed.meta.shouldMerge) {
+        toMerge.push(parsed.removeMeta('shouldMerge'));
+      } else if (parsed.meta.shouldOverride) {
+        toOverride.push(parsed.removeMeta('shouldOverride'));
+      } else {
+        object[key] = parsed;
+      }
+    }
+
+    let output = new ParsedValue(source, value, object).assignMeta(metadata);
+
+    // do merges (this is almost always just one) at the end, so it wins over key order
+    for (const parsed of toMerge) {
+      output = ParsedValue.merge(parsed, output);
+    }
+
+    // toMerge vs toOverride just changes order of precedent
+    for (const parsed of toOverride) {
+      output = ParsedValue.merge(output, parsed);
+    }
+
+    return output;
+  }
+
+  return new ParsedValue(source, value, value).assignMeta(metadata);
 }

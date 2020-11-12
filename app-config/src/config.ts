@@ -1,9 +1,9 @@
 import { join } from 'path';
 import { Json, isObject } from './common';
-import { ParsedValue } from './parsed-value';
+import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
-import { defaultExtensions, ParsingExtension } from './extensions';
+import { defaultExtensions } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject } from './errors';
 import { logger } from './logging';
@@ -155,7 +155,5 @@ export async function loadValidatedConfig(
   return { fullConfig, parsed, ...rest };
 }
 
-const markAllValuesAsSecret: ParsingExtension = (_, value) => () => [
-  value,
-  { metadata: { fromSecrets: true } },
-];
+const markAllValuesAsSecret: ParsingExtension = (value) => (parse) =>
+  parse(value, { fromSecrets: true });

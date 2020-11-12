@@ -1,10 +1,9 @@
 import { resolve, join, dirname } from 'path';
 import Ajv from 'ajv';
 import { Json, JsonObject, isObject } from './common';
-import { ParsedValue } from './parsed-value';
+import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource } from './config-source';
-import { ParsingExtension } from './extensions';
 import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
 
 export interface Options {

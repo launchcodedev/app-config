@@ -6,20 +6,23 @@ import {
   FlexibleFileSource,
   LiteralSource,
 } from './config-source';
-import { ParsingExtension } from './extensions';
+import { ParsingExtension } from './parsed-value';
 import { withTempFiles } from './test-util';
 
-const flattenExtension: ParsingExtension = (key, value) => {
-  if (key !== '$flatten') return false;
-  return () => [value, { flatten: true }];
+const flattenExtension: ParsingExtension = (value, [_, key]) => {
+  if (key === '$flatten') {
+    return (parse) => parse(value, { shouldFlatten: true });
+  }
+
+  return false;
 };
 
-const uppercaseExtension: ParsingExtension = (_, value) => {
-  if (typeof value !== 'string') return false;
+const uppercaseExtension: ParsingExtension = (value) => {
+  if (typeof value === 'string') {
+    return (parse) => parse(value.toUpperCase());
+  }
 
-  return () => {
-    return [value.toUpperCase(), {}];
-  };
+  return false;
 };
 
 describe('Parsing', () => {

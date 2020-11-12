@@ -5,8 +5,7 @@ import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
 import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
 import { Json, JsonObject } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsingExtension } from './extensions';
-import { ParsedValue } from './parsed-value';
+import { ParsedValue, ParsingExtension } from './parsed-value';
 import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
 import { logger } from './logging';
 
