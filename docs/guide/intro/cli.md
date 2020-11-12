@@ -19,7 +19,7 @@ graph LR
     core[App Config Core]
     cli[CLI]
     stdout[stdout]
-    envs[Environment Variables]
+    envs{{Environment Variables}}
     ext[External Programs]
 
     env --> core
@@ -31,6 +31,7 @@ graph LR
 
     style cli fill:#BBB,stroke:#BBB
     style core fill:#BBB,stroke:#BBB
+    style envs fill:#7c8bd9,stroke:#3f58d4
 ```
 
 ## Nested Commands
