@@ -40,6 +40,8 @@ export class ParsedValue {
   }
 
   static merge(a: ParsedValue, b: ParsedValue) {
+    const meta = merge(a.meta, b.meta);
+
     if (
       // an array or primitive value overrides us
       Array.isArray(b.value) ||
@@ -50,7 +52,7 @@ export class ParsedValue {
       typeof a.value !== 'object' ||
       a.value === null
     ) {
-      return new ParsedValue(b.source, b.rawValue, b.value).setMeta(merge(a.meta, b.meta));
+      return new ParsedValue(b.source, b.rawValue, b.value).assignMeta(meta);
     }
 
     const newValue = {};
@@ -88,10 +90,10 @@ export class ParsedValue {
       newRawValue = b.rawValue;
     }
 
-    return new ParsedValue(a.source, newRawValue, newValue).setMeta(merge(a.meta, b.meta));
+    return new ParsedValue(a.source, newRawValue, newValue).assignMeta(meta);
   }
 
-  setMeta(metadata: ParsedValueMetadata) {
+  assignMeta(metadata: ParsedValueMetadata) {
     Object.assign(this.meta, metadata);
     return this;
   }
@@ -109,8 +111,14 @@ export class ParsedValue {
     return this.value[key]?.property(rest);
   }
 
-  asArray(): ParsedValue[] | false {
-    return Array.isArray(this.value) && this.value;
+  asArray(): ParsedValue[] | undefined {
+    if (Array.isArray(this.value)) return this.value;
+  }
+
+  asPrimitive(): JsonPrimitive | undefined {
+    if ((typeof this.value !== 'object' || this.value === null) && !Array.isArray(this.value)) {
+      return this.value;
+    }
   }
 
   get raw(): Json {
@@ -144,6 +152,10 @@ export class ParsedValue {
 
     if (this.meta.fromSecrets) {
       return `ParsedValue(secret) <${inspect(this.value)}>`;
+    }
+
+    if (Object.keys(this.meta).length > 0) {
+      return `ParsedValue(${inspect(this.meta)}) <${inspect(this.value)}>`;
     }
 
     return `ParsedValue <${inspect(this.value)}>`;
@@ -195,7 +207,7 @@ async function parseValue(
             parsedValue = await parseValue(transformed, source, extensions);
           }
 
-          if (metadata) parsedValue.setMeta(metadata);
+          if (metadata) parsedValue.assignMeta(metadata);
         }
 
         if (!parsedValue) {
@@ -273,7 +285,7 @@ async function parseValue(
       }
 
       // we passthrough any metadata (like parsedFromEncryptedValue) into the final value
-      parsedValue.setMeta(metadata);
+      parsedValue.assignMeta(metadata);
 
       if (shouldFlatten) return parsedValue;
       transformed[key] = parsedValue;

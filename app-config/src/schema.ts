@@ -162,7 +162,7 @@ async function extractExternalSchemas(
       if (isObject(val)) {
         await extractExternalSchemas(val, cwd, schemas);
       } else if (Array.isArray(val)) {
-        await Promise.all(val.map(v => extractExternalSchemas(v, cwd, schemas)));
+        await Promise.all(val.map((v) => extractExternalSchemas(v, cwd, schemas)));
       }
     }
   }
