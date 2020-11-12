@@ -59,7 +59,7 @@ export async function loadConfig({
 
   logger.verbose(`Trying to read files for configuration`);
 
-  const [nonSecrets, secrets] = await Promise.all([
+  const [mainConfig, secrets] = await Promise.all([
     new FlexibleFileSource(
       join(directory, fileNameBase),
       environmentOverride,
@@ -83,7 +83,7 @@ export async function loadConfig({
       }),
   ]);
 
-  let parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
+  let parsed = secrets ? ParsedValue.merge(mainConfig, secrets) : mainConfig;
 
   // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
   if (extensionEnvironmentVariableNames.length > 0) {
@@ -114,8 +114,8 @@ export async function loadConfig({
   // note that this cannot be exhaustive, because of $extends
   const filePaths = [];
 
-  if (nonSecrets.source instanceof FileSource) {
-    filePaths.push(nonSecrets.source.filePath);
+  if (mainConfig.source instanceof FileSource) {
+    filePaths.push(mainConfig.source.filePath);
   }
 
   if (secrets && secrets.source instanceof FileSource) {
@@ -125,7 +125,7 @@ export async function loadConfig({
   return {
     parsed,
     parsedSecrets: secrets,
-    parsedNonSecrets: nonSecrets,
+    parsedNonSecrets: mainConfig.cloneWhere((v) => !v.meta.fromSecrets),
     fullConfig: parsed.toJSON(),
     filePaths,
   };
