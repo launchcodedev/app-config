@@ -40,12 +40,12 @@ describe('Decryption', () => {
       [{}, { b: true }, { c: true }],
     ];
 
-    for (const value of values) {
+    await Promise.all(values.map(async (value) => {
       const encryptedValue = await encryptValue(value, symmetricKey);
       const received = await client.decryptValue(encryptedValue);
 
       expect(received).toEqual(value);
-    }
+    }));
 
     client.close();
     server.close();
