@@ -324,23 +324,19 @@ async function parseValueInner(
     return applicableExtension(parse, parent, source, extensions);
   }
 
-  // FIXME: there's an opportunity to make these parallel (shouldFlatten complicates this)
-
   if (Array.isArray(value)) {
-    const output = [];
-
-    for (const [index, item] of value.entries()) {
-      output.push(
-        await parseValueInner(
+    const output = await Promise.all(
+      Array.from(value.entries()).map(([index, item]) => {
+        return parseValueInner(
           item,
           source,
           extensions,
           undefined,
           context.concat([[InArray, index]]),
           value,
-        ),
-      );
-    }
+        );
+      }),
+    );
 
     return new ParsedValue(source, value, output).assignMeta(metadata);
   }
@@ -349,31 +345,36 @@ async function parseValueInner(
     const object: { [key: string]: ParsedValue } = {};
 
     // we have to queue up merging, so that non-merging keys get assigned first
-    const toMerge = [];
-    const toOverride = [];
+    const toMerge: ParsedValue[] = [];
+    const toOverride: ParsedValue[] = [];
+    let flattenTo: ParsedValue | undefined;
 
-    for (const [key, item] of Object.entries(value)) {
-      const parsed = await parseValueInner(
-        item,
-        source,
-        extensions,
-        undefined,
-        context.concat([[InObject, key]]),
-        value,
-      );
+    await Promise.all(
+      Object.entries(value).map(async ([key, item]) => {
+        const parsed = await parseValueInner(
+          item,
+          source,
+          extensions,
+          undefined,
+          context.concat([[InObject, key]]),
+          value,
+        );
 
-      // if we got back 'shouldFlatten', jump out of the object
-      if (parsed.meta.shouldFlatten) {
-        return parsed.removeMeta('shouldFlatten').assignMeta(metadata);
-      }
+        // if we got back 'shouldFlatten', jump out of the object
+        if (parsed.meta.shouldFlatten) {
+          flattenTo = parsed.removeMeta('shouldFlatten').assignMeta(metadata);
+        } else if (parsed.meta.shouldMerge) {
+          toMerge.push(parsed.removeMeta('shouldMerge'));
+        } else if (parsed.meta.shouldOverride) {
+          toOverride.push(parsed.removeMeta('shouldOverride'));
+        } else {
+          object[key] = parsed;
+        }
+      }),
+    );
 
-      if (parsed.meta.shouldMerge) {
-        toMerge.push(parsed.removeMeta('shouldMerge'));
-      } else if (parsed.meta.shouldOverride) {
-        toOverride.push(parsed.removeMeta('shouldOverride'));
-      } else {
-        object[key] = parsed;
-      }
+    if (flattenTo) {
+      return flattenTo;
     }
 
     let output = new ParsedValue(source, value, object).assignMeta(metadata);
