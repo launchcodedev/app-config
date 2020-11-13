@@ -31,6 +31,8 @@
   },
   "dependencies": {
     "@iarna/toml": "3",
+    "@lcdev/ts": "0.2",
+    "@lcdev/ws-rpc": "0.3",
     "@types/readable-stream": "2",
     "@types/urijs": "1",
     "ajv": "6",

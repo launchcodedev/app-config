@@ -28,6 +28,7 @@ import {
   saveNewSymmetricKey,
   loadTeamMembersLazy,
 } from './encryption';
+import { startAgent, shouldUseSecretAgent } from './secret-agent';
 import { loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { checkTTY, logger, LogLevel } from './logging';
@@ -142,6 +143,12 @@ const clipboardOption = {
   description: 'Copies the value to the system clipboard',
 } as const;
 
+const secretAgentOption = {
+  type: 'boolean',
+  default: true,
+  description: 'Uses the secret-agent, if available',
+} as const;
+
 function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
   const { fullConfig, parsedNonSecrets } = config;
 
@@ -195,9 +202,12 @@ const { argv: _ } = yargs
           secrets: secretsOption,
           prefix: prefixOption,
           noSchema: noSchemaOption,
+          agent: secretAgentOption,
         },
       },
       async (opts) => {
+        shouldUseSecretAgent(opts.agent);
+
         const toPrint = selectSecretsOrNot(
           await loadConfigConditionalValidation(opts.noSchema)(),
           opts.secrets,
@@ -227,9 +237,12 @@ const { argv: _ } = yargs
           format: formatOption,
           select: selectOption,
           noSchema: noSchemaOption,
+          agent: secretAgentOption,
         },
       },
       async (opts) => {
+        shouldUseSecretAgent(opts.agent);
+
         let toPrint = selectSecretsOrNot(
           await loadConfigConditionalValidation(opts.noSchema)(),
           opts.secrets,
@@ -579,11 +592,14 @@ const { argv: _ } = yargs
               },
               options: {
                 clipboard: clipboardOption,
+                agent: secretAgentOption,
               },
             },
             async (opts) => {
+              shouldUseSecretAgent(opts.agent);
+
               // load these right away, so user unlocks asap
-              await loadPrivateKeyLazy();
+              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy();
 
               let { encryptedText } = opts;
 
@@ -609,6 +625,17 @@ const { argv: _ } = yargs
 
               process.stdout.write(JSON.stringify(await decryptValue(encryptedText)));
               process.stdout.write('\n');
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'agent',
+              description: 'Starts the secret-agent daemon',
+            },
+            async () => {
+              await startAgent();
             },
           ),
         ),
@@ -637,9 +664,12 @@ const { argv: _ } = yargs
           format: { ...formatOption, default: 'json' },
           select: selectOption,
           noSchema: noSchemaOption,
+          agent: secretAgentOption,
         },
       },
       async (opts) => {
+        shouldUseSecretAgent(opts.agent);
+
         const [command, ...args] = opts._;
 
         if (!command) {

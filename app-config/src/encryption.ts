@@ -14,6 +14,7 @@ import {
   SecretsRequireTTYError,
 } from './errors';
 import { logger, checkTTY } from './logging';
+import { connectAgentLazy, shouldUseSecretAgent } from './secret-agent';
 
 export type Key = key.Key;
 
@@ -335,6 +336,20 @@ export async function decryptValue(
   text: string,
   symmetricKey?: DecryptedSymmetricKey,
 ): Promise<Json> {
+  if (!symmetricKey && shouldUseSecretAgent()) {
+    let client;
+
+    try {
+      client = await connectAgentLazy();
+    } catch {
+      logger.warn('Secret agent is not running');
+    }
+
+    if (client) {
+      return client.decryptValue(text);
+    }
+  }
+
   const [, revision, base64] = text.split(':');
 
   if (!symmetricKey) {
