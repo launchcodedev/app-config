@@ -1,5 +1,6 @@
 import getPort from 'get-port';
 import { startAgent, connectAgent } from './secret-agent';
+import { Json } from './common';
 import {
   initializeKeysManually,
   generateSymmetricKey,
@@ -24,12 +25,23 @@ describe('Decryption', () => {
 
     const client = await connectAgent(Infinity, port, async () => encryptedSymmetricKey);
 
-    const value = { value: 42 };
+    const values: Json[] = [
+      'text',
+      88.88,
+      true,
+      null,
+      { value: 42 },
+      { nested: { value: true } },
+      [1, 2, 3],
+      [{}, { b: true }, { c: true }],
+    ];
 
-    const encryptedValue = await encryptValue(value, symmetricKey);
-    const received = await client.decryptValue(encryptedValue);
+    for (const value of values) {
+      const encryptedValue = await encryptValue(value, symmetricKey);
+      const received = await client.decryptValue(encryptedValue);
 
-    expect(received).toEqual(value);
+      expect(received).toEqual(value);
+    }
 
     client.close();
     server.close();
