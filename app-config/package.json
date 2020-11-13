@@ -32,7 +32,7 @@
     "clean": "rm -rf dist *.tsbuildinfo",
     "lint": "eslint src",
     "fix": "eslint --fix src",
-    "test": "jest --forceExit",
+    "test": "jest",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
