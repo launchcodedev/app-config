@@ -1,3 +1,8 @@
-## `app-config-inject`: Runtime injection of app-config into static HTML files
+## App Config Inject
 
-See [app-config](https://app-config.netlify.app/) for more.
+Runtime injection of app-config into static HTML files.
+See [the guide](https://app-config.netlify.app/) for more.
+
+```sh
+yarn add @lcdev/app-config-inject@2
+```
