@@ -15,7 +15,13 @@
   "main": "dist/index.js",
   "module": "dist/es/index.js",
   "types": "dist/index.d.ts",
-  "files": ["/dist", "!*.tsbuildinfo", "!*.test.*"],
+  "files": [
+    "/dist",
+    "!*.tsbuildinfo",
+    "!*.test.*",
+    "secret-agent-cert.pem",
+    "secret-agent-key.pem"
+  ],
   "bin": {
     "app-config": "dist/cli.js"
   },

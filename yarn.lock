@@ -1332,9 +1332,9 @@
   integrity sha512-HuFlyAfNsKVCTYZdvRyjFQPtRr9mjbm7yM7WBtqruMRDeOBMnf3fL35eTHKiN/OW8ywvkt+w0WQFEKRCDuyDFQ==
 
 "@lcdev/ws-rpc@0.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@lcdev/ws-rpc/-/ws-rpc-0.3.3.tgz#20ee197c67927f5ba5e9a67ec5ffa46470a6edee"
-  integrity sha512-arnoQP6lQsnpkmHCPskmbt0ReOp7RxVtuge21zxyQ22UhWwElsw8w8va1p+X6Vat1v/7sh3j6B2KUypIRWejww==
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@lcdev/ws-rpc/-/ws-rpc-0.3.5.tgz#e7fe92f0c47d2c48e29330fb08931728c3ba5cbb"
+  integrity sha512-2x5kH/+jEk6AleAVp7+u6uVRnN6UhuPII9N1JHsT+1g62q+a4cCpSHoGP4E6Ub9QAGkDY69q8WZjQPKJbIL4Pw==
   dependencies:
     "@types/bson" "4"
     "@types/ws" "7"
