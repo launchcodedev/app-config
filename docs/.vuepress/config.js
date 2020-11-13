@@ -5,6 +5,7 @@ module.exports = {
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Quick Start', link: '/guide/intro/quick-start' },
+      { text: 'GitHub', link: 'https://github.com/launchcodedev/app-config' },
     ],
 
     sidebar: [
