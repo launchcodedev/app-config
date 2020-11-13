@@ -47,7 +47,7 @@ describe('Decryption', () => {
       expect(received).toEqual(value);
     }));
 
-    client.close();
-    server.close();
+    await client.close();
+    await server.close();
   });
 });

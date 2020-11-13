@@ -70,6 +70,22 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
 
   httpsServer.listen(port);
 
+  const superClose = server.close.bind(server);
+
+  Object.assign(server, {
+    async close() {
+      await superClose();
+
+      // we have to close the http server ourselves, because it was created manually
+      await new Promise((resolve, reject) =>
+        httpsServer.close((err) => {
+          if (err) reject(err);
+          else resolve();
+        }),
+      );
+    },
+  });
+
   return server;
 }
 
