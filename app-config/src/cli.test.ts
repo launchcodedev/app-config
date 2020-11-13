@@ -3,7 +3,12 @@ import { join } from 'path';
 import { withTempFiles } from './test-util';
 
 const run = async (argv: string[], options?: execa.Options) =>
-  execa('node', [join(__dirname, '..', './dist/cli.js'), ...argv], options);
+  execa('node', [join(__dirname, '..', './dist/cli.js'), ...argv], {
+    stdout: 'pipe',
+    stderr: 'ignore',
+    stdin: 'ignore',
+    ...options,
+  });
 
 describe('vars', () => {
   it('fails with no app-config', async () => {
