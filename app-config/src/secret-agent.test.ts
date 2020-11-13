@@ -9,6 +9,8 @@ import {
   encryptValue,
 } from './encryption';
 
+jest.setTimeout(15000);
+
 describe('Decryption', () => {
   it('decrypts values', async () => {
     const { privateKeyArmored } = await initializeKeysManually({
