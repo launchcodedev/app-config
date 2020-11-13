@@ -3,7 +3,7 @@ title: Introduction
 ---
 
 Welcome! Do you build web apps? Node.js servers? CLI applications? Tired of writing logic to parse JSON files?
-Made a typo while deploying, and saw 1000 runtime errors? Maintaining a `config.ts` with commented-out values?
+Made a typo while deploying, causing runtime errors? Maintaining a `config.ts` with commented-out values?
 **We built app-config for you.**
 
 Yet another config library? We thought so too, until we needed a solution for configuration at [Launchcode](https://lc.dev).
