@@ -34,7 +34,7 @@
     "webpack": "4"
   },
   "devDependencies": {
-    "@lcdev/app-config": "*",
+    "@lcdev/app-config": "2 || 2.0.0-beta.2",
     "@types/loader-utils": "1",
     "html-webpack-plugin": "4",
     "webpack": "4"
