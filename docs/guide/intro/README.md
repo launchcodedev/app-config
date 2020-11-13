@@ -57,7 +57,7 @@ We intend to provide:
 Alright, so you want to use `app-config`. First step is always, of course, installing it.
 
 ::: tip
-You'll probably find for detailed information for the environment you're targetting in the Node.js, Webpack or React Native sections.
+You'll probably find more detailed information for the environment you're targetting in the Node.js, Webpack or React Native sections.
 :::
 
 ```sh
