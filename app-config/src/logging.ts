@@ -7,7 +7,7 @@ export enum LogLevel {
 }
 
 export function checkTTY() {
-  return process.stdin.isTTY && process.stdout.isTTY;
+  return process.stdin.isTTY && process.stdout.isTTY && process.env.NODE_ENV !== 'test';
 }
 
 let logLevel: LogLevel;
