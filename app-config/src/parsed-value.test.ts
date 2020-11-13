@@ -188,6 +188,17 @@ describe('parseValue', () => {
 
     expect(parsed.toJSON()).toEqual({ a: true, b: true, c: true });
   });
+
+  it('allows the same extension apply at different levels of a tree', async () => {
+    const source = new LiteralSource({ $secret: '...' });
+    const parsed = await parseValue(await source.readValue(), source, [
+      secretExtension,
+      markAllExtension,
+    ]);
+
+    expect(parsed.toJSON()).toEqual('revealed!');
+    expect(parsed.meta).toEqual({ marked: true });
+  });
 });
 
 describe('ParsedValue', () => {

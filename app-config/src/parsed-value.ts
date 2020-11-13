@@ -314,7 +314,7 @@ async function parseValueInner(
         inner,
         sourceOverride ?? source,
         extensionsOverride ?? extensions,
-        metadataOverride ?? metadata,
+        { ...metadata, ...metadataOverride },
         context,
         parent,
         visitedExtensions,
