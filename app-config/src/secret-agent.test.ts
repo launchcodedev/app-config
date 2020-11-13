@@ -10,7 +10,7 @@ import {
 } from './encryption';
 
 describe('Decryption', () => {
-  it('decrypts a simple value', async () => {
+  it('decrypts values', async () => {
     const { privateKeyArmored } = await initializeKeysManually({
       name: 'Test',
       email: 'test@example.com',
@@ -24,6 +24,8 @@ describe('Decryption', () => {
     const server = await startAgent(port, privateKey);
 
     const client = await connectAgent(Infinity, port, async () => encryptedSymmetricKey);
+
+    await client.ping();
 
     const values: Json[] = [
       'text',

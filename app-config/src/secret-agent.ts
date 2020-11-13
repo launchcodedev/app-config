@@ -115,6 +115,11 @@ export async function connectAgent(
     isClosed() {
       return isClosed;
     },
+    async ping() {
+      keepAlive();
+
+      await client.call(MessageType.Ping, undefined);
+    },
     async decryptValue(text: string) {
       keepAlive();
 
