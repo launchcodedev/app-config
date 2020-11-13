@@ -64,6 +64,7 @@
     "@types/openpgp": "4",
     "@types/prompts": "2",
     "@types/tmp": "0.2",
+    "get-port": "5",
     "tmp-promise": "3"
   },
   "prettier": "@lcdev/prettier",

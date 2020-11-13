@@ -5,6 +5,7 @@ import WebSocket from 'ws';
 import { Server as BaseServer, Client as BaseClient, MessageVariant } from '@lcdev/ws-rpc/bson';
 import { Json } from './common';
 import {
+  Key,
   decryptValue,
   loadSymmetricKeys,
   loadPrivateKeyLazy,
@@ -40,8 +41,14 @@ export type Events = never;
 export class Client extends BaseClient<MessageType, EventType, Messages, Events> {}
 export class Server extends BaseServer<MessageType, EventType, Messages, Events> {}
 
-export async function startAgent(port: number = 42938): Promise<Server> {
-  const privateKey = await loadPrivateKeyLazy();
+export async function startAgent(port: number = 42938, privateKeyOverride?: Key): Promise<Server> {
+  let privateKey: Key;
+
+  if (privateKeyOverride) {
+    privateKey = privateKeyOverride;
+  } else {
+    privateKey = await loadPrivateKeyLazy();
+  }
 
   logger.info(`Starting secret-agent, listening on port ${port}`);
 
@@ -66,7 +73,11 @@ export async function startAgent(port: number = 42938): Promise<Server> {
   return server;
 }
 
-export async function connectAgent(closeTimeoutMs = Infinity, port: number = 42938) {
+export async function connectAgent(
+  closeTimeoutMs = Infinity,
+  port: number = 42938,
+  loadEncryptedKey: typeof loadSymmetricKey = loadSymmetricKey,
+) {
   logger.verbose(`Connecting to secret-agent on port ${port}`);
 
   const client = new Client(
@@ -86,6 +97,7 @@ export async function connectAgent(closeTimeoutMs = Infinity, port: number = 429
 
   const keepAlive = () => {
     if (closeTimeout) clearTimeout(closeTimeout);
+    if (closeTimeoutMs === Infinity) return;
 
     closeTimeout = setTimeout(() => {
       logger.verbose('Closing websocket');
@@ -97,6 +109,9 @@ export async function connectAgent(closeTimeoutMs = Infinity, port: number = 429
   };
 
   return {
+    close() {
+      return client.close();
+    },
     isClosed() {
       return isClosed;
     },
@@ -104,11 +119,7 @@ export async function connectAgent(closeTimeoutMs = Infinity, port: number = 429
       keepAlive();
 
       const revision = parseFloat(text.split(':')[1]);
-      const symmetricKeys = await loadSymmetricKeys(true);
-      const symmetricKey = symmetricKeys.find((k) => k.revision === revision);
-
-      if (!symmetricKey) throw new AppConfigError();
-
+      const symmetricKey = await loadEncryptedKey(revision);
       const decrypted = await client.call(MessageType.Decrypt, { text, symmetricKey });
 
       keepAlive();
@@ -152,4 +163,13 @@ export function shouldUseSecretAgent(value?: boolean) {
   }
 
   return useSecretAgent;
+}
+
+async function loadSymmetricKey(revision: number): Promise<EncryptedSymmetricKey> {
+  const symmetricKeys = await loadSymmetricKeys(true);
+  const symmetricKey = symmetricKeys.find((k) => k.revision === revision);
+
+  if (!symmetricKey) throw new AppConfigError(`Could not find symmetric key ${revision}`);
+
+  return symmetricKey;
 }
