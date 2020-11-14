@@ -1255,36 +1255,6 @@
   resolved "https://registry.yarnpkg.com/@jsdevtools/ono/-/ono-7.1.3.tgz#9df03bbd7c696a5c58885c34aa06da41c8543796"
   integrity sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==
 
-"@lcdev/app-config-webpack-plugin@2 || 2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@lcdev/app-config-webpack-plugin/-/app-config-webpack-plugin-2.0.0-beta.1.tgz#235ee921cfb6730832a9df3ceabeebbc00e50b49"
-  integrity sha512-M7Wp1LtfbYyJ4mTvo+ceYnKjkKDj90GZyXcnLFNBRysGzKf3VaXU2WoE0oNsWom5boXKEnh83ykN/ahrHfYdmw==
-  dependencies:
-    loader-utils "2"
-
-"@lcdev/app-config@2 || 2.0.0-beta.1":
-  version "2.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/@lcdev/app-config/-/app-config-2.0.0-beta.1.tgz#47f3e7d574ded7296deb6db58d12b232c77e0a0c"
-  integrity sha512-1XcrNHPed4uF5h8JHSZS/McceqCV+MZptMAFc3Q6GON6n/f3WwLXyFDexHAinv1agrutlMLuz4tcCOgWSBKwKA==
-  dependencies:
-    "@iarna/toml" "3"
-    "@types/readable-stream" "2"
-    "@types/urijs" "1"
-    ajv "6"
-    clipboardy "2"
-    common-tags "1"
-    execa "4"
-    fs-extra "9"
-    js-yaml "3"
-    json-schema-ref-parser "9"
-    json5 "2"
-    lodash.merge "4"
-    openpgp "4"
-    prompts "2"
-    quicktype-core "6.0.69"
-    text-encoding-utf-8 "1"
-    yargs "16"
-
 "@lcdev/commitlint@1":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@lcdev/commitlint/-/commitlint-1.1.0.tgz#80bb937cb5ab9edf07cab6eb4da9e5d30f83cc5f"
