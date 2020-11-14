@@ -200,8 +200,9 @@ might choose something with strict syntax like JSON, but normally this variable 
 programmatically anyways).
 
 ## The `.app-config` File
+
 Alright, back to our original problem. Environment variables are great, but you'd
-have a terrible time maintaining a big JSON plain like that (which is where tools 
+have a terrible time maintaining a big JSON plain like that (which is where tools
 like dotenv originated).
 
 <h4 style="text-align:center">.app-config.yml</h4>
@@ -244,3 +245,12 @@ database:
 ```
 
 Now we see our configuration file take effect.
+
+## Environment Specific Files
+
+Note that `.app-config.yml` is not our only option. You may want a completely different
+set of values for production. You could use `$env`, as [you'll see](./extensions.md).
+You can also, however, make environment specific files.
+
+By defining a file called `.app-config.production.yml`, app-config will load it only
+when `APP_CONFIG_ENV` | `NODE_ENV` | `ENV` is `prod` or `production` (see [defaultAliases](../node/api-reference.md)).

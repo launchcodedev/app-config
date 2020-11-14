@@ -163,6 +163,12 @@ npx app-config secret decrypt
 Decrypts a secret value.
 
 ```sh
+npx app-config secret agent
+```
+
+Starts the background decryption process to avoid passphrase prompts.
+
+```sh
 npx app-config secret reset
 ```
 

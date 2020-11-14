@@ -51,12 +51,13 @@ apiUrl:
 username: { $substitute: '$USER' }
 ```
 
-Works essentially the same way as bash variable substitution (including fallback syntax).
+Works essentially the same way as [bash variable substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html)
+(including fallback syntax).
 
 ## Decryption
 
 Values that are encrypted will automatically be decrypted. These values come in
-the form of `enc:1:...` (... being a base64 encoded string).
+the form of `enc:{revision}:{base64}`.
 
 ```yaml
 password: 'enc:1:wy4ECQMI/o7E3nw9SP7g3VsIMg64HGIcRb9HyaXpQnyjozFItwx4HvsP1D2plP6Y0kYBAr2ytzs2v5bN+n2oVthkEmbrq8oqIqCF3Cx+pcjJ+5h+SyxQuJ7neNp4SRtnD4EK32rPJpyDMeHG4+pGwIjFuSH1USqQ=SZWR'
