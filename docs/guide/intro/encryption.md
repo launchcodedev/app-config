@@ -25,6 +25,14 @@ npx app-config secret encrypt 'SuperSecret'
 ```
 
 You can use the outputted (encrypted) values anywhere in your app-config files.
+Values look like this, in YAML format:
+
+```yaml
+database:
+  user: my_service
+  password: 'enc:1:wy4ECQMI/o7E3nw9SP7g3VsIMg64HGIcRb9HyaXpQnyjozFItwx4HvsP1D2plP6Y0kYBAr2ytzs2v5bN+n2oVthkEmbrq8oqIqCF3Cx+pcjJ+5h+SyxQuJ7neNp4SRtnD4EK32rPJpyDMeHG4+pGwIjFuSH1USqQ=SZWR'
+```
+
 Note that the CLI also has many useful shortcuts.
 
 ```sh
@@ -32,7 +40,7 @@ npx app-config secret encrypt --clipboard 42
 npx app-config secret decrypt 'enc:1:...'
 ```
 
-Both commands support stdin as well.
+Both commands support stdin input, and have options to read/write from the system clipboard.
 
 ## Secret Agent
 
