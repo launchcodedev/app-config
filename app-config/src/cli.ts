@@ -186,7 +186,7 @@ function loadConfigConditionalValidation(noSchema: boolean): typeof loadConfig {
 const { argv: _ } = yargs
   .strict()
   .wrap(yargs.terminalWidth() - 5)
-  .version('version')
+  .version()
   .alias('v', 'version')
   .help('h', 'Show help message with examples and options')
   .alias('h', 'help')
