@@ -649,6 +649,9 @@ const { argv: _ } = yargs
             },
             async () => {
               await startAgent();
+
+              // wait forever
+              await new Promise(() => {});
             },
           ),
         ),
