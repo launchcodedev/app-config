@@ -15,7 +15,7 @@ features:
   - title: First Class Encryption
     details: Manage your secrets in version control, backed by OpenPGP. Or keep secrets out of committed files with schema validation.
   - title: Use Your Tools
-    details: Don't be constrained by your tools - export environment variables for usage in any application.
+    details: Don't be constrained by your tools. Export environment variables for usage in any application.
   - title: Multi-Format
     details: Write YAML, TOML, JSON, JSON5 - whatever makes most sense for you.
 
