@@ -9,12 +9,14 @@ committed in git is a "secret".
 App Config has two ways to think about and deal with secrets. **Secret files**
 and [encrypted values](./encryption.md).
 
-The simpler of the two is secret files. These are the same as configuration
-files, they just get stored in `.app-config.secrets.{ext}`. The filepath is the
-only difference, from the perspective of app-config.
+The simpler of the two is secret files. These are exactly the same as configuration
+files, they just get stored in a different file, `.app-config.secrets.{ext}`. The filepath is the
+only difference, from the perspective of app-config. The values are [treated different
+during validation though](./schema-validation.md#marking-secret-properties).
 
-The difference for you, however, is in version control. These files should be ignored
-so that they are never committed.
+The difference for you as a user is in version control. These files should always
+be ignored so they are never committed. The following ignore pattern is liberal,
+but probably what you want to use as a convention anyways.
 
 <h4 style="text-align:center">.gitignore</h4>
 
@@ -22,8 +24,14 @@ so that they are never committed.
 *.secrets.*
 ```
 
+<br />
+
 A few notes about secret files:
 
-- Values in secret files do get merged with main config files. Secrets take precedent.
+- Values in secret files are merged (deeply) with main config files. Secrets take precedent.
 - Values that are read from secret files are allowed with schema `secret: true` properties.
 - Secret files are not loaded when `APP_CONFIG` environment variable is read.
+
+You may never need secret files if you're using [encryption](./encryption.md) for all values.
+Otherwise, they're a handy way to split up configuration. "Secret" vs "Not Secret" tends to be
+a good boundary for values either way.

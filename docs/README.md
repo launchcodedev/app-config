@@ -11,11 +11,11 @@ features:
   - title: Strong Typing
     details: Use it with TypeScript without separate validation. Types are generated based on JSON Schema constraints.
   - title: Powerful and Robust
-    details: Flexible parsing extensions and file loading strategies. Provides file merging, environment specific values (eg. production vs development) and more.
+    details: Flexible parsing extensions and file loading strategies. File merging, environment-specific values and more.
   - title: First Class Encryption
-    details: Manage your secrets in version control, backed by OpenPGP (optional). Or, keep secrets away from committed files with schema validation.
+    details: Manage your secrets in version control, backed by OpenPGP. Or keep secrets out of committed files with schema validation.
   - title: Use Your Tools
-    details: Don't be constrained by your tools - export environment variables for usage anywhere.
+    details: Don't be constrained by your tools - export environment variables for usage in any application.
   - title: Multi-Format
     details: Write YAML, TOML, JSON, JSON5 - whatever makes most sense for you.
 
@@ -24,7 +24,7 @@ footer: Licensed MPL 2.0
 
 <!-- sort of hacky for now, template is not extensible -->
 <div style="margin: 0 auto 30px auto; width: 120px">
-<a href="https://www.netlify.com">
-  <img src="https://www.netlify.com/img/global/badges/netlify-light.svg" alt="Deploys by Netlify" />
-</a>
+  <a href="https://www.netlify.com">
+    <img src="https://www.netlify.com/img/global/badges/netlify-light.svg" alt="Deploys by Netlify" />
+  </a>
 </div>

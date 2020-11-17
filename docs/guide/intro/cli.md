@@ -17,6 +17,7 @@ graph LR
     env[APP_CONFIG]
     schema[Schema File]
     core[App Config Core]
+    api[Node.js API]
     cli[CLI]
     stdout[stdout]
     envs{{Environment Variables}}
@@ -25,11 +26,13 @@ graph LR
     env --> core
     files --> core
     schema --> core
+    core --> api
     core --> cli
     cli --> stdout
     cli --- envs --> ext
 
     style cli fill:#BBB,stroke:#BBB
+    style api fill:#BBB,stroke:#BBB
     style core fill:#BBB,stroke:#BBB
     style envs fill:#7c8bd9,stroke:#3f58d4
 ```

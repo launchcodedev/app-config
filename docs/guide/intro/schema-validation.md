@@ -2,12 +2,12 @@
 title: Schema Validation
 ---
 
-Your configuration is nothing if you can't constrain it. Runtime errors can
+Your configuration is dangerous if you can't constrain it. Runtime errors can
 happen any time, causing anywhere from small to catastrophic damage. Remember
 that most of the time, configuration values are only read in some execution
-pathways, so it may be days before you notice a problem.
+pathways, so it may be days before you notice a problem (or worse, you never do).
 
-The core feature of app-config is the way it validates configuration values.
+The core feature of app-config is its **validation** of config values.
 
 We've noticed that (especially in the Node.js ecosystem) many packages define
 their [own](https://github.com/jquense/yup) [validation](https://joi.dev/)
@@ -16,12 +16,12 @@ and a [lot](https://github.com/pelotom/runtypes) to [learn](https://express-vali
 
 Instead, we chose [JSON Schema](https://json-schema.org/). It's well supported in many
 languages, it's used in a lot of popular tools (eg. OpenAPI), and simple to read.
-While a little bit verbose (less in YAML than JSON), it's comprehensive and easy to
+While a little bit verbose (less in YAML than in JSON), it's comprehensive and easy to
 find resources for. You might already know JSON Schema well.
 
 ## JSON Schema Basics
 
-We can't document everything about JSON Schema here. You're best off to learn from
+We can't really document JSON Schema here. You're best off to learn from
 [existing resources](https://json-schema.org/understanding-json-schema/reference/index.html).
 
 We will outline a couple basic techniques here though, with examples. Note that app-config
@@ -80,9 +80,9 @@ server:
     port: { $ref: '../.app-config.schema.yml#/definitions/IpPort' }
 ```
 
-Here's an example of a common pattern. By specifying a filepath before `#`,
+Here's an example of another common pattern. By specifying a filepath before `#`,
 we're asking app-config to pull in another file so that we can reference
-a property within it. In monorepos with shared types, this is very handy.
+a property within it. In large monorepos with shared types, this is very handy.
 
 ## Marking Secret Properties
 
@@ -113,7 +113,8 @@ Sometimes, you want to prototype without building out a schema. That's okay!
 We provide a couple ways to load configuration without validation.
 
 1. The CLI has a `--noSchema` option for most subcommands.
-2. The Node.js API has a `loadUnvalidatedConfig` function - `loadConfig` always validates.
+2. The Node.js API has a `loadUnvalidatedConfig` function, `loadConfig` always validates.
 
-It's worth noting, that JSON Schema can be fairly liberal if you need it to be.
-`{ "type": "object" }` essentially allows any configuration.
+It's worth noting that JSON Schema can be fairly liberal if you need it to be.
+To allow essentially any configuration values, just use `{ "type": "object" }`
+as the schema.
