@@ -34,6 +34,12 @@ import { generateTypeFiles } from './generate';
 import { checkTTY, logger, LogLevel } from './logging';
 import { AppConfigError, FailedToSelectSubObject, EmptyStdinOrPromptResponse } from './errors';
 
+enum OptionGroups {
+  Options = 'Options:',
+  General = 'General:',
+  Logging = 'Logging:',
+}
+
 type SubcommandOptions<
   Options extends { [name: string]: yargs.Options },
   PositionalOptions extends { [name: string]: yargs.PositionalOptions }
@@ -64,30 +70,15 @@ function subcommand<
     aliases,
     describe: description,
     builder: (args) => {
-      for (const [key, opt] of Object.entries(positional ?? {})) {
-        args.positional(key, opt);
+      if (positional) {
+        for (const [key, opt] of Object.entries(positional)) {
+          args.positional(key, opt);
+        }
       }
 
-      args.options(options ?? {}).options({
-        cwd: {
-          alias: 'C',
-          nargs: 1,
-          type: 'string',
-          description: 'Run app-config in the context of this directory',
-        },
-        verbose: {
-          type: 'boolean',
-          description: 'Perform verbose logging',
-        },
-        quiet: {
-          type: 'boolean',
-          description: 'Only logs errors',
-        },
-        silent: {
-          type: 'boolean',
-          description: 'Never logs anything (expect command output)',
-        },
-      });
+      if (options) {
+        args.options(options);
+      }
 
       args.example(examples);
 
@@ -114,6 +105,7 @@ const noSchemaOption = {
   type: 'boolean',
   default: false,
   description: 'Avoids doing schema validation of your app-config (dangerous!)',
+  group: OptionGroups.Options,
 } as const;
 
 const secretsOption = {
@@ -121,6 +113,7 @@ const secretsOption = {
   type: 'boolean',
   default: false,
   description: 'Include secrets in the output',
+  group: OptionGroups.Options,
 } as const;
 
 const prefixOption = {
@@ -128,6 +121,7 @@ const prefixOption = {
   type: 'string',
   default: 'APP_CONFIG',
   description: 'Prefix for environment variable names',
+  group: OptionGroups.Options,
 } as const;
 
 const formatOption = {
@@ -135,23 +129,27 @@ const formatOption = {
   type: 'string',
   default: 'yaml' as string,
   choices: ['yaml', 'yml', 'json', 'json5', 'toml'],
+  group: OptionGroups.Options,
 } as const;
 
 const selectOption = {
   type: 'string',
   description: 'A JSON pointer to select a nested property in the object',
+  group: OptionGroups.Options,
 } as const;
 
 const clipboardOption = {
   alias: 'c',
   type: 'boolean',
   description: 'Copies the value to the system clipboard',
+  group: OptionGroups.Options,
 } as const;
 
 const secretAgentOption = {
   type: 'boolean',
   default: true,
   description: 'Uses the secret-agent, if available',
+  group: OptionGroups.Options,
 } as const;
 
 function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
@@ -188,9 +186,38 @@ function loadConfigConditionalValidation(noSchema: boolean): typeof loadConfig {
 const { argv: _ } = yargs
   .strict()
   .wrap(yargs.terminalWidth() - 5)
-  .version()
-  .help('h', 'Shows help message with examples and options')
+  .version('version')
+  .alias('v', 'version')
+  .help('h', 'Show help message with examples and options')
   .alias('h', 'help')
+  .options({
+    cwd: {
+      alias: 'C',
+      nargs: 1,
+      type: 'string',
+      description: 'Run app-config in the context of this directory',
+    },
+  })
+  .options({
+    verbose: {
+      type: 'boolean',
+      description: 'Outputs verbose messages with internal details',
+    },
+    quiet: {
+      type: 'boolean',
+      description: 'Only outputs errors that user should be aware of',
+    },
+    silent: {
+      type: 'boolean',
+      description: 'Do not print anything non-functional',
+    },
+  })
+  .group('cwd', OptionGroups.General)
+  .group('help', OptionGroups.General)
+  .group('version', OptionGroups.General)
+  .group('verbose', OptionGroups.Logging)
+  .group('quiet', OptionGroups.Logging)
+  .group('silent', OptionGroups.Logging)
   .command(
     subcommand(
       {
@@ -601,6 +628,7 @@ const { argv: _ } = yargs
                 encryptedText: {
                   type: 'string',
                   description: 'JSON value to encrypt',
+                  group: OptionGroups.Options,
                 },
               },
               options: {
