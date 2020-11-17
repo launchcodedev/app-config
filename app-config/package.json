@@ -55,6 +55,7 @@
     "prompts": "2",
     "quicktype-core": "6.0.69",
     "text-encoding-utf-8": "1",
+    "ws": "7",
     "yargs": "16"
   },
   "devDependencies": {

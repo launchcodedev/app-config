@@ -77,7 +77,7 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
       await superClose();
 
       // we have to close the http server ourselves, because it was created manually
-      await new Promise((resolve, reject) =>
+      await new Promise<void>((resolve, reject) =>
         httpsServer.close((err) => {
           if (err) reject(err);
           else resolve();
