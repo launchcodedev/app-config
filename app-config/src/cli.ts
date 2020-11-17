@@ -380,8 +380,16 @@ const { argv: _ } = yargs
               ],
             },
             async () => {
-              const revision = latestSymmetricKeyRevision(await loadSymmetricKeys()) + 1;
+              const keys = await loadSymmetricKeys();
               const teamMembers = await loadTeamMembersLazy();
+
+              let revision: number;
+
+              if (keys.length > 0) {
+                revision = latestSymmetricKeyRevision(keys) + 1;
+              } else {
+                revision = 1;
+              }
 
               await saveNewSymmetricKey(await generateSymmetricKey(revision), teamMembers);
               logger.info(`Saved a new symmetric key, revision ${revision}`);
