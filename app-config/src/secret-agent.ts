@@ -176,6 +176,16 @@ export async function connectAgentLazy(
   return connection;
 }
 
+export async function disconnectAgents() {
+  for (const [port, client] of clients.entries()) {
+    clients.delete(port);
+    await client.then(
+      (c) => c.close(),
+      () => {},
+    );
+  }
+}
+
 let useSecretAgent = true;
 
 export function shouldUseSecretAgent(value?: boolean) {

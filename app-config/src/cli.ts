@@ -28,7 +28,7 @@ import {
   saveNewSymmetricKey,
   loadTeamMembersLazy,
 } from './encryption';
-import { startAgent, shouldUseSecretAgent } from './secret-agent';
+import { shouldUseSecretAgent, startAgent, disconnectAgents } from './secret-agent';
 import { loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { checkTTY, logger, LogLevel } from './logging';
@@ -100,6 +100,11 @@ function subcommand<
       if (args.silent) logger.setLevel(LogLevel.None);
 
       await run(args as typeof args & yargs.InferredOptionTypes<Options & PositionalOptions>);
+
+      // cleanup any secret agent clients right away, so it's safe to process.exit
+      await disconnectAgents();
+
+      process.exit(0);
     },
   };
 }
