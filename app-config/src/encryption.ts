@@ -1,5 +1,6 @@
 import { join, resolve } from 'path';
 import { homedir } from 'os';
+import envPaths from 'env-paths';
 import * as fs from 'fs-extra';
 import { generateKey, encrypt, decrypt, key, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
@@ -24,7 +25,15 @@ export const keyDirs = {
       return resolve(process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER);
     }
 
-    return join(homedir(), '.app-config', 'keychain');
+    const oldConfigDir = join(homedir(), '.app-config');
+    const { config: configDir } = envPaths('app-config', { suffix: '' });
+
+    if (fs.pathExistsSync(oldConfigDir)) {
+      logger.warn(`Moving ${oldConfigDir} to ${configDir}`);
+      fs.moveSync(oldConfigDir, configDir);
+    }
+
+    return join(configDir, 'keychain');
   },
   get privateKey() {
     return join(keyDirs.keychain, 'private-key.asc');
