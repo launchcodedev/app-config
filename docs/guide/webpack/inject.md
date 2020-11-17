@@ -2,12 +2,16 @@
 title: App Config Inject
 ---
 
-The `app-config-inject` binary parses HTML and injects app-config values at runtime.
-This is useful for frontend applications that need to be configured at deploy time.
-In particular, it allows you to have one docker image that can be re-used with
-different frontend configurations.
+A separate package called `@lcdev/app-config-inject` exists to configure frontend
+applications at runtime.
 
-An example:
+The `app-config-inject` binary parses HTML and injects app-config values at runtime.
+This is useful for frontend applications that need to be configured with deploying.
+In particular, it allows you to have one docker image that can be re-used with
+different frontend configurations (eg. enabling beta features, changing API URLs, 
+or theming).
+
+An example dockerfile:
 
 ```dockerfile{5,7,14}
 FROM nginx:1.15-alpine

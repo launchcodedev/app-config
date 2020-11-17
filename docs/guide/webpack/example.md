@@ -2,7 +2,11 @@
 title: Example Project
 ---
 
+<div style="font-size: 2em" align="center">
+
 [View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/v2-refactoring/examples/frontend-webpack-project).
+
+</div>
 
 <h4 style="text-align:center">package.json</h4>
 

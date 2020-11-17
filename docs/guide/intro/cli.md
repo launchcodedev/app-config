@@ -114,65 +114,71 @@ The generate command reads the meta file, and does all [code / types generation]
 npx app-config secret init
 ```
 
-Initializes your encryption keychain.
+Initializes your encryption keychain on your machine. These are stored in a shared directory.
 
 ```sh
 npx app-config secret init-repo
 ```
 
-Creates initial symmetric key and initializes team members for a repository.
+Creates a new symmetric key and initializes team members for a repository.
+By default, you are the only trusted team member.
 
 ```sh
 npx app-config secret init-key
 ```
 
-Creates a new symmetric key for encrypting new secrets.
+Creates a new symmetric key for encrypting new secrets. This is usually not required,
+since it's automatically done when untrusting team members.
 
 ```sh
 npx app-config secret key
 npx app-config secret export <path>
 ```
 
-View or export your public key to a file.
+View or export your public key to a file. This is used to share your public key with
+others so that they can trust you. See more in [encryption](./encryption.md#trusting-users).
 
 ```sh
 npx app-config secret ci
 ```
 
-Creates an encryption key that can be used without a passphrase.
+Creates an encryption key that can be used without a passphrase. This is useful for
+providing CI access to encrypted values, as the name suggests.
 
 ```sh
 npx app-config secret trust <keyPath>
 ```
 
-Adds a team member who can encrypt and decrypt values.
+Adds a team member who can encrypt and decrypt values. See more in [encryption](./encryption.md#trusting-users).
 
 ```sh
 npx app-config secret untrust <email>
 ```
 
-Revokes encryption access (in future) for a trusted team member.
+Revokes encryption access (in the future) for a trusted team member.
 
 ```sh
 npx app-config secret encrypt
 ```
 
-Encrypts a secret value.
+Encrypts a secret value. Reads from stdin, or provide an extra argument with the value.
 
 ```sh
 npx app-config secret decrypt
 ```
 
-Decrypts a secret value.
+Decrypts a secret value. Reads from stdin, or provide an extra argument with the value.
 
 ```sh
 npx app-config secret agent
 ```
 
-Starts the background decryption process to avoid passphrase prompts.
+Starts the background decryption process to avoid passphrase prompts. This process
+is not automatically daemonized - you'll need to run it in a separate tab.
 
 ```sh
 npx app-config secret reset
 ```
 
-Removes your encryption keychain.
+Removes your encryption keychain. You will lose access to all repositories that
+trusted you before.

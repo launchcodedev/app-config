@@ -2,7 +2,8 @@
 title: Code/Types Generation
 ---
 
-Code generation is dictated by the meta file.
+Code generation is dictated by the meta file. This file lives alongside app-config
+and schema files.
 
 <h4 style="text-align:center">.app-config.meta.yml</h4>
 
@@ -48,5 +49,11 @@ declare module '@lcdev/app-config' {
 }
 ```
 
-By "augmenting" the module, TypeScript will know that when importing `config`,
-it has a specific type.
+By "augmenting" the module, TypeScript will know that `config` has a specific type.
+
+Other options for the meta file:
+- `file`: filepath of code to write
+- `name`: export name, mostly for aesthetic reasons
+- `augmentModule`: if app-config main export should be typed
+- `leadingComments`: first couple lines to insert in file
+- `rendererOptions`: unstable options passed to quicktype
