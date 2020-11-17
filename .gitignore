@@ -6,6 +6,7 @@ node_modules/
 # common build sites
 dist/
 dist-types/
+docs/types
 
 # build artifacts
 *.tsbuildinfo

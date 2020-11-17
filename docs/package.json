@@ -15,6 +15,9 @@
     "vuepress": "1"
   },
   "devDependencies": {
-    "vuepress-plugin-mermaidjs": "1"
+    "typedoc": "0.19",
+    "typedoc-plugin-markdown": "3",
+    "vuepress-plugin-mermaidjs": "1",
+    "vuepress-plugin-typedoc": "0.1"
   }
 }

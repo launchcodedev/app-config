@@ -1,3 +1,4 @@
+const { resolve } = require('path');
 module.exports = {
   title: 'App Config',
   description: 'Easy to use configuration loader with schema validation',
@@ -63,5 +64,17 @@ module.exports = {
 
   plugins: [
     ['vuepress-plugin-mermaidjs', { theme: 'base' }],
+
+    [
+      'vuepress-plugin-typedoc',
+      {
+        out: 'types/nodejs',
+        sidebar: {
+          fullNames: false,
+          parentCategory: 'none',
+        },
+        ...require(resolve(__dirname, '../../app-config/typedoc.js')),
+      },
+    ],
   ],
 };
