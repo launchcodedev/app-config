@@ -1,12 +1,11 @@
 import { join, resolve } from 'path';
-import { homedir } from 'os';
-import envPaths from 'env-paths';
 import * as fs from 'fs-extra';
 import { generateKey, encrypt, decrypt, key, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
 import { Json, promptUser } from './common';
 import { stringify, FileType } from './config-source';
 import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
+import { settingsDirectory } from './settings';
 import {
   AppConfigError,
   EmptyStdinOrPromptResponse,
@@ -25,15 +24,7 @@ export const keyDirs = {
       return resolve(process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER);
     }
 
-    const oldConfigDir = join(homedir(), '.app-config');
-    const { config: configDir } = envPaths('app-config', { suffix: '' });
-
-    if (fs.pathExistsSync(oldConfigDir)) {
-      logger.warn(`Moving ${oldConfigDir} to ${configDir}`);
-      fs.moveSync(oldConfigDir, configDir);
-    }
-
-    return join(configDir, 'keychain');
+    return join(settingsDirectory(), 'keychain');
   },
   get privateKey() {
     return join(keyDirs.keychain, 'private-key.asc');

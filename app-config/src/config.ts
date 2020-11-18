@@ -99,7 +99,8 @@ export async function loadConfig({
       const parsedExtension = await extension.read(environmentExtensions);
 
       logger.verbose(
-        `Found configuration extension in $${(parsedExtension.assertSource(EnvironmentSource)).variableName
+        `Found configuration extension in $${
+          parsedExtension.assertSource(EnvironmentSource).variableName
         }`,
       );
 
@@ -111,7 +112,7 @@ export async function loadConfig({
   }
 
   // note that this cannot be exhaustive, because of $extends
-  const filePaths = new Set<string>()
+  const filePaths = new Set<string>();
 
   for (const source of mainConfig.allSources()) {
     if (source instanceof FileSource) {

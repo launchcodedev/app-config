@@ -130,7 +130,7 @@ export class ParsedValue {
   getSource<CS extends ConfigSource>(clazz: new (...args: any[]) => CS): CS | undefined {
     for (const source of this.sources) {
       if (source instanceof clazz) {
-        return source as CS;
+        return source;
       }
     }
   }

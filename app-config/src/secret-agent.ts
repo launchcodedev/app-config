@@ -1,6 +1,4 @@
 import https from 'https';
-import { join } from 'path';
-import { readFile } from 'fs-extra';
 import WebSocket from 'ws';
 import { Server as BaseServer, Client as BaseClient, MessageVariant } from '@lcdev/ws-rpc/bson';
 import { Json } from './common';
@@ -14,9 +12,7 @@ import {
 } from './encryption';
 import { AppConfigError } from './errors';
 import { logger } from './logging';
-
-const selfSignedCert = join(__dirname, '..', 'secret-agent-cert.pem');
-const selfSignedCertKey = join(__dirname, '..', 'secret-agent-key.pem');
+import { loadOrCreateCert } from './secret-agent-tls';
 
 export enum MessageType {
   Ping = 'Ping',
@@ -52,16 +48,16 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
 
   logger.info(`Starting secret-agent, listening on port ${port}`);
 
-  const httpsServer = https.createServer({
-    cert: await readFile(selfSignedCert),
-    key: await readFile(selfSignedCertKey),
-  });
+  const { cert, key } = await loadOrCreateCert();
+  const httpsServer = https.createServer({ cert, key });
 
   const server = new Server(new WebSocket.Server({ server: httpsServer }));
 
   server.registerHandler(MessageType.Ping, () => {});
 
   server.registerHandler(MessageType.Decrypt, async ({ text, symmetricKey }) => {
+    logger.verbose(`Decrypting a secret for a key rev:${symmetricKey.revision}`);
+
     const key = await decryptSymmetricKey(symmetricKey, privateKey);
     const decoded = await decryptValue(text, key);
 
@@ -96,11 +92,9 @@ export async function connectAgent(
 ) {
   logger.verbose(`Connecting to secret-agent on port ${port}`);
 
-  const client = new Client(
-    new WebSocket(`wss://localhost:${port}`, {
-      ca: await readFile(selfSignedCert),
-    }),
-  );
+  const { cert } = await loadOrCreateCert();
+
+  const client = new Client(new WebSocket(`wss://localhost:${port}`, { ca: [cert] }));
 
   await client.waitForConnection();
 
