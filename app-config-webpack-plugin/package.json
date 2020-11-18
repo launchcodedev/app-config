@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config-webpack-plugin",
   "description": "Webpack plugin that loads your app-config values into bundles statically",
-  "version": "2.0.0-beta.7",
+  "version": "2.0.0-beta.8",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -29,12 +29,12 @@
     "loader-utils": "2"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-beta.7",
+    "@lcdev/app-config": "2 || 2.0.0-beta.8",
     "html-webpack-plugin": "4",
     "webpack": "4"
   },
   "devDependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-beta.7",
+    "@lcdev/app-config": "2 || 2.0.0-beta.8",
     "@types/loader-utils": "1",
     "html-webpack-plugin": "4",
     "webpack": "4"
