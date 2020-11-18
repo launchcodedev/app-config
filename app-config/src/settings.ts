@@ -53,7 +53,7 @@ export async function saveSettings(newSettings: Settings) {
 
   logger.verbose(`Saving settings to ${path}`);
 
-  await fs.writeFile(path, stringified);
+  await fs.outputFile(path, stringified);
 }
 
 let settings: Promise<Settings> | undefined;
