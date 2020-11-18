@@ -86,6 +86,17 @@ export async function generateCert(): Promise<Cert> {
 }
 
 export async function loadOrCreateCert(): Promise<Cert> {
+  // we'll skip loading settings in jest-land
+  if (process.env.JEST_WORKER_ID !== undefined) {
+    const loaded = global as unknown as { secretAgentCert: Promise<Cert> };
+
+    if (!loaded.secretAgentCert) {
+      loaded.secretAgentCert = generateCert();
+    }
+
+    return loaded.secretAgentCert;
+  }
+
   const settings = await loadSettingsLazy();
 
   if (settings.secretAgent) {
