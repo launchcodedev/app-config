@@ -1,6 +1,7 @@
 module.exports = {
   title: 'App Config',
   description: 'Easy to use configuration loader with schema validation',
+
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
@@ -64,4 +65,7 @@ module.exports = {
   plugins: [
     ['vuepress-plugin-mermaidjs', { theme: 'base' }],
   ],
+
+  host: '0.0.0.0',
+  port: 8080,
 };
