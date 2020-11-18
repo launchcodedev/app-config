@@ -36,7 +36,7 @@ export async function loadMetaConfig({
   try {
     const parsed = await source.read();
     const value = parsed.toJSON() as MetaProperties;
-    const { filePath, fileType } = parsed.source as FileSource;
+    const { filePath, fileType } = parsed.assertSource(FileSource);
 
     logger.verbose(`Meta file was loaded from ${filePath}`);
 

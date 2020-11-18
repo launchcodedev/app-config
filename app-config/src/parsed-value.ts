@@ -43,12 +43,15 @@ type ParsedValueInner = JsonPrimitive | { [k: string]: ParsedValue } | ParsedVal
 /** Wrapper abstraction of values parsed, allowing for transformations of data (while keeping original raw form) */
 export class ParsedValue {
   public readonly meta: ParsedValueMetadata = {};
+  public readonly sources: ConfigSource[];
+  public readonly raw: Json;
+  private readonly value: ParsedValueInner;
 
-  constructor(
-    public readonly source: ConfigSource,
-    private readonly rawValue: Json,
-    private readonly value: ParsedValueInner,
-  ) {}
+  constructor(source: ConfigSource | ConfigSource[], raw: Json, value: ParsedValueInner) {
+    this.sources = Array.isArray(source) ? source : [source];
+    this.raw = raw;
+    this.value = value;
+  }
 
   /** Constructs a ParsedValue from a plain JSON object */
   static literal(raw: Json, source: ConfigSource = new LiteralSource(raw)): ParsedValue {
@@ -83,7 +86,7 @@ export class ParsedValue {
       typeof a.value !== 'object' ||
       a.value === null
     ) {
-      return new ParsedValue(b.source, b.rawValue, b.value).assignMeta(meta);
+      return new ParsedValue(b.sources, b.raw, b.value).assignMeta(meta);
     }
 
     const newValue = {};
@@ -103,25 +106,65 @@ export class ParsedValue {
 
     let newRawValue: Json = {};
 
-    if (isObject(a.rawValue) && isObject(b.rawValue)) {
-      const rawKeys = new Set(Object.keys(b.rawValue).concat(Object.keys(a.rawValue)));
+    if (isObject(a.raw) && isObject(b.raw)) {
+      const rawKeys = new Set(Object.keys(b.raw).concat(Object.keys(a.raw)));
 
       for (const key of rawKeys) {
         let newRawValueK;
 
-        if (a.rawValue[key] && b.rawValue[key]) {
-          newRawValueK = merge({}, a.rawValue[key], b.rawValue[key]);
+        if (a.raw[key] && b.raw[key]) {
+          newRawValueK = merge({}, a.raw[key], b.raw[key]);
         } else {
-          newRawValueK = b.rawValue[key] ?? a.rawValue[key];
+          newRawValueK = b.raw[key] ?? a.raw[key];
         }
 
         Object.assign(newRawValue, { [key]: newRawValueK });
       }
     } else {
-      newRawValue = b.rawValue;
+      newRawValue = b.raw;
     }
 
-    return new ParsedValue(a.source, newRawValue, newValue).assignMeta(meta);
+    return new ParsedValue([...a.sources, ...b.sources], newRawValue, newValue).assignMeta(meta);
+  }
+
+  getSource<CS extends ConfigSource>(clazz: new (...args: any[]) => CS): CS | undefined {
+    for (const source of this.sources) {
+      if (source instanceof clazz) {
+        return source as CS;
+      }
+    }
+  }
+
+  assertSource<CS extends ConfigSource>(clazz: new (...args: any[]) => CS): CS {
+    const source = this.getSource(clazz);
+
+    if (source) {
+      return source;
+    }
+
+    throw new AppConfigError(`Failed to find ConfigSource ${clazz.name}`);
+  }
+
+  allSources(): Set<ConfigSource> {
+    const sources = new Set(this.sources);
+
+    if (Array.isArray(this.value)) {
+      for (const inner of this.value) {
+        for (const source of inner.sources) {
+          sources.add(source);
+        }
+      }
+    }
+
+    if (typeof this.value === 'object' && this.value !== null) {
+      for (const inner of Object.values(this.value)) {
+        for (const source of inner.sources) {
+          sources.add(source);
+        }
+      }
+    }
+
+    return sources;
   }
 
   assignMeta(metadata: ParsedValueMetadata) {
@@ -163,43 +206,43 @@ export class ParsedValue {
     }
   }
 
+  clone(): ParsedValue {
+    return this.cloneWhere(() => true);
+  }
+
   cloneWhere(filter: (value: ParsedValue) => boolean): ParsedValue {
     if (Array.isArray(this.value)) {
       const filtered = this.value.filter(filter);
 
       return new ParsedValue(
-        this.source,
-        filtered.map((v) => v.rawValue),
+        this.sources,
+        filtered.map((v) => v.raw),
         filtered.map((v) => v.cloneWhere(filter)),
       );
     }
 
     if (typeof this.value === 'object' && this.value !== null) {
       const value: { [k: string]: ParsedValue } = {};
-      const rawValue: JsonObject = {};
+      const raw: JsonObject = {};
 
       for (const [key, entry] of Object.entries(this.value)) {
         if (filter(entry)) {
           value[key] = entry.cloneWhere(filter);
 
-          if (isObject(this.rawValue)) {
-            rawValue[key] = this.rawValue[key];
+          if (isObject(this.raw)) {
+            raw[key] = this.raw[key];
           }
         }
       }
 
-      return new ParsedValue(this.source, rawValue, value);
+      return new ParsedValue(this.sources, raw, value);
     }
 
     if (!filter(this)) {
       throw new AppConfigError('ParsedValue::cloneWhere filtered itself out');
     }
 
-    return new ParsedValue(this.source, this.rawValue, this.value);
-  }
-
-  get raw(): Json {
-    return this.rawValue;
+    return new ParsedValue(this.sources, this.raw, this.value);
   }
 
   toJSON(): Json {
@@ -267,7 +310,7 @@ export async function parseValue(
   extensions: ParsingExtension[] = [],
   metadata: ParsedValueMetadata = {},
 ): Promise<ParsedValue> {
-  return parseValueInner(value, source, extensions, metadata, [[Root]], undefined);
+  return parseValueInner(value, source, extensions, metadata, [[Root]]);
 }
 
 async function parseValueInner(
@@ -342,7 +385,7 @@ async function parseValueInner(
   }
 
   if (isObject(value)) {
-    const object: { [key: string]: ParsedValue } = {};
+    const obj: { [key: string]: ParsedValue } = {};
 
     // we have to queue up merging, so that non-merging keys get assigned first
     const toMerge: ParsedValue[] = [];
@@ -368,7 +411,7 @@ async function parseValueInner(
         } else if (parsed.meta.shouldOverride) {
           toOverride.push(parsed.removeMeta('shouldOverride'));
         } else {
-          object[key] = parsed;
+          obj[key] = parsed;
         }
       }),
     );
@@ -377,14 +420,14 @@ async function parseValueInner(
       return flattenTo;
     }
 
-    let output = new ParsedValue(source, value, object).assignMeta(metadata);
+    let output = new ParsedValue(source, value, obj).assignMeta(metadata);
 
-    // do merges (this is almost always just one) at the end, so it wins over key order
+    // do merge(s) at the end, so it applies regardless of key order
     for (const parsed of toMerge) {
       output = ParsedValue.merge(parsed, output);
     }
 
-    // toMerge vs toOverride just changes order of precedent
+    // toMerge vs toOverride just changes the order of precedent when merging
     for (const parsed of toOverride) {
       output = ParsedValue.merge(output, parsed);
     }

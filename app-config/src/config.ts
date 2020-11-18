@@ -99,8 +99,7 @@ export async function loadConfig({
       const parsedExtension = await extension.read(environmentExtensions);
 
       logger.verbose(
-        `Found configuration extension in $${
-          (parsedExtension.source as EnvironmentSource).variableName
+        `Found configuration extension in $${(parsedExtension.assertSource(EnvironmentSource)).variableName
         }`,
       );
 
@@ -112,14 +111,20 @@ export async function loadConfig({
   }
 
   // note that this cannot be exhaustive, because of $extends
-  const filePaths = [];
+  const filePaths = new Set<string>()
 
-  if (mainConfig.source instanceof FileSource) {
-    filePaths.push(mainConfig.source.filePath);
+  for (const source of mainConfig.allSources()) {
+    if (source instanceof FileSource) {
+      filePaths.add(source.filePath);
+    }
   }
 
-  if (secrets && secrets.source instanceof FileSource) {
-    filePaths.push(secrets.source.filePath);
+  if (secrets) {
+    for (const source of secrets.allSources()) {
+      if (source instanceof FileSource) {
+        filePaths.add(source.filePath);
+      }
+    }
   }
 
   return {
@@ -127,7 +132,7 @@ export async function loadConfig({
     parsedSecrets: secrets,
     parsedNonSecrets: mainConfig.cloneWhere((v) => !v.meta.fromSecrets),
     fullConfig: parsed.toJSON(),
-    filePaths,
+    filePaths: Array.from(filePaths),
   };
 }
 

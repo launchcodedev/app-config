@@ -75,25 +75,26 @@ export class FlexibleFileSource extends ConfigSource {
     private readonly filePath: string,
     private readonly environmentOverride?: string,
     private readonly environmentAliases: EnvironmentAliases = defaultAliases,
+    private readonly fileExtensions: string[] = ['yml', 'yaml', 'toml', 'json', 'json5'],
   ) {
     super();
   }
 
+  // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource
   private async resolveSource(): Promise<FileSource> {
-    const environment = this.environmentOverride ?? currentEnvironment(this.environmentAliases);
-    const environmentAlias = Object.entries(this.environmentAliases).find(
-      ([, v]) => v === environment,
-    )?.[0];
+    const aliases = this.environmentAliases;
+    const environment = this.environmentOverride ?? currentEnvironment(aliases);
+    const environmentAlias = Object.entries(aliases).find(([, v]) => v === environment)?.[0];
 
     const filesToTry = [];
 
-    for (const ext of ['yml', 'yaml', 'toml', 'json', 'json5']) {
+    for (const ext of this.fileExtensions) {
       if (environment) filesToTry.push(`${this.filePath}.${environment}.${ext}`);
       if (environmentAlias) filesToTry.push(`${this.filePath}.${environmentAlias}.${ext}`);
     }
 
     // try these after trying environments, which take precedent
-    for (const ext of ['yml', 'yaml', 'toml', 'json', 'json5']) {
+    for (const ext of this.fileExtensions) {
       filesToTry.push(`${this.filePath}.${ext}`);
     }
 
@@ -171,16 +172,19 @@ export class CombinedSource extends ConfigSource {
     }
   }
 
+  // overriden only because it's part of the class signature, normally would never be called
   async readContents(): Promise<[string, FileType]> {
     const value = await this.readValue();
 
     return [JSON.stringify(value), FileType.JSON];
   }
 
+  // override because readContents uses it (which is backwards from super class)
   async readValue(): Promise<Json> {
     return this.readToJSON();
   }
 
+  // override so that ParsedValue is directly from the originating ConfigSource
   async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
     const values = await Promise.all(this.sources.map((source) => source.read(extensions)));
 
@@ -189,9 +193,9 @@ export class CombinedSource extends ConfigSource {
       return ParsedValue.merge(acc, parsed);
     }, undefined);
 
-    if (!merged) throw new AppConfigError('CombinedSource ended up merging into falsey value');
+    if (!merged) throw new AppConfigError('CombinedSource ended up merging into a falsey value');
 
-    Object.assign(merged, { source: this });
+    Object.assign(merged, { sources: [this] });
 
     return merged;
   }
@@ -224,7 +228,10 @@ export class FallbackSource extends ConfigSource {
 
         return value;
       } catch (error) {
-        if (error instanceof NotFoundError) continue;
+        if (error instanceof NotFoundError) {
+          continue;
+        }
+
         throw error;
       }
     }

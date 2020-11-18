@@ -24,10 +24,10 @@ describe('parseValue', () => {
     const source = new LiteralSource({ a: { b: { c: [0] } } });
     const parsed = await parseValue(await source.readValue(), source, []);
 
-    expect(parsed.property(['a'])!.source).toBe(source);
-    expect(parsed.property(['a', 'b'])!.source).toBe(source);
-    expect(parsed.property(['a', 'b', 'c'])!.source).toBe(source);
-    expect(parsed.property(['a', 'b', 'c', '0'])!.source).toBe(source);
+    expect(parsed.property(['a'])!.sources[0]).toBe(source);
+    expect(parsed.property(['a', 'b'])!.sources[0]).toBe(source);
+    expect(parsed.property(['a', 'b', 'c'])!.sources[0]).toBe(source);
+    expect(parsed.property(['a', 'b', 'c', '0'])!.sources[0]).toBe(source);
   });
 
   it('writes metadata to parsed value', async () => {
