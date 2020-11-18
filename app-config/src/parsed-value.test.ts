@@ -275,6 +275,12 @@ describe('ParsedValue', () => {
     expect(nonSecrets.toJSON()).toEqual({ a: { b: [1, 3] } });
   });
 
+  it('clones all properties', () => {
+    const value = ParsedValue.literal({ a: { b: [1, 2, 3], c: true } });
+
+    expect(value.clone().toJSON()).toEqual(value.toJSON());
+  });
+
   describe('Merging', () => {
     it('merges two parsed values', () => {
       const a = ParsedValue.literal({ a: { b: { c: true } } });
