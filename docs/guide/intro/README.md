@@ -259,3 +259,11 @@ By defining a file called `.app-config.production.yml`, app-config will load it 
 when `APP_CONFIG_ENV` | `NODE_ENV` | `ENV` is `prod` or `production` (see [defaultAliases](../node/api-reference.md)).
 This can be useful for separating values out, especially in combination with `$extends`.
 You'll get a feel for why this is useful the more you use app-config.
+
+## CI, Automation and Extension
+
+Another feature you should know about is the special environment variable(s) that
+app-config will read. Either (exclusive) `APP_CONFIG_CI` or `APP_CONFIG_EXTEND`
+can be set in a CI environment variable to add specific values. These variables
+are parsed just like `APP_CONFIG` (they can be JSON, YAML, etc). They are merged
+deeply and override any values that they define.

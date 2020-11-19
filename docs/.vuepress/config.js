@@ -21,6 +21,7 @@ module.exports = {
           '/guide/intro/codegen',
           '/guide/intro/extensions',
           '/guide/intro/encryption',
+          '/guide/intro/config-loading',
         ],
       },
       {

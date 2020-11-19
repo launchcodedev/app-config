@@ -106,7 +106,7 @@ export async function loadConfig({
 
       parsed = ParsedValue.merge(parsed, parsedExtension);
     } catch (error) {
-      // having no APP_CONFIG environment variable is normal, and should fall through to reading files
+      // having no APP_CONFIG_CI environment variable is normal, and should fall through to reading files
       if (!(error instanceof NotFoundError)) throw error;
     }
   }
