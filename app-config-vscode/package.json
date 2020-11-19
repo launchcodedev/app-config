@@ -1,0 +1,54 @@
+{
+  "name": "@lcdev/app-config-vscode",
+  "description": "App Config support for VS Code",
+  "version": "2.0.0-beta.9",
+  "license": "MPL-2.0",
+  "categories": ["Other"],
+  "publisher": "lc.dev",
+  "author": {
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/launchcodedev/app-config.git"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist",
+    "!*.tsbuildinfo",
+    "!*.test.*"
+  ],
+  "engines": {
+    "vscode": "^1.51.0"
+  },
+  "activationEvents": ["onCommand:app-config.helloWorld"],
+  "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": ".app-config.schema.*",
+        "url": "https://json-schema.org/draft-07/schema"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint src",
+    "fix": "eslint --fix src",
+    "test": "jest",
+    "vscode:prepublish": "yarn clean && yarn build"
+  },
+  "dependencies": {
+    "@lcdev/app-config": "2 || 2.0.0-beta.9"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.51.0"
+  },
+  "prettier": "@lcdev/prettier",
+  "jest": {
+    "preset": "@lcdev/jest"
+  }
+}
