@@ -88,7 +88,7 @@ export const initializeLocalKeys = async () => {
     return false;
   }
 
-  logger.info('Initiliazing your encryption keys');
+  logger.info('Initializing your encryption keys');
 
   const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await initializeKeys();
 
