@@ -181,8 +181,13 @@ let loadedPrivateKey: Promise<Key> | undefined;
 export async function loadPrivateKeyLazy(): Promise<Key> {
   if (!loadedPrivateKey) {
     logger.verbose('Loading local private key');
-    // help the end user, if they haven't initialized their local keys yet
-    loadedPrivateKey = initializeLocalKeys().then(() => loadPrivateKey());
+
+    if (checkTTY()) {
+      // help the end user, if they haven't initialized their local keys yet
+      loadedPrivateKey = initializeLocalKeys().then(() => loadPrivateKey());
+    } else {
+      loadedPrivateKey = loadPrivateKey();
+    }
   }
 
   return loadedPrivateKey;
@@ -193,8 +198,13 @@ let loadedPublicKey: Promise<Key> | undefined;
 export async function loadPublicKeyLazy(): Promise<Key> {
   if (!loadedPublicKey) {
     logger.verbose('Loading local public key');
-    // help the end user, if they haven't initialized their local keys yet
-    loadedPublicKey = initializeLocalKeys().then(() => loadPublicKey());
+
+    if (checkTTY()) {
+      // help the end user, if they haven't initialized their local keys yet
+      loadedPublicKey = initializeLocalKeys().then(() => loadPublicKey());
+    } else {
+      loadedPublicKey = loadPublicKey();
+    }
   }
 
   return loadedPublicKey;
