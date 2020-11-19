@@ -1,6 +1,15 @@
 # Try it out! Run with APP_CONFIG_ENV=production
 
-port:
-  $env:
-    default: 3000
-    production: 80
+port: 8000
+
+database:
+  username: { $substitute: "${USER:-username}" }
+  port: 3306
+  database:
+    $env:
+      default: dev
+      production: production
+  password:
+    $env:
+      default: enc:1:wy4ECQMIsX1S2qXZKrXgN2dRmZBrWbmbsBdtMmZ3FwsmpCnCq5+RfN3UxNSZ20jX0j4B9dBnlPsKhYJM0/iPiSH3aT2y/Vvawbhe3KdaOK3tTzgV8Jl27fSvxI+FwCTGkM4cY0s74kleP7gq6Dchtw===Jftl # test
+      production: enc:1:wy4ECQMIXJen9k4zRaXgl50+lqtJx9XXE+VASto5O0BMJv4DotrdxQNheXBW451B0kEBl9gkhN87rTYyjUAnisg58ECoR9PEUOldxjua4jE4T1PvpIUVGii3er7Cd+alJIC3M2+ffRX0UGuizP8zc/crXw===Y+3h # test123
