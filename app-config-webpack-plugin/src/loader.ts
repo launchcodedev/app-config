@@ -2,7 +2,7 @@ import * as wp from 'webpack';
 import { getOptions } from 'loader-utils';
 import { loadValidatedConfig } from '@lcdev/app-config';
 
-const loader: wp.loader.Loader = function () {
+const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;

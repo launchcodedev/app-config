@@ -29,21 +29,24 @@ export default class AppConfigPlugin {
 
   interceptImports(compiler: Compiler) {
     compiler.hooks.normalModuleFactory.tap('AppConfigPlugin', (factory) => {
-      factory.hooks.beforeResolve.tapPromise('AppConfigPlugin', async (resolve) => {
-        if (!resolve) return;
+      factory.hooks.beforeResolve.tapPromise(
+        'AppConfigPlugin',
+        async (resolve?: { request: string }) => {
+          if (!resolve) return;
 
-        if (resolve.request === '@lcdev/app-config' || resolve.request === 'app-config') {
-          const { filePaths } = await loadValidatedConfig();
+          if (resolve.request === '@lcdev/app-config' || resolve.request === 'app-config') {
+            const { filePaths } = await loadValidatedConfig();
 
-          if (filePaths?.length) {
-            [resolve.request] = filePaths;
-          } else {
-            resolve.request = join(__dirname, '..', '.config-placeholder');
+            if (filePaths?.length) {
+              [resolve.request] = filePaths; // eslint-disable-line no-param-reassign
+            } else {
+              resolve.request = join(__dirname, '..', '.config-placeholder'); // eslint-disable-line no-param-reassign
+            }
           }
-        }
 
-        return resolve as unknown;
-      });
+          return resolve;
+        },
+      );
     });
   }
 
