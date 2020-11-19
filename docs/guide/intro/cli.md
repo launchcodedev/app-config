@@ -182,3 +182,8 @@ npx app-config secret reset
 
 Removes your encryption keychain. You will lose access to all repositories that
 trusted you before.
+
+## Logging
+
+All commands have `--verbose`, `--quiet` and `--silent` options. You can also set
+an Environment variable `APP_CONFIG_LOG_LEVEL` ("verbose", "info", "error", etc.).

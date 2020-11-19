@@ -86,6 +86,15 @@ npx app-config secret untrust somebody@example.com
 This doesn't necessitate re-encrypting any secrets. Any new encryption will use a
 new key that `somebody@example.com` never had access to.
 
+## CI / Automation
+
+The CLI subcommand `app-config secret ci` can create an artificial team member for
+CI environments. This key (public + private) can be added as protected environment
+variables in your CI provider.
+
+- `APP_CONFIG_SECRETS_KEY`: raw armored private key text
+- `APP_CONFIG_SECRETS_PUBLIC_KEY`: raw armored public key text
+
 ## Core Concepts
 
 - We store a list of team members public keys in app-config meta files
@@ -109,3 +118,8 @@ new key that `somebody@example.com` never had access to.
 ## Security
 
 We rely heavily on OpenPGP.
+
+## Configuration
+
+App Config will set up your keychain in the standard config file location on your machine.
+If you really need to, you can set `APP_CONFIG_SECRETS_KEYCHAIN_FOLDER` to override this.
