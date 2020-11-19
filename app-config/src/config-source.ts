@@ -61,8 +61,10 @@ export class FileSource extends ConfigSource {
       logger.verbose(`FileSource read ${this.filePath}`);
 
       return [content.toString('utf-8'), this.fileType];
-    } catch (err) {
-      if (err?.code === 'ENOENT') throw new NotFoundError(`File ${this.filePath} not found`);
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && (err as { code?: string | number }).code === 'ENOENT') {
+        throw new NotFoundError(`File ${this.filePath} not found`);
+      }
 
       throw err;
     }

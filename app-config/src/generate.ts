@@ -94,7 +94,7 @@ export async function generateQuicktype(
 
   class FetchingJSONSchemaStore extends JSONSchemaStore {
     async fetch(address: string): Promise<JSONSchema | undefined> {
-      return (schemaRefs as any)[address] as JSONSchema;
+      return schemaRefs[address] as JSONSchema;
     }
   }
 

@@ -90,6 +90,7 @@ export function environmentVariableSubstitution(
   const performAllSubstitutions = (text: string): string => {
     let output = text;
 
+    /* eslint-disable-next-line no-constant-condition */
     while (true) {
       // this regex matches:
       //   $FOO

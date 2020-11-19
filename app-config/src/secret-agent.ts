@@ -58,8 +58,7 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
   server.registerHandler(MessageType.Decrypt, async ({ text, symmetricKey }) => {
     logger.verbose(`Decrypting a secret for a key rev:${symmetricKey.revision}`);
 
-    const key = await decryptSymmetricKey(symmetricKey, privateKey);
-    const decoded = await decryptValue(text, key);
+    const decoded = await decryptValue(text, await decryptSymmetricKey(symmetricKey, privateKey));
 
     return decoded;
   });
