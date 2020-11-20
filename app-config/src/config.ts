@@ -144,6 +144,7 @@ export async function loadValidatedConfig(
   const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
     loadSchema({
       directory: options?.schemaDirectory ?? options?.directory,
+      fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
       ...schemaOptions,

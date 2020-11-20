@@ -108,6 +108,12 @@ const noSchemaOption = {
   group: OptionGroups.Options,
 } as const;
 
+const fileNameBaseOption = {
+  type: 'string',
+  description: 'Changes what file name prefix is used when looking for app-config files',
+  group: OptionGroups.Options,
+} as const;
+
 const secretsOption = {
   alias: 's',
   type: 'boolean',
@@ -178,9 +184,19 @@ function fileTypeForFormatOption(option: string): FileType {
   }
 }
 
-function loadConfigConditionalValidation(noSchema: boolean): typeof loadConfig {
-  if (noSchema) return loadConfig;
-  return loadValidatedConfig;
+function loadConfigWithOptions({
+  noSchema,
+  fileNameBase,
+}: {
+  noSchema?: boolean;
+  fileNameBase?: string;
+}): ReturnType<typeof loadConfig> {
+  const options = {
+    fileNameBase,
+  };
+
+  if (noSchema) return loadConfig(options);
+  return loadValidatedConfig(options);
 }
 
 const { argv: _ } = yargs
@@ -234,16 +250,14 @@ const { argv: _ } = yargs
           secrets: secretsOption,
           prefix: prefixOption,
           noSchema: noSchemaOption,
+          fileNameBase: fileNameBaseOption,
           agent: secretAgentOption,
         },
       },
       async (opts) => {
         shouldUseSecretAgent(opts.agent);
 
-        const toPrint = selectSecretsOrNot(
-          await loadConfigConditionalValidation(opts.noSchema)(),
-          opts.secrets,
-        );
+        const toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
 
         process.stdout.write(
           Object.entries(flattenObjectTree(toPrint, opts.prefix))
@@ -269,16 +283,14 @@ const { argv: _ } = yargs
           format: formatOption,
           select: selectOption,
           noSchema: noSchemaOption,
+          fileNameBase: fileNameBaseOption,
           agent: secretAgentOption,
         },
       },
       async (opts) => {
         shouldUseSecretAgent(opts.agent);
 
-        let toPrint = selectSecretsOrNot(
-          await loadConfigConditionalValidation(opts.noSchema)(),
-          opts.secrets,
-        );
+        let toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
@@ -713,6 +725,7 @@ const { argv: _ } = yargs
           format: { ...formatOption, default: 'json' },
           select: selectOption,
           noSchema: noSchemaOption,
+          fileNameBase: fileNameBaseOption,
           agent: secretAgentOption,
         },
       },
@@ -726,10 +739,7 @@ const { argv: _ } = yargs
           process.exit(1);
         }
 
-        let toPrint = selectSecretsOrNot(
-          await loadConfigConditionalValidation(opts.noSchema)(),
-          opts.secrets,
-        );
+        let toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
