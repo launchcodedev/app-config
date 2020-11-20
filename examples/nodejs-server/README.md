@@ -20,6 +20,11 @@ In order to trust yourself to this project run: [more on trusting users](../../g
 ```sh
 yarn APP_CONFIG_SECRETS_KEY=`cat ci.asc` app-config secret trust my_public_key.asc
 ```
+---
+**NOTE:**
+using the env variable APP_CONFIG_SECRETS_KEY in order to authorize your private key to this repo. [For more info on how CI works](../../guide/intro/encryption.md#ci-automation)
+
+---
 
 You are now a trusted member of this project and can view its secrets. (Note: .app-config.meta.yml has changed with the new trusted user). 
 
