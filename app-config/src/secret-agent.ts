@@ -11,9 +11,10 @@ import {
   decryptSymmetricKey,
   EncryptedSymmetricKey,
 } from './encryption';
+import { loadOrCreateCert } from './secret-agent-tls';
+import { loadSettingsLazy, saveSettings } from './settings';
 import { AppConfigError } from './errors';
 import { logger } from './logging';
-import { loadOrCreateCert } from './secret-agent-tls';
 
 export enum MessageType {
   Ping = 'Ping',
@@ -44,7 +45,7 @@ export type Events = never;
 export class Client extends BaseClient<MessageType, EventType, Messages, Events> {}
 export class Server extends BaseServer<MessageType, EventType, Messages, Events> {}
 
-export async function startAgent(port: number = 42938, privateKeyOverride?: Key): Promise<Server> {
+export async function startAgent(portOverride?: number, privateKeyOverride?: Key): Promise<Server> {
   let privateKey: Key;
 
   if (privateKeyOverride) {
@@ -52,6 +53,8 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
   } else {
     privateKey = await loadPrivateKeyLazy();
   }
+
+  const port = await getAgentPort(portOverride);
 
   logger.info(`Starting secret-agent, listening on port ${port}`);
 
@@ -101,13 +104,14 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
 
 export async function connectAgent(
   closeTimeoutMs = Infinity,
-  port: number = 42938,
+  portOverride?: number,
   loadEncryptedKey: typeof loadSymmetricKey = loadSymmetricKey,
 ) {
+  const port = await getAgentPort(portOverride);
+
   logger.verbose(`Connecting to secret-agent on port ${port}`);
 
   const { cert } = await loadOrCreateCert();
-
   const client = new Client(new WebSocket(`wss://localhost:${port}`, { ca: [cert] }));
 
   await client.waitForConnection();
@@ -179,8 +183,10 @@ const clients = new Map<number, ReturnType<typeof connectAgent>>();
 
 export async function connectAgentLazy(
   closeTimeoutMs = 500,
-  port: number = 42938,
+  portOverride?: number,
 ): ReturnType<typeof connectAgent> {
+  const port = await getAgentPort(portOverride);
+
   if (!clients.has(port)) {
     const connection = connectAgent(closeTimeoutMs, port);
 
@@ -219,6 +225,30 @@ export function shouldUseSecretAgent(value?: boolean) {
   }
 
   return useSecretAgent;
+}
+
+const defaultPort = 42938;
+
+async function getAgentPort(portOverride?: number) {
+  if (portOverride !== undefined) {
+    return portOverride;
+  }
+  const settings = await loadSettingsLazy();
+
+  if (settings.secretAgent?.port) {
+    return settings.secretAgent.port;
+  }
+  if (settings.secretAgent) {
+    await saveSettings({
+      ...settings,
+      secretAgent: {
+        ...settings.secretAgent,
+        port: defaultPort,
+      },
+    });
+  }
+
+  return defaultPort;
 }
 
 async function loadSymmetricKey(revision: number): Promise<EncryptedSymmetricKey> {

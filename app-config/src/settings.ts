@@ -12,6 +12,7 @@ export interface Settings {
     key: string;
     cert: string;
     expiry: string;
+    port?: number;
   };
 }
 
