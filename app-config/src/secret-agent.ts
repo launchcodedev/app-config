@@ -147,8 +147,16 @@ export async function connectAgent(
     async decryptValue(text: string) {
       keepAlive();
 
-      const revision = parseFloat(text.split(':')[1]);
-      const symmetricKey = await loadEncryptedKey(revision);
+      const revision = text.split(':')[1];
+      const revisionNumber = parseFloat(revision);
+
+      if (Number.isNaN(revisionNumber)) {
+        throw new AppConfigError(
+          `Encrypted value was invalid, revision was not a number (${revision})`,
+        );
+      }
+
+      const symmetricKey = await loadEncryptedKey(revisionNumber);
       const decrypted = await client.call(MessageType.Decrypt, { text, symmetricKey });
 
       keepAlive();
