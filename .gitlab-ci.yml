@@ -21,3 +21,23 @@ sync-github-repo:
   only: [master]
   variables:
     GITHUB_SSH_URL: git@github.com:servall/app-config.git
+  script:
+    - test -n "${GITHUB_SSH_URL}" || (echo "No GITHUB_SSH_URL was found" && exit 1)
+    - test -n "${GITLAB_SSH_URL}" || (echo "No GITLAB_SSH_URL was found" && exit 1)
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - git remote remove github || true
+    - git remote add github ${GITHUB_SSH_URL}
+    - git remote remove origin || true
+    - git remote add origin ${GITLAB_SSH_URL}
+    # pull any changes made on the github side
+    - git fetch github ${CI_COMMIT_REF_NAME}
+    - git merge github/${CI_COMMIT_REF_NAME}
+    # push whatever master ended up as back to gitlab and github
+    - git push origin HEAD:${CI_COMMIT_REF_NAME}
+    - git push github HEAD:${CI_COMMIT_REF_NAME}
+    # push any tags made in gitlab up to github
+    - git fetch origin --tags
+    - git push github --tags
+    # push any tags made in github up to gitlab
+    - git fetch github --tags
+    - git push origin --tags

@@ -23,6 +23,10 @@ export async function generateCert(): Promise<Cert> {
   const expiry = new Date();
 
   expiry.setDate(expiry.getDate() + expireIn - 2);
+  expiry.setHours(0);
+  expiry.setMinutes(0);
+  expiry.setSeconds(0);
+  expiry.setMilliseconds(0);
 
   logger.info(`Creating a self-signed certificate that expires in ${expireIn} days`);
 
