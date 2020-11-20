@@ -13,10 +13,10 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-beta.10"
+    "@lcdev/app-config": "2 || 2.0.0-beta.11"
   },
   "devDependencies": {
-    "@lcdev/app-config-webpack-plugin": "2 || 2.0.0-beta.10",
+    "@lcdev/app-config-webpack-plugin": "2 || 2.0.0-beta.11",
     "@lcdev/tsconfig": "0.2",
     "html-webpack-plugin": "4",
     "ts-loader": "8",
