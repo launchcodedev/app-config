@@ -318,6 +318,24 @@ export async function encryptValue(
   value: Json,
   symmetricKeyOverride?: DecryptedSymmetricKey,
 ): Promise<string> {
+  if (!symmetricKeyOverride && shouldUseSecretAgent()) {
+    let client;
+
+    try {
+      client = await connectAgentLazy();
+    } catch {
+      logger.warn('Secret agent is not running');
+    }
+
+    if (client) {
+      const allKeys = await loadSymmetricKeys();
+      const latestRevision = latestSymmetricKeyRevision(allKeys);
+      const symmetricKey = allKeys.find((k) => k.revision === latestRevision)!;
+
+      return client.encryptValue(value, symmetricKey);
+    }
+  }
+
   let symmetricKey: DecryptedSymmetricKey;
 
   if (symmetricKeyOverride) {

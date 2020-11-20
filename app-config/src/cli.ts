@@ -12,21 +12,20 @@ import { Configuration, loadConfig, loadValidatedConfig } from './config';
 import {
   keyDirs,
   initializeLocalKeys,
-  loadPublicKeyLazy,
-  trustTeamMember,
   loadPrivateKeyLazy,
-  loadLatestSymmetricKeyLazy,
+  loadPublicKeyLazy,
   encryptValue,
   decryptValue,
-  untrustTeamMember,
   loadKey,
   initializeKeys,
   deleteLocalKeys,
-  generateSymmetricKey,
   loadSymmetricKeys,
-  latestSymmetricKeyRevision,
   saveNewSymmetricKey,
+  generateSymmetricKey,
+  latestSymmetricKeyRevision,
   loadTeamMembersLazy,
+  trustTeamMember,
+  untrustTeamMember,
 } from './encryption';
 import { shouldUseSecretAgent, startAgent, disconnectAgents } from './secret-agent';
 import { loadSchema } from './schema';
@@ -588,12 +587,14 @@ const { argv: _ } = yargs
               },
               options: {
                 clipboard: clipboardOption,
+                agent: secretAgentOption,
               },
             },
             async (opts) => {
+              shouldUseSecretAgent(opts.agent);
+
               // load these right away, so user unlocks asap
-              const privateKey = await loadPrivateKeyLazy();
-              const key = await loadLatestSymmetricKeyLazy(privateKey);
+              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy();
 
               let { secretValue }: { secretValue?: Json } = opts;
 
@@ -623,7 +624,7 @@ const { argv: _ } = yargs
                 }
               }
 
-              const encrypted = await encryptValue(secretValue, key);
+              const encrypted = await encryptValue(secretValue);
 
               if (opts.clipboard) {
                 await clipboardy.write(encrypted);

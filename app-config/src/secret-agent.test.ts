@@ -27,29 +27,39 @@ describe('Decryption', () => {
 
     const client = await connectAgent(Infinity, port, async () => encryptedSymmetricKey);
 
-    await client.ping();
+    try {
+      await client.ping();
 
-    const values: Json[] = [
-      'text',
-      88.88,
-      true,
-      null,
-      { value: 42 },
-      { nested: { value: true } },
-      [1, 2, 3],
-      [{}, { b: true }, { c: true }],
-    ];
+      const values: Json[] = [
+        'text',
+        88.88,
+        true,
+        null,
+        { value: 42 },
+        { nested: { value: true } },
+        [1, 2, 3],
+        [{}, { b: true }, { c: true }],
+      ];
 
-    await Promise.all(
-      values.map(async (value) => {
-        const encryptedValue = await encryptValue(value, symmetricKey);
-        const received = await client.decryptValue(encryptedValue);
+      await Promise.all(
+        values.map(async (value) => {
+          const [encryptedLocally, encryptedRemotely] = await Promise.all([
+            encryptValue(value, symmetricKey),
+            client.encryptValue(value, encryptedSymmetricKey),
+          ]);
 
-        expect(received).toEqual(value);
-      }),
-    );
+          const [receivedLocal, receivedRemote] = await Promise.all([
+            client.decryptValue(encryptedLocally),
+            client.decryptValue(encryptedRemotely),
+          ]);
 
-    await client.close();
-    await server.close();
+          expect(receivedLocal).toEqual(value);
+          expect(receivedRemote).toEqual(value);
+        }),
+      );
+    } finally {
+      await client.close();
+      await server.close();
+    }
   });
 });

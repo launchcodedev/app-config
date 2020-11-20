@@ -5,6 +5,7 @@ import { Json } from './common';
 import {
   Key,
   decryptValue,
+  encryptValue,
   loadSymmetricKeys,
   loadPrivateKeyLazy,
   decryptSymmetricKey,
@@ -17,6 +18,7 @@ import { loadOrCreateCert } from './secret-agent-tls';
 export enum MessageType {
   Ping = 'Ping',
   Decrypt = 'Decrypt',
+  Encrypt = 'Encrypt',
 }
 
 export type Messages = {
@@ -28,6 +30,11 @@ export type Messages = {
       symmetricKey: EncryptedSymmetricKey;
     },
     Json
+  >;
+  [MessageType.Encrypt]: MessageVariant<
+    MessageType.Encrypt,
+    { value: Json; symmetricKey: EncryptedSymmetricKey },
+    string
   >;
 };
 
@@ -61,6 +68,14 @@ export async function startAgent(port: number = 42938, privateKeyOverride?: Key)
     const decoded = await decryptValue(text, await decryptSymmetricKey(symmetricKey, privateKey));
 
     return decoded;
+  });
+
+  server.registerHandler(MessageType.Encrypt, async ({ value, symmetricKey }) => {
+    logger.verbose(`Encrypting a secret value with key rev:${symmetricKey.revision}`);
+
+    const encoded = await encryptValue(value, await decryptSymmetricKey(symmetricKey, privateKey));
+
+    return encoded;
   });
 
   httpsServer.listen(port);
@@ -139,6 +154,15 @@ export async function connectAgent(
       keepAlive();
 
       return decrypted;
+    },
+    async encryptValue(value: Json, symmetricKey: EncryptedSymmetricKey) {
+      keepAlive();
+
+      const encoded = await client.call(MessageType.Encrypt, { value, symmetricKey });
+
+      keepAlive();
+
+      return encoded;
     },
   } as const;
 }
