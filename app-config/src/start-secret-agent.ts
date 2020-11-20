@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { startAgent } from './secret-agent';
 import { logger } from './logging';
 
