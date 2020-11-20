@@ -20,7 +20,7 @@ In order to trust yourself to this project, you can export your public certifica
 yarn app-config secrets export my_public_key.asc
 ```
 
-In order to trust yourself to this project run: [more on trusting users](../../guide/intro/encryption.md#trusting-users)
+In order to trust yourself to this project run: ([more on trusting users](../../guide/intro/encryption.md#trusting-users))
 
 ```sh
 yarn APP_CONFIG_SECRETS_KEY=`cat ci.asc` app-config secret trust my_public_key.asc
@@ -29,19 +29,20 @@ yarn APP_CONFIG_SECRETS_KEY=`cat ci.asc` app-config secret trust my_public_key.a
 ---
 
 **NOTE:**
-using the env variable APP_CONFIG_SECRETS_KEY in order to authorize your private key to this repo. [For more info on how CI works](../../guide/intro/encryption.md#ci-automation)
+We're using the variable APP_CONFIG_SECRETS_KEY in order to authorize your private key to this repo.
+[More info here](../../guide/intro/encryption.md#ci-automation).
 
 ---
 
 You are now a trusted member of this project and can view its secrets. (Note: .app-config.meta.yml has changed with the new trusted user).
 
-To view all config variables including secrets you can run:
+To view all config variables including secrets, you can run:
 
 ```sh
 yarn app-config vars --secrets
 ```
 
-alternatively, you can decrypt a secret by running:
+Alternatively, you can decrypt a secret by running:
 
 ```sh
 yarn app-config secret decrypt 'enc:1:...'
