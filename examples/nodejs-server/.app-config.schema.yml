@@ -1,0 +1,11 @@
+type: object
+additionalProperties: false
+
+required:
+  - port
+
+properties:
+  port:
+    type: integer
+    minimum: 0
+    maximum: 65535

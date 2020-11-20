@@ -1,0 +1,10 @@
+type: object
+additionalProperties: false
+
+properties:
+  user:
+    type: object
+    additionalProperties: false
+    properties:
+      name:
+        type: string

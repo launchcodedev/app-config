@@ -1,0 +1,28 @@
+{
+  "name": "frontend-webpack-project",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "scripts": {
+    "config:generate": "app-config generate",
+    "dev": "ENV=dev webpack-dev-server",
+    "build": "webpack --mode production",
+    "clean": "rm -rf ./dist",
+    "lint": "exit 0",
+    "fix": "exit 0",
+    "test": "exit 0"
+  },
+  "dependencies": {
+    "@lcdev/app-config": "2 || 2.0.0-beta.12"
+  },
+  "devDependencies": {
+    "@lcdev/app-config-webpack-plugin": "2 || 2.0.0-beta.12",
+    "@lcdev/tsconfig": "0.2",
+    "html-webpack-plugin": "4",
+    "ts-loader": "8",
+    "typescript": "4",
+    "webpack": "4",
+    "webpack-cli": "3",
+    "webpack-dev-server": "3"
+  }
+}

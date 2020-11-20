@@ -1,0 +1,6 @@
+# Try it out! Run with APP_CONFIG_ENV=production
+
+port:
+  $env:
+    default: 3000
+    production: 80
