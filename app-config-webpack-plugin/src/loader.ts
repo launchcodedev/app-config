@@ -1,6 +1,6 @@
 import * as wp from 'webpack';
 import { getOptions } from 'loader-utils';
-import { loadValidatedConfig } from '@lcdev/app-config';
+import { loadConfig } from './compat';
 
 const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
@@ -8,7 +8,7 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   const callback = this.async()!;
   const { headerInjection = false } = getOptions(this) || {};
 
-  loadValidatedConfig()
+  loadConfig()
     .then(({ fullConfig, filePaths }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(filePath));
