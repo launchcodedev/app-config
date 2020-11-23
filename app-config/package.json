@@ -38,6 +38,8 @@
     "@iarna/toml": "3",
     "@lcdev/ts": "0.2",
     "@lcdev/ws-rpc": "0.3",
+    "@types/openpgp": "4",
+    "@types/prompts": "2",
     "@types/readable-stream": "2",
     "@types/urijs": "1",
     "ajv": "6",
@@ -63,8 +65,6 @@
     "@types/fs-extra": "9",
     "@types/js-yaml": "3",
     "@types/lodash.merge": "4",
-    "@types/openpgp": "4",
-    "@types/prompts": "2",
     "@types/tmp": "0.2",
     "get-port": "5",
     "tmp-promise": "3"
