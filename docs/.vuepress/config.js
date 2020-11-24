@@ -2,6 +2,13 @@ module.exports = {
   title: 'App Config',
   description: 'Easy to use configuration loader with schema validation',
 
+  head: [
+    [
+      'meta',
+      { name: 'google-site-verification', content: 'VnAVPQMmtn2kWFj3lZ5qRv_uddtWuDakYRVeDymdowE' },
+    ],
+  ],
+
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
