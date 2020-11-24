@@ -1,4 +1,5 @@
-import { loadConfig } from './config';
+import { loadConfig, loadValidatedConfig } from './config';
+import { FileSource, EnvironmentSource } from './config-source';
 import { withTempFiles } from './test-util';
 
 describe('Configuration Loading', () => {
@@ -103,6 +104,91 @@ describe('Configuration Loading', () => {
         expect((await loadConfig({ directory: inDir('.') })).fullConfig).toEqual({
           base: 'present',
           secret: 'present',
+        });
+      },
+    );
+  });
+
+  it('loads default values and merges them', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          a:
+            b: true
+          d: true
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig, parsed } = await loadConfig({
+          directory: inDir('.'),
+          defaultValues: { a: { c: true }, e: true },
+        });
+
+        expect(parsed.sources.find((source) => source instanceof FileSource)).toBeTruthy();
+        expect(fullConfig).toEqual({
+          a: { b: true, c: true },
+          d: true,
+          e: true,
+        });
+      },
+    );
+  });
+
+  it('loads default values and merges them with APP_CONFIG', async () => {
+    process.env.APP_CONFIG = JSON.stringify({
+      a: {
+        b: true,
+      },
+      d: true,
+    });
+
+    const { fullConfig, parsed } = await loadConfig({ defaultValues: { a: { c: true }, e: true } });
+
+    expect(parsed.sources.find((source) => source instanceof EnvironmentSource)).toBeTruthy();
+    expect(fullConfig).toEqual({
+      a: { b: true, c: true },
+      d: true,
+      e: true,
+    });
+  });
+
+  it('takes default values into account in validation', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          a:
+            b: true
+          d: true
+        `,
+
+        '.app-config.schema.yml': `
+          required: [a, d, e]
+          additionalProperties: false
+          properties:
+            a:
+              type: object
+              additionalProperties:
+                type: boolean
+            d: { type: boolean }
+            e: { type: boolean }
+        `,
+      },
+      async (inDir) => {
+        await expect(loadValidatedConfig({ directory: inDir('.') })).rejects.toThrow();
+        await expect(
+          loadValidatedConfig({ directory: inDir('.'), defaultValues: { d: 'string' } }),
+        ).rejects.toThrow();
+
+        const { fullConfig, parsed } = await loadValidatedConfig({
+          directory: inDir('.'),
+          defaultValues: { a: { c: true }, e: true },
+        });
+
+        expect(parsed.sources.find((source) => source instanceof FileSource)).toBeTruthy();
+        expect(fullConfig).toEqual({
+          a: { b: true, c: true },
+          d: true,
+          e: true,
         });
       },
     );

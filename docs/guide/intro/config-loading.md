@@ -7,6 +7,7 @@ This page will go over the exact strategy used for loading config files, environ
 variables, etc.
 
 1. Is the `APP_CONFIG` environment variable defined?
+    - If supplied, [merge](#merging) `defaultValues` that were passed into `loadConfig`.
     - If yes, guess it's file format and parse it. This is the full config.
 2. Find the current environment, based on `APP_CONFIG_ENV`, `NODE_ENV` or `ENV` (whichever is defined, in that order).
 3. Resolve environment "aliases" (dev -> development, prod -> production).
@@ -17,7 +18,8 @@ variables, etc.
     1. Look for `.app-config.secrets.{currentEnvironment}.{yml|yaml|toml|json|json5}`, whichever is found first
     2. Look for `.app-config.secrets.{yml|yaml|toml|json|json5}`, whichever is found first
 6. [Merge](#merging) main and secret config values recursively
-7. Look for `APP_CONFIG_EXTEND` or `APP_CONFIG_CI` environment variables
+7. If supplied, [merge](#merging) `defaultValues` that were passed into `loadConfig`.
+8. Look for `APP_CONFIG_EXTEND` or `APP_CONFIG_CI` environment variables
     - If defined, guess the format and parse it. Then [merge](#merging) it on top of loaded configuration.
 
 
