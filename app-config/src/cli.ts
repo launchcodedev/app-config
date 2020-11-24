@@ -91,10 +91,8 @@ function subcommand<
 
       await run(args as typeof args & yargs.InferredOptionTypes<Options & PositionalOptions>);
 
-      // cleanup any secret agent clients right away, so it's safe to process.exit
+      // cleanup any secret agent clients right away, so it's safe to exit
       await disconnectAgents();
-
-      process.exit(0);
     },
   };
 }
