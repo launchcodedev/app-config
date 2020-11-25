@@ -1,6 +1,7 @@
 import { join, resolve } from 'path';
 import * as fs from 'fs-extra';
 import * as pgp from 'openpgp';
+import { inspect } from 'util';
 import { generateKey, encrypt, decrypt, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
 import { Json, promptUser } from './common';
@@ -319,14 +320,7 @@ export async function encryptValue(
   symmetricKeyOverride?: DecryptedSymmetricKey,
 ): Promise<string> {
   if (!symmetricKeyOverride && shouldUseSecretAgent()) {
-    let client;
-
-    try {
-      client = await connectAgentLazy();
-    } catch (err) {
-      logger.verbose(`Secret agent connect error: ${err.toString()}`);
-      logger.warn('Secret agent is not running');
-    }
+    const client = await retrieveSecretAgent();
 
     if (client) {
       const allKeys = await loadSymmetricKeys();
@@ -371,14 +365,7 @@ export async function decryptValue(
   symmetricKeyOverride?: DecryptedSymmetricKey,
 ): Promise<Json> {
   if (!symmetricKeyOverride && shouldUseSecretAgent()) {
-    let client;
-
-    try {
-      client = await connectAgentLazy();
-    } catch (err) {
-      logger.verbose(`Secret agent connect error: ${err.toString()}`);
-      logger.warn('Secret agent is not running');
-    }
+    const client = await retrieveSecretAgent();
 
     if (client) {
       return client.decryptValue(text);
@@ -559,6 +546,28 @@ async function reencryptSymmetricKeys(
   }
 
   return newEncryptionKeys;
+}
+
+async function retrieveSecretAgent() {
+  let client;
+
+  try {
+    client = await connectAgentLazy();
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'error' in err) {
+      const { error } = err as { error: { errno: string } };
+
+      if (error.errno === 'ECONNREFUSED') {
+        logger.warn('Secret agent is not running');
+      }
+
+      logger.verbose(`Secret agent connect error: ${inspect(error)}`);
+    } else {
+      logger.error(`Secret agent connect error: ${inspect(err)}`);
+    }
+  }
+
+  return client;
 }
 
 async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties) {
