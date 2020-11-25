@@ -151,6 +151,33 @@ describe('create', () => {
       },
     );
   });
+
+  it('uses environmentOverride option', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          val:
+            $env:
+              default: 42
+              prod: 88
+        `,
+      },
+      async (inDir) => {
+        const { stdout: defaultValue } = await run(['vars', '-q', '-C', inDir('.')]);
+        expect(defaultValue).toMatchSnapshot();
+
+        const { stdout: production } = await run([
+          'vars',
+          '-q',
+          '-C',
+          inDir('.'),
+          '--environmentOverride=production',
+        ]);
+
+        expect(production).toMatchSnapshot();
+      },
+    );
+  });
 });
 
 describe('create-schema', () => {
