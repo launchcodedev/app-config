@@ -109,6 +109,43 @@ describe('Configuration Loading', () => {
   });
 });
 
+describe('Configuration Loading Options', () => {
+  it('uses environmentOverride', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `foo: default`,
+        '.app-config.prod.yml': `foo: production`,
+        '.app-config.development.yml': `
+          foo:
+            $substitute: '$APP_CONFIG_ENV'
+          bar:
+            $env:
+              default: default
+              dev: develop
+        `,
+      },
+      async (inDir) => {
+        expect((await loadConfig({ directory: inDir('.') })).fullConfig).toEqual({
+          foo: 'default',
+        });
+
+        expect(
+          (await loadConfig({ directory: inDir('.'), environmentOverride: 'production' }))
+            .fullConfig,
+        ).toEqual({ foo: 'production' });
+
+        expect(
+          (await loadConfig({ directory: inDir('.'), environmentOverride: 'development' }))
+            .fullConfig,
+        ).toEqual({
+          foo: 'development',
+          bar: 'develop',
+        });
+      },
+    );
+  });
+});
+
 describe('CI Environment Variable Extension', () => {
   it('merges APP_CONFIG_EXTEND values', async () => {
     await withTempFiles(

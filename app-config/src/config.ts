@@ -41,7 +41,7 @@ export async function loadConfig({
   extensionEnvironmentVariableNames = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
   environmentOverride,
   environmentAliases = defaultAliases,
-  parsingExtensions = defaultExtensions,
+  parsingExtensions = defaultExtensions(environmentAliases, environmentOverride),
   secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret),
   environmentExtensions = [],
 }: Options = {}): Promise<Configuration> {
