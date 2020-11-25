@@ -2,14 +2,33 @@ name: main
 on: [push]
 
 jobs:
-  lint-build-test:
-    runs-on: ${{ matrix.os }}
+  # for branches, we only need to check Linux + Node LTS
+  # note that we do linting here, but not on Windows / MacOS (no need to)
+  linux-and-lts:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - run: yarn install
+    - run: yarn build
+    - run: yarn lint
+    - run: yarn test
+      env: { CI: 1 }
+
+  # for master, we test Linux & Windows & MacOS + Node LTS & Latest
+  # note that we don't do linting here, only on Linux + Node LTS (above)
+  all:
+    if: github.ref == 'refs/heads/master'
 
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [10.x, 12.x, 14.x, 15.x]
 
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -17,6 +36,5 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: yarn install
     - run: yarn build
-    - run: yarn lint
     - run: yarn test
       env: { CI: 1 }
