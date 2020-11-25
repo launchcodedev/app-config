@@ -151,6 +151,20 @@ describe('create', () => {
       },
     );
   });
+
+  it('uses environmentVariableName option', async () => {
+    const MY_CONF = JSON.stringify({ foo: true });
+
+    const { stdout } = await run(['create', '-q', '--environmentVariableName=MY_CONF'], {
+      env: { MY_CONF },
+    });
+
+    expect(stdout).toMatchSnapshot();
+
+    await expect(
+      run(['create', '-q', '--environmentVariableName=MY_CONF'], { env: { APP_CONFIG: MY_CONF } }),
+    ).rejects.toThrow();
+  });
 });
 
 describe('create-schema', () => {
