@@ -1,9 +1,9 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import type { ConfigLoadingOptions } from '@lcdev/app-config';
 import { regex } from './loader';
 import { loadConfig } from './compat';
-import type { ConfigLoadingOptions } from '@lcdev/app-config';
 
 // loader is the filepath, not the export
 const loader = require.resolve('./loader');
