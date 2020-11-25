@@ -323,7 +323,8 @@ export async function encryptValue(
 
     try {
       client = await connectAgentLazy();
-    } catch {
+    } catch (err) {
+      logger.verbose(`Secret agent connect error: ${err.toString()}`);
       logger.warn('Secret agent is not running');
     }
 
@@ -374,7 +375,8 @@ export async function decryptValue(
 
     try {
       client = await connectAgentLazy();
-    } catch {
+    } catch (err) {
+      logger.verbose(`Secret agent connect error: ${err.toString()}`);
       logger.warn('Secret agent is not running');
     }
 
