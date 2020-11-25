@@ -1,7 +1,7 @@
 import { resolve, join } from 'path';
 import webpack from 'webpack';
 import HtmlPlugin from 'html-webpack-plugin';
-import AppConfigPlugin, { regex, loader } from './index';
+import AppConfigPlugin, { regex, loader, Options } from './index';
 
 const examplesDir = resolve(__dirname, '../../examples');
 const frontendProjectExampleDir = join(examplesDir, 'frontend-webpack-project');
@@ -11,7 +11,7 @@ jest.setTimeout(30000);
 describe('frontend-webpack-project example', () => {
   process.chdir(frontendProjectExampleDir);
 
-  const optionsWithoutHeaderInjection = {
+  const createOptions = (options: Options) => ({
     mode: 'development' as const,
     entry: join(frontendProjectExampleDir, 'src/index.ts'),
     output: {
@@ -19,31 +19,16 @@ describe('frontend-webpack-project example', () => {
       path: resolve(frontendProjectExampleDir, 'dist'),
     },
 
-    plugins: [new HtmlPlugin(), new AppConfigPlugin()],
+    plugins: [new HtmlPlugin(), new AppConfigPlugin(options)],
 
     module: {
-      rules: [{ test: regex, use: { loader } }],
+      rules: [{ test: regex, use: { loader, options } }],
     },
-  };
-
-  const optionsWithHeaderInjection = {
-    mode: 'development' as const,
-    entry: join(frontendProjectExampleDir, 'src/index.ts'),
-    output: {
-      filename: 'main.js',
-      path: resolve(frontendProjectExampleDir, 'dist'),
-    },
-
-    plugins: [new HtmlPlugin(), new AppConfigPlugin({ headerInjection: true })],
-
-    module: {
-      rules: [{ test: regex, use: { loader, options: { headerInjection: true } } }],
-    },
-  };
+  });
 
   it('builds the project without header injection', async () => {
     await new Promise<void>((done, reject) => {
-      webpack([optionsWithoutHeaderInjection], (err, stats) => {
+      webpack([createOptions({})], (err, stats) => {
         if (err) reject(err);
         if (stats.hasErrors()) reject(stats.toString());
 
@@ -61,7 +46,7 @@ describe('frontend-webpack-project example', () => {
 
   it('builds the project with header injection', async () => {
     await new Promise<void>((done, reject) => {
-      webpack([optionsWithHeaderInjection], (err, stats) => {
+      webpack([createOptions({ headerInjection: true })], (err, stats) => {
         if (err) reject(err);
         if (stats.hasErrors()) reject(stats.toString());
 
@@ -79,7 +64,7 @@ describe('frontend-webpack-project example', () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
 
     await new Promise<void>((done, reject) => {
-      webpack([optionsWithoutHeaderInjection], (err, stats) => {
+      webpack([createOptions({})], (err, stats) => {
         if (err) reject(err);
         if (stats.hasErrors()) reject(stats.toString());
 
@@ -92,6 +77,29 @@ describe('frontend-webpack-project example', () => {
 
         done();
       });
+    });
+  });
+
+  it('uses custom loading options to read a specific environment variable', async () => {
+    process.env.MY_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:9782' });
+
+    await new Promise<void>((done, reject) => {
+      webpack(
+        [createOptions({ loading: { environmentVariableName: 'MY_CONFIG' } })],
+        (err, stats) => {
+          if (err) reject(err);
+          if (stats.hasErrors()) reject(stats.toString());
+
+          const { children } = stats.toJson();
+          const [{ modules = [] }] = children || [];
+
+          expect(modules.map(({ source }) => source)).toContain(
+            'export default {"externalApiUrl":"https://localhost:9782"};',
+          );
+
+          done();
+        },
+      );
     });
   });
 });
