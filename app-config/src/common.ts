@@ -1,5 +1,6 @@
 import readline from 'readline';
 import prompts from 'prompts';
+import type { PromptObject } from 'prompts';
 
 export type PromiseOrNot<T> = Promise<T> | T;
 
@@ -60,7 +61,7 @@ export const flattenObjectTree = (
   }, {});
 };
 
-export async function promptUser<T>(options: Omit<prompts.PromptObject, 'name'>): Promise<T> {
+export async function promptUser<T>(options: Omit<PromptObject, 'name'>): Promise<T> {
   const { named } = await prompts({ ...options, name: 'named' });
 
   return named as T;
