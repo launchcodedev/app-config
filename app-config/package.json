@@ -37,7 +37,7 @@
   "dependencies": {
     "@iarna/toml": "3",
     "@lcdev/ts": "0.2",
-    "@lcdev/ws-rpc": "0.3",
+    "@lcdev/ws-rpc": "^0.3.7",
     "@types/openpgp": "4",
     "@types/prompts": "2",
     "@types/readable-stream": "2",
