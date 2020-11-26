@@ -111,7 +111,6 @@ export async function loadConfig({
     }
   }
 
-  // note that this cannot be exhaustive, because of $extends
   const filePaths = new Set<string>();
 
   for (const source of mainConfig.allSources()) {
