@@ -20,6 +20,7 @@ export interface Options {
   parsingExtensions?: ParsingExtension[];
   secretsFileExtensions?: ParsingExtension[];
   environmentExtensions?: ParsingExtension[];
+  defaultValues?: Json;
 }
 
 export interface Configuration {
@@ -44,13 +45,19 @@ export async function loadConfig({
   parsingExtensions = defaultExtensions,
   secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret),
   environmentExtensions = [],
+  defaultValues,
 }: Options = {}): Promise<Configuration> {
   // before trying to read .app-config files, we check for the APP_CONFIG environment variable
   const env = new EnvironmentSource(environmentVariableName);
   logger.verbose(`Trying to read ${environmentVariableName} for configuration`);
 
   try {
-    const parsed = await env.read(environmentExtensions);
+    let parsed = await env.read(environmentExtensions);
+
+    if (defaultValues) {
+      parsed = ParsedValue.merge(ParsedValue.literal(defaultValues), parsed);
+    }
+
     return { parsed, fullConfig: parsed.toJSON() };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
@@ -84,6 +91,10 @@ export async function loadConfig({
   ]);
 
   let parsed = secrets ? ParsedValue.merge(mainConfig, secrets) : mainConfig;
+
+  if (defaultValues) {
+    parsed = ParsedValue.merge(ParsedValue.literal(defaultValues), parsed);
+  }
 
   // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
   if (extensionEnvironmentVariableNames.length > 0) {
