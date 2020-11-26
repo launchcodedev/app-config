@@ -1,5 +1,6 @@
 import { join, resolve } from 'path';
 import { pathExists } from 'fs-extra';
+import { extendsDirective, overrideDirective } from './extensions';
 import { FlexibleFileSource, FileSource, FallbackSource, FileType } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
 import { NotFoundError } from './errors';
@@ -63,9 +64,11 @@ export async function loadMetaConfig({
   const source = new FallbackSource(sources);
 
   try {
-    const parsed = await source.read();
+    const parsed = await source.read([extendsDirective(), overrideDirective()]);
     const value = parsed.toJSON() as MetaProperties;
-    const { filePath, fileType } = parsed.assertSource(FileSource);
+
+    const fileSources = parsed.sources.filter((s) => s instanceof FileSource) as FileSource[];
+    const [{ filePath, fileType }] = fileSources.filter((s) => s.filePath.includes(fileNameBase));
 
     logger.verbose(`Meta file was loaded from ${filePath}`);
 
