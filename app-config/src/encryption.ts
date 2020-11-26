@@ -408,10 +408,12 @@ export async function decryptValue(
   return JSON.parse(data) as Json;
 }
 
-export async function loadTeamMembers(): Promise<Key[]> {
+export async function loadTeamMembers(lazy = true): Promise<Key[]> {
+  const loadMeta = lazy ? loadMetaConfigLazy : loadMetaConfig;
+
   const {
     value: { teamMembers = [] },
-  } = await loadMetaConfigLazy();
+  } = await loadMeta();
 
   return Promise.all(teamMembers.map(({ publicKey }) => loadKey(publicKey)));
 }
