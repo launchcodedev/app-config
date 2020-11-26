@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { FlexibleFileSource, FileSource, FileType } from './config-source';
+import { extendsDirective, overrideDirective } from './extensions';
 import { EncryptedSymmetricKey } from './encryption';
 import { NotFoundError } from './errors';
 import { GenerateFile } from './generate';
@@ -34,9 +35,11 @@ export async function loadMetaConfig({
   const source = new FlexibleFileSource(join(directory, fileNameBase));
 
   try {
-    const parsed = await source.read();
+    const parsed = await source.read([extendsDirective(), overrideDirective()]);
     const value = parsed.toJSON() as MetaProperties;
-    const { filePath, fileType } = parsed.assertSource(FileSource);
+
+    const fileSources = parsed.sources.filter((s) => s instanceof FileSource) as FileSource[];
+    const [{ filePath, fileType }] = fileSources.filter((s) => s.filePath.includes(fileNameBase));
 
     logger.verbose(`Meta file was loaded from ${filePath}`);
 

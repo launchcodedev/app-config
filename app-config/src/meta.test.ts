@@ -27,4 +27,48 @@ describe('meta file loading', () => {
       },
     );
   });
+
+  it('uses $extends in a meta file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.yml': `
+          foo: qux
+          $extends: ./other-file.yml
+        `,
+        'other-file.yml': `
+          foo: bar
+          bar: baz
+        `,
+      },
+      async (inDir) => {
+        const meta = await loadMetaConfig({ directory: inDir('.') });
+
+        expect(meta.value).toEqual({ foo: 'qux', bar: 'baz' });
+        expect(meta.filePath).toBe(inDir('.app-config.meta.yml'));
+        expect(meta.fileType).toBe(FileType.YAML);
+      },
+    );
+  });
+
+  it('uses $override in a meta file', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.yml': `
+          foo: qux
+          $override: ./other-file.yml
+        `,
+        'other-file.yml': `
+          foo: bar
+          bar: baz
+        `,
+      },
+      async (inDir) => {
+        const meta = await loadMetaConfig({ directory: inDir('.') });
+
+        expect(meta.value).toEqual({ foo: 'bar', bar: 'baz' });
+        expect(meta.filePath).toBe(inDir('.app-config.meta.yml'));
+        expect(meta.fileType).toBe(FileType.YAML);
+      },
+    );
+  });
 });
