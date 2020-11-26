@@ -2,7 +2,7 @@ import { join, dirname, extname, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsedValue, ParsedValueMetadata, ParsingExtension } from './parsed-value';
+import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root } from './parsed-value';
 import { FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
@@ -155,7 +155,12 @@ export function environmentVariableSubstitution(
 
 /** V1 app-config compatibility */
 export function v1Compat(): ParsingExtension {
-  return (value, [_, key]) => {
+  return (value, [_, key], context) => {
+    // only apply in top-level app-config property
+    if (context[context.length - 1]?.[0] !== Root) {
+      return false;
+    }
+
     if (key === 'app-config' && isObject(value)) {
       return async (parse, _, ctx) => {
         if (ctx instanceof FileSource) {

@@ -243,6 +243,24 @@ describe('CI Environment Variable Extension', () => {
 });
 
 describe('V1 Compatibility', () => {
+  it('retains nested properties called app-config', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          nested:
+            app-config:
+              extends: base-file.yml
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        // keeps config intact, since app-config isn't at the root
+        expect(fullConfig).toEqual({ nested: { 'app-config': { extends: 'base-file.yml' } } });
+      },
+    );
+  });
+
   it('uses special app-config property for $extends', async () => {
     await withTempFiles(
       {
