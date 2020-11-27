@@ -641,10 +641,7 @@ describe('extension combinations', () => {
           $extends: inDir('./other-file.json'),
         });
 
-        const parsed = await source.read([
-          v1Compat(),
-          extendsDirective(),
-        ]);
+        const parsed = await source.read([v1Compat(), extendsDirective()]);
 
         expect(parsed.toJSON()).toEqual({ a: 'foo', b: 'bar' });
       },
