@@ -2,7 +2,7 @@ import { join, dirname, extname, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root, InObject } from './parsed-value';
+import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root } from './parsed-value';
 import { FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
