@@ -116,26 +116,18 @@ describe('Symmetric Keys', () => {
 });
 
 describe('Value Encryption', () => {
-  it('encrypts and decrypts a simple value', async () => {
-    const value = 'hello world';
-    const symmetricKey = await generateSymmetricKey(1);
-    const encrypted = await encryptValue(value, symmetricKey);
-    const decrypted = await decryptValue(encrypted, symmetricKey);
+  it('encrypts and decrypts JSON-compatible values', async () => {
+    const values = ['hello world', 42.42, null, true, { message: 'hello world', nested: {} }];
 
-    expect(typeof encrypted).toEqual('string');
-    expect(encrypted).toMatch(/^enc:1:/);
-    expect(decrypted).toEqual(value);
-  });
+    for (const value of values) {
+      const symmetricKey = await generateSymmetricKey(1);
+      const encrypted = await encryptValue(value, symmetricKey);
+      const decrypted = await decryptValue(encrypted, symmetricKey);
 
-  it('encrypts and decrypts a JSON object', async () => {
-    const value = { message: 'hello world', nested: {} };
-    const symmetricKey = await generateSymmetricKey(1);
-    const encrypted = await encryptValue(value, symmetricKey);
-    const decrypted = await decryptValue(encrypted, symmetricKey);
-
-    expect(typeof encrypted).toEqual('string');
-    expect(encrypted).toMatch(/^enc:1:/);
-    expect(decrypted).toEqual(value);
+      expect(typeof encrypted).toEqual('string');
+      expect(encrypted).toMatch(/^enc:1:/);
+      expect(decrypted).toEqual(value);
+    }
   });
 
   it('cannot decrypt a value with the wrong key', async () => {
