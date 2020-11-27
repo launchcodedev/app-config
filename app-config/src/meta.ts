@@ -78,7 +78,13 @@ export async function loadMetaConfig({
       value,
     };
   } catch (error) {
-    if (error instanceof NotFoundError) return { value: {} };
+    if (error instanceof NotFoundError) {
+      logger.verbose(
+        `Meta file was not found in ${directory} or workspace root (${workspaceRoot ?? 'none'})`,
+      );
+
+      return { value: {} };
+    }
 
     throw error;
   }
