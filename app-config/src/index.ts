@@ -95,6 +95,7 @@ export {
   parseRawString,
 } from './config-source';
 
+/** @hidden */
 export function resetConfigInternal() {
   loadedConfig = undefined;
 }
