@@ -245,6 +245,20 @@ export class ParsedValue {
     return new ParsedValue(this.sources, this.raw, this.value);
   }
 
+  visitAll(callback: (value: ParsedValue) => void) {
+    callback(this);
+
+    if (Array.isArray(this.value)) {
+      this.value.forEach((item) => {
+        item.visitAll(callback);
+      });
+    } else if (typeof this.value === 'object' && this.value !== null) {
+      for (const item of Object.values(this.value)) {
+        item.visitAll(callback);
+      }
+    }
+  }
+
   toJSON(): Json {
     if (Array.isArray(this.value)) {
       return this.value.map((v) => v.toJSON());
