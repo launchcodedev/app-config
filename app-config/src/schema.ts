@@ -136,7 +136,7 @@ async function extractExternalSchemas(
     }
 
     // tell the schema who they are, mostly for clarity
-    referencedSchema.$id = resolvedPathEncoded;
+    Object.assign(referencedSchema, { $id: resolvedPathEncoded });
 
     // add schema to schemaRefs object, so they can be added to Ajv
     Object.assign(schemas, { [resolvedPathEncoded]: referencedSchema });
