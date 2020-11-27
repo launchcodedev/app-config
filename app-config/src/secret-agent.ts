@@ -138,6 +138,7 @@ export async function connectAgent(
 
   return {
     close() {
+      isClosed = true;
       return client.close();
     },
     isClosed() {
