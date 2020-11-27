@@ -424,6 +424,8 @@ async function parseValueInner(
           toMerge.push(parsed.removeMeta('shouldMerge'));
         } else if (parsed.meta.shouldOverride) {
           toOverride.push(parsed.removeMeta('shouldOverride'));
+        } else if (parsed.meta.rewriteKey) {
+          obj[parsed.meta.rewriteKey] = parsed.removeMeta('rewriteKey');
         } else {
           obj[key] = parsed;
         }
