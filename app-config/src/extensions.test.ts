@@ -1,5 +1,6 @@
 import { FileSource, LiteralSource } from './config-source';
 import {
+  v1Compat,
   envDirective,
   environmentVariableSubstitution,
   extendsDirective,
@@ -608,5 +609,42 @@ describe('extension combinations', () => {
     const parsed = await source.read([envDirective(), environmentVariableSubstitution()]);
 
     expect(parsed.toJSON()).toEqual({ apiUrl: 'http://localhost:3000' });
+  });
+
+  it('combines $extends and $substitute directives', async () => {
+    await withTempFiles({ 'other-file.json': JSON.stringify({ foo: 'bar' }) }, async (inDir) => {
+      process.env.SOME_VAR = inDir('./other-file.json');
+
+      const source = new LiteralSource({
+        $extends: {
+          $substitute: '$SOME_VAR',
+        },
+      });
+
+      const parsed = await source.read([extendsDirective(), environmentVariableSubstitution()]);
+
+      expect(parsed.toJSON()).toEqual({ foo: 'bar' });
+    });
+  });
+
+  it('combines v1 compat and $extends directives', async () => {
+    await withTempFiles(
+      {
+        'some-file.json': JSON.stringify({ a: 'foo' }),
+        'other-file.json': JSON.stringify({ b: 'bar' }),
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          'app-config': {
+            extends: inDir('./some-file.json'),
+          },
+          $extends: inDir('./other-file.json'),
+        });
+
+        const parsed = await source.read([v1Compat(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ a: 'foo', b: 'bar' });
+      },
+    );
   });
 });

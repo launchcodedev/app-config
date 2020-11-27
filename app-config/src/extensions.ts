@@ -8,6 +8,7 @@ import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
 import { logger } from './logging';
 
+/** ParsingExtensions that are used by default in loadConfig for reading files */
 export function defaultExtensions(
   aliases: EnvironmentAliases = defaultAliases,
   environmentOverride?: string,
@@ -19,8 +20,14 @@ export function defaultExtensions(
     extendsDirective(),
     overrideDirective(),
     encryptedDirective(symmetricKey),
+    unescape$Directives(),
     environmentVariableSubstitution(aliases, environmentOverride),
   ];
+}
+
+/** ParsingExtensions that are used by default in loadConfig for APP_CONFIG variable */
+export function defaultEnvExtensions(): ParsingExtension[] {
+  return [unescape$Directives()];
 }
 
 /** Uses another file as a "base", and extends on top of it */
@@ -85,6 +92,19 @@ export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): Parsin
         const decrypted = await decryptValue(value, symmetricKey);
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
+      };
+    }
+
+    return false;
+  };
+}
+
+/** When a key $$foo is seen, change it to be $foo and mark with meta property fromEscapedDirective */
+export function unescape$Directives(): ParsingExtension {
+  return (value, [_, key]) => {
+    if (typeof key === 'string' && key.startsWith('$$')) {
+      return async (parse) => {
+        return parse(value, { rewriteKey: key.slice(1), fromEscapedDirective: true });
       };
     }
 

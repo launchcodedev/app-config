@@ -28,7 +28,7 @@ describe('loadConfig', () => {
     );
   });
 
-  it('deep property access', async () => {
+  it('allows deep property access', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `foo: { bar: { baz: 88 } }`,
@@ -41,6 +41,72 @@ describe('loadConfig', () => {
 
         expect(loaded.foo.bar).toEqual({ baz: 88 });
         expect(loaded.foo.bar.baz).toEqual(88);
+      },
+    );
+  });
+
+  it('lists root level keys correctly', async () => {
+    await withTempFiles(
+      {
+        '.app-config.schema.yml': `type: object`,
+        '.app-config.yml': `
+          a: true
+          b: true
+          c: true
+        `,
+      },
+      async (inDir) => {
+        const loaded = (await loadConfig({
+          directory: inDir('.'),
+        })) as { a: boolean; b: boolean; c: boolean };
+
+        expect(Object.keys(loaded)).toEqual(['a', 'b', 'c']);
+      },
+    );
+  });
+
+  it("responds to 'in' operator", async () => {
+    await withTempFiles(
+      {
+        '.app-config.schema.yml': `type: object`,
+        '.app-config.yml': `
+          a: true
+          b: true
+          c: true
+        `,
+      },
+      async (inDir) => {
+        const loaded = (await loadConfig({
+          directory: inDir('.'),
+        })) as { a: boolean; b: boolean; c: boolean };
+
+        expect('a' in loaded).toBe(true);
+        expect('b' in loaded).toBe(true);
+        expect('c' in loaded).toBe(true);
+      },
+    );
+  });
+
+  it('disallows property deletion or mutation', async () => {
+    await withTempFiles(
+      {
+        '.app-config.schema.yml': `type: object`,
+        '.app-config.yml': `foo: 88`,
+      },
+      async (inDir) => {
+        const loaded = (await loadConfig({
+          directory: inDir('.'),
+        })) as { foo?: number };
+
+        expect(() => {
+          delete loaded.foo;
+        }).toThrow();
+        expect(() => {
+          loaded.foo = 99;
+        }).toThrow();
+        expect(() => {
+          loaded.foo = undefined;
+        }).toThrow();
       },
     );
   });

@@ -24,7 +24,6 @@ describe('Decryption', () => {
 
     const port = await getPort();
     const server = await startAgent(port, privateKey);
-
     const client = await connectAgent(Infinity, port, async () => encryptedSymmetricKey);
 
     try {
@@ -61,5 +60,7 @@ describe('Decryption', () => {
       await client.close();
       await server.close();
     }
+
+    expect(client.isClosed()).toBe(true);
   });
 });

@@ -8,7 +8,12 @@ import { resolve, dereference } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
 import { consumeStdin, flattenObjectTree, Json, JsonObject, promptUser } from './common';
 import { FileType, stringify } from './config-source';
-import { Configuration, loadConfig, loadValidatedConfig } from './config';
+import {
+  Configuration,
+  Options as LoadConfigOptions,
+  loadConfig,
+  loadValidatedConfig,
+} from './config';
 import {
   keyDirs,
   initializeLocalKeys,
@@ -111,6 +116,13 @@ const fileNameBaseOption = {
   group: OptionGroups.Options,
 } as const;
 
+const environmentOverrideOption = {
+  type: 'string',
+  description:
+    'Explicitly overrides the current environment (set by APP_CONFIG_ENV | NODE_ENV | ENV)',
+  group: OptionGroups.Options,
+} as const;
+
 const secretsOption = {
   alias: 's',
   type: 'boolean',
@@ -124,6 +136,13 @@ const prefixOption = {
   type: 'string',
   default: 'APP_CONFIG',
   description: 'Prefix for environment variable names',
+  group: OptionGroups.Options,
+} as const;
+
+const environmentVariableNameOption = {
+  type: 'string',
+  default: 'APP_CONFIG',
+  description: 'Environment variable name to read full config from',
   group: OptionGroups.Options,
 } as const;
 
@@ -184,12 +203,18 @@ function fileTypeForFormatOption(option: string): FileType {
 function loadConfigWithOptions({
   noSchema,
   fileNameBase,
+  environmentOverride,
+  environmentVariableName,
 }: {
   noSchema?: boolean;
   fileNameBase?: string;
+  environmentOverride?: string;
+  environmentVariableName?: string;
 }): ReturnType<typeof loadConfig> {
-  const options = {
+  const options: LoadConfigOptions = {
     fileNameBase,
+    environmentOverride,
+    environmentVariableName,
   };
 
   if (noSchema) return loadConfig(options);
@@ -248,6 +273,8 @@ const { argv: _ } = yargs
           prefix: prefixOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
+          environmentOverride: environmentOverrideOption,
+          environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
       },
@@ -281,6 +308,8 @@ const { argv: _ } = yargs
           select: selectOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
+          environmentOverride: environmentOverrideOption,
+          environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
       },
@@ -725,6 +754,8 @@ const { argv: _ } = yargs
           select: selectOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
+          environmentOverride: environmentOverrideOption,
+          environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
       },

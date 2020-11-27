@@ -121,6 +121,30 @@ async function extractExternalSchemas(
   cwd: string,
   schemas: { [$id: string]: JsonObject } = {},
 ): Promise<{ [$id: string]: JsonObject }> {
+  const resolveReference = async (
+    resolvedPathEncoded: string,
+    ref: string,
+    referencedSchema: JsonObject,
+    newCwd: string,
+  ) => {
+    // replace the $ref inline with the canonical path
+    Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
+
+    // short-circuit, to prevent circular dependencies from creating infinite recursion
+    if (schemas[resolvedPathEncoded]) {
+      return schemas;
+    }
+
+    // tell the schema who they are, mostly for clarity
+    Object.assign(referencedSchema, { $id: resolvedPathEncoded });
+
+    // add schema to schemaRefs object, so they can be added to Ajv
+    Object.assign(schemas, { [resolvedPathEncoded]: referencedSchema });
+
+    // recurse into referenced schema, to retrieve any references
+    await extractExternalSchemas(referencedSchema, newCwd, schemas);
+  };
+
   if (isObject(schema)) {
     if (schema.$ref && typeof schema.$ref === 'string') {
       // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
@@ -130,33 +154,15 @@ async function extractExternalSchemas(
         // we resolve filepaths so that ajv resolves them correctly
         const resolvedPath = resolve(join(cwd, filepath));
         const resolvedPathEncoded = encodeURI(resolvedPath);
-
-        // here to prevent circular dependencies from creating infinite recursion
-        if (schemas[resolvedPathEncoded]) {
-          // replace the $ref inline with the canonical path
-          Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
-
-          return schemas;
-        }
-
-        Object.assign(schemas, { [resolvedPathEncoded]: {} });
-
         const referencedSchema = await new FileSource(resolvedPath).readToJSON();
 
         if (isObject(referencedSchema)) {
-          // replace the $ref inline with the canonical path
-          Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
-
-          // add schema to schemaRefs object, so they can be added to Ajv
-          referencedSchema.$id = resolvedPathEncoded;
-          Object.assign(schemas, { [resolvedPathEncoded]: referencedSchema });
-
-          // recurse into referenced schema, to retrieve any references
-          await extractExternalSchemas(referencedSchema, dirname(join(cwd, filepath)), schemas);
+          await resolveReference(resolvedPathEncoded, ref, referencedSchema, dirname(resolvedPath));
         }
       }
     }
 
+    // for all other keys, we'll descend into subobjects
     for (const val of Object.values(schema)) {
       if (isObject(val)) {
         await extractExternalSchemas(val, cwd, schemas);
