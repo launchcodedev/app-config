@@ -116,6 +116,13 @@ const fileNameBaseOption = {
   group: OptionGroups.Options,
 } as const;
 
+const environmentOverrideOption = {
+  type: 'string',
+  description:
+    'Explicitly overrides the current environment (set by APP_CONFIG_ENV | NODE_ENV | ENV)',
+  group: OptionGroups.Options,
+} as const;
+
 const secretsOption = {
   alias: 's',
   type: 'boolean',
@@ -196,14 +203,17 @@ function fileTypeForFormatOption(option: string): FileType {
 function loadConfigWithOptions({
   noSchema,
   fileNameBase,
+  environmentOverride,
   environmentVariableName,
 }: {
   noSchema?: boolean;
   fileNameBase?: string;
+  environmentOverride?: string;
   environmentVariableName?: string;
 }): ReturnType<typeof loadConfig> {
   const options: LoadConfigOptions = {
     fileNameBase,
+    environmentOverride,
     environmentVariableName,
   };
 
@@ -263,6 +273,7 @@ const { argv: _ } = yargs
           prefix: prefixOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
+          environmentOverride: environmentOverrideOption,
           environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
@@ -297,6 +308,7 @@ const { argv: _ } = yargs
           select: selectOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
+          environmentOverride: environmentOverrideOption,
           environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
@@ -742,6 +754,7 @@ const { argv: _ } = yargs
           select: selectOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
+          environmentOverride: environmentOverrideOption,
           environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
