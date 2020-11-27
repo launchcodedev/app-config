@@ -5,7 +5,7 @@ interface SelfSigned {
   generate(
     attributes: object[],
     options: object,
-    cb: (err: Error, pem: { private: string; public: string; cert: string }) => void,
+    cb: (err?: Error, pem?: { private: string; public: string; cert: string }) => void,
   ): void;
 }
 
@@ -18,23 +18,22 @@ export interface Cert {
   expiry: string;
 }
 
-export async function generateCert(): Promise<Cert> {
-  const expireIn = 365 * 10;
+export async function generateCert(expireInDays: number = 365 * 10): Promise<Cert> {
   const expiry = new Date();
 
-  expiry.setDate(expiry.getDate() + expireIn - 2);
+  expiry.setDate(expiry.getDate() + expireInDays - 2);
   expiry.setHours(0);
   expiry.setMinutes(0);
   expiry.setSeconds(0);
   expiry.setMilliseconds(0);
 
-  logger.info(`Creating a self-signed certificate that expires in ${expireIn} days`);
+  logger.info(`Creating a self-signed certificate that expires in ${expireInDays} days`);
 
   return new Promise<Cert>((resolve, reject) => {
     selfsigned.generate(
       [{ name: 'commonName', value: 'localhost' }],
       {
-        days: expireIn,
+        days: expireInDays,
         algorithm: 'sha256',
         keySize: 2048,
         extensions: [
@@ -80,10 +79,10 @@ export async function generateCert(): Promise<Cert> {
           },
         ],
       },
-      (err, { private: key, cert }) => {
+      (err, pem) => {
         if (err) return reject(err);
 
-        resolve({ key, cert, expiry: expiry.toISOString() });
+        resolve({ key: pem!.private, cert: pem!.cert, expiry: expiry.toISOString() });
       },
     );
   });
