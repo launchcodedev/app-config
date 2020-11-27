@@ -123,3 +123,51 @@ describe('TypeScript File Generation', () => {
     );
   });
 });
+
+describe('Flow File Generation', () => {
+  it('creates a simple flow file', async () => {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        foo: { type: 'string' },
+      },
+    };
+
+    const generated = await generateQuicktype(schema, 'flow', 'Configuration');
+
+    expect(generated).toMatchSnapshot();
+  });
+});
+
+describe('Golang File Generation', () => {
+  it('creates a simple Go file', async () => {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        foo: { type: 'string' },
+      },
+    };
+
+    const generated = await generateQuicktype(schema, 'go', 'Configuration');
+
+    expect(generated).toMatchSnapshot();
+  });
+});
+
+describe('Rust File Generation', () => {
+  it('creates a simple Rust file', async () => {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        foo: { type: 'string' },
+      },
+    };
+
+    const generated = await generateQuicktype(schema, 'rust', 'Configuration');
+
+    expect(generated).toMatchSnapshot();
+  });
+});
