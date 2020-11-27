@@ -8,14 +8,20 @@ import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
 import { logger } from './logging';
 
-export const defaultExtensions = [
-  v1Compat(),
-  envDirective(),
-  extendsDirective(),
-  overrideDirective(),
-  encryptedDirective(),
-  environmentVariableSubstitution(),
-];
+export function defaultExtensions(
+  aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
+  symmetricKey?: DecryptedSymmetricKey,
+): ParsingExtension[] {
+  return [
+    v1Compat(),
+    envDirective(aliases, environmentOverride),
+    extendsDirective(),
+    overrideDirective(),
+    encryptedDirective(symmetricKey),
+    environmentVariableSubstitution(aliases, environmentOverride),
+  ];
+}
 
 /** Uses another file as a "base", and extends on top of it */
 export function extendsDirective(): ParsingExtension {
@@ -28,8 +34,11 @@ export function overrideDirective(): ParsingExtension {
 }
 
 /** Looks up an environment-specific value ($env) */
-export function envDirective(aliases: EnvironmentAliases = defaultAliases): ParsingExtension {
-  const environment = currentEnvironment(aliases);
+export function envDirective(
+  aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
+): ParsingExtension {
+  const environment = environmentOverride ?? currentEnvironment(aliases);
 
   return (value, [_, key]) => {
     if (key === '$env') {
@@ -86,6 +95,7 @@ export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): Parsin
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
 export function environmentVariableSubstitution(
   aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
 ): ParsingExtension {
   const performAllSubstitutions = (text: string): string => {
     let output = text;
@@ -118,7 +128,7 @@ export function environmentVariableSubstitution(
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
           output = performAllSubstitutions(output.replace(fullMatch, fallback));
         } else if (varName === 'APP_CONFIG_ENV') {
-          const envType = currentEnvironment(aliases);
+          const envType = environmentOverride ?? currentEnvironment(aliases);
 
           if (!envType) {
             throw new AppConfigError(`Could not find environment variable ${varName}`);
