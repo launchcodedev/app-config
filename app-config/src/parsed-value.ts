@@ -424,6 +424,12 @@ async function parseValueInner(
           toMerge.push(parsed.removeMeta('shouldMerge'));
         } else if (parsed.meta.shouldOverride) {
           toOverride.push(parsed.removeMeta('shouldOverride'));
+        } else if (parsed.meta.rewriteKey) {
+          if (typeof parsed.meta.rewriteKey !== 'string') {
+            throw new AppConfigError('Internal error: rewriteKey was not a string');
+          }
+
+          obj[parsed.meta.rewriteKey] = parsed.removeMeta('rewriteKey');
         } else {
           obj[key] = parsed;
         }
