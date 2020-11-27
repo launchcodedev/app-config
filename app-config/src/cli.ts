@@ -139,6 +139,13 @@ const prefixOption = {
   group: OptionGroups.Options,
 } as const;
 
+const environmentVariableNameOption = {
+  type: 'string',
+  default: 'APP_CONFIG',
+  description: 'Environment variable name to read full config from',
+  group: OptionGroups.Options,
+} as const;
+
 const formatOption = {
   alias: 'f',
   type: 'string',
@@ -197,14 +204,17 @@ function loadConfigWithOptions({
   noSchema,
   fileNameBase,
   environmentOverride,
+  environmentVariableName,
 }: {
   noSchema?: boolean;
   fileNameBase?: string;
   environmentOverride?: string;
+  environmentVariableName?: string;
 }): ReturnType<typeof loadConfig> {
   const options: LoadConfigOptions = {
     fileNameBase,
     environmentOverride,
+    environmentVariableName,
   };
 
   if (noSchema) return loadConfig(options);
@@ -264,6 +274,7 @@ const { argv: _ } = yargs
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
           environmentOverride: environmentOverrideOption,
+          environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
       },
@@ -298,6 +309,7 @@ const { argv: _ } = yargs
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
           environmentOverride: environmentOverrideOption,
+          environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
       },
@@ -743,6 +755,7 @@ const { argv: _ } = yargs
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
           environmentOverride: environmentOverrideOption,
+          environmentVariableName: environmentVariableNameOption,
           agent: secretAgentOption,
         },
       },

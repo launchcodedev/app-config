@@ -1,5 +1,7 @@
-import { join } from 'path';
-import { FlexibleFileSource, FileSource, FileType } from './config-source';
+import { join, resolve } from 'path';
+import { pathExists } from 'fs-extra';
+import { extendsDirective, overrideDirective } from './extensions';
+import { FlexibleFileSource, FileSource, FallbackSource, FileType } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
 import { NotFoundError } from './errors';
 import { GenerateFile } from './generate';
@@ -8,6 +10,7 @@ import { logger } from './logging';
 export interface Options {
   directory?: string;
   fileNameBase?: string;
+  lookForWorkspace?: string | false;
 }
 
 export interface TeamMember {
@@ -30,13 +33,42 @@ export interface MetaConfiguration {
 export async function loadMetaConfig({
   directory = '.',
   fileNameBase = '.app-config.meta',
+  lookForWorkspace = '.git',
 }: Options = {}): Promise<MetaConfiguration> {
-  const source = new FlexibleFileSource(join(directory, fileNameBase));
+  let workspaceRoot: string | undefined = resolve(directory);
+
+  // look upwards until a .git (workspace root) folder is found
+  while (lookForWorkspace) {
+    const parentDir = resolve(join(workspaceRoot, '..'));
+
+    // we didn't find a .git root
+    if (parentDir === workspaceRoot) {
+      workspaceRoot = undefined;
+      break;
+    }
+
+    workspaceRoot = parentDir;
+
+    if (await pathExists(join(workspaceRoot, lookForWorkspace))) {
+      break;
+    }
+  }
+
+  // we try to find meta find in our CWD, but fallback to the workspace (git repo) root
+  const sources = [new FlexibleFileSource(join(directory, fileNameBase))];
+
+  if (workspaceRoot) {
+    sources.push(new FlexibleFileSource(join(workspaceRoot, fileNameBase)));
+  }
+
+  const source = new FallbackSource(sources);
 
   try {
-    const parsed = await source.read();
+    const parsed = await source.read([extendsDirective(), overrideDirective()]);
     const value = parsed.toJSON() as MetaProperties;
-    const { filePath, fileType } = parsed.assertSource(FileSource);
+
+    const fileSources = parsed.sources.filter((s) => s instanceof FileSource) as FileSource[];
+    const [{ filePath, fileType }] = fileSources.filter((s) => s.filePath.includes(fileNameBase));
 
     logger.verbose(`Meta file was loaded from ${filePath}`);
 

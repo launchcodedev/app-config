@@ -47,6 +47,11 @@ exports[`create uses environmentOverride option 1`] = `"APP_CONFIG_VAL=42"`;
 
 exports[`create uses environmentOverride option 2`] = `"APP_CONFIG_VAL=88"`;
 
+exports[`create uses environmentVariableName option 1`] = `
+"foo: true
+"
+`;
+
 exports[`create uses fileNameBase option 1`] = `
 "foo: bar
 "

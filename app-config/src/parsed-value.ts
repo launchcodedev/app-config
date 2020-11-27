@@ -245,6 +245,20 @@ export class ParsedValue {
     return new ParsedValue(this.sources, this.raw, this.value);
   }
 
+  visitAll(callback: (value: ParsedValue) => void) {
+    callback(this);
+
+    if (Array.isArray(this.value)) {
+      this.value.forEach((item) => {
+        item.visitAll(callback);
+      });
+    } else if (typeof this.value === 'object' && this.value !== null) {
+      for (const item of Object.values(this.value)) {
+        item.visitAll(callback);
+      }
+    }
+  }
+
   toJSON(): Json {
     if (Array.isArray(this.value)) {
       return this.value.map((v) => v.toJSON());
@@ -410,6 +424,12 @@ async function parseValueInner(
           toMerge.push(parsed.removeMeta('shouldMerge'));
         } else if (parsed.meta.shouldOverride) {
           toOverride.push(parsed.removeMeta('shouldOverride'));
+        } else if (parsed.meta.rewriteKey) {
+          if (typeof parsed.meta.rewriteKey !== 'string') {
+            throw new AppConfigError('Internal error: rewriteKey was not a string');
+          }
+
+          obj[parsed.meta.rewriteKey] = parsed.removeMeta('rewriteKey');
         } else {
           obj[key] = parsed;
         }

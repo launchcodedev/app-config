@@ -1,5 +1,58 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Flow File Generation creates a simple flow file 1`] = `
+Array [
+  "// @flow",
+  "",
+  "// AUTO GENERATED CODE",
+  "// Run app-config with 'generate' command to regenerate this file",
+  "",
+  "export type Configuration = {",
+  "  foo?: string;",
+  "};",
+  "",
+]
+`;
+
+exports[`Golang File Generation creates a simple Go file 1`] = `
+Array [
+  "package main",
+  "",
+  "import \\"encoding/json\\"",
+  "",
+  "func UnmarshalConfiguration(data []byte) (Configuration, error) {",
+  "  var r Configuration",
+  "  err := json.Unmarshal(data, &r)",
+  "  return r, err",
+  "}",
+  "",
+  "func (r *Configuration) Marshal() ([]byte, error) {",
+  "  return json.Marshal(r)",
+  "}",
+  "",
+  "type Configuration struct {",
+  "  Foo *string \`json:\\"foo,omitempty\\"\`",
+  "}",
+  "",
+]
+`;
+
+exports[`Rust File Generation creates a simple Rust file 1`] = `
+Array [
+  "/// AUTO GENERATED CODE",
+  "/// Run app-config with 'generate' command to regenerate this file",
+  "",
+  "extern crate serde_derive;",
+  "",
+  "#[derive(Serialize, Deserialize)]",
+  "pub struct Configuration {",
+  "  #[serde(rename = \\"foo\\")]",
+  "  foo: Option<String>,",
+  "}",
+  "",
+]
+`;
+
 exports[`TypeScript File Generation corrects Date type in TypeScript files 1`] = `
 "// AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file

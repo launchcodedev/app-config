@@ -2,12 +2,13 @@ import { join, dirname, extname, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsedValue, ParsedValueMetadata, ParsingExtension } from './parsed-value';
+import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root } from './parsed-value';
 import { FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
 import { logger } from './logging';
 
+/** ParsingExtensions that are used by default in loadConfig for reading files */
 export function defaultExtensions(
   aliases: EnvironmentAliases = defaultAliases,
   environmentOverride?: string,
@@ -19,8 +20,14 @@ export function defaultExtensions(
     extendsDirective(),
     overrideDirective(),
     encryptedDirective(symmetricKey),
+    unescape$Directives(),
     environmentVariableSubstitution(aliases, environmentOverride),
   ];
+}
+
+/** ParsingExtensions that are used by default in loadConfig for APP_CONFIG variable */
+export function defaultEnvExtensions(): ParsingExtension[] {
+  return [unescape$Directives()];
 }
 
 /** Uses another file as a "base", and extends on top of it */
@@ -85,6 +92,19 @@ export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): Parsin
         const decrypted = await decryptValue(value, symmetricKey);
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
+      };
+    }
+
+    return false;
+  };
+}
+
+/** When a key $$foo is seen, change it to be $foo and mark with meta property fromEscapedDirective */
+export function unescape$Directives(): ParsingExtension {
+  return (value, [_, key]) => {
+    if (typeof key === 'string' && key.startsWith('$$')) {
+      return async (parse) => {
+        return parse(value, { rewriteKey: key.slice(1), fromEscapedDirective: true });
       };
     }
 
@@ -165,7 +185,12 @@ export function environmentVariableSubstitution(
 
 /** V1 app-config compatibility */
 export function v1Compat(): ParsingExtension {
-  return (value, [_, key]) => {
+  return (value, [_, key], context) => {
+    // only apply in top-level app-config property
+    if (context[context.length - 1]?.[0] !== Root) {
+      return false;
+    }
+
     if (key === 'app-config' && isObject(value)) {
       return async (parse, _, ctx) => {
         if (ctx instanceof FileSource) {

@@ -110,32 +110,34 @@ export async function generateQuicktype(
     lang: type,
     indentation: '  ',
     leadingComments,
-    rendererOptions: {
-      'just-types': 'true',
-      'runtime-typecheck': 'false',
-      ...rendererOptions,
-    },
+    rendererOptions: ['ts', 'flow'].includes(type)
+      ? {
+          'just-types': 'true',
+          'runtime-typecheck': 'false',
+          ...rendererOptions,
+        }
+      : rendererOptions,
   });
 
-  lines.splice(leadingComments.length, 0, '', "import '@lcdev/app-config';");
-
-  // some configs are empty, so just mark them as an empty object
-  if (!lines.some((line) => line.startsWith('export'))) {
-    lines.push(`export interface ${name} {}\n`);
-  }
-
-  if (type === 'ts' && augmentModule !== false) {
-    lines.push(
-      ...[
-        '// augment the default export from app-config',
-        "declare module '@lcdev/app-config' {",
-        `  export interface ExportedConfig extends ${name} {}`,
-        '}',
-      ],
-    );
-  }
-
   if (type === 'ts') {
+    lines.splice(leadingComments.length, 0, '', "import '@lcdev/app-config';");
+
+    // some configs are empty, so just mark them as an empty object
+    if (!lines.some((line) => line.startsWith('export'))) {
+      lines.push(`export interface ${name} {}\n`);
+    }
+
+    if (augmentModule !== false) {
+      lines.push(
+        ...[
+          '// augment the default export from app-config',
+          "declare module '@lcdev/app-config' {",
+          `  export interface ExportedConfig extends ${name} {}`,
+          '}',
+        ],
+      );
+    }
+
     return (
       lines
         // this is a fix for quicktype, which adds an Object postfix, sometimes

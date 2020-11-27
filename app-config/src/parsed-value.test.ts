@@ -265,20 +265,56 @@ describe('ParsedValue', () => {
     expect(ParsedValue.literal('foo').asObject()).toBeUndefined();
   });
 
-  it('clones only non-secret properties', () => {
-    const value = ParsedValue.literal({ a: { b: [1, 2, 3], c: true } });
+  it('cloneWhere by fromSecrets meta property', () => {
+    const value = ParsedValue.literal({ a: { b: [1, 2, 3], c: true }, d: { e: true } });
     value.property(['a', 'c'])!.assignMeta({ fromSecrets: true });
     value.property(['a', 'b', '1'])!.assignMeta({ fromSecrets: true });
+    value.property(['d', 'e'])!.assignMeta({ fromSecrets: true });
 
     const nonSecrets = value.cloneWhere((v) => !v.meta.fromSecrets)!;
-    expect(value.toJSON()).toEqual({ a: { b: [1, 2, 3], c: true } });
-    expect(nonSecrets.toJSON()).toEqual({ a: { b: [1, 3] } });
+    expect(value.toJSON()).toEqual({ a: { b: [1, 2, 3], c: true }, d: { e: true } });
+    expect(nonSecrets.toJSON()).toEqual({ a: { b: [1, 3] }, d: {} });
+  });
+
+  it('cloneWhere by value type', () => {
+    const value = ParsedValue.literal({
+      a: {},
+      b: [],
+      c: '',
+      d: true,
+    });
+
+    expect(value.cloneWhere((v) => !!v.asObject())!.toJSON()).toEqual({ a: {} });
+    expect(value.cloneWhere((v) => v.asArray() !== undefined)!.toJSON()).toEqual({ b: [] });
+    expect(value.cloneWhere((v) => v.asPrimitive() !== undefined)!.toJSON()).toEqual({
+      c: '',
+      d: true,
+    });
   });
 
   it('clones all properties', () => {
     const value = ParsedValue.literal({ a: { b: [1, 2, 3], c: true } });
 
     expect(value.clone().toJSON()).toEqual(value.toJSON());
+  });
+
+  it('visits all properties of a deep object', () => {
+    const value = ParsedValue.literal({
+      // 1 visit (root)
+      a: {
+        // 1 visit
+        b: {
+          // 1 visit
+          c: [1, 2, 3], // 1 visit (array) + 3 visits (items)
+        },
+        d: [], // 1 visit (array) + 0 visits (items)
+      },
+      e: true, // 1 visit
+      f: '', // 1 visit
+    });
+
+    expect.assertions(10);
+    value.visitAll((item) => expect(item.sources).toEqual(value.sources));
   });
 
   describe('Merging', () => {

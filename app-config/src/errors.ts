@@ -36,3 +36,6 @@ export class EncryptionEncoding extends AppConfigError {}
 
 /** Could not select a sub-object using a JSON pointer */
 export class FailedToSelectSubObject extends AppConfigError {}
+
+/** Found a key starting with $ in config object */
+export class ReservedKeyError extends AppConfigError {}

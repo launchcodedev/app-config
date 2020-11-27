@@ -3,9 +3,9 @@ import { Json, isObject } from './common';
 import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
-import { defaultExtensions } from './extensions';
+import { defaultExtensions, defaultEnvExtensions } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
-import { NotFoundError, WasNotObject } from './errors';
+import { NotFoundError, WasNotObject, ReservedKeyError } from './errors';
 import { logger } from './logging';
 
 export interface Options {
@@ -20,6 +20,7 @@ export interface Options {
   parsingExtensions?: ParsingExtension[];
   secretsFileExtensions?: ParsingExtension[];
   environmentExtensions?: ParsingExtension[];
+  defaultValues?: Json;
 }
 
 export interface Configuration {
@@ -43,14 +44,22 @@ export async function loadConfig({
   environmentAliases = defaultAliases,
   parsingExtensions = defaultExtensions(environmentAliases, environmentOverride),
   secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret),
-  environmentExtensions = [],
+  environmentExtensions = defaultEnvExtensions(),
+  defaultValues,
 }: Options = {}): Promise<Configuration> {
   // before trying to read .app-config files, we check for the APP_CONFIG environment variable
   const env = new EnvironmentSource(environmentVariableName);
   logger.verbose(`Trying to read ${environmentVariableName} for configuration`);
 
   try {
-    const parsed = await env.read(environmentExtensions);
+    let parsed = await env.read(environmentExtensions);
+
+    if (defaultValues) {
+      parsed = ParsedValue.merge(ParsedValue.literal(defaultValues), parsed);
+    }
+
+    verifyParsedValue(parsed);
+
     return { parsed, fullConfig: parsed.toJSON() };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
@@ -85,6 +94,10 @@ export async function loadConfig({
 
   let parsed = secrets ? ParsedValue.merge(mainConfig, secrets) : mainConfig;
 
+  if (defaultValues) {
+    parsed = ParsedValue.merge(ParsedValue.literal(defaultValues), parsed);
+  }
+
   // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
   if (extensionEnvironmentVariableNames.length > 0) {
     logger.verbose(
@@ -111,7 +124,6 @@ export async function loadConfig({
     }
   }
 
-  // note that this cannot be exhaustive, because of $extends
   const filePaths = new Set<string>();
 
   for (const source of mainConfig.allSources()) {
@@ -127,6 +139,8 @@ export async function loadConfig({
       }
     }
   }
+
+  verifyParsedValue(parsed);
 
   return {
     parsed,
@@ -164,3 +178,15 @@ export async function loadValidatedConfig(
 
 const markAllValuesAsSecret: ParsingExtension = (value) => (parse) =>
   parse(value, { fromSecrets: true });
+
+function verifyParsedValue(parsed: ParsedValue) {
+  parsed.visitAll((value) => {
+    for (const [key, item] of Object.entries(value.asObject() ?? {})) {
+      if (key.startsWith('$') && !item.meta.fromEscapedDirective) {
+        throw new ReservedKeyError(
+          `Saw a '${key}' key in an object, which is a reserved key name. Please escape the '$' like '$${key}' if you intended to make this a literal object property.`,
+        );
+      }
+    }
+  });
+}
