@@ -1,10 +1,9 @@
 import { resolve, join, dirname } from 'path';
 import Ajv from 'ajv';
-import { JsonObject, isObject } from './common';
-import { ParsedValue } from './parsed-value';
+import { Json, JsonObject, isObject } from './common';
+import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource } from './config-source';
-import { ParsingExtension } from './extensions';
 import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
 
 export interface Options {
@@ -74,7 +73,7 @@ export async function loadSchema({
   return {
     value: parsed,
     schemaRefs,
-    validate(fullConfig, parsed) {
+    validate(fullConfig, parsedConfig) {
       const valid = validate(fullConfig);
 
       if (!valid) {
@@ -87,11 +86,20 @@ export async function loadSchema({
         throw err;
       }
 
-      if (parsed) {
+      if (parsedConfig) {
         // check that any properties marked as secret were from secrets file
         const secretsInNonSecrets = schemaSecrets.filter((path) => {
-          const found = parsed.property(path);
-          if (found) return !found.meta.fromSecrets;
+          const found = parsedConfig.property(path);
+
+          if (found) {
+            const arr = found.asArray();
+
+            if (arr) {
+              return !arr.every((value) => value.meta.fromSecrets);
+            }
+
+            return !found.meta.fromSecrets;
+          }
 
           return false;
         });
@@ -109,7 +117,7 @@ export async function loadSchema({
 }
 
 async function extractExternalSchemas(
-  schema: JsonObject,
+  schema: Json,
   cwd: string,
   schemas: { [$id: string]: JsonObject } = {},
 ): Promise<{ [$id: string]: JsonObject }> {
@@ -124,21 +132,27 @@ async function extractExternalSchemas(
         const resolvedPathEncoded = encodeURI(resolvedPath);
 
         // here to prevent circular dependencies from creating infinite recursion
-        if (schemas[resolvedPathEncoded]) return schemas;
-        schemas[resolvedPathEncoded] = {};
+        if (schemas[resolvedPathEncoded]) {
+          // replace the $ref inline with the canonical path
+          Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
+
+          return schemas;
+        }
+
+        Object.assign(schemas, { [resolvedPathEncoded]: {} });
 
         const referencedSchema = await new FileSource(resolvedPath).readToJSON();
 
         if (isObject(referencedSchema)) {
-          // recurse into referenced schema, to retrieve any references
-          await extractExternalSchemas(referencedSchema, dirname(join(cwd, filepath)), schemas);
-
           // replace the $ref inline with the canonical path
-          schema.$ref = `${resolvedPathEncoded}${ref}`;
+          Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
 
           // add schema to schemaRefs object, so they can be added to Ajv
           referencedSchema.$id = resolvedPathEncoded;
-          schemas[resolvedPathEncoded] = referencedSchema;
+          Object.assign(schemas, { [resolvedPathEncoded]: referencedSchema });
+
+          // recurse into referenced schema, to retrieve any references
+          await extractExternalSchemas(referencedSchema, dirname(join(cwd, filepath)), schemas);
         }
       }
     }
@@ -146,6 +160,8 @@ async function extractExternalSchemas(
     for (const val of Object.values(schema)) {
       if (isObject(val)) {
         await extractExternalSchemas(val, cwd, schemas);
+      } else if (Array.isArray(val)) {
+        await Promise.all(val.map((v) => extractExternalSchemas(v, cwd, schemas)));
       }
     }
   }

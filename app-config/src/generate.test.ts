@@ -1,4 +1,6 @@
-import { generateQuicktype } from './generate';
+import { readFile } from 'fs-extra';
+import { generateQuicktype, generateTypeFiles } from './generate';
+import { withTempFiles } from './test-util';
 
 describe('TypeScript File Generation', () => {
   it('creates a simple TypeScript file', async () => {
@@ -13,5 +15,111 @@ describe('TypeScript File Generation', () => {
     const generated = await generateQuicktype(schema, 'ts', 'Configuration');
 
     expect(generated).toMatchSnapshot();
+  });
+
+  it('creates a TypeScript file from meta file properties', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.json5': `{
+          generate: [
+            {
+              file: "generated.d.ts",
+              name: "MyCustomConfigName"
+            }
+          ]
+        }`,
+        '.app-config.schema.json5': `{
+          properties: {
+            x: { type: "number" }
+          },
+        }`,
+      },
+      async (dir) => {
+        const output = await generateTypeFiles({ directory: dir('.') });
+
+        expect(output.length).toBe(1);
+
+        const config = await readFile(dir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatchSnapshot();
+      },
+    );
+  });
+
+  it('creates a TypeScript file from schema with many $ref properties', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.json5': `{
+          generate: [
+            {
+              file: "generated.d.ts"
+            }
+          ]
+        }`,
+        '.app-config.schema.json5': `{
+          properties: {
+            root: { type: "boolean" },
+            a: { $ref: "./a.yml" },
+          },
+        }`,
+        'a.yml': `
+          required: [b]
+          type: object
+          properties:
+            b: { $ref: './-/-/b.yml' }
+        `,
+        '-/-/b.yml': `
+          required: [c]
+          type: object
+          properties:
+            c: { $ref: '../../c.yml' }
+        `,
+        'c.yml': `
+          required: [d]
+          type: object
+          properties:
+            d: { type: boolean }
+        `,
+      },
+      async (dir) => {
+        const output = await generateTypeFiles({ directory: dir('.') });
+
+        expect(output.length).toBe(1);
+
+        const config = await readFile(dir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatchSnapshot();
+      },
+    );
+  });
+
+  it('corrects Date type in TypeScript files', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.json5': `{
+          generate: [
+            {
+              file: "generated.d.ts",
+              name: "MyCustomConfigName"
+            }
+          ]
+        }`,
+        '.app-config.schema.json5': `{
+          properties: {
+            x: { type: "string", format: "date" }
+          },
+        }`,
+      },
+      async (dir) => {
+        const output = await generateTypeFiles({ directory: dir('.') });
+
+        expect(output.length).toBe(1);
+
+        const config = await readFile(dir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatch('x?: string');
+        expect(config).toMatchSnapshot();
+      },
+    );
   });
 });

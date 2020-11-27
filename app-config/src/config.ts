@@ -1,9 +1,9 @@
 import { join } from 'path';
 import { Json, isObject } from './common';
-import { ParsedValue } from './parsed-value';
+import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
-import { defaultExtensions, ParsingExtension } from './extensions';
+import { defaultExtensions } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject } from './errors';
 import { logger } from './logging';
@@ -20,6 +20,7 @@ export interface Options {
   parsingExtensions?: ParsingExtension[];
   secretsFileExtensions?: ParsingExtension[];
   environmentExtensions?: ParsingExtension[];
+  defaultValues?: Json;
 }
 
 export interface Configuration {
@@ -41,16 +42,22 @@ export async function loadConfig({
   extensionEnvironmentVariableNames = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
   environmentOverride,
   environmentAliases = defaultAliases,
-  parsingExtensions = defaultExtensions,
+  parsingExtensions = defaultExtensions(environmentAliases, environmentOverride),
   secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret),
   environmentExtensions = [],
+  defaultValues,
 }: Options = {}): Promise<Configuration> {
   // before trying to read .app-config files, we check for the APP_CONFIG environment variable
   const env = new EnvironmentSource(environmentVariableName);
   logger.verbose(`Trying to read ${environmentVariableName} for configuration`);
 
   try {
-    const parsed = await env.read(environmentExtensions);
+    let parsed = await env.read(environmentExtensions);
+
+    if (defaultValues) {
+      parsed = ParsedValue.merge(ParsedValue.literal(defaultValues), parsed);
+    }
+
     return { parsed, fullConfig: parsed.toJSON() };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
@@ -59,7 +66,7 @@ export async function loadConfig({
 
   logger.verbose(`Trying to read files for configuration`);
 
-  const [nonSecrets, secrets] = await Promise.all([
+  const [mainConfig, secrets] = await Promise.all([
     new FlexibleFileSource(
       join(directory, fileNameBase),
       environmentOverride,
@@ -83,7 +90,11 @@ export async function loadConfig({
       }),
   ]);
 
-  let parsed = secrets ? ParsedValue.merge(nonSecrets, secrets) : nonSecrets;
+  let parsed = secrets ? ParsedValue.merge(mainConfig, secrets) : mainConfig;
+
+  if (defaultValues) {
+    parsed = ParsedValue.merge(ParsedValue.literal(defaultValues), parsed);
+  }
 
   // the APP_CONFIG_EXTEND and APP_CONFIG_CI can "extend" the config (override it), so it's done last
   if (extensionEnvironmentVariableNames.length > 0) {
@@ -100,34 +111,39 @@ export async function loadConfig({
 
       logger.verbose(
         `Found configuration extension in $${
-          (parsedExtension.source as EnvironmentSource).variableName
+          parsedExtension.assertSource(EnvironmentSource).variableName
         }`,
       );
 
       parsed = ParsedValue.merge(parsed, parsedExtension);
     } catch (error) {
-      // having no APP_CONFIG environment variable is normal, and should fall through to reading files
+      // having no APP_CONFIG_CI environment variable is normal, and should fall through to reading files
       if (!(error instanceof NotFoundError)) throw error;
     }
   }
 
-  // note that this cannot be exhaustive, because of $extends
-  const filePaths = [];
+  const filePaths = new Set<string>();
 
-  if (nonSecrets.source instanceof FileSource) {
-    filePaths.push(nonSecrets.source.filePath);
+  for (const source of mainConfig.allSources()) {
+    if (source instanceof FileSource) {
+      filePaths.add(source.filePath);
+    }
   }
 
-  if (secrets && secrets.source instanceof FileSource) {
-    filePaths.push(secrets.source.filePath);
+  if (secrets) {
+    for (const source of secrets.allSources()) {
+      if (source instanceof FileSource) {
+        filePaths.add(source.filePath);
+      }
+    }
   }
 
   return {
     parsed,
     parsedSecrets: secrets,
-    parsedNonSecrets: nonSecrets,
+    parsedNonSecrets: mainConfig.cloneWhere((v) => !v.meta.fromSecrets),
     fullConfig: parsed.toJSON(),
-    filePaths,
+    filePaths: Array.from(filePaths),
   };
 }
 
@@ -138,6 +154,7 @@ export async function loadValidatedConfig(
   const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
     loadSchema({
       directory: options?.schemaDirectory ?? options?.directory,
+      fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
       ...schemaOptions,
@@ -155,7 +172,5 @@ export async function loadValidatedConfig(
   return { fullConfig, parsed, ...rest };
 }
 
-const markAllValuesAsSecret: ParsingExtension = (_, value) => () => [
-  value,
-  { metadata: { fromSecrets: true } },
-];
+const markAllValuesAsSecret: ParsingExtension = (value) => (parse) =>
+  parse(value, { fromSecrets: true });

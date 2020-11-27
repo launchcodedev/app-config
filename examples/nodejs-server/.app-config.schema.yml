@@ -2,10 +2,33 @@ type: object
 additionalProperties: false
 
 required:
+  - database
   - port
 
 properties:
   port:
+    $ref: "#/definitions/Port"
+  database:
+    type: object
+    additionalProperties: false
+    required:
+      - username
+      - password # encrypted
+      - port
+      - database
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+        secret: true
+      port:
+        $ref: "#/definitions/Port"
+      database:
+        type: string
+
+definitions:
+  Port:
     type: integer
     minimum: 0
     maximum: 65535

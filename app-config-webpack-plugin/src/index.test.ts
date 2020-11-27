@@ -42,7 +42,7 @@ describe('frontend-webpack-project example', () => {
   };
 
   it('builds the project without header injection', async () => {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((done, reject) => {
       webpack([optionsWithoutHeaderInjection], (err, stats) => {
         if (err) reject(err);
         if (stats.hasErrors()) reject(stats.toString());
@@ -54,13 +54,13 @@ describe('frontend-webpack-project example', () => {
           'export default {"externalApiUrl":"https://example.com"};',
         );
 
-        resolve();
+        done();
       });
     });
   });
 
   it('builds the project with header injection', async () => {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((done, reject) => {
       webpack([optionsWithHeaderInjection], (err, stats) => {
         if (err) reject(err);
         if (stats.hasErrors()) reject(stats.toString());
@@ -70,7 +70,7 @@ describe('frontend-webpack-project example', () => {
 
         expect(modules.map(({ source }) => source)).toContain('export default window._appConfig;');
 
-        resolve();
+        done();
       });
     });
   });
@@ -78,7 +78,7 @@ describe('frontend-webpack-project example', () => {
   it('reads environment variable for app-config', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((done, reject) => {
       webpack([optionsWithoutHeaderInjection], (err, stats) => {
         if (err) reject(err);
         if (stats.hasErrors()) reject(stats.toString());
@@ -90,7 +90,7 @@ describe('frontend-webpack-project example', () => {
           'export default {"externalApiUrl":"https://localhost:3999"};',
         );
 
-        resolve();
+        done();
       });
     });
   });

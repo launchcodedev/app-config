@@ -6,20 +6,23 @@ import {
   FlexibleFileSource,
   LiteralSource,
 } from './config-source';
-import { ParsingExtension } from './extensions';
+import { ParsingExtension } from './parsed-value';
 import { withTempFiles } from './test-util';
 
-const flattenExtension: ParsingExtension = (key, value) => {
-  if (key !== '$flatten') return false;
-  return () => [value, { flatten: true }];
+const flattenExtension: ParsingExtension = (value, [_, key]) => {
+  if (key === '$flatten') {
+    return (parse) => parse(value, { shouldFlatten: true });
+  }
+
+  return false;
 };
 
-const uppercaseExtension: ParsingExtension = (_, value) => {
-  if (typeof value !== 'string') return false;
+const uppercaseExtension: ParsingExtension = (value) => {
+  if (typeof value === 'string') {
+    return (parse) => parse(value.toUpperCase());
+  }
 
-  return () => {
-    return [value.toUpperCase(), {}];
-  };
+  return false;
 };
 
 describe('Parsing', () => {
@@ -27,7 +30,7 @@ describe('Parsing', () => {
     const source = new LiteralSource({});
     const parsed = await source.read();
 
-    expect(parsed.source).toEqual(source);
+    expect(parsed.sources[0]).toBe(source);
     expect(parsed.raw).toEqual({});
     expect(parsed.toJSON()).toEqual({});
     expect(parsed.toString()).toEqual('{}');
@@ -84,7 +87,7 @@ describe('FileSource', () => {
         const source = new FileSource(inDir('test-file.json'));
         const parsed = await source.read();
 
-        expect(parsed.source).toBe(source);
+        expect(parsed.sources[0]).toBe(source);
         expect(parsed.raw).toEqual({});
         expect(parsed.toJSON()).toEqual({});
         expect(parsed.toString()).toEqual('{}');
@@ -101,7 +104,7 @@ describe('FileSource', () => {
         const source = new FileSource(inDir('test-file.json'));
         const parsed = await source.read();
 
-        expect(parsed.source).toBe(source);
+        expect(parsed.sources[0]).toBe(source);
         expect(parsed.raw).toEqual({ foo: true });
         expect(parsed.toJSON()).toEqual({ foo: true });
         expect(parsed.toString()).toEqual('{"foo":true}');
@@ -216,7 +219,7 @@ describe('EnvironmentSource', () => {
     const source = new EnvironmentSource('CONF');
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.sources[0]).toBe(source);
     expect(parsed.toJSON()).toEqual({ foo: true });
   });
 
@@ -225,7 +228,7 @@ describe('EnvironmentSource', () => {
     const source = new EnvironmentSource('CONF');
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.sources[0]).toBe(source);
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
 
@@ -234,7 +237,7 @@ describe('EnvironmentSource', () => {
     const source = new EnvironmentSource('CONF');
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.sources[0]).toBe(source);
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
 
@@ -243,7 +246,7 @@ describe('EnvironmentSource', () => {
     const source = new EnvironmentSource('CONF');
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.sources[0]).toBe(source);
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
 });
@@ -262,7 +265,7 @@ describe('CombinedSource', () => {
 
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source);
+    expect(parsed.sources[0]).toBe(source);
     expect(parsed.toJSON()).toEqual({ foo: 1, bar: 2, baz: 3 });
   });
 });
@@ -281,7 +284,7 @@ describe('FallbackSource', () => {
 
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source.sources[0]);
+    expect(parsed.sources[0]).toBe(source.sources[0]);
     expect(parsed.toJSON()).toEqual({ foo: 1 });
   });
 
@@ -294,7 +297,7 @@ describe('FallbackSource', () => {
 
     const parsed = await source.read();
 
-    expect(parsed.source).toBe(source.sources[1]);
+    expect(parsed.sources[0]).toBe(source.sources[1]);
     expect(parsed.toJSON()).toEqual({ bar: 2 });
   });
 });

@@ -4,30 +4,16 @@ include:
     ref: v2
 
 stages:
-  - lint
-  - build
-  - test
+  - lint-build-test
   - publish
 
 lint:
-  extends: .node-lint
-  stage: lint
-
-build:
-  extends: .node-build
-  stage: build
-
-test:
-  extends: .node-test
-  stage: test
-
-publish:
-  extends: .node-publish-tag
-  stage: publish
-
-publish-public:
-  extends: .node-publish-tag-public
-  stage: publish
+  extends: .node
+  stage: lint-build-test
+  script:
+    - yarn build
+    - yarn lint
+    - yarn test
 
 sync-github-repo:
   extends: .sync-github-repo

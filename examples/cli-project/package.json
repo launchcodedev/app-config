@@ -14,9 +14,10 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-dev"
+    "@lcdev/app-config": "2 || 2.0.0-rc.2"
   },
   "devDependencies": {
+    "@lcdev/tsconfig": "0.2",
     "typescript": "4"
   }
 }

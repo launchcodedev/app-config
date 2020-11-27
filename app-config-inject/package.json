@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config-inject",
   "description": "Runtime injection of app-config into static HTML files",
-  "version": "2.0.0-dev",
+  "version": "2.0.0-rc.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -15,11 +15,7 @@
   "main": "dist/index.js",
   "module": "dist/es/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "/dist",
-    "!*.tsbuildinfo",
-    "!*.test.*"
-  ],
+  "files": ["/dist", "!*.tsbuildinfo", "!*.test.*"],
   "bin": {
     "app-config-inject": "dist/cli.js"
   },
@@ -34,7 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-dev",
+    "@lcdev/app-config": "2 || 2.0.0-rc.2",
     "node-html-parser": "1",
     "yargs": "16"
   },

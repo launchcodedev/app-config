@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/launchcodedev/app-config/master/img/app-config.png" width="40%" align="center" alt="app-config">
+  <img src="https://app-config.netlify.app/hero.png" width="40%" align="center" alt="app-config">
 </p>
 
 <p align="center">

@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { loadValidatedConfig } from '@lcdev/app-config';
 import { regex } from './loader';
+import { loadConfig } from './compat';
 
 // loader is the filepath, not the export
 const loader = require.resolve('./loader');
@@ -29,21 +29,24 @@ export default class AppConfigPlugin {
 
   interceptImports(compiler: Compiler) {
     compiler.hooks.normalModuleFactory.tap('AppConfigPlugin', (factory) => {
-      factory.hooks.beforeResolve.tapPromise('AppConfigPlugin', async (resolve) => {
-        if (!resolve) return;
+      factory.hooks.beforeResolve.tapPromise(
+        'AppConfigPlugin',
+        async (resolve?: { request: string }) => {
+          if (!resolve) return;
 
-        if (resolve.request === '@lcdev/app-config' || resolve.request === 'app-config') {
-          const { filePaths } = await loadValidatedConfig();
+          if (resolve.request === '@lcdev/app-config' || resolve.request === 'app-config') {
+            const { filePaths } = await loadConfig();
 
-          if (filePaths?.length) {
-            [resolve.request] = filePaths;
-          } else {
-            resolve.request = join(__dirname, '..', '.config-placeholder');
+            if (filePaths?.length) {
+              [resolve.request] = filePaths; // eslint-disable-line no-param-reassign
+            } else {
+              resolve.request = join(__dirname, '..', '.config-placeholder'); // eslint-disable-line no-param-reassign
+            }
           }
-        }
 
-        return resolve as unknown;
-      });
+          return resolve;
+        },
+      );
     });
   }
 
@@ -52,7 +55,7 @@ export default class AppConfigPlugin {
       HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
         'AppConfigPlugin',
         async ({ headTags, ...html }) => {
-          const { fullConfig } = await loadValidatedConfig();
+          const { fullConfig } = await loadConfig();
 
           // remove placeholder <script id="app-config"></script> if it exists
           const newTags = headTags.filter(({ attributes }) => attributes.id !== 'app-config');

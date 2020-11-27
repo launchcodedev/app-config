@@ -43,6 +43,11 @@ exports[`create prints simple app-config file 1`] = `
 "
 `;
 
+exports[`create uses fileNameBase option 1`] = `
+"foo: bar
+"
+`;
+
 exports[`create-schema can select a nested property 1`] = `
 "type: object
 properties:

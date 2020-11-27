@@ -1,11 +1,13 @@
 import { join, resolve } from 'path';
-import { homedir } from 'os';
 import * as fs from 'fs-extra';
-import { generateKey, encrypt, decrypt, key, message, crypto } from 'openpgp';
+import * as pgp from 'openpgp';
+import { inspect } from 'util';
+import { generateKey, encrypt, decrypt, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
 import { Json, promptUser } from './common';
 import { stringify, FileType } from './config-source';
 import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
+import { settingsDirectory } from './settings';
 import {
   AppConfigError,
   EmptyStdinOrPromptResponse,
@@ -14,8 +16,9 @@ import {
   SecretsRequireTTYError,
 } from './errors';
 import { logger, checkTTY } from './logging';
+import { connectAgentLazy, shouldUseSecretAgent } from './secret-agent';
 
-export type Key = key.Key;
+export type Key = pgp.key.Key;
 
 export const keyDirs = {
   get keychain() {
@@ -23,7 +26,7 @@ export const keyDirs = {
       return resolve(process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER);
     }
 
-    return join(homedir(), '.app-config', 'keychain');
+    return join(settingsDirectory(), 'keychain');
   },
   get privateKey() {
     return join(keyDirs.keychain, 'private-key.asc');
@@ -86,7 +89,7 @@ export const initializeLocalKeys = async () => {
     return false;
   }
 
-  logger.info('Initiliazing your encryption keys');
+  logger.info('Initializing your encryption keys');
 
   const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await initializeKeys();
 
@@ -116,7 +119,7 @@ export const deleteLocalKeys = async () => {
 };
 
 export const loadKey = async (contents: string | Buffer): Promise<Key> => {
-  const { err, keys } = await key.readArmored(contents);
+  const { err, keys } = await pgp.key.readArmored(contents);
 
   if (err) throw err[0];
 
@@ -174,28 +177,38 @@ export async function loadPublicKey(
   return key;
 }
 
-let privateKey: Promise<Key> | undefined;
+let loadedPrivateKey: Promise<Key> | undefined;
 
 export async function loadPrivateKeyLazy(): Promise<Key> {
-  if (!privateKey) {
+  if (!loadedPrivateKey) {
     logger.verbose('Loading local private key');
-    // help the end user, if they haven't initialized their local keys yet
-    privateKey = initializeLocalKeys().then(() => loadPrivateKey());
+
+    if (checkTTY()) {
+      // help the end user, if they haven't initialized their local keys yet
+      loadedPrivateKey = initializeLocalKeys().then(() => loadPrivateKey());
+    } else {
+      loadedPrivateKey = loadPrivateKey();
+    }
   }
 
-  return privateKey;
+  return loadedPrivateKey;
 }
 
-let publicKey: Promise<Key> | undefined;
+let loadedPublicKey: Promise<Key> | undefined;
 
 export async function loadPublicKeyLazy(): Promise<Key> {
-  if (!publicKey) {
+  if (!loadedPublicKey) {
     logger.verbose('Loading local public key');
-    // help the end user, if they haven't initialized their local keys yet
-    publicKey = initializeLocalKeys().then(() => loadPublicKey());
+
+    if (checkTTY()) {
+      // help the end user, if they haven't initialized their local keys yet
+      loadedPublicKey = initializeLocalKeys().then(() => loadPublicKey());
+    } else {
+      loadedPublicKey = loadPublicKey();
+    }
   }
 
-  return publicKey;
+  return loadedPublicKey;
 }
 
 export interface EncryptedSymmetricKey {
@@ -304,9 +317,25 @@ export async function loadLatestSymmetricKeyLazy(privateKey: Key): Promise<Decry
 
 export async function encryptValue(
   value: Json,
-  symmetricKey?: DecryptedSymmetricKey,
+  symmetricKeyOverride?: DecryptedSymmetricKey,
 ): Promise<string> {
-  if (!symmetricKey) {
+  if (!symmetricKeyOverride && shouldUseSecretAgent()) {
+    const client = await retrieveSecretAgent();
+
+    if (client) {
+      const allKeys = await loadSymmetricKeys();
+      const latestRevision = latestSymmetricKeyRevision(allKeys);
+      const symmetricKey = allKeys.find((k) => k.revision === latestRevision)!;
+
+      return client.encryptValue(value, symmetricKey);
+    }
+  }
+
+  let symmetricKey: DecryptedSymmetricKey;
+
+  if (symmetricKeyOverride) {
+    symmetricKey = symmetricKeyOverride;
+  } else {
     symmetricKey = await loadLatestSymmetricKeyLazy(await loadPrivateKeyLazy());
   }
 
@@ -333,12 +362,32 @@ export async function encryptValue(
 
 export async function decryptValue(
   text: string,
-  symmetricKey?: DecryptedSymmetricKey,
+  symmetricKeyOverride?: DecryptedSymmetricKey,
 ): Promise<Json> {
+  if (!symmetricKeyOverride && shouldUseSecretAgent()) {
+    const client = await retrieveSecretAgent();
+
+    if (client) {
+      return client.decryptValue(text);
+    }
+  }
+
   const [, revision, base64] = text.split(':');
 
-  if (!symmetricKey) {
-    symmetricKey = await loadSymmetricKeyLazy(parseFloat(revision), await loadPrivateKeyLazy());
+  let symmetricKey: DecryptedSymmetricKey;
+
+  if (symmetricKeyOverride) {
+    symmetricKey = symmetricKeyOverride;
+  } else {
+    const revisionNumber = parseFloat(revision);
+
+    if (Number.isNaN(revisionNumber)) {
+      throw new AppConfigError(
+        `Encrypted value was invalid, revision was not a number (${revision})`,
+      );
+    }
+
+    symmetricKey = await loadSymmetricKeyLazy(revisionNumber, await loadPrivateKeyLazy());
   }
 
   const armored = `-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
@@ -359,22 +408,24 @@ export async function decryptValue(
   return JSON.parse(data) as Json;
 }
 
-export async function loadTeamMembers(): Promise<Key[]> {
+export async function loadTeamMembers(lazy = true): Promise<Key[]> {
+  const loadMeta = lazy ? loadMetaConfigLazy : loadMetaConfig;
+
   const {
     value: { teamMembers = [] },
-  } = await loadMetaConfigLazy();
+  } = await loadMeta();
 
   return Promise.all(teamMembers.map(({ publicKey }) => loadKey(publicKey)));
 }
 
-let teamMembers: Promise<Key[]> | undefined;
+let loadedTeamMembers: Promise<Key[]> | undefined;
 
 export async function loadTeamMembersLazy(): Promise<Key[]> {
-  if (!teamMembers) {
-    teamMembers = loadTeamMembers();
+  if (!loadedTeamMembers) {
+    loadedTeamMembers = loadTeamMembers();
   }
 
-  return teamMembers;
+  return loadedTeamMembers;
 }
 
 export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
@@ -497,6 +548,28 @@ async function reencryptSymmetricKeys(
   }
 
   return newEncryptionKeys;
+}
+
+async function retrieveSecretAgent() {
+  let client;
+
+  try {
+    client = await connectAgentLazy();
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'error' in err) {
+      const { error } = err as { error: { errno: string } };
+
+      if (error.errno === 'ECONNREFUSED') {
+        logger.warn('Secret agent is not running');
+      }
+
+      logger.verbose(`Secret agent connect error: ${inspect(error)}`);
+    } else {
+      logger.error(`Secret agent connect error: ${inspect(err)}`);
+    }
+  }
+
+  return client;
 }
 
 async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties) {

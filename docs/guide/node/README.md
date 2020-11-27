@@ -13,7 +13,7 @@ lines of code required.
 ```typescript
 import { config, loadConfig } from '@lcdev/app-config';
 
-// you're probably best off initializing config ASAP in your program
+// you're best off initializing config ASAP in your program
 async function main() {
   await loadConfig();
 
@@ -23,7 +23,7 @@ async function main() {
 
 Note that files are resolved internally relative to the CWD. Normally, your
 app-config files will be located alongside `package.json`. This can be overriden
-(see [API Reference](./api-reference)) if you really need to.
+(see [API Reference](./api-reference.md)) if you really need to.
 
 ## Accessing Config
 
@@ -41,9 +41,11 @@ generate:
   - { file: 'src/@types/lcdev__app-config/index.d.ts' }
 ```
 
+Running the generate CLI will write the file referenced in the meta file.
+
 ```sh
 npx app-config generate
 ```
 
 If your `include` section in tsconfig includes the generated `index.d.ts` file, this should
-give types to the `config` export.
+give types to the `config` export. See the [guide](../intro/codegen.md) for more about this.

@@ -13,5 +13,8 @@
   },
   "dependencies": {
     "vuepress": "1"
+  },
+  "devDependencies": {
+    "vuepress-plugin-mermaidjs": "1"
   }
 }

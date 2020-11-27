@@ -1,5 +1,6 @@
 import readline from 'readline';
 import prompts from 'prompts';
+import type { PromptObject } from 'prompts';
 
 export type PromiseOrNot<T> = Promise<T> | T;
 
@@ -15,6 +16,10 @@ export type Json = JsonPrimitive | JsonArray | JsonObject;
 
 export function isObject(obj: Json): obj is JsonObject {
   return typeof obj === 'object' && !Array.isArray(obj) && obj !== null;
+}
+
+export function isPrimitive(obj: Json): obj is JsonPrimitive {
+  return !isObject(obj) && !Array.isArray(obj);
 }
 
 export type KeyFormatter = (key: string, separator: string) => string;
@@ -56,7 +61,7 @@ export const flattenObjectTree = (
   }, {});
 };
 
-export async function promptUser<T>(options: Omit<prompts.PromptObject, 'name'>): Promise<T> {
+export async function promptUser<T>(options: Omit<PromptObject, 'name'>): Promise<T> {
   const { named } = await prompts({ ...options, name: 'named' });
 
   return named as T;

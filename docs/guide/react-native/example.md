@@ -2,4 +2,4 @@
 title: Example Project
 ---
 
-TODO
+To be filled in.

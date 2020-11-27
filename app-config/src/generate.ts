@@ -1,4 +1,4 @@
-import { basename, extname } from 'path';
+import { basename, extname, join } from 'path';
 import { outputFile } from 'fs-extra';
 import {
   quicktype,
@@ -10,9 +10,15 @@ import {
   InputData,
 } from 'quicktype-core';
 import { JsonObject } from './common';
-import { loadMetaConfigLazy } from './meta';
-import { loadSchema } from './schema';
+import { loadMetaConfig, Options as MetaOptions } from './meta';
+import { loadSchema, Options as SchemaOptions } from './schema';
 import { logger } from './logging';
+
+export interface Options {
+  directory?: string;
+  schemaOptions?: SchemaOptions;
+  metaOptions?: MetaOptions;
+}
 
 export interface GenerateFile {
   file: string;
@@ -25,11 +31,13 @@ export interface GenerateFile {
   rendererOptions?: RendererOptions;
 }
 
-export const generateTypeFiles = async () => {
-  const { value: schema, schemaRefs } = await loadSchema();
+export async function generateTypeFiles({ directory, schemaOptions, metaOptions }: Options = {}) {
+  const { value: schema, schemaRefs } = await loadSchema({ directory, ...schemaOptions });
   const {
     value: { generate = [] },
-  } = await loadMetaConfigLazy();
+  } = await loadMetaConfig({ directory, ...metaOptions });
+
+  const metaDirectory = metaOptions?.directory ?? directory ?? '.';
 
   // default to PascalCase with non-word chars removed
   const normalizeName = (file: string) =>
@@ -59,13 +67,13 @@ export const generateTypeFiles = async () => {
           schemaRefs,
         );
 
-        await outputFile(file, `${lines.join('\n')}${'\n'}`);
+        await outputFile(join(metaDirectory, file), `${lines.join('\n')}${'\n'}`);
       },
     ),
   );
 
   return generate;
-};
+}
 
 export async function generateQuicktype(
   schema: JsonObject,
@@ -86,7 +94,7 @@ export async function generateQuicktype(
 
   class FetchingJSONSchemaStore extends JSONSchemaStore {
     async fetch(address: string): Promise<JSONSchema | undefined> {
-      return (schemaRefs as any)[address] as JSONSchema;
+      return schemaRefs[address] as JSONSchema;
     }
   }
 

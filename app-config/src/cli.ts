@@ -4,7 +4,7 @@ import * as yargs from 'yargs';
 import execa from 'execa';
 import clipboardy from 'clipboardy';
 import { outputFile, readFile } from 'fs-extra';
-import { resolve } from 'json-schema-ref-parser';
+import { resolve, dereference } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
 import { consumeStdin, flattenObjectTree, Json, JsonObject, promptUser } from './common';
 import { FileType, stringify } from './config-source';
@@ -12,26 +12,32 @@ import { Configuration, loadConfig, loadValidatedConfig } from './config';
 import {
   keyDirs,
   initializeLocalKeys,
-  loadPublicKeyLazy,
-  trustTeamMember,
   loadPrivateKeyLazy,
-  loadLatestSymmetricKeyLazy,
+  loadPublicKeyLazy,
   encryptValue,
   decryptValue,
-  untrustTeamMember,
   loadKey,
   initializeKeys,
   deleteLocalKeys,
-  generateSymmetricKey,
   loadSymmetricKeys,
-  latestSymmetricKeyRevision,
   saveNewSymmetricKey,
+  generateSymmetricKey,
+  latestSymmetricKeyRevision,
   loadTeamMembersLazy,
+  trustTeamMember,
+  untrustTeamMember,
 } from './encryption';
+import { shouldUseSecretAgent, startAgent, disconnectAgents } from './secret-agent';
 import { loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { checkTTY, logger, LogLevel } from './logging';
 import { AppConfigError, FailedToSelectSubObject, EmptyStdinOrPromptResponse } from './errors';
+
+enum OptionGroups {
+  Options = 'Options:',
+  General = 'General:',
+  Logging = 'Logging:',
+}
 
 type SubcommandOptions<
   Options extends { [name: string]: yargs.Options },
@@ -63,30 +69,15 @@ function subcommand<
     aliases,
     describe: description,
     builder: (args) => {
-      for (const [key, opt] of Object.entries(positional ?? {})) {
-        args.positional(key, opt);
+      if (positional) {
+        for (const [key, opt] of Object.entries(positional)) {
+          args.positional(key, opt);
+        }
       }
 
-      args.options(options ?? {}).options({
-        cwd: {
-          alias: 'C',
-          nargs: 1,
-          type: 'string',
-          description: 'Run app-config in the context of this directory',
-        },
-        verbose: {
-          type: 'boolean',
-          description: 'Perform verbose logging',
-        },
-        quiet: {
-          type: 'boolean',
-          description: 'Only logs errors',
-        },
-        silent: {
-          type: 'boolean',
-          description: 'Never logs anything (expect command output)',
-        },
-      });
+      if (options) {
+        args.options(options);
+      }
 
       args.example(examples);
 
@@ -99,6 +90,9 @@ function subcommand<
       if (args.silent) logger.setLevel(LogLevel.None);
 
       await run(args as typeof args & yargs.InferredOptionTypes<Options & PositionalOptions>);
+
+      // cleanup any secret agent clients right away, so it's safe to exit
+      await disconnectAgents();
     },
   };
 }
@@ -108,6 +102,13 @@ const noSchemaOption = {
   type: 'boolean',
   default: false,
   description: 'Avoids doing schema validation of your app-config (dangerous!)',
+  group: OptionGroups.Options,
+} as const;
+
+const fileNameBaseOption = {
+  type: 'string',
+  description: 'Changes what file name prefix is used when looking for app-config files',
+  group: OptionGroups.Options,
 } as const;
 
 const secretsOption = {
@@ -115,6 +116,7 @@ const secretsOption = {
   type: 'boolean',
   default: false,
   description: 'Include secrets in the output',
+  group: OptionGroups.Options,
 } as const;
 
 const prefixOption = {
@@ -122,6 +124,7 @@ const prefixOption = {
   type: 'string',
   default: 'APP_CONFIG',
   description: 'Prefix for environment variable names',
+  group: OptionGroups.Options,
 } as const;
 
 const formatOption = {
@@ -129,11 +132,27 @@ const formatOption = {
   type: 'string',
   default: 'yaml' as string,
   choices: ['yaml', 'yml', 'json', 'json5', 'toml'],
+  group: OptionGroups.Options,
 } as const;
 
 const selectOption = {
   type: 'string',
   description: 'A JSON pointer to select a nested property in the object',
+  group: OptionGroups.Options,
+} as const;
+
+const clipboardOption = {
+  alias: 'c',
+  type: 'boolean',
+  description: 'Copies the value to the system clipboard',
+  group: OptionGroups.Options,
+} as const;
+
+const secretAgentOption = {
+  type: 'boolean',
+  default: true,
+  description: 'Uses the secret-agent, if available',
+  group: OptionGroups.Options,
 } as const;
 
 function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
@@ -162,17 +181,56 @@ function fileTypeForFormatOption(option: string): FileType {
   }
 }
 
-function loadConfigConditionalValidation(noSchema: boolean): typeof loadConfig {
-  if (noSchema) return loadConfig;
-  return loadValidatedConfig;
+function loadConfigWithOptions({
+  noSchema,
+  fileNameBase,
+}: {
+  noSchema?: boolean;
+  fileNameBase?: string;
+}): ReturnType<typeof loadConfig> {
+  const options = {
+    fileNameBase,
+  };
+
+  if (noSchema) return loadConfig(options);
+  return loadValidatedConfig(options);
 }
 
 const { argv: _ } = yargs
   .strict()
   .wrap(yargs.terminalWidth() - 5)
   .version()
-  .help('h', 'Shows help message with examples and options')
+  .alias('v', 'version')
+  .help('h', 'Show help message with examples and options')
   .alias('h', 'help')
+  .options({
+    cwd: {
+      alias: 'C',
+      nargs: 1,
+      type: 'string',
+      description: 'Run app-config in the context of this directory',
+    },
+  })
+  .options({
+    verbose: {
+      type: 'boolean',
+      description: 'Outputs verbose messages with internal details',
+    },
+    quiet: {
+      type: 'boolean',
+      description: 'Only outputs errors that user should be aware of',
+    },
+    silent: {
+      type: 'boolean',
+      description: 'Do not print anything non-functional',
+    },
+  })
+  .group('cwd', OptionGroups.General)
+  .group('help', OptionGroups.General)
+  .group('version', OptionGroups.General)
+  .group('verbose', OptionGroups.Logging)
+  .group('quiet', OptionGroups.Logging)
+  .group('silent', OptionGroups.Logging)
   .command(
     subcommand(
       {
@@ -189,13 +247,14 @@ const { argv: _ } = yargs
           secrets: secretsOption,
           prefix: prefixOption,
           noSchema: noSchemaOption,
+          fileNameBase: fileNameBaseOption,
+          agent: secretAgentOption,
         },
       },
       async (opts) => {
-        const toPrint = selectSecretsOrNot(
-          await loadConfigConditionalValidation(opts.noSchema)(),
-          opts.secrets,
-        );
+        shouldUseSecretAgent(opts.agent);
+
+        const toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
 
         process.stdout.write(
           Object.entries(flattenObjectTree(toPrint, opts.prefix))
@@ -221,13 +280,14 @@ const { argv: _ } = yargs
           format: formatOption,
           select: selectOption,
           noSchema: noSchemaOption,
+          fileNameBase: fileNameBaseOption,
+          agent: secretAgentOption,
         },
       },
       async (opts) => {
-        let toPrint = selectSecretsOrNot(
-          await loadConfigConditionalValidation(opts.noSchema)(),
-          opts.secrets,
-        );
+        shouldUseSecretAgent(opts.agent);
+
+        let toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
@@ -263,14 +323,19 @@ const { argv: _ } = yargs
       async (opts) => {
         const { value: schema } = await loadSchema();
 
-        let toPrint: Json = schema;
+        let toPrint: Json;
+
+        const normalized = await dereference(schema);
+        const refs = await resolve(normalized);
 
         if (opts.select) {
-          toPrint = (await resolve(toPrint)).get(opts.select);
+          toPrint = refs.get(opts.select);
 
           if (toPrint === undefined) {
             throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
           }
+        } else {
+          toPrint = refs.get('#');
         }
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
@@ -361,8 +426,16 @@ const { argv: _ } = yargs
               ],
             },
             async () => {
-              const revision = latestSymmetricKeyRevision(await loadSymmetricKeys()) + 1;
+              const keys = await loadSymmetricKeys();
               const teamMembers = await loadTeamMembersLazy();
+
+              let revision: number;
+
+              if (keys.length > 0) {
+                revision = latestSymmetricKeyRevision(keys) + 1;
+              } else {
+                revision = 1;
+              }
 
               await saveNewSymmetricKey(await generateSymmetricKey(revision), teamMembers);
               logger.info(`Saved a new symmetric key, revision ${revision}`);
@@ -511,17 +584,15 @@ const { argv: _ } = yargs
                 },
               },
               options: {
-                clipboard: {
-                  alias: 'c',
-                  type: 'boolean',
-                  description: 'Copies the value to the system clipboard',
-                },
+                clipboard: clipboardOption,
+                agent: secretAgentOption,
               },
             },
             async (opts) => {
+              shouldUseSecretAgent(opts.agent);
+
               // load these right away, so user unlocks asap
-              const privateKey = await loadPrivateKeyLazy();
-              const key = await loadLatestSymmetricKeyLazy(privateKey);
+              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy();
 
               let { secretValue }: { secretValue?: Json } = opts;
 
@@ -551,7 +622,7 @@ const { argv: _ } = yargs
                 }
               }
 
-              const encrypted = await encryptValue(secretValue, key);
+              const encrypted = await encryptValue(secretValue);
 
               if (opts.clipboard) {
                 await clipboardy.write(encrypted);
@@ -573,19 +644,19 @@ const { argv: _ } = yargs
                 encryptedText: {
                   type: 'string',
                   description: 'JSON value to encrypt',
+                  group: OptionGroups.Options,
                 },
               },
               options: {
-                clipboard: {
-                  alias: 'c',
-                  type: 'boolean',
-                  description: 'Uses the value from the system clipboard',
-                },
+                clipboard: clipboardOption,
+                agent: secretAgentOption,
               },
             },
             async (opts) => {
+              shouldUseSecretAgent(opts.agent);
+
               // load these right away, so user unlocks asap
-              await loadPrivateKeyLazy();
+              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy();
 
               let { encryptedText } = opts;
 
@@ -611,6 +682,20 @@ const { argv: _ } = yargs
 
               process.stdout.write(JSON.stringify(await decryptValue(encryptedText)));
               process.stdout.write('\n');
+            },
+          ),
+        )
+        .command(
+          subcommand(
+            {
+              name: 'agent',
+              description: 'Starts the secret-agent daemon',
+            },
+            async () => {
+              await startAgent();
+
+              // wait forever
+              await new Promise(() => {});
             },
           ),
         ),
@@ -639,9 +724,13 @@ const { argv: _ } = yargs
           format: { ...formatOption, default: 'json' },
           select: selectOption,
           noSchema: noSchemaOption,
+          fileNameBase: fileNameBaseOption,
+          agent: secretAgentOption,
         },
       },
       async (opts) => {
+        shouldUseSecretAgent(opts.agent);
+
         const [command, ...args] = opts._;
 
         if (!command) {
@@ -649,10 +738,7 @@ const { argv: _ } = yargs
           process.exit(1);
         }
 
-        let toPrint = selectSecretsOrNot(
-          await loadConfigConditionalValidation(opts.noSchema)(),
-          opts.secrets,
-        );
+        let toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
 
         if (opts.select) {
           toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;

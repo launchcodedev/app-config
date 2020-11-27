@@ -1,130 +1,118 @@
 import { join, dirname, extname, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
-import { isObject, Json, PromiseOrNot } from './common';
+import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsedValue, ParsedValueMetadata } from './parsed-value';
-import { ConfigSource, FileSource } from './config-source';
+import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root } from './parsed-value';
+import { FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
 import { logger } from './logging';
 
-export const defaultExtensions = [
-  v1Compat(),
-  envDirective(),
-  extendsDirective(),
-  overrideDirective(),
-  encryptedDirective(),
-  environmentVariableSubstitution(),
-];
-
-type TransformParentOptions = {
-  /**
-   * This option governs whether the returned value should be set as its parent (remove the key, set parent as child's value).
-   *
-   * It's usually in tandem with merge or override, which are the strategies to use when flattening.
-   */
-  flatten?: boolean;
-  /**
-   * When flattening, should the value be merged into the parent's existing values?
-   */
-  merge?: boolean;
-  /**
-   * When flattening, should the value replace parent's existing values?
-   */
-  override?: boolean;
-  /**
-   * Metadata to pass on to ParsedValues.
-   */
-  metadata?: ParsedValueMetadata;
-};
-
-export type ParsingExtension = (key: string, value: Json) => false | ParsingExtensionTransform;
-export type ParsingExtensionTransform = (
-  context: ConfigSource,
-  extensions: ParsingExtension[],
-) => PromiseOrNot<[Json | ParsedValue, TransformParentOptions]>;
+export function defaultExtensions(
+  aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
+  symmetricKey?: DecryptedSymmetricKey,
+): ParsingExtension[] {
+  return [
+    v1Compat(),
+    envDirective(aliases, environmentOverride),
+    extendsDirective(),
+    overrideDirective(),
+    encryptedDirective(symmetricKey),
+    environmentVariableSubstitution(aliases, environmentOverride),
+  ];
+}
 
 /** Uses another file as a "base", and extends on top of it */
 export function extendsDirective(): ParsingExtension {
-  return fileReferenceDirective('$extends', { flatten: true, merge: true });
+  return fileReferenceDirective('$extends', { shouldMerge: true });
 }
 
 /** Uses another file as overriding values, layering them on top of current file */
 export function overrideDirective(): ParsingExtension {
-  return fileReferenceDirective('$override', { flatten: true, override: true });
+  return fileReferenceDirective('$override', { shouldOverride: true });
 }
 
 /** Looks up an environment-specific value ($env) */
-export function envDirective(aliases: EnvironmentAliases = defaultAliases): ParsingExtension {
-  const environment = currentEnvironment(aliases);
+export function envDirective(
+  aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
+): ParsingExtension {
+  const environment = environmentOverride ?? currentEnvironment(aliases);
 
-  return (key, obj) => {
-    if (key !== '$env') return false;
+  return (value, [_, key]) => {
+    if (key === '$env') {
+      return (parse) => {
+        if (!isObject(value)) {
+          throw new AppConfigError('An $env directive was used with a non-object value');
+        }
 
-    return () => {
-      if (!isObject(obj))
-        throw new AppConfigError('An $env directive was used with a non-object value');
+        if (!environment) {
+          if (value.default) return parse(value.default, { shouldFlatten: true });
 
-      if (!environment) {
-        if (obj.default) return [obj.default, { flatten: true, merge: true }];
+          throw new AppConfigError(
+            `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
+          );
+        }
+
+        for (const [envName, envValue] of Object.entries(value)) {
+          if (envName === environment || aliases[envName] === environment) {
+            return parse(envValue, { shouldFlatten: true });
+          }
+        }
+
+        if ('default' in value) {
+          return parse(value.default, { shouldFlatten: true });
+        }
+
+        const found = Object.keys(value).join(', ');
 
         throw new AppConfigError(
-          `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
+          `An $env directive was used, but none matched the current environment (wanted ${environment}, saw [${found}])`,
         );
-      }
+      };
+    }
 
-      for (const [envName, value] of Object.entries(obj)) {
-        if (envName === environment || aliases[envName] === environment) {
-          return [value, { flatten: true, merge: true }];
-        }
-      }
-
-      if ('default' in obj) {
-        return [obj.default, { flatten: true, merge: true }];
-      }
-
-      const found = Object.keys(obj).join(', ');
-
-      throw new AppConfigError(
-        `An $env directive was used, but none matched the current environment (wanted ${environment}, got ${found})`,
-      );
-    };
+    return false;
   };
 }
 
 /** Decrypts inline encrypted values */
 export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): ParsingExtension {
-  return (_, value) => {
-    if (typeof value !== 'string' || !value.startsWith('enc:')) return false;
+  return (value) => {
+    if (typeof value === 'string' && value.startsWith('enc:')) {
+      return async (parse) => {
+        const decrypted = await decryptValue(value, symmetricKey);
 
-    return async () => {
-      const decrypted = await decryptValue(value, symmetricKey);
+        return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
+      };
+    }
 
-      return [decrypted, { metadata: { parsedFromEncryptedValue: true, fromSecrets: true } }];
-    };
+    return false;
   };
 }
 
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
 export function environmentVariableSubstitution(
   aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
 ): ParsingExtension {
   const performAllSubstitutions = (text: string): string => {
     let output = text;
 
-    // this regex matches:
-    //   $FOO
-    //   ${FOO}
-    //   ${FOO:-fallback}
-    //   ${FOO:-${FALLBACK}}
-    //
-    // var name is group 1 || 2
-    // fallback value is group 3
-    // https://regex101.com/r/6ZMmx7/3
-    const envVar = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g;
-
+    /* eslint-disable-next-line no-constant-condition */
     while (true) {
-      const match = envVar.exec(output);
+      // this regex matches:
+      //   $FOO
+      //   ${FOO}
+      //   ${FOO:-fallback}
+      //   ${FOO:-${FALLBACK}}
+      //
+      // var name is group 1 || 2
+      // fallback value is group 3
+      // https://regex101.com/r/6ZMmx7/3
+      const match = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g.exec(output);
+
       if (!match) break;
 
       const fullMatch = match[0];
@@ -140,7 +128,7 @@ export function environmentVariableSubstitution(
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
           output = performAllSubstitutions(output.replace(fullMatch, fallback));
         } else if (varName === 'APP_CONFIG_ENV') {
-          const envType = currentEnvironment(aliases);
+          const envType = environmentOverride ?? currentEnvironment(aliases);
 
           if (!envType) {
             throw new AppConfigError(`Could not find environment variable ${varName}`);
@@ -159,121 +147,134 @@ export function environmentVariableSubstitution(
     return output;
   };
 
-  return (key, value) => {
-    if (key !== '$substitute' && key !== '$subs') return false;
+  return (value, [_, key]) => {
+    if (key === '$subsitute') logger.warn('Noticed a typo! Key of $subsitute was found.');
 
-    return () => {
-      if (typeof value !== 'string') throw new AppConfigError('$substitute expects a string value');
+    if (key === '$substitute' || key === '$subs') {
+      return (parse) => {
+        if (typeof value !== 'string')
+          throw new AppConfigError('$substitute expects a string value');
 
-      return [performAllSubstitutions(value), { flatten: true }];
-    };
+        return parse(performAllSubstitutions(value), { shouldFlatten: true });
+      };
+    }
+
+    return false;
   };
 }
 
 /** V1 app-config compatibility */
 export function v1Compat(): ParsingExtension {
-  return (key, value) => {
-    if (key !== 'app-config' || !isObject(value)) return false;
+  return (value, [_, key], context) => {
+    // only apply in top-level app-config property
+    if (context[context.length - 1]?.[0] !== Root) {
+      return false;
+    }
 
-    return async (ctx) => {
-      if (ctx instanceof FileSource) {
-        logger.warn(
-          `Using V1 compatibility layer for special 'app-config' property in ${ctx.filePath}! This functionality is deprecated and may be removed in the future.`,
-        );
-      } else {
-        logger.warn(
-          `Using V1 compatibility layer for special 'app-config' property! This functionality is deprecated and may be removed in the future.`,
-        );
-      }
-
-      const resolveAmbiguousFilename = async (filepath: string) => {
-        // resolve filepaths that are relative to the current FileSource
+    if (key === 'app-config' && isObject(value)) {
+      return async (parse, _, ctx) => {
         if (ctx instanceof FileSource) {
-          filepath = join(dirname(ctx.filePath), filepath);
+          logger.warn(
+            `Using V1 compatibility layer for special 'app-config' property in ${ctx.filePath}! This functionality is deprecated and may be removed in the future.`,
+          );
+        } else {
+          logger.warn(
+            `Using V1 compatibility layer for special 'app-config' property! This functionality is deprecated and may be removed in the future.`,
+          );
         }
 
-        switch (extname(filepath)) {
-          case '.yml':
-          case '.yaml':
-          case '.json':
-          case '.json5':
-          case '.toml':
-            return filepath;
-          default: {
-            if (await pathExists(`${filepath}.yml`)) return `${filepath}.yml`;
-            if (await pathExists(`${filepath}.yaml`)) return `${filepath}.yaml`;
-            if (await pathExists(`${filepath}.json`)) return `${filepath}.json`;
-            if (await pathExists(`${filepath}.json5`)) return `${filepath}.json5`;
-            if (await pathExists(`${filepath}.toml`)) return `${filepath}.toml`;
+        const resolveAmbiguousFilename = async (filepath: string) => {
+          let resolvedPath = filepath;
 
-            return filepath;
+          // resolve filepaths that are relative to the current FileSource
+          if (ctx instanceof FileSource) {
+            resolvedPath = join(dirname(ctx.filePath), filepath);
           }
+
+          switch (extname(resolvedPath)) {
+            case '.yml':
+            case '.yaml':
+            case '.json':
+            case '.json5':
+            case '.toml':
+              return resolvedPath;
+            default: {
+              if (await pathExists(`${resolvedPath}.yml`)) return `${resolvedPath}.yml`;
+              if (await pathExists(`${resolvedPath}.yaml`)) return `${resolvedPath}.yaml`;
+              if (await pathExists(`${resolvedPath}.json`)) return `${resolvedPath}.json`;
+              if (await pathExists(`${resolvedPath}.json5`)) return `${resolvedPath}.json5`;
+              if (await pathExists(`${resolvedPath}.toml`)) return `${resolvedPath}.toml`;
+
+              return resolvedPath;
+            }
+          }
+        };
+
+        // TODO: multiple properties defined
+
+        if ('extends' in value) {
+          return parse(
+            { $extends: await resolveAmbiguousFilename(value.extends as string) },
+            { shouldMerge: true },
+          );
         }
+
+        if ('extendsOptional' in value) {
+          return parse(
+            {
+              $extends: {
+                path: await resolveAmbiguousFilename(value.extendsOptional as string),
+                optional: true,
+              },
+            },
+            { shouldMerge: true },
+          );
+        }
+
+        if ('override' in value) {
+          return parse(
+            { $override: await resolveAmbiguousFilename(value.override as string) },
+            { shouldOverride: true },
+          );
+        }
+
+        if ('overrideOptional' in value) {
+          return parse(
+            {
+              $override: {
+                path: await resolveAmbiguousFilename(value.overrideOptional as string),
+                optional: true,
+              },
+            },
+            { shouldOverride: true },
+          );
+        }
+
+        return parse(value);
       };
+    }
 
-      // TODO: multiple properties defined
-
-      if ('extends' in value) {
-        return [
-          { $extends: await resolveAmbiguousFilename(value.extends as string) },
-          { flatten: true, merge: true },
-        ];
-      }
-
-      if ('extendsOptional' in value) {
-        return [
-          {
-            $extends: {
-              path: await resolveAmbiguousFilename(value.extendsOptional as string),
-              optional: true,
-            },
-          },
-          { flatten: true, merge: true },
-        ];
-      }
-
-      if ('override' in value) {
-        return [
-          { $override: await resolveAmbiguousFilename(value.override as string) },
-          { flatten: true, merge: true },
-        ];
-      }
-
-      if ('overrideOptional' in value) {
-        return [
-          {
-            $override: {
-              path: await resolveAmbiguousFilename(value.overrideOptional as string),
-              optional: true,
-            },
-          },
-          { flatten: true, merge: true },
-        ];
-      }
-
-      return [value, {}];
-    };
+    return false;
   };
 }
 
 // common logic for $extends and $override
-function fileReferenceDirective(
-  keyName: string,
-  options: TransformParentOptions,
-): ParsingExtension {
-  return (key, value) => {
+function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): ParsingExtension {
+  return (value, [_, key]) => {
     if (key !== keyName) return false;
 
-    return async (context, extensions) => {
+    return async (parse, _, context, extensions) => {
       const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
+        let resolvedPath = filepath;
+
         // resolve filepaths that are relative to the current FileSource
         if (!isAbsolute(filepath) && context instanceof FileSource) {
-          filepath = join(dirname(context.filePath), filepath);
+          resolvedPath = join(dirname(context.filePath), filepath);
         }
 
-        logger.verbose(`Loading file for ${keyName}: ${filepath}`);
+        logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
 
-        const source = new FileSource(filepath);
+        const source = new FileSource(resolvedPath);
 
         const parsed = await source.read(extensions).catch((error) => {
           if (error instanceof NotFoundError && isOptional) {
@@ -287,7 +288,7 @@ function fileReferenceDirective(
           const found = parsed.property(subselector.split('.'));
 
           if (!found) {
-            throw new FailedToSelectSubObject(`Failed to select ${subselector} in ${filepath}`);
+            throw new FailedToSelectSubObject(`Failed to select ${subselector} in ${resolvedPath}`);
           }
 
           return found;
@@ -296,16 +297,18 @@ function fileReferenceDirective(
         return parsed;
       };
 
-      const forOptions = async (obj: Json) => {
-        if (typeof obj === 'string') {
-          return retrieveFile(obj);
+      const forOptions = async (options: Json) => {
+        const parsed = (await parse(options)).toJSON();
+
+        if (typeof parsed === 'string') {
+          return retrieveFile(parsed);
         }
 
-        if (!isObject(obj)) {
+        if (!isObject(parsed)) {
           throw new AppConfigError(`${keyName} was provided an invalid option`);
         }
 
-        const { path, optional, select } = obj;
+        const { path, optional, select } = parsed;
 
         if (!path || typeof path !== 'string') {
           throw new AppConfigError(`Invalid ${keyName} filepath found`);
@@ -329,10 +332,12 @@ function fileReferenceDirective(
           acc = ParsedValue.merge(acc, await forOptions(ext));
         }
 
-        return [acc, options];
+        return acc.assignMeta(meta);
       }
 
-      return [await forOptions(value), options];
+      const parsed = await forOptions(value);
+
+      return parsed.assignMeta(meta);
     };
   };
 }

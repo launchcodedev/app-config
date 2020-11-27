@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Easy to use configuration loader with schema validation",
-  "version": "2.0.0-dev",
+  "version": "2.0.0-rc.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -21,7 +21,8 @@
     "!*.test.*"
   ],
   "bin": {
-    "app-config": "dist/cli.js"
+    "app-config": "dist/cli.js",
+    "app-config-secret-agent": "dist/start-secret-agent.js"
   },
   "scripts": {
     "cli": "node ./dist/cli.js",
@@ -35,11 +36,16 @@
   },
   "dependencies": {
     "@iarna/toml": "3",
+    "@lcdev/ts": "0.2",
+    "@lcdev/ws-rpc": "^0.3.7",
+    "@types/openpgp": "4",
+    "@types/prompts": "2",
     "@types/readable-stream": "2",
     "@types/urijs": "1",
     "ajv": "6",
     "clipboardy": "2",
     "common-tags": "1",
+    "env-paths": "2",
     "execa": "4",
     "fs-extra": "9",
     "js-yaml": "3",
@@ -49,7 +55,9 @@
     "openpgp": "4",
     "prompts": "2",
     "quicktype-core": "6.0.69",
+    "selfsigned": "1",
     "text-encoding-utf-8": "1",
+    "ws": "7",
     "yargs": "16"
   },
   "devDependencies": {
@@ -57,14 +65,19 @@
     "@types/fs-extra": "9",
     "@types/js-yaml": "3",
     "@types/lodash.merge": "4",
-    "@types/openpgp": "4",
-    "@types/prompts": "2",
     "@types/tmp": "0.2",
+    "get-port": "5",
     "tmp-promise": "3"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
     "preset": "@lcdev/jest",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "dist",
+      ".yarn-cache",
+      "<rootDir>/src/setup.test.ts"
+    ],
     "setupFilesAfterEnv": [
       "<rootDir>/src/setup.test.ts"
     ]

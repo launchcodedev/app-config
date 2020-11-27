@@ -3,7 +3,12 @@ import { join } from 'path';
 import { withTempFiles } from './test-util';
 
 const run = async (argv: string[], options?: execa.Options) =>
-  execa('node', [join(__dirname, '..', './dist/cli.js'), ...argv], options);
+  execa('node', [join(__dirname, '..', './dist/cli.js'), ...argv], {
+    stdout: 'pipe',
+    stderr: 'ignore',
+    stdin: 'ignore',
+    ...options,
+  });
 
 describe('vars', () => {
   it('fails with no app-config', async () => {
@@ -120,6 +125,31 @@ describe('create', () => {
         env: { APP_CONFIG },
       }),
     ).rejects.toThrow();
+  });
+
+  it('uses fileNameBase option', async () => {
+    await withTempFiles(
+      {
+        'my-app.yml': `
+          foo: bar
+        `,
+        'my-app.schema.yml': `
+          type: object
+          properties:
+            foo:
+              type: string
+        `,
+      },
+      async (inDir) => {
+        const { stdout } = await run(['create', '--fileNameBase=my-app', '-C', inDir('.')]);
+        expect(stdout).toMatchSnapshot();
+
+        const APP_CONFIG = JSON.stringify({ foo: true });
+        await expect(
+          run(['create', '--fileNameBase=my-app', '-C', inDir('.')], { env: { APP_CONFIG } }),
+        ).rejects.toThrow();
+      },
+    );
   });
 });
 

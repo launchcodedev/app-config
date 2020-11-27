@@ -2,22 +2,23 @@
 title: Introduction
 ---
 
-Welcome! Do you build web apps? Node.js servers? CLI applications? Tired of writing logic to parse JSON files?
-Made a typo while deploying, and saw 1000 runtime errors? Maintaining a `config.ts` with commented-out values?
+Welcome! Do you build web apps, Node.js servers, or CLI applications? Tired of writing logic to parse JSON files?
+Made a typo while deploying, causing runtime errors? Maintaining a `config.ts` with commented-out values?
 **We built app-config for you.**
 
 Yet another config library? We thought so too, until we needed a solution for configuration at [Launchcode](https://lc.dev).
 The ask was fairly simple - an isomorphic solution to load configuration values, that strictly prevents mistakes.
 We needed this for frontend, backend and mobile projects. Using the same tool for all of these was a must.
+We also didn't like the trend of "opinionated" libraries, with a lot of implicit behaviour.
 
-In a hurry? See [Quick Start](./quick-start.md).
+In a hurry? Check out the [Quick Start](./quick-start.md) guide.
 
 ## Beginning
 
 To start with, what is "configuration"?
 
 1. A nesting structure of values, generally JSON-like (objects, arrays, strings, numbers and booleans).
-2. An accessible way to read these values programmatically.
+2. An accessible way to read these values programmatically (API or CLI).
 3. A way to store these values (files), mutate them, and share them (to others, and in deployments).
 
 On top of this, we want to **validate** this configuration. That means ensuring
@@ -27,10 +28,11 @@ outside of limits should never make it to production.
 We looked around the Node.js ecosystem for something that would fit these goals.
 Unfortunately, much of the existing tools are javascript-heavy, meaning they're too
 dynamic to provide good TypeScript support. We also found a lot of libraries with
-"magic" built-in (usually not optional), with a set of hard opinions.
+"magic" built-in (usually not optional), with a set of strict opinions.
 
-You might be interested by some of them - they might fit your use case better!
+You might be interested by some of them - they might fit your use case!
 
+- [conf](https://www.npmjs.com/package/conf)
 - [node-config-ts](https://www.npmjs.com/package/node-config-ts)
 - [dotenv](https://www.npmjs.com/package/dotenv)
 - [rc](https://www.npmjs.com/package/rc)
@@ -45,7 +47,7 @@ We intend to provide:
 - A tool that can slot in to your workflow without disruption, and be learnt in 30 minutes.
 - A way to write configuration and schema files, where mistakes are a thing of the past.
 - Amazing developer ergonomics, providing the slimmest API with deep control if you need it.
-- A toolbelt for improving your configuration story, that's incrementally adoptable.
+- A toolbelt for improving your configuration strategy, that's incrementally adoptable.
 - Simplicity without magic - `app-config` will only do what you ask it to.
 - Tie-in for non-javascript environments, which can consume environment variables safely.
 - Support for your favorite file format, so you can focus on building instead of a new syntax.
@@ -56,7 +58,7 @@ We intend to provide:
 Alright, so you want to use `app-config`. First step is always, of course, installing it.
 
 ::: tip
-You'll probably find for detailed information for the environment you're targetting in the Node.js, Webpack or React Native sections.
+You'll probably find more detailed information for the environment you're targetting in the Node.js, Webpack or React Native sections.
 :::
 
 ```sh
@@ -195,12 +197,13 @@ If everything is working correctly, you should see the same output. We've passed
 the configuration to `app-config` via environment variable, which was able to read
 and parse it. Notably, we wrote it with [JSON5](https://json5.org/) syntax. The format
 of the environment variable in unimportant - it could have been YAML, TOML, or JSON (you
-might choose something with strict syntax like JSON, but normally this variable is generated
+might choose something with stricter syntax like JSON, but normally this variable is generated
 programmatically anyways).
 
 ## The `.app-config` File
+
 Alright, back to our original problem. Environment variables are great, but you'd
-have a terrible time maintaining a big JSON plain like that (which is where tools 
+have a terrible time maintaining a big JSON blob like that (which is where tools
 like dotenv originated).
 
 <h4 style="text-align:center">.app-config.yml</h4>
@@ -214,9 +217,10 @@ database:
   port: 5432
 ```
 
+We created a file called `.app-config.yml`, which is the default location for app-config files.
 Again, our choice of YAML here is unimportant.
 
-We can run our `app-config` again, and should see our values.
+We can run our `app-config` CLI again, and should see our values.
 
 ```sh{3,5}
 $ npx app-config create -f yaml
@@ -229,10 +233,11 @@ database:
 
 Funny enough, we don't! At least, if you've been following this page linearly.
 Earlier, we set the `$APP_CONFIG` environment variable. Well, it turns out that
-when given the choice, `app-config` will chose that variable (which makes production
-environments easy to configure, allowing them to override files entirely).
+when given the choice, `app-config` will chose that variable over files (which
+makes production environments easy to configure, allowing them to override files
+entirely).
 
-```
+```sh{4,6}
 $ unset APP_CONFIG
 $ npx app-config create -f yaml
 server:
@@ -243,3 +248,22 @@ database:
 ```
 
 Now we see our configuration file take effect.
+
+## Environment Specific Files
+
+Note that `.app-config.yml` is not our only option. You may want a completely different
+set of values for production. You could use `$env`, as [you'll see](./extensions.md).
+You can also, however, make environment specific files.
+
+By defining a file called `.app-config.production.yml`, app-config will load it only
+when `APP_CONFIG_ENV` | `NODE_ENV` | `ENV` is `prod` or `production` (see [defaultAliases](../node/api-reference.md)).
+This can be useful for separating values out, especially in combination with `$extends`.
+You'll get a feel for why this is useful the more you use app-config.
+
+## CI, Automation and Extension
+
+Another feature you should know about is the special environment variable(s) that
+app-config will read. Either (exclusive) `APP_CONFIG_CI` or `APP_CONFIG_EXTEND`
+can be set in a CI environment variable to add specific values. These variables
+are parsed just like `APP_CONFIG` (they can be JSON, YAML, etc). They are merged
+deeply and override any values that they define.
