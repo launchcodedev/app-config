@@ -6,9 +6,9 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { headerInjection = false } = getOptions(this) || {};
+  const { headerInjection = false, loading } = getOptions(this) || {};
 
-  loadConfig()
+  loadConfig(loading)
     .then(({ fullConfig, filePaths }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(filePath));

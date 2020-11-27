@@ -65,3 +65,33 @@ short injection script that mutates the `index.html` with a new `<script id="app
 By doing that, the web app will have different configuration, without changing
 the JavaScript bundle at all. If you really wanted to, you could even change the
 HTML by hand.
+
+### Loading Options
+
+If you need to, you can pass options for the webpack plugin to use when loading app-config.
+
+```javascript
+// in your loaders:
+module: {
+  rules: [
+    {
+      test: AppConfigPlugin.regex,
+      use: {
+        loader: AppConfigPlugin.loader,
+        options: {
+          loading: {
+            // any options that are valid for loadConfig are valid here
+            directory: 'conf',
+            fileNameBase: '.my-config',
+          },
+        },
+      },
+    },
+  ],
+},
+
+// in your plugins:
+plugins: [
+  new AppConfigPlugin({ loading: { /* this should be the same as the loader */ } }),
+]
+```
