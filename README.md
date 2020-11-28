@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://app-config.netlify.app/hero.png" width="40%" align="center" alt="app-config">
+  <img src="https://app-config.dev/hero.png" width="40%" align="center" alt="app-config">
 </p>
 
 <p align="center">
@@ -12,7 +12,7 @@
   <a href="https://github.com/launchcodedev/app-config/actions">
     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/launchcodedev/app-config/CI?style=flat-square"/>
   </a>
-  <a href="https://app-config.netlify.app">
+  <a href="https://app-config.dev">
     <img alt="Netlify Status" src="https://img.shields.io/netlify/8a8b48b6-cae6-4fd9-a085-a39f9d4ac140?style=flat-square"/>
   </a>
 </p>
@@ -34,7 +34,7 @@
 
 ## Using App Config
 
-Read the [Introduction](https://app-config.netlify.app/guide/intro/) or [Quick Start](https://app-config.netlify.app/guide/intro/quick-start/) guides on our website.
+Read the [Introduction](https://app-config.dev/guide/intro/) or [Quick Start](https://app-config.dev/guide/intro/quick-start/) guides on our website.
 
 Or, start by installing through your package manager:
 

@@ -17,7 +17,7 @@
 
 ## Using App Config
 
-Read the [Introduction](https://app-config.netlify.app/guide/intro/) or [Quick Start](https://app-config.netlify.app/guide/intro/quick-start/) guides on our website.
+Read the [Introduction](https://app-config.dev/guide/intro/) or [Quick Start](https://app-config.dev/guide/intro/quick-start/) guides on our website.
 
 Or, start by installing through your package manager:
 
