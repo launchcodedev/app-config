@@ -39,6 +39,7 @@ You might be interested by some of them - they might fit your use case!
 - [nconf](https://www.npmjs.com/package/nconf)
 - [config](https://www.npmjs.com/package/config)
 - [node-convict](https://www.npmjs.com/package/convict)
+- [node-config-ts](https://www.npmjs.com/package/node-config-ts)
 
 ## Goals
 
