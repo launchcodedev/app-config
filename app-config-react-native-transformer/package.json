@@ -17,7 +17,6 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    ".config-placeholder",
     "!*.tsbuildinfo",
     "!*.test.*"
   ],
@@ -38,8 +37,6 @@
     "react-native": ">=0.45.0"
   },
   "devDependencies": {
-    "@lcdev/app-config": "*",
-    "react-native": ">=0.45.0",
     "@types/semver": "7"
   },
   "prettier": "@lcdev/prettier",
