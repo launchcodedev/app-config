@@ -52,7 +52,7 @@ async function main() {
   Unfortunately, this has the effect of making compatible tools difficult (eg. webpack plugin).
   We intend to ship a compatibility layer in v1, so that tools can rely on the v2 API without worry.
 - The environment variable name algorithm (used to flatten your config into `APP_CONFIG_FOO_BAR`) is a bit different.
-  The obvious change is with numbers in variable names - `address1` now gets transformed to `ADDRESS_1` instead of `ADDDRESS1`.
+  The obvious change is with numbers in variable names - `address1` now gets transformed to `ADDRESS_1` instead of `ADDRESS1`.
 - Environment variable substitution (eg. `port: '${PORT:-3000}'`) does not happen automatically anymore. Use the `$substitute` directive instead.
 - The config sub-object code generation has been removed. (eg. generating a JSON file in meta properties) To our knowledge, nobody used this.
 - Schema loading no longer supports the `app-config` special property, and does not use `$extends` directive by default - use `$ref`s instead.

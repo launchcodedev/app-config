@@ -58,7 +58,7 @@ We intend to provide:
 Alright, so you want to use `app-config`. First step is always, of course, installing it.
 
 ::: tip
-You'll probably find more detailed information for the environment you're targetting in the Node.js, Webpack or React Native sections.
+You'll probably find more detailed information for the environment you're targeting in the Node.js, Webpack or React Native sections.
 :::
 
 ```sh
@@ -72,7 +72,7 @@ npm i @lcdev/app-config@2
 ```
 
 Now, usually the first thing you want to do with configuration is read it from your application.
-Before you can do that though, you'll need to tell `app-config` what to expect in your configuation values.
+Before you can do that though, you'll need to tell `app-config` what to expect in your configuration values.
 
 To do that, let's write our first [JSON Schema](https://json-schema.org/) file.
 
