@@ -7,7 +7,9 @@
     "app-config-webpack-plugin",
     "app-config-inject",
     "app-config-react-native-transformer",
-    "examples/*",
+    "examples/cli-project",
+    "examples/frontend-webpack-project",
+    "examples/nodejs-server",
     "docs"
   ],
   "scripts": {
