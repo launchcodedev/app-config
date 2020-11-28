@@ -22,7 +22,7 @@ async function main() {
 ```
 
 Note that files are resolved internally relative to the CWD. Normally, your
-app-config files will be located alongside `package.json`. This can be overriden
+app-config files will be located alongside `package.json`. This can be overridden
 (see [API Reference](./api-reference.md)) if you really need to.
 
 ## Accessing Config

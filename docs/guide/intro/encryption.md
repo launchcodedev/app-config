@@ -77,7 +77,7 @@ This will re-sign all encryption keys of the current repository with their publi
 key. This gives them access to any previously encrypted secrets as well.
 
 You can untrust users as well. Please rotate secrets if they are a security concern.
-Once a user has accessed secrets, there's no way to trully revoke that access.
+Once a user has accessed secrets, there's no way to truly revoke that access.
 
 ```sh
 npx app-config secret untrust somebody@example.com

@@ -8,7 +8,7 @@ See the [release notes](./release-notes.md#version-2-v2-0-0) for a list of chang
 
 1. Adjust the versions in all `package.json` files from `1` to `2` for `@lcdev/app-config` and plugins.
 1. Move any `app-config.{ext}` files to `.app-config.{ext}`
-1. In Node.js applications, call the asynchonous `loadConfig` before accessing any config properties.
+1. In Node.js applications, call the asynchronous `loadConfig` before accessing any config properties.
 1. Find and variable substitutions (eg. `'$PORT'` in a string) and surround it with `$substitute`.
 1. Make sure to look out for any usage of internal APIs of app-config. TypeScript should catch these.
 
