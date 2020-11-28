@@ -25,6 +25,6 @@ footer: Licensed MPL 2.0
 <!-- sort of hacky for now, template is not extensible -->
 <div style="margin: 0 auto 30px auto; width: 120px">
   <a href="https://www.netlify.com">
-    <img src="https://www.netlify.com/img/global/badges/netlify-light.svg" alt="Deploys by Netlify" />
+    <img src="/netlify-light.svg" alt="Deploys by Netlify" crossorigin=”anonymous” />
   </a>
 </div>
