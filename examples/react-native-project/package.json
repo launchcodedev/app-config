@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@babel/core": "7",
-    "@lcdev/react-native-app-config-transformer": "2 || 2.0.0-dev",
+    "@lcdev/react-native-app-config-transformer": "file:../../app-config-react-native-transformer",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-dom": "16",

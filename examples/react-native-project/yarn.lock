@@ -1146,10 +1146,8 @@
     ws "7"
     yargs "16"
 
-"@lcdev/react-native-app-config-transformer@2 || 2.0.0-dev":
+"@lcdev/react-native-app-config-transformer@file:../../app-config-react-native-transformer":
   version "2.0.0-dev"
-  resolved "https://npm.servalldatasystems.com/@lcdev%2freact-native-app-config-transformer/-/react-native-app-config-transformer-2.0.0-dev.tgz#5c70d346e9a6aa5d9704b9ff93c1faf8bb7b4e79"
-  integrity sha512-VWDR1pgtHGEpyrpW4/MvastIlxMWI5tPnykBSoybQ43z5YK5/kVDrBryoKMz0on+9sciU+1Xzh9VD3zqLFXJIA==
   dependencies:
     semver "7"
 
