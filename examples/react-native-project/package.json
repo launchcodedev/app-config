@@ -1,0 +1,34 @@
+{
+  "name": "react-native-project",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "config:generate": "app-config generate",
+    "preinstall": "cd ../../ && yarn install && yarn build"
+  },
+  "dependencies": {
+    "@lcdev/app-config": "2 || 2.0.0-rc.3",
+    "expo": "39",
+    "expo-status-bar": "1",
+    "react": "16",
+    "react-dom": "16",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.4.tar.gz",
+    "react-native-web": "0.13"
+  },
+  "devDependencies": {
+    "@babel/core": "7",
+    "@lcdev/react-native-app-config-transformer": "file:../../app-config-react-native-transformer",
+    "@lcdev/tsconfig": "0.1",
+    "@types/react": "16",
+    "@types/react-dom": "16",
+    "@types/react-native": "0.63",
+    "typescript": "3"
+  }
+}
