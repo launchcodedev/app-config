@@ -10,7 +10,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "config:generate": "app-config generate"
+    "config:generate": "app-config generate",
+    "preinstall": "cd ../../ && yarn install && yarn build"
   },
   "dependencies": {
     "@lcdev/app-config": "2 || 2.0.0-rc.3",
