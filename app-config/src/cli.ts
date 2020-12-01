@@ -221,9 +221,10 @@ function loadConfigWithOptions({
   return loadValidatedConfig(options);
 }
 
-const { argv: _ } = yargs
-  .strict()
+export const cli = yargs
+  .scriptName('app-config')
   .wrap(yargs.terminalWidth() - 5)
+  .strict()
   .version()
   .alias('v', 'version')
   .help('h', 'Show help message with examples and options')
@@ -797,3 +798,7 @@ const { argv: _ } = yargs
       },
     ),
   );
+
+if (require.main === module) {
+  cli.parse();
+}
