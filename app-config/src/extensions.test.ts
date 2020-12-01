@@ -229,6 +229,30 @@ describe('$extends directive', () => {
       },
     );
   });
+
+  it('selects a non-object property', async () => {
+    await withTempFiles(
+      {
+        'referenced-file.json': `{ "foo": 42, "bar": { "a": true, "b": true } }`,
+        'test-file.yaml': `
+          foo:
+            $extends:
+              path: ./referenced-file.json
+              select: 'bar'
+          bar:
+            $extends:
+              path: ./referenced-file.json
+              select: 'foo'
+        `,
+      },
+      async (inDir) => {
+        const source = new FileSource(inDir('test-file.yaml'));
+        const parsed = await source.read([extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: { a: true, b: true }, bar: 42 });
+      },
+    );
+  });
 });
 
 describe('$override directive', () => {

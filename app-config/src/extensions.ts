@@ -345,19 +345,29 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
         return retrieveFile(path, select, optional);
       };
 
+      let parsed: ParsedValue;
+
       if (Array.isArray(value)) {
-        let acc = ParsedValue.literal({});
+        parsed = ParsedValue.literal({});
 
         for (const ext of value) {
-          acc = ParsedValue.merge(acc, await forOptions(ext));
+          parsed = ParsedValue.merge(parsed, await forOptions(ext));
         }
-
-        return acc.assignMeta(meta);
+      } else {
+        parsed = await forOptions(value);
       }
 
-      const parsed = await forOptions(value);
+      if (parsed.asObject()) {
+        return parsed.assignMeta(meta);
+      }
 
-      return parsed.assignMeta(meta);
+      // if we selected a non-object, it's almostly certainly wrong to merge it, better to flatten
+      return parsed.assignMeta({
+        ...meta,
+        shouldFlatten: true,
+        shouldMerge: undefined,
+        shouldOverride: undefined,
+      });
     };
   };
 }
