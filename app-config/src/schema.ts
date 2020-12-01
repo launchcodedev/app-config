@@ -43,10 +43,13 @@ export async function loadSchema({
 
   const ajv = new Ajv({ allErrors: true });
 
+  ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
+
   const schemaRefs = await extractExternalSchemas(parsed, directory);
 
-  Object.entries(schemaRefs).forEach(([$id, schema]) => {
-    ajv.addSchema({ $id, ...schema });
+  Object.values(schemaRefs).forEach((schema) => {
+    console.log('adding', schema.$id)
+    ajv.addSchema(schema);
   });
 
   // array of property paths that should only be present in secrets file
@@ -127,6 +130,7 @@ async function extractExternalSchemas(
     referencedSchema: JsonObject,
     newCwd: string,
   ) => {
+    console.log('resolved', { resolvedPathEncoded })
     // replace the $ref inline with the canonical path
     Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
 
@@ -147,17 +151,28 @@ async function extractExternalSchemas(
 
   if (isObject(schema)) {
     if (schema.$ref && typeof schema.$ref === 'string') {
+      // parse out "https://foo.bar/" from "https://foo.bar/#/Defs/ServerConfig"
+      const [url, refInUrl = '#'] = /^(https?:\/\/[-.\/\d\w]+)?(#.*){0,1}/.exec(schema.$ref) ?? [];
       // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-      const [, , filepath, ref] = /^(\.\/)?([^#]*)(#?.*)/.exec(schema.$ref) ?? [];
+      const [, , filepath, refInFile] = /^(\.\/)?([^#]*)(#?.*)/.exec(schema.$ref) ?? [];
 
-      if (filepath) {
+      if (url && !url.includes('json-schema.org')) {
+        const { default: got } = await import('got');
+        const resolvedPathEncoded = encodeURI(url);
+        const { body: text } = await got(resolvedPathEncoded);
+        const referencedSchema = JSON.parse(text);
+
+        if (isObject(referencedSchema)) {
+          await resolveReference(resolvedPathEncoded, refInFile, referencedSchema, cwd);
+        }
+      } else if (filepath && !filepath.startsWith('http') && !filepath.startsWith('meta/')) {
         // we resolve filepaths so that ajv resolves them correctly
         const resolvedPath = resolve(join(cwd, filepath));
         const resolvedPathEncoded = encodeURI(resolvedPath);
         const referencedSchema = await new FileSource(resolvedPath).readToJSON();
 
         if (isObject(referencedSchema)) {
-          await resolveReference(resolvedPathEncoded, ref, referencedSchema, dirname(resolvedPath));
+          await resolveReference(resolvedPathEncoded, refInFile, referencedSchema, dirname(resolvedPath));
         }
       }
     }

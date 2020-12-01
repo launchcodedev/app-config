@@ -287,6 +287,26 @@ describe('Schema Loading', () => {
         },
       );
     });
+
+    it.only('resolves schema $ref to a URL', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              x: { $ref: 'https://json.schemastore.org/vsconfig' }
+              y: { $ref: 'https://json-schema.org/draft/2019-09/schema' }
+          `,
+        },
+        async (inDir) => {
+          const { schemaRefs } = await loadSchema({ directory: inDir('.') });
+
+          expect(Object.keys(schemaRefs).length).toBe(2);
+          expect((schemaRefs['https://json.schemastore.org/vsconfig'] as JsonObject).type).toBe('object');
+          expect((schemaRefs['https://json-schema.org/draft/2019-09/schema'] as JsonObject).type).toBe('object');
+        },
+      );
+    });
   });
 });
 

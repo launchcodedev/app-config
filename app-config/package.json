@@ -48,6 +48,7 @@
     "env-paths": "2",
     "execa": "4",
     "fs-extra": "9",
+    "got": "11",
     "js-yaml": "3",
     "json-schema-ref-parser": "9",
     "json5": "2",
