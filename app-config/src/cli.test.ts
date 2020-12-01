@@ -29,6 +29,33 @@ describe('vars', () => {
     expect(stdout).toMatchSnapshot();
   });
 
+  it('renames a variable', async () => {
+    const APP_CONFIG = JSON.stringify({ foo: true });
+    const { stdout } = await run(['vars', '-q', '--rename', 'APP_CONFIG_FOO=BAR'], {
+      env: { APP_CONFIG },
+    });
+
+    expect(stdout).toMatchSnapshot();
+  });
+
+  it('aliases a variable', async () => {
+    const APP_CONFIG = JSON.stringify({ foo: true });
+    const { stdout } = await run(['vars', '-q', '--alias', 'APP_CONFIG_FOO=BAR'], {
+      env: { APP_CONFIG },
+    });
+
+    expect(stdout).toMatchSnapshot();
+  });
+
+  it('filters list of variables with --only', async () => {
+    const APP_CONFIG = JSON.stringify({ foo: true, bar: true });
+    const { stdout } = await run(['vars', '-q', '--prefix=""', '--only', 'FOO'], {
+      env: { APP_CONFIG },
+    });
+
+    expect(stdout).toMatchSnapshot();
+  });
+
   it('prints only nonSecrets without --secrets option', async () => {
     await withTempFiles(
       {

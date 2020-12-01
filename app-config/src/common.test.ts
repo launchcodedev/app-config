@@ -1,4 +1,4 @@
-import { camelToScreamingCase, flattenObjectTree } from './common';
+import { camelToScreamingCase, flattenObjectTree, renameInFlattenedTree } from './common';
 
 describe('camelToScreamingCase', () => {
   it('converts a typical camel case name', () => {
@@ -142,6 +142,15 @@ describe('flattenObjectTree', () => {
 
     expect(flattenedObject).toMatchObject({
       UNICORN: undefined,
+    });
+  });
+});
+
+describe('renameInFlattenedTree', () => {
+  it('renames a property name', () => {
+    expect(renameInFlattenedTree({ FOO: 'value', BAZ: '42' }, ['FOO=BAR'])).toEqual({
+      BAR: 'value',
+      BAZ: '42',
     });
   });
 });

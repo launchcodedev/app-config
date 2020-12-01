@@ -124,6 +124,13 @@ $schema: 'http://json-schema.org/draft-07/schema#'
 "
 `;
 
+exports[`vars aliases a variable 1`] = `
+"APP_CONFIG_FOO=true
+BAR=true"
+`;
+
+exports[`vars filters list of variables with --only 1`] = `"FOO=true"`;
+
 exports[`vars prints only nonSecrets without --secrets option 1`] = `"APP_CONFIG_NON_SECRET=true"`;
 
 exports[`vars prints only nonSecrets without --secrets option 2`] = `
@@ -132,5 +139,7 @@ APP_CONFIG_NON_SECRET=true"
 `;
 
 exports[`vars prints simple app-config file 1`] = `"APP_CONFIG_FOO=true"`;
+
+exports[`vars renames a variable 1`] = `"BAR=true"`;
 
 exports[`vars uses provided environment variable prefix 1`] = `"MY_CONFIG_FOO=true"`;

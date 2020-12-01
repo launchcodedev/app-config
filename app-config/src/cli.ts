@@ -6,7 +6,14 @@ import clipboardy from 'clipboardy';
 import { outputFile, readFile } from 'fs-extra';
 import { resolve, dereference } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
-import { consumeStdin, flattenObjectTree, Json, JsonObject, promptUser } from './common';
+import {
+  promptUser,
+  consumeStdin,
+  flattenObjectTree,
+  renameInFlattenedTree,
+  Json,
+  JsonObject,
+} from './common';
 import { FileType, stringify } from './config-source';
 import {
   Configuration,
@@ -139,6 +146,28 @@ const prefixOption = {
   group: OptionGroups.Options,
 } as const;
 
+const renameVariablesOption = {
+  alias: 'r',
+  type: 'string',
+  array: true,
+  description: 'Renames environment variables (eg. HTTP_PORT=FOO)',
+  group: OptionGroups.Options,
+} as const;
+
+const aliasVariablesOption = {
+  type: 'string',
+  array: true,
+  description: 'Like --rename, but keeps original name in results',
+  group: OptionGroups.Options,
+} as const;
+
+const onlyVariablesOption = {
+  type: 'string',
+  array: true,
+  description: 'Limits which environment variables are exported',
+  group: OptionGroups.Options,
+} as const;
+
 const environmentVariableNameOption = {
   type: 'string',
   default: 'APP_CONFIG',
@@ -174,14 +203,88 @@ const secretAgentOption = {
   group: OptionGroups.Options,
 } as const;
 
-function selectSecretsOrNot(config: Configuration, secrets: boolean): JsonObject {
-  const { fullConfig, parsedNonSecrets } = config;
+interface LoadConfigCLIOptions {
+  secrets?: boolean;
+  select?: string;
+  noSchema?: boolean;
+  fileNameBase?: string;
+  environmentOverride?: string;
+  environmentVariableName?: string;
+}
 
-  if (secrets || !parsedNonSecrets) {
-    return fullConfig as JsonObject;
+async function loadConfigWithOptions({
+  secrets: includeSecrets,
+  select,
+  noSchema,
+  fileNameBase,
+  environmentOverride,
+  environmentVariableName,
+}: LoadConfigCLIOptions): Promise<JsonObject> {
+  const options: LoadConfigOptions = {
+    fileNameBase,
+    environmentOverride,
+    environmentVariableName,
+  };
+
+  let loaded: Configuration;
+  if (noSchema) {
+    loaded = await loadConfig(options);
+  } else {
+    loaded = await loadValidatedConfig(options);
   }
 
-  return parsedNonSecrets.toJSON() as JsonObject;
+  const { fullConfig, parsedNonSecrets } = loaded;
+
+  let jsonConfig: JsonObject;
+
+  if (includeSecrets || !parsedNonSecrets) {
+    jsonConfig = fullConfig as JsonObject;
+  } else {
+    jsonConfig = parsedNonSecrets.toJSON() as JsonObject;
+  }
+
+  if (select) {
+    jsonConfig = (await resolve(jsonConfig)).get(select) as JsonObject;
+
+    if (jsonConfig === undefined) {
+      throw new FailedToSelectSubObject(`Failed to select property ${select}`);
+    }
+  }
+
+  return jsonConfig;
+}
+
+async function loadVarsWithOptions({
+  prefix,
+  rename,
+  alias,
+  only,
+  ...opts
+}: LoadConfigCLIOptions & {
+  prefix: string;
+  rename?: string[];
+  alias?: string[];
+  only?: string[];
+}): Promise<[ReturnType<typeof flattenObjectTree>, JsonObject]> {
+  const config = await loadConfigWithOptions(opts);
+  let flattened = flattenObjectTree(config, prefix);
+
+  flattened = renameInFlattenedTree(flattened, rename, false);
+  flattened = renameInFlattenedTree(flattened, alias, true);
+
+  if (only) {
+    const filtered: typeof flattened = {};
+
+    for (const variable of Object.keys(flattened)) {
+      if (only.includes(variable)) {
+        filtered[variable] = flattened[variable];
+      }
+    }
+
+    return [filtered, config];
+  }
+
+  return [flattened, config];
 }
 
 function fileTypeForFormatOption(option: string): FileType {
@@ -198,27 +301,6 @@ function fileTypeForFormatOption(option: string): FileType {
     default:
       throw new AppConfigError(`${option} is not a valid file type`);
   }
-}
-
-function loadConfigWithOptions({
-  noSchema,
-  fileNameBase,
-  environmentOverride,
-  environmentVariableName,
-}: {
-  noSchema?: boolean;
-  fileNameBase?: string;
-  environmentOverride?: string;
-  environmentVariableName?: string;
-}): ReturnType<typeof loadConfig> {
-  const options: LoadConfigOptions = {
-    fileNameBase,
-    environmentOverride,
-    environmentVariableName,
-  };
-
-  if (noSchema) return loadConfig(options);
-  return loadValidatedConfig(options);
 }
 
 export const cli = yargs
@@ -272,6 +354,10 @@ export const cli = yargs
         options: {
           secrets: secretsOption,
           prefix: prefixOption,
+          rename: renameVariablesOption,
+          alias: aliasVariablesOption,
+          only: onlyVariablesOption,
+          select: selectOption,
           noSchema: noSchemaOption,
           fileNameBase: fileNameBaseOption,
           environmentOverride: environmentOverrideOption,
@@ -282,10 +368,10 @@ export const cli = yargs
       async (opts) => {
         shouldUseSecretAgent(opts.agent);
 
-        const toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
+        const [env] = await loadVarsWithOptions(opts);
 
         process.stdout.write(
-          Object.entries(flattenObjectTree(toPrint, opts.prefix))
+          Object.entries(env)
             .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
             .join('\n'),
         );
@@ -317,15 +403,7 @@ export const cli = yargs
       async (opts) => {
         shouldUseSecretAgent(opts.agent);
 
-        let toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
-
-        if (opts.select) {
-          toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
-
-          if (toPrint === undefined) {
-            throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
-          }
-        }
+        const toPrint = await loadConfigWithOptions(opts);
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
         process.stdout.write('\n');
@@ -751,6 +829,9 @@ export const cli = yargs
         options: {
           secrets: secretsOption,
           prefix: prefixOption,
+          rename: renameVariablesOption,
+          alias: aliasVariablesOption,
+          only: onlyVariablesOption,
           format: { ...formatOption, default: 'json' },
           select: selectOption,
           noSchema: noSchemaOption,
@@ -770,22 +851,20 @@ export const cli = yargs
           process.exit(1);
         }
 
-        let toPrint = selectSecretsOrNot(await loadConfigWithOptions(opts), opts.secrets);
+        const [env, fullConfig] = await loadVarsWithOptions(opts);
 
-        if (opts.select) {
-          toPrint = (await resolve(toPrint)).get(opts.select) as JsonObject;
-
-          if (toPrint === undefined) {
-            throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
+        // if prefix is set to something non-zero, set it as the full config
+        // this is almost always just APP_CONFIG
+        if (opts.prefix.length > 0) {
+          // if we specified --only FOO, don't include APP_CONFIG
+          if (!opts.only || opts.only.includes(opts.prefix)) {
+            env[opts.prefix] = stringify(fullConfig, fileTypeForFormatOption(opts.format), true);
           }
         }
 
         await execa(command, args, {
           stdio: 'inherit',
-          env: {
-            [opts.prefix]: stringify(toPrint, fileTypeForFormatOption(opts.format), true),
-            ...flattenObjectTree(toPrint, opts.prefix),
-          },
+          env,
         }).catch((err) => {
           logger.error(err.message);
 

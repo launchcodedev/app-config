@@ -1,6 +1,7 @@
 import readline from 'readline';
 import prompts from 'prompts';
 import type { PromptObject } from 'prompts';
+import { logger } from './logging';
 
 export type PromiseOrNot<T> = Promise<T> | T;
 
@@ -32,14 +33,14 @@ export function camelToScreamingCase(key: string, separator: string = '_'): stri
     .toUpperCase();
 }
 
-export const flattenObjectTree = (
+export function flattenObjectTree(
   obj: JsonObject,
   prefix: string = '',
   separator: string = '_',
   formatter: KeyFormatter = camelToScreamingCase,
-): { [key: string]: string } => {
+): { [key: string]: string } {
   return Object.entries(obj).reduce((merged, [key, value]) => {
-    const flatKey = `${prefix}${prefix && separator}${formatter(key, separator)}`;
+    const flatKey = `${prefix}${prefix ? separator : ''}${formatter(key, separator)}`;
 
     let flattenedObject;
 
@@ -59,7 +60,34 @@ export const flattenObjectTree = (
 
     return Object.assign(merged, flattenedObject);
   }, {});
-};
+}
+
+export function renameInFlattenedTree(
+  flattened: { [key: string]: string },
+  renames: string[] = [],
+  keepOriginalKeys = false,
+): typeof flattened {
+  for (const rename of renames) {
+    const matched = /^(.*)=(.*)$/.exec(rename);
+
+    if (matched) {
+      const [, renameFrom, renameTo] = matched;
+      if (flattened[renameFrom]) {
+        flattened[renameTo] = flattened[renameFrom]; // eslint-disable-line no-param-reassign
+
+        if (!keepOriginalKeys) {
+          delete flattened[renameFrom]; // eslint-disable-line no-param-reassign
+        }
+      } else {
+        logger.warn(`A rename was used ('${rename}'), but no value was found.`);
+      }
+    } else {
+      logger.warn(`A rename was used ('${rename}'), but not in correct format.`);
+    }
+  }
+
+  return flattened;
+}
 
 export async function promptUser<T>(options: Omit<PromptObject, 'name'>): Promise<T> {
   const { named } = await prompts({ ...options, name: 'named' });
