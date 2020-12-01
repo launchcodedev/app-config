@@ -154,6 +154,13 @@ const renameVariablesOption = {
   group: OptionGroups.Options,
 } as const;
 
+const aliasVariablesOption = {
+  type: 'string',
+  array: true,
+  description: 'Like --rename, but keeps original name in results',
+  group: OptionGroups.Options,
+} as const;
+
 const onlyVariablesOption = {
   type: 'string',
   array: true,
@@ -250,15 +257,20 @@ async function loadConfigWithOptions({
 async function loadVarsWithOptions({
   prefix,
   rename,
+  alias,
   only,
   ...opts
 }: LoadConfigCLIOptions & {
   prefix: string;
   rename?: string[];
+  alias?: string[];
   only?: string[];
 }): Promise<[ReturnType<typeof flattenObjectTree>, JsonObject]> {
   const config = await loadConfigWithOptions(opts);
-  const flattened = renameInFlattenedTree(flattenObjectTree(config, prefix), rename);
+  let flattened = flattenObjectTree(config, prefix);
+
+  flattened = renameInFlattenedTree(flattened, rename, false);
+  flattened = renameInFlattenedTree(flattened, alias, true);
 
   if (only) {
     const filtered: typeof flattened = {};
@@ -343,6 +355,7 @@ export const cli = yargs
           secrets: secretsOption,
           prefix: prefixOption,
           rename: renameVariablesOption,
+          alias: aliasVariablesOption,
           only: onlyVariablesOption,
           select: selectOption,
           noSchema: noSchemaOption,
@@ -817,6 +830,7 @@ export const cli = yargs
           secrets: secretsOption,
           prefix: prefixOption,
           rename: renameVariablesOption,
+          alias: aliasVariablesOption,
           only: onlyVariablesOption,
           format: { ...formatOption, default: 'json' },
           select: selectOption,

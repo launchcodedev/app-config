@@ -31,7 +31,16 @@ describe('vars', () => {
 
   it('renames a variable', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars', '-q', '-r', 'APP_CONFIG_FOO=BAR'], {
+    const { stdout } = await run(['vars', '-q', '--rename', 'APP_CONFIG_FOO=BAR'], {
+      env: { APP_CONFIG },
+    });
+
+    expect(stdout).toMatchSnapshot();
+  });
+
+  it('aliases a variable', async () => {
+    const APP_CONFIG = JSON.stringify({ foo: true });
+    const { stdout } = await run(['vars', '-q', '--alias', 'APP_CONFIG_FOO=BAR'], {
       env: { APP_CONFIG },
     });
 

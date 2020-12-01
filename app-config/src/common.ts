@@ -65,6 +65,7 @@ export function flattenObjectTree(
 export function renameInFlattenedTree(
   flattened: { [key: string]: string },
   renames: string[] = [],
+  keepOriginalKeys = false,
 ): typeof flattened {
   for (const rename of renames) {
     const matched = /^(.*)=(.*)$/.exec(rename);
@@ -73,7 +74,10 @@ export function renameInFlattenedTree(
       const [, renameFrom, renameTo] = matched;
       if (flattened[renameFrom]) {
         flattened[renameTo] = flattened[renameFrom]; // eslint-disable-line no-param-reassign
-        delete flattened[renameFrom]; // eslint-disable-line no-param-reassign
+
+        if (!keepOriginalKeys) {
+          delete flattened[renameFrom]; // eslint-disable-line no-param-reassign
+        }
       } else {
         logger.warn(`A rename was used ('${rename}'), but no value was found.`);
       }
