@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/react-native-app-config-transformer",
   "description": "React Native Metro transformer that loads your app-config values into bundles statically",
-  "version": "2.0.0-dev",
+  "version": "2.0.0-rc.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -33,7 +33,7 @@
     "semver": "7"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-dev",
+    "@lcdev/app-config": "2 || 2.0.0-rc.4",
     "react-native": ">=0.45.0"
   },
   "devDependencies": {
