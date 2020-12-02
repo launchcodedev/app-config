@@ -1,5 +1,7 @@
 import execa from 'execa';
 import { join } from 'path';
+import { mockProcessStdout } from 'jest-mock-process';
+import { cli } from './cli';
 import { withTempFiles } from './test-util';
 
 const run = async (argv: string[], options?: execa.Options) =>
@@ -9,6 +11,27 @@ const run = async (argv: string[], options?: execa.Options) =>
     stdin: 'ignore',
     ...options,
   });
+
+const runEmbed = (argv: string[]) =>
+  new Promise<string>((resolve, reject) => {
+    cli
+      .exitProcess(false)
+      .showHelpOnFail(false)
+      .parse(argv, {}, (err, _, output) => {
+        if (err) reject(err);
+        else setTimeout(() => resolve(output), 0);
+      });
+  });
+
+describe.only('embedded', () => {
+  it('prints simple app-config file', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ foo: true });
+    const stdout = mockProcessStdout();
+    await runEmbed(['vars', '-q']);
+
+    expect(stdout).toHaveBeenCalledWith('APP_CONFIG_FOO=true');
+  });
+});
 
 describe('vars', () => {
   it('fails with no app-config', async () => {

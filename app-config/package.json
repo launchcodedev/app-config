@@ -67,6 +67,7 @@
     "@types/lodash.merge": "4",
     "@types/tmp": "0.2",
     "get-port": "5",
+    "jest-mock-process": "1",
     "tmp-promise": "3"
   },
   "prettier": "@lcdev/prettier",
