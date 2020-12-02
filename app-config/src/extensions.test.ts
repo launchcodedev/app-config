@@ -2,10 +2,11 @@ import { FileSource, LiteralSource } from './config-source';
 import {
   v1Compat,
   envDirective,
-  environmentVariableSubstitution,
+  selfDirective,
   extendsDirective,
   overrideDirective,
   encryptedDirective,
+  environmentVariableSubstitution,
 } from './extensions';
 import { generateSymmetricKey, encryptValue } from './encryption';
 import { NotFoundError } from './errors';
@@ -334,6 +335,56 @@ describe('$override directive', () => {
         expect(parsed.toJSON()).toEqual({ foo: true, bar: true, baz: true, qux: true });
       },
     );
+  });
+});
+
+describe('$self directive', () => {
+  it('fails when $self selector is invalid', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $self: 'foo.bar',
+      },
+    });
+
+    await expect(source.read([selfDirective()])).rejects.toThrow();
+  });
+
+  it('resolves a simple $self selector', async () => {
+    const source = new LiteralSource({
+      foo: {
+        bar: {
+          baz: 42,
+        },
+      },
+      qux: {
+        $self: 'foo.bar',
+      },
+    });
+
+    const parsed = await source.read([selfDirective()]);
+    expect(parsed.toJSON()).toEqual({
+      foo: { bar: { baz: 42 } },
+      qux: { baz: 42 },
+    });
+  });
+
+  it('resolves a $self selector to a literal value', async () => {
+    const source = new LiteralSource({
+      foo: {
+        bar: {
+          baz: 42,
+        },
+      },
+      qux: {
+        $self: 'foo.bar.baz',
+      },
+    });
+
+    const parsed = await source.read([selfDirective()]);
+    expect(parsed.toJSON()).toEqual({
+      foo: { bar: { baz: 42 } },
+      qux: 42,
+    });
   });
 });
 

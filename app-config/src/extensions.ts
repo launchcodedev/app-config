@@ -19,6 +19,7 @@ export function defaultExtensions(
     envDirective(aliases, environmentOverride),
     extendsDirective(),
     overrideDirective(),
+    selfDirective(),
     encryptedDirective(symmetricKey),
     unescape$Directives(),
     environmentVariableSubstitution(aliases, environmentOverride),
@@ -43,6 +44,34 @@ export function extendsDirective(): ParsingExtension {
 /** Uses another file as overriding values, layering them on top of current file */
 export function overrideDirective(): ParsingExtension {
   return fileReferenceDirective('$override', { shouldOverride: true });
+}
+
+/** Lookup a property in the same file, and "copy" it */
+export function selfDirective(): ParsingExtension {
+  return (value, [_, key]) => {
+    if (key !== '$self') return false;
+
+    return async (parse, _, __, ___, root) => {
+      const selector = (await parse(value)).toJSON();
+
+      if (typeof selector !== 'string') {
+        throw new AppConfigError(`$self was provided a non-string value`);
+      }
+
+      // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
+      const selected = ParsedValue.literal(root).property(selector.split('.'));
+
+      if (selected === undefined) {
+        throw new AppConfigError(`$self selector was not found (${selector})`);
+      }
+
+      if (selected.asObject() !== undefined) {
+        return parse(selected.toJSON(), { shouldMerge: true });
+      }
+
+      return parse(selected.toJSON(), { shouldFlatten: true });
+    };
+  };
 }
 
 /** Looks up an environment-specific value ($env) */
