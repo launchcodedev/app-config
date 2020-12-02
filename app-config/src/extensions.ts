@@ -27,7 +27,12 @@ export function defaultExtensions(
 
 /** ParsingExtensions that are used by default in loadConfig for APP_CONFIG variable */
 export function defaultEnvExtensions(): ParsingExtension[] {
-  return [unescape$Directives()];
+  return [unescape$Directives(), markAllValuesAsSecret()];
+}
+
+/** Marks all values recursively as fromSecrets, so they do not trigger schema errors */
+export function markAllValuesAsSecret(): ParsingExtension {
+  return (value) => (parse) => parse(value, { fromSecrets: true });
 }
 
 /** Uses another file as a "base", and extends on top of it */

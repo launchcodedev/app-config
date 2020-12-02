@@ -110,6 +110,25 @@ describe('Configuration Loading', () => {
     );
   });
 
+  it('treats APP_CONFIG variable as secret', async () => {
+    await withTempFiles(
+      {
+        '.app-config.schema.yml': `
+          required: [a, b]
+          additionalProperties: false
+          properties:
+            a: { type: boolean, secret: true }
+            b: { type: boolean }
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG = JSON.stringify({ a: true, b: true });
+        const { fullConfig } = await loadValidatedConfig({ directory: inDir('.') });
+        expect(fullConfig).toEqual({ a: true, b: true });
+      },
+    );
+  });
+
   it('loads default values and merges them', async () => {
     await withTempFiles(
       {

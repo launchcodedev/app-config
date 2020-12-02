@@ -3,7 +3,7 @@ import { Json, isObject } from './common';
 import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
-import { defaultExtensions, defaultEnvExtensions } from './extensions';
+import { defaultExtensions, defaultEnvExtensions, markAllValuesAsSecret } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject, ReservedKeyError } from './errors';
 import { logger } from './logging';
@@ -43,7 +43,7 @@ export async function loadConfig({
   environmentOverride,
   environmentAliases = defaultAliases,
   parsingExtensions = defaultExtensions(environmentAliases, environmentOverride),
-  secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret),
+  secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret()),
   environmentExtensions = defaultEnvExtensions(),
   defaultValues,
 }: Options = {}): Promise<Configuration> {
@@ -175,9 +175,6 @@ export async function loadValidatedConfig(
 
   return { fullConfig, parsed, ...rest };
 }
-
-const markAllValuesAsSecret: ParsingExtension = (value) => (parse) =>
-  parse(value, { fromSecrets: true });
 
 function verifyParsedValue(parsed: ParsedValue) {
   parsed.visitAll((value) => {
