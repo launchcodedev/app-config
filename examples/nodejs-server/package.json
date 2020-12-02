@@ -17,7 +17,7 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-rc.4",
+    "@lcdev/app-config": "2 || 2.0.0-rc.6",
     "fastify": "3"
   },
   "devDependencies": {
