@@ -284,9 +284,9 @@ describe('ParsedValue', () => {
       d: true,
     });
 
-    expect(value.cloneWhere((v) => !!v.asObject())!.toJSON()).toEqual({ a: {} });
-    expect(value.cloneWhere((v) => v.asArray() !== undefined)!.toJSON()).toEqual({ b: [] });
-    expect(value.cloneWhere((v) => v.asPrimitive() !== undefined)!.toJSON()).toEqual({
+    expect(value.cloneWhere((v) => v.isObject())!.toJSON()).toEqual({ a: {} });
+    expect(value.cloneWhere((v) => v.isArray())!.toJSON()).toEqual({ b: [] });
+    expect(value.cloneWhere((v) => v.isPrimitive())!.toJSON()).toEqual({
       c: '',
       d: true,
     });

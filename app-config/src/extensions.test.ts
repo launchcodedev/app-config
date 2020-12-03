@@ -399,6 +399,25 @@ describe('$env directive', () => {
     const parsed = await source.read([envDirective()]);
     expect(parsed.toJSON()).toEqual(null);
   });
+
+  it('merges selection with sibling keys', async () => {
+    const source = new LiteralSource({
+      sibling: true,
+      testing: false,
+      $env: {
+        test: { testing: true },
+        default: { testing: false },
+      },
+    });
+
+    process.env.NODE_ENV = 'test';
+    const parsed = await source.read([envDirective()]);
+    expect(parsed.toJSON()).toEqual({ sibling: true, testing: true });
+
+    process.env.NODE_ENV = 'development';
+    const parsed2 = await source.read([envDirective()]);
+    expect(parsed2.toJSON()).toEqual({ sibling: true, testing: false });
+  });
 });
 
 /* eslint-disable no-template-curly-in-string */

@@ -51,6 +51,7 @@ export function envDirective(
   environmentOverride?: string,
 ): ParsingExtension {
   const environment = environmentOverride ?? currentEnvironment(aliases);
+  const metadata = { shouldOverride: true };
 
   return (value, [_, key]) => {
     if (key === '$env') {
@@ -60,7 +61,7 @@ export function envDirective(
         }
 
         if (!environment) {
-          if (value.default) return parse(value.default, { shouldFlatten: true });
+          if (value.default) return parse(value.default, metadata);
 
           throw new AppConfigError(
             `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
@@ -69,12 +70,12 @@ export function envDirective(
 
         for (const [envName, envValue] of Object.entries(value)) {
           if (envName === environment || aliases[envName] === environment) {
-            return parse(envValue, { shouldFlatten: true });
+            return parse(envValue, metadata);
           }
         }
 
         if ('default' in value) {
-          return parse(value.default, { shouldFlatten: true });
+          return parse(value.default, metadata);
         }
 
         const found = Object.keys(value).join(', ');
@@ -362,17 +363,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
         parsed = await forOptions(value);
       }
 
-      if (parsed.asObject()) {
-        return parsed.assignMeta(meta);
-      }
-
-      // if we selected a non-object, it's almostly certainly wrong to merge it, better to flatten
-      return parsed.assignMeta({
-        ...meta,
-        shouldFlatten: true,
-        shouldMerge: undefined,
-        shouldOverride: undefined,
-      });
+      return parsed.assignMeta(meta);
     };
   };
 }
