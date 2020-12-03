@@ -14,7 +14,7 @@
     "preinstall": "cd ../../ && yarn install && yarn build"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-rc.6",
+    "@lcdev/app-config": "2 || 2.0.0-rc.7",
     "expo": "39",
     "expo-status-bar": "1",
     "react": "16",
