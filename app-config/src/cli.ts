@@ -42,6 +42,7 @@ import {
 import { shouldUseSecretAgent, startAgent, disconnectAgents } from './secret-agent';
 import { loadSchema } from './schema';
 import { generateTypeFiles } from './generate';
+import { validateAllConfigVariants } from './validation';
 import { checkTTY, logger, LogLevel } from './logging';
 import { AppConfigError, FailedToSelectSubObject, EmptyStdinOrPromptResponse } from './errors';
 
@@ -448,6 +449,17 @@ export const cli = yargs
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
         process.stdout.write('\n');
+      },
+    ),
+  )
+  .command(
+    subcommand(
+      {
+        name: ['validate'],
+        description: 'Checks all environment variants against your schema',
+      },
+      async () => {
+        await validateAllConfigVariants();
       },
     ),
   )
