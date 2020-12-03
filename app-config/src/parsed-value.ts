@@ -3,6 +3,7 @@ import merge from 'lodash.merge';
 import { Json, JsonObject, JsonPrimitive, PromiseOrNot, isObject } from './common';
 import { ConfigSource, LiteralSource } from './config-source';
 import { AppConfigError } from './errors';
+import { logger } from './logging';
 
 /** The property being visited was a property in an object */
 export const InObject = Symbol('InObject');
@@ -206,6 +207,18 @@ export class ParsedValue {
     }
   }
 
+  isObject(): boolean {
+    return this.asObject() !== undefined;
+  }
+
+  isArray(): boolean {
+    return this.asArray() !== undefined;
+  }
+
+  isPrimitive(): boolean {
+    return this.asPrimitive() !== undefined;
+  }
+
   clone(): ParsedValue {
     return this.cloneWhere(() => true);
   }
@@ -404,7 +417,7 @@ async function parseValueInner(
     // we have to queue up merging, so that non-merging keys get assigned first
     const toMerge: ParsedValue[] = [];
     const toOverride: ParsedValue[] = [];
-    let flattenTo: ParsedValue | undefined;
+    const flattenTo: ParsedValue[] = [];
 
     await Promise.all(
       Object.entries(value).map(async ([key, item]) => {
@@ -417,13 +430,21 @@ async function parseValueInner(
           value,
         );
 
-        // if we got back 'shouldFlatten', jump out of the object
+        // NOTE: shouldMerge is treated as shouldFlatten when the value itself is not an object (because we cannot merge arrays or primitives)
         if (parsed.meta.shouldFlatten) {
-          flattenTo = parsed.removeMeta('shouldFlatten').assignMeta(metadata);
+          flattenTo.push(parsed.removeMeta('shouldFlatten'));
         } else if (parsed.meta.shouldMerge) {
-          toMerge.push(parsed.removeMeta('shouldMerge'));
+          if (parsed.isObject()) {
+            toMerge.push(parsed.removeMeta('shouldMerge'));
+          } else {
+            flattenTo.push(parsed.removeMeta('shouldMerge'));
+          }
         } else if (parsed.meta.shouldOverride) {
-          toOverride.push(parsed.removeMeta('shouldOverride'));
+          if (parsed.isObject()) {
+            toOverride.push(parsed.removeMeta('shouldOverride'));
+          } else {
+            flattenTo.push(parsed.removeMeta('shouldOverride'));
+          }
         } else if (parsed.meta.rewriteKey) {
           if (typeof parsed.meta.rewriteKey !== 'string') {
             throw new AppConfigError('Internal error: rewriteKey was not a string');
@@ -436,8 +457,20 @@ async function parseValueInner(
       }),
     );
 
-    if (flattenTo) {
-      return flattenTo;
+    if (flattenTo.length > 0) {
+      if (Object.keys(value).length > 1) {
+        logger.warn(
+          `An object with multiple keys is being flattened. Other values will be ignored.`,
+        );
+      }
+
+      if (flattenTo.length > 1) {
+        logger.warn(
+          `Two values were present in an object that both tried to "flatten" - this is undefined behavior`,
+        );
+      }
+
+      return flattenTo[0].assignMeta(metadata);
     }
 
     let output = new ParsedValue(source, value, obj).assignMeta(metadata);
