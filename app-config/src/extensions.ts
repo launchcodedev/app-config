@@ -1,4 +1,4 @@
-import { join, dirname, extname, isAbsolute } from 'path';
+import { join, dirname, extname, resolve, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
@@ -325,6 +325,12 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
         // resolve filepaths that are relative to the current FileSource
         if (!isAbsolute(filepath) && context instanceof FileSource) {
           resolvedPath = join(dirname(context.filePath), filepath);
+
+          if (resolve(context.filePath) === resolvedPath) {
+            throw new AppConfigError(
+              `A ${keyName} directive resolved to it's own file (${resolvedPath}). Please use $extendsSelf instead.`,
+            );
+          }
         }
 
         logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);

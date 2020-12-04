@@ -386,6 +386,30 @@ describe('$extendsSelf directive', () => {
       qux: 42,
     });
   });
+
+  it.only('resolves an $extends selector to own file', async () => {
+    await withTempFiles(
+      {
+        'test-file.yaml': `
+          foo:
+            bar:
+              baz: 42
+
+          qux:
+            $extends:
+              path: './test-file.yaml'
+              selector: '.foo.bar'
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: inDir('test-file.yaml'),
+        });
+
+        await expect(source.read([extendsDirective()])).rejects.toThrow();
+      },
+    );
+  });
 });
 
 describe('$env directive', () => {
