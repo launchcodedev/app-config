@@ -33,6 +33,7 @@ export type ParsingExtensionTransform = (
   parent: JsonObject | Json[] | undefined,
   source: ConfigSource,
   extensions: ParsingExtension[],
+  root: Json,
 ) => PromiseOrNot<ParsedValue>;
 
 export interface ParsedValueMetadata {
@@ -337,7 +338,7 @@ export async function parseValue(
   extensions: ParsingExtension[] = [],
   metadata: ParsedValueMetadata = {},
 ): Promise<ParsedValue> {
-  return parseValueInner(value, source, extensions, metadata, [[Root]]);
+  return parseValueInner(value, source, extensions, metadata, [[Root]], value);
 }
 
 async function parseValueInner(
@@ -346,6 +347,7 @@ async function parseValueInner(
   extensions: ParsingExtension[],
   metadata: ParsedValueMetadata = {},
   context: ParsingExtensionKey[],
+  root: Json,
   parent?: JsonObject | Json[],
   visitedExtensions: ParsingExtension[] = [],
 ): Promise<ParsedValue> {
@@ -386,12 +388,13 @@ async function parseValueInner(
         extensionsOverride ?? extensions,
         { ...metadata, ...metadataOverride },
         context,
+        root,
         parent,
         visitedExtensions,
       );
 
     // note that we don't traverse the object is an extension applied, that's up to them (with `parse`)
-    return applicableExtension(parse, parent, source, extensions);
+    return applicableExtension(parse, parent, source, extensions, root);
   }
 
   if (Array.isArray(value)) {
@@ -403,6 +406,7 @@ async function parseValueInner(
           extensions,
           undefined,
           context.concat([[InArray, index]]),
+          root,
           value,
         );
       }),
@@ -427,6 +431,7 @@ async function parseValueInner(
           extensions,
           undefined,
           context.concat([[InObject, key]]),
+          root,
           value,
         );
 

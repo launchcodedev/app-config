@@ -1,4 +1,4 @@
-import { join, dirname, extname, isAbsolute } from 'path';
+import { join, dirname, extname, resolve, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
@@ -18,6 +18,7 @@ export function defaultExtensions(
     v1Compat(),
     envDirective(aliases, environmentOverride),
     extendsDirective(),
+    extendsSelfDirective(),
     overrideDirective(),
     encryptedDirective(symmetricKey),
     unescape$Directives(),
@@ -43,6 +44,34 @@ export function extendsDirective(): ParsingExtension {
 /** Uses another file as overriding values, layering them on top of current file */
 export function overrideDirective(): ParsingExtension {
   return fileReferenceDirective('$override', { shouldOverride: true });
+}
+
+/** Lookup a property in the same file, and "copy" it */
+export function extendsSelfDirective(): ParsingExtension {
+  return (value, [_, key]) => {
+    if (key !== '$extendsSelf') return false;
+
+    return async (parse, _, __, ___, root) => {
+      const selector = (await parse(value)).toJSON();
+
+      if (typeof selector !== 'string') {
+        throw new AppConfigError(`$extendsSelf was provided a non-string value`);
+      }
+
+      // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
+      const selected = ParsedValue.literal(root).property(selector.split('.'));
+
+      if (selected === undefined) {
+        throw new AppConfigError(`$extendsSelf selector was not found (${selector})`);
+      }
+
+      if (selected.asObject() !== undefined) {
+        return parse(selected.toJSON(), { shouldMerge: true });
+      }
+
+      return parse(selected.toJSON(), { shouldFlatten: true });
+    };
+  };
 }
 
 /** Looks up an environment-specific value ($env) */
@@ -296,6 +325,12 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
         // resolve filepaths that are relative to the current FileSource
         if (!isAbsolute(filepath) && context instanceof FileSource) {
           resolvedPath = join(dirname(context.filePath), filepath);
+
+          if (resolve(context.filePath) === resolvedPath) {
+            throw new AppConfigError(
+              `A ${keyName} directive resolved to it's own file (${resolvedPath}). Please use $extendsSelf instead.`,
+            );
+          }
         }
 
         logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);

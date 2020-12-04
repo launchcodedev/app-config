@@ -2,10 +2,11 @@ import { FileSource, LiteralSource } from './config-source';
 import {
   v1Compat,
   envDirective,
-  environmentVariableSubstitution,
   extendsDirective,
+  extendsSelfDirective,
   overrideDirective,
   encryptedDirective,
+  environmentVariableSubstitution,
 } from './extensions';
 import { generateSymmetricKey, encryptValue } from './encryption';
 import { NotFoundError } from './errors';
@@ -332,6 +333,80 @@ describe('$override directive', () => {
         const parsed = await source.read([overrideDirective()]);
 
         expect(parsed.toJSON()).toEqual({ foo: true, bar: true, baz: true, qux: true });
+      },
+    );
+  });
+});
+
+describe('$extendsSelf directive', () => {
+  it('fails when $extendsSelf selector is invalid', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $extendsSelf: 'foo.bar',
+      },
+    });
+
+    await expect(source.read([extendsSelfDirective()])).rejects.toThrow();
+  });
+
+  it('resolves a simple $extendsSelf selector', async () => {
+    const source = new LiteralSource({
+      foo: {
+        bar: {
+          baz: 42,
+        },
+      },
+      qux: {
+        $extendsSelf: 'foo.bar',
+      },
+    });
+
+    const parsed = await source.read([extendsSelfDirective()]);
+    expect(parsed.toJSON()).toEqual({
+      foo: { bar: { baz: 42 } },
+      qux: { baz: 42 },
+    });
+  });
+
+  it('resolves a $extendsSelf selector to a literal value', async () => {
+    const source = new LiteralSource({
+      foo: {
+        bar: {
+          baz: 42,
+        },
+      },
+      qux: {
+        $extendsSelf: 'foo.bar.baz',
+      },
+    });
+
+    const parsed = await source.read([extendsSelfDirective()]);
+    expect(parsed.toJSON()).toEqual({
+      foo: { bar: { baz: 42 } },
+      qux: 42,
+    });
+  });
+
+  it.only('resolves an $extends selector to own file', async () => {
+    await withTempFiles(
+      {
+        'test-file.yaml': `
+          foo:
+            bar:
+              baz: 42
+
+          qux:
+            $extends:
+              path: './test-file.yaml'
+              selector: '.foo.bar'
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: inDir('test-file.yaml'),
+        });
+
+        await expect(source.read([extendsDirective()])).rejects.toThrow();
       },
     );
   });
