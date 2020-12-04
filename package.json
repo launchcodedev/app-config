@@ -2,16 +2,19 @@
   "name": "@lcdev/app-config-monorepo",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "app-config",
-    "app-config-webpack-plugin",
-    "app-config-inject",
-    "app-config-react-native-transformer",
-    "examples/cli-project",
-    "examples/frontend-webpack-project",
-    "examples/nodejs-server",
-    "docs"
-  ],
+  "workspaces": {
+    "packages": [
+      "app-config",
+      "app-config-webpack-plugin",
+      "app-config-inject",
+      "app-config-react-native-transformer",
+      "examples/*",
+      "docs"
+    ],
+    "nohoist": [
+      "**/@types/react-native"
+    ]
+  },
   "scripts": {
     "build": "yarn workspaces run build",
     "clean": "yarn workspaces run clean",

@@ -3,7 +3,7 @@
 
 import '@lcdev/app-config';
 
-export interface Index {
+export interface Config {
   user?: User;
 }
 
@@ -13,5 +13,5 @@ export interface User {
 
 // augment the default export from app-config
 declare module '@lcdev/app-config' {
-  export interface ExportedConfig extends Index {}
+  export interface ExportedConfig extends Config {}
 }

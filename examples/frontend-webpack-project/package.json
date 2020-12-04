@@ -4,9 +4,8 @@
   "license": "MPL-2.0",
   "private": true,
   "scripts": {
-    "config:generate": "app-config generate",
-    "dev": "ENV=dev webpack-dev-server",
-    "build": "webpack --mode production",
+    "dev": "NODE_ENV=development webpack-dev-server",
+    "build": "NODE_ENV=production webpack --mode production",
     "clean": "rm -rf ./dist",
     "lint": "exit 0",
     "fix": "exit 0",

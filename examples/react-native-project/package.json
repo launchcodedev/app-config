@@ -3,15 +3,19 @@
   "version": "0.0.0",
   "license": "MPL-2.0",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "__generated__/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "config:generate": "app-config generate",
-    "preinstall": "cd ../../ && yarn install && yarn build"
+    "build": "exit 0",
+    "clean": "exit 0",
+    "lint": "exit 0",
+    "fix": "exit 0",
+    "test": "exit 0",
+    "postinstall": "expo-yarn-workspaces postinstall"
   },
   "dependencies": {
     "@lcdev/app-config": "2 || 2.0.0-rc.7",
@@ -24,11 +28,13 @@
   },
   "devDependencies": {
     "@babel/core": "7",
-    "@lcdev/react-native-app-config-transformer": "file:../../app-config-react-native-transformer",
+    "@lcdev/app-config": "2 || 2.0.0-rc.7",
+    "@lcdev/react-native-app-config-transformer": "2 || 2.0.0-rc.7",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-dom": "16",
     "@types/react-native": "0.63",
+    "expo-yarn-workspaces": "1",
     "typescript": "3"
   }
 }

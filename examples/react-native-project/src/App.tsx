@@ -1,7 +1,7 @@
-import config from '@lcdev/app-config';
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
+import config from '@lcdev/app-config';
 import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
   // notice that TypeScript knows the type of externalApiUrl

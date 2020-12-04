@@ -3,6 +3,10 @@ additionalProperties: false
 
 properties:
   user:
+    $ref: '#/definitions/User'
+
+definitions:
+  User:
     type: object
     additionalProperties: false
     properties:
