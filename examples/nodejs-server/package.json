@@ -5,7 +5,6 @@
   "private": true,
   "main": "dist/index.js",
   "scripts": {
-    "config:generate": "app-config generate",
     "config:ci": "APP_CONFIG_SECRETS_KEY=`cat ci.asc` yarn app-config",
     "trust": "yarn config:ci secret trust",
     "dev": "ts-node-dev --files ./src/index.ts",

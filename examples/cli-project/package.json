@@ -5,7 +5,6 @@
   "private": true,
   "main": "dist/index.js",
   "scripts": {
-    "config:generate": "app-config generate",
     "start": "node ./dist/index.js",
     "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
