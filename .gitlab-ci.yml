@@ -7,7 +7,7 @@ stages:
   - lint-build-test
   - publish
 
-lint:
+lint-build-test:
   extends: .node
   stage: lint-build-test
   script:
@@ -20,7 +20,7 @@ sync-github-repo:
   stage: publish
   only: [master]
   variables:
-    GITHUB_SSH_URL: git@github.com:servall/app-config.git
+    GITHUB_SSH_URL: git@github.com:launchcodedev/app-config.git
   script:
     - test -n "${GITHUB_SSH_URL}" || (echo "No GITHUB_SSH_URL was found" && exit 1)
     - test -n "${GITLAB_SSH_URL}" || (echo "No GITLAB_SSH_URL was found" && exit 1)
