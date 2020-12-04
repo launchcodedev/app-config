@@ -181,7 +181,9 @@ export class ParsedValue {
 
   /** Lookup property by nested key */
   property([key, ...rest]: string[]): ParsedValue | undefined {
-    if (!key || !this.value || typeof this.value !== 'object') {
+    if (key === '') return this.property(rest);
+
+    if (key === undefined || !this.value || typeof this.value !== 'object') {
       return this;
     }
 

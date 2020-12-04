@@ -224,6 +224,12 @@ describe('ParsedValue', () => {
     expect(value.property(['a', 'b', '2'])!.toJSON()).toEqual(3);
   });
 
+  it('ignores leading dots in property lookup', () => {
+    const value = ParsedValue.literal({ a: { b: 3 } });
+
+    expect(value.property('.a.b'.split('.'))!.toJSON()).toEqual(3);
+  });
+
   it('creates a deep clone in toJSON', () => {
     const literal = { a: { b: { c: true } } };
     const value = ParsedValue.literal(literal);
