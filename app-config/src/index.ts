@@ -84,6 +84,16 @@ export { setLogLevel, LogLevel } from './logging';
 export { currentEnvironment, defaultAliases } from './environment';
 export { ParsedValue, ParsedValueMetadata } from './parsed-value';
 export {
+  defaultExtensions,
+  defaultEnvExtensions,
+  environmentVariableSubstitution,
+  encryptedDirective,
+  envDirective,
+  extendsDirective,
+  extendsSelfDirective,
+  overrideDirective,
+} from './extensions';
+export {
   ConfigSource,
   FileSource,
   FlexibleFileSource,
