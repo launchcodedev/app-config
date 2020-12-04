@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Easy to use configuration loader with schema validation",
-  "version": "2.0.0-rc.7",
+  "version": "2.0.0-rc.8",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",

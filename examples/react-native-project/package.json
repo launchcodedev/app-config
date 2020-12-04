@@ -18,7 +18,7 @@
     "postinstall": "expo-yarn-workspaces postinstall"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-rc.7",
+    "@lcdev/app-config": "2 || 2.0.0-rc.8",
     "expo": "39",
     "expo-status-bar": "1",
     "react": "16",
@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "@babel/core": "7",
-    "@lcdev/app-config": "2 || 2.0.0-rc.7",
-    "@lcdev/react-native-app-config-transformer": "2 || 2.0.0-rc.7",
+    "@lcdev/app-config": "2 || 2.0.0-rc.8",
+    "@lcdev/react-native-app-config-transformer": "2 || 2.0.0-rc.8",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-dom": "16",
