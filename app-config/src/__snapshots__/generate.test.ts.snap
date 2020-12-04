@@ -93,7 +93,7 @@ exports[`TypeScript File Generation creates a TypeScript file from schema with m
 
 import '@lcdev/app-config';
 
-export interface Generated {
+export interface Config {
   a?: A;
   root?: boolean;
 }
@@ -112,7 +112,7 @@ export interface C {
 
 // augment the default export from app-config
 declare module '@lcdev/app-config' {
-  export interface ExportedConfig extends Generated {}
+  export interface ExportedConfig extends Config {}
 }
 "
 `;
