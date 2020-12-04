@@ -1,4 +1,4 @@
-import { basename, extname, join } from 'path';
+import { extname, join } from 'path';
 import { outputFile } from 'fs-extra';
 import {
   quicktype,
@@ -39,19 +39,12 @@ export async function generateTypeFiles({ directory, schemaOptions, metaOptions 
 
   const metaDirectory = metaOptions?.directory ?? directory ?? '.';
 
-  // default to PascalCase with non-word chars removed
-  const normalizeName = (file: string) =>
-    basename(file, extname(file))
-      .split(/[^\w]/)
-      .map((s) => `${s.charAt(0).toUpperCase()}${s.slice(1)}`)
-      .join('');
-
   await Promise.all(
     generate.map(
       async ({
         file,
         type = extname(file).slice(1),
-        name = normalizeName(basename(file).split('.')[0]),
+        name = 'Config',
         augmentModule = true,
         leadingComments,
         rendererOptions = {},
