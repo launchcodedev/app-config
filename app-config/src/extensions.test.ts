@@ -2,8 +2,8 @@ import { FileSource, LiteralSource } from './config-source';
 import {
   v1Compat,
   envDirective,
-  selfDirective,
   extendsDirective,
+  extendsSelfDirective,
   overrideDirective,
   encryptedDirective,
   environmentVariableSubstitution,
@@ -338,18 +338,18 @@ describe('$override directive', () => {
   });
 });
 
-describe('$self directive', () => {
-  it('fails when $self selector is invalid', async () => {
+describe('$extendsSelf directive', () => {
+  it('fails when $extendsSelf selector is invalid', async () => {
     const source = new LiteralSource({
       foo: {
-        $self: 'foo.bar',
+        $extendsSelf: 'foo.bar',
       },
     });
 
-    await expect(source.read([selfDirective()])).rejects.toThrow();
+    await expect(source.read([extendsSelfDirective()])).rejects.toThrow();
   });
 
-  it('resolves a simple $self selector', async () => {
+  it('resolves a simple $extendsSelf selector', async () => {
     const source = new LiteralSource({
       foo: {
         bar: {
@@ -357,18 +357,18 @@ describe('$self directive', () => {
         },
       },
       qux: {
-        $self: 'foo.bar',
+        $extendsSelf: 'foo.bar',
       },
     });
 
-    const parsed = await source.read([selfDirective()]);
+    const parsed = await source.read([extendsSelfDirective()]);
     expect(parsed.toJSON()).toEqual({
       foo: { bar: { baz: 42 } },
       qux: { baz: 42 },
     });
   });
 
-  it('resolves a $self selector to a literal value', async () => {
+  it('resolves a $extendsSelf selector to a literal value', async () => {
     const source = new LiteralSource({
       foo: {
         bar: {
@@ -376,11 +376,11 @@ describe('$self directive', () => {
         },
       },
       qux: {
-        $self: 'foo.bar.baz',
+        $extendsSelf: 'foo.bar.baz',
       },
     });
 
-    const parsed = await source.read([selfDirective()]);
+    const parsed = await source.read([extendsSelfDirective()]);
     expect(parsed.toJSON()).toEqual({
       foo: { bar: { baz: 42 } },
       qux: 42,

@@ -18,8 +18,8 @@ export function defaultExtensions(
     v1Compat(),
     envDirective(aliases, environmentOverride),
     extendsDirective(),
+    extendsSelfDirective(),
     overrideDirective(),
-    selfDirective(),
     encryptedDirective(symmetricKey),
     unescape$Directives(),
     environmentVariableSubstitution(aliases, environmentOverride),
@@ -47,22 +47,22 @@ export function overrideDirective(): ParsingExtension {
 }
 
 /** Lookup a property in the same file, and "copy" it */
-export function selfDirective(): ParsingExtension {
+export function extendsSelfDirective(): ParsingExtension {
   return (value, [_, key]) => {
-    if (key !== '$self') return false;
+    if (key !== '$extendsSelf') return false;
 
     return async (parse, _, __, ___, root) => {
       const selector = (await parse(value)).toJSON();
 
       if (typeof selector !== 'string') {
-        throw new AppConfigError(`$self was provided a non-string value`);
+        throw new AppConfigError(`$extendsSelf was provided a non-string value`);
       }
 
       // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
       const selected = ParsedValue.literal(root).property(selector.split('.'));
 
       if (selected === undefined) {
-        throw new AppConfigError(`$self selector was not found (${selector})`);
+        throw new AppConfigError(`$extendsSelf selector was not found (${selector})`);
       }
 
       if (selected.asObject() !== undefined) {
