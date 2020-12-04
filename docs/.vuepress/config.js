@@ -18,17 +18,18 @@ module.exports = {
 
     sidebar: [
       {
-        title: 'Introduction',
+        title: 'Introduction Guide',
         path: '/guide/intro/',
         children: [
           '/guide/intro/',
           '/guide/intro/schema-validation',
-          '/guide/intro/secrets',
+          '/guide/intro/config-loading',
           '/guide/intro/cli',
           '/guide/intro/codegen',
-          '/guide/intro/extensions',
+          '/guide/intro/secrets',
           '/guide/intro/encryption',
-          '/guide/intro/config-loading',
+          '/guide/intro/extensions',
+          '/guide/intro/settings',
         ],
       },
       {
@@ -56,11 +57,16 @@ module.exports = {
         children: ['/guide/deployment/', '/guide/deployment/kubernetes'],
       },
       {
+        title: 'Specification',
+        path: '/spec/',
+        children: ['/spec/'],
+      },
+      {
         title: 'Releases',
-        path: '/guide/release-notes',
+        path: '/release-notes',
         children: [
-          ['/guide/release-notes', 'Release Notes'],
-          '/guide/v2-migration',
+          ['/release-notes', 'Release Notes'],
+          '/v2-migration',
         ],
       },
     ],

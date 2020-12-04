@@ -2,6 +2,8 @@
 title: App Config Inject
 ---
 
+### App Config Inject
+
 A separate package called `@lcdev/app-config-inject` exists to configure frontend
 applications at runtime.
 

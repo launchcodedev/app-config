@@ -28,9 +28,9 @@ app-config files will be located alongside `package.json`. This can be overridde
 ## Accessing Config
 
 Your application can treat the config export as an object anywhere that it needs to.
-As long as it does not read properties from that object before `loadConfig` has finished
-(watch our for race conditions!), it's safe to "just use the export" (note that `config`
-is also the default export).
+As long as it does not read properties from that object before `loadConfig` has finished,
+it's safe to "just use the export". Reading configuration before then should trigger
+errors.
 
 ## TypeScript Type Usage
 

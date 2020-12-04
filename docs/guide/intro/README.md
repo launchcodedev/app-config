@@ -2,35 +2,55 @@
 title: Introduction
 ---
 
-Welcome! Do you build web apps, Node.js servers, or CLI applications? Tired of writing logic to parse JSON files?
-Made a typo while deploying, causing runtime errors? Maintaining a `config.ts` with commented-out values?
-**We built app-config for you.**
+## What is App Config?
+
+::: tip In a hurry?
+Check out the [Quick Start](./quick-start.md) guide.
+:::
+
+App Config helps you manage settings for your application.
+
+It is a Node.js library, a CLI application, and a set of standards.
+
+App Config is suitable for Web Apps, Servers, CLI Applications, Mobile Apps and more.
+App Config is written in TypeScript, but it's designed for use in other kinds of environments.
+It can act as a consumer or producer of configuration values.
+This is possible because of its simple standards for reading and exposing configuration.
+
+Your application should be configurable, plain and simple.
+Changing a database hostname, email address or an AWS key should never be code changes.
+The more configurable an app is, the faster your business can move!
+
+App Config pairs well with Docker-like environments.
+You can use the same image across QA, Staging and Production.
+This gives you the confidence of identical deployments, with a lot of flexibility.
+
+You might be using a `.env` library like [dotenv](https://www.npmjs.com/package/dotenv).
+This is a great first step! But it's not safe, on its own.
+Environment variables lose a lot of semantic meaning - they are all plain strings!
+
+To maintain confidence in your configuration, you want to define **validation**.
+On their own, environment variables are unsafe to use without additional checks.
+
+## Configuration
+
+Configuration comes in the form of a JSON-like structure of values.
+App Config provides an accessible way to read these values through environment variables, Node.js API or CLI.
+It defines a standard way to store these values in files, make changes, and share them with others in version control.
+
+We can **validate** this configuration. That means checking that values and their structure are _as intended_.
+Typos, missing keys, or values outside of limits should never make it to production.
 
 Yet another config library? We thought so too, until we needed a solution for configuration at [Launchcode](https://lc.dev).
-The ask was fairly simple - an isomorphic solution to load configuration values, that strictly prevents mistakes.
-We needed this for frontend, backend and mobile projects. Using the same tool for all of these was a must.
-We also didn't like the trend of "opinionated" libraries, with a lot of implicit behaviour.
+We needed an isomorphic solution to load configuration values, that strictly prevents mistakes.
+We needed this for frontend, backend and mobile projects. Using the same tool for all these was a must.
+We also didn't like the trend of "opinionated" libraries, with a lot of implicit behavior.
 
-In a hurry? Check out the [Quick Start](./quick-start.md) guide.
+We looked around the Node.js ecosystem for something that would fit this need.
+Many of the existing tools are JavaScript heavy, making them too dynamic to provide good TypeScript support.
+We also found a lot of libraries with "magic" built-in (usually not optional), with a set of strict opinions.
 
-## Beginning
-
-To start with, what is "configuration"?
-
-1. A nesting structure of values, generally JSON-like (objects, arrays, strings, numbers and booleans).
-2. An accessible way to read these values programmatically (API or CLI).
-3. A way to store these values (files), mutate them, and share them (to others, and in deployments).
-
-On top of this, we want to **validate** this configuration. That means ensuring
-the values and their structure is _as intended_. Typos, malformatting, or values
-outside of limits should never make it to production.
-
-We looked around the Node.js ecosystem for something that would fit these goals.
-Unfortunately, much of the existing tools are javascript-heavy, meaning they're too
-dynamic to provide good TypeScript support. We also found a lot of libraries with
-"magic" built-in (usually not optional), with a set of strict opinions.
-
-You might be interested by some of them - they might fit your use case!
+Some of them might fit your use case! New suggestions are welcome.
 
 - [conf](https://www.npmjs.com/package/conf)
 - [node-config-ts](https://www.npmjs.com/package/node-config-ts)
@@ -47,19 +67,77 @@ We intend to provide:
 
 - A tool that can slot in to your workflow without disruption, and be learnt in 30 minutes.
 - A way to write configuration and schema files, where mistakes are a thing of the past.
-- Amazing developer ergonomics, providing the slimmest API with deep control if you need it.
+- Amazing ergonomics, providing the slimmest API with deep control if you need it.
 - A toolbelt for improving your configuration strategy, that's incrementally adoptable.
 - Simplicity without magic - `app-config` will only do what you ask it to.
 - Tie-in for non-javascript environments, which can consume environment variables safely.
 - Support for your favorite file format, so you can focus on building instead of a new syntax.
 - Heavy re-use of configuration files, schema definition and strategies.
 
-## Installing and Getting Started
+## Features
 
-Alright, so you want to use `app-config`. First step is always, of course, installing it.
+- **Schema Validation:** Checks that configuration is valid according to a [JSON Schema](https://json-schema.org/).
+- **Multi-Format:** Supports YAML, TOML, JSON and JSON5 for value and schema files.
+- **Strong Typing:** Provides type-safe access to config values based on schema constraints.
+- **Environment Specific Values:** Makes environments like QA vs Production easy to manage.
+- **Value Sharing:** Easily shares values between different apps or services.
+- **Value Encryption:** Allows committing secret values without worry.
+- **Producer & Consumer:** Provides tools to interact with other ecosystems.
+- **Extensible Parsing:** Provides built-in and plugin parsing extensions for custom behavior.
+
+We will briefly touch on each of these below.
+
+#### Schema Validation
+
+App Config looks for a file called `.app-config.schema.{yml|toml|json|json5}`.
+This file contains the full JSON Schema object which is used to validation config values.
+You'll find more information about this file in [Schema Validation](./schema-validation.md).
+
+#### Multi-Format
+
+App Config will load any supported file format when loading configuration.
+That includes schema and meta files as well.
+We currently support YAML, JSON, TOML and JSON5.
+
+#### Strong Typing
+
+App Config has built-in support for creating type files that are inferred from your JSON Schema.
+This support leverages a tool called [quicktype](https://quicktype.io).
+Because of that, app-config comes with ways to generate code for many different languages.
+Currently, the only _official_ support is for TypeScript.
+
+#### Environment Specific Values
+
+Create a `.app-config.production.{yml|toml|json|json5}` file with values to use when `NODE_ENV=production`.
+Or, use the embedded helper `$env` for colocated configurations.
+
+#### Value Sharing
+
+With the `$extends` and `$override` keys, you can load values from shared files.
+Use this in a monorepo for powerful sharing of common configuration values.
+Learn more in [Parsing Extensions](./extensions.md).
+
+#### Value Encryption
+
+Share secret values in source control, encrypted with your computer's private key.
+You'll find more information about this in [Value Encryption](./encryption.md).
+
+#### Producer & Consumer
+
+Use App Config as a consumer in a Node.js app.
+Or, use App Config to read and validate config, before passing values into your app.
+
+#### Extensible Parsing
+
+Make App Config your own, by defining parsing extensions for custom behavior.
+Learn more in [Parsing Extensions](./extensions.md#custom-extensions).
+
+## Installing
+
+Alright, so you want to try out `app-config`! First step is always, of course, installing it.
 
 ::: tip
-You'll probably find more detailed information for the environment you're targeting in the Node.js, Webpack or React Native sections.
+You'll find more information for the environment you're targeting in the Node.js, Webpack or React Native sections.
 :::
 
 ```sh
@@ -72,199 +150,13 @@ Or, if you use NPM.
 npm i @lcdev/app-config@2
 ```
 
-Now, usually the first thing you want to do with configuration is read it from your application.
-Before you can do that though, you'll need to tell `app-config` what to expect in your configuration values.
+## Usage
 
-To do that, let's write our first [JSON Schema](https://json-schema.org/) file.
+We encourage you to read through the Introduction Guide before committing to App Config for your project.
+You can visit the [Quick Start Guide](./quick-start.md), [Node.js Setup](../node/README.md), [Webpack Setup](../webpack/README.md),
+or [React Native Setup](../react-native/README.md) for more starting instructions.
 
-<h4 style="text-align:center">.app-config.schema.yml</h4>
-
-```yaml
-type: object
-additionalProperties: false
-
-required:
-  - server
-  - database
-
-properties:
-  server: { $ref: '#/definitions/Server' }
-  database: { $ref: '#/definitions/Database' }
-
-  # Notice that AWS config is optional
-  aws:
-    type: object
-
-definitions:
-  Server:
-    type: object
-    additionalProperties: false
-    required: [port]
-    properties:
-      port: { $ref: '#/definitions/IpPort' }
-  Database:
-    type: object
-    additionalProperties: false
-    required: [host, port]
-    properties:
-      host: { type: string }
-      port: { $ref: '#/definitions/IpPort' }
-      database: { type: string }
-  IpPort:
-    type: integer
-    minimum: 0
-    maximum: 65535
-```
-
-Notice that we wrote some YAML above, even though we said it was JSON Schema.
-This is absolutely normal and expected when using app-config. You can use whatever
-format you're comfortable with (YAML, TOML, JSON, JSON5).
-
-You might be very familiar with JSON Schema, or not at all. We can't write a full
-tutorial here, but there is more information about this process in [Schema Validation](./schema-validation.md).
-The official site does have a [tutorial](https://json-schema.org/understanding-json-schema/)
-available as well. Even if you don't end up using app-config, it's a great skill to have!
-
-Okay, next step now. Let's try just running app-config with the schema so far.
-
-```sh
-npx app-config vars
-```
-
-You should receive an error, something like this:
-
-```
-NotFoundError: FlexibleFileSource could not find file with .app-config.{yml|yaml|toml|json|json5}
-```
-
-Alright, so it looks like `app-config` is trying to read a file called `.app-config.yml`.
-That's true, but let's take a little detour.
-
-## The `APP_CONFIG` Environment Variable
-
-There's something you should know right away before worrying about configuration files.
-You might be used to "dotenv", which is a pseudo-standard way that many applications are configured.
-Typically, this involves setting environment variables and having the program consume configuration
-that way. The [12 Factor App](https://12factor.net/) popularized this.
-
-This strategy fits in `app-config` in two ways, actually.
-
-1. It can act as a "producer" of configuration to apps that are agnostic to `app-config`.
-2. It can act as a "consumer" of configuration inside of an app, with direct knowledge of `app-config`.
-
-These two ways interact mainly through `$APP_CONFIG`. That is, there is an environment variable which
-`app-config` can either produce or consume. It goes a bit further when acting as a producer as well,
-setting many variables with each sub-value (eg. `APP_CONFIG_DATABASE_PORT`).
-
-Let's experiment a tiny bit.
-
-```sh
-export APP_CONFIG='{}'
-
-npx app-config vars
-```
-
-Now, you should see something more interesting!
-
-```
-[ValidationError: Config is invalid: config should have required property 'server', config should have required property 'database']
-```
-
-It fails again, but in a fairly different way. This time, we're seeing our schema work for us.
-Of course, this is all a contrived example, but we really do urge you to try it out yourself.
-Play with the schema, and set the `APP_CONFIG` variable accordingly.
-
-```sh
-export APP_CONFIG='{ server: { port: 8800 }, database: { host: localhost, port: 5432 } }'
-```
-
-This time, you should see something different!
-
-```sh
-$ npx app-config vars
-APP_CONFIG_SERVER_PORT=8800
-APP_CONFIG_DATABASE_HOST="localhost"
-APP_CONFIG_DATABASE_PORT=5432
-
-$ npx app-config create -f yaml
-server:
-  port: 8800
-database:
-  host: localhost
-  port: 5432
-```
-
-If everything is working correctly, you should see the same output. We've passed
-the configuration to `app-config` via environment variable, which was able to read
-and parse it. Notably, we wrote it with [JSON5](https://json5.org/) syntax. The format
-of the environment variable in unimportant - it could have been YAML, TOML, or JSON (you
-might choose something with stricter syntax like JSON, but normally this variable is generated
-programmatically anyways).
-
-## The `.app-config` File
-
-Alright, back to our original problem. Environment variables are great, but you'd
-have a terrible time maintaining a big JSON blob like that (which is where tools
-like dotenv originated).
-
-<h4 style="text-align:center">.app-config.yml</h4>
-
-```yaml
-server:
-  port: 8888
-
-database:
-  host: central-server
-  port: 5432
-```
-
-We created a file called `.app-config.yml`, which is the default location for app-config files.
-Again, our choice of YAML here is unimportant.
-
-We can run our `app-config` CLI again, and should see our values.
-
-```sh{3,5}
-$ npx app-config create -f yaml
-server:
-  port: 8800
-database:
-  host: localhost
-  port: 5432
-```
-
-Funny enough, we don't! At least, if you've been following this page linearly.
-Earlier, we set the `$APP_CONFIG` environment variable. Well, it turns out that
-when given the choice, `app-config` will chose that variable over files (which
-makes production environments easy to configure, allowing them to override files
-entirely).
-
-```sh{4,6}
-$ unset APP_CONFIG
-$ npx app-config create -f yaml
-server:
-  port: 8888
-database:
-  host: central-server
-  port: 5432
-```
-
-Now we see our configuration file take effect.
-
-## Environment Specific Files
-
-Note that `.app-config.yml` is not our only option. You may want a completely different
-set of values for production. You could use `$env`, as [you'll see](./extensions.md).
-You can also, however, make environment specific files.
-
-By defining a file called `.app-config.production.yml`, app-config will load it only
-when `APP_CONFIG_ENV` | `NODE_ENV` | `ENV` is `prod` or `production` (see [defaultAliases](../node/api-reference.md)).
-This can be useful for separating values out, especially in combination with `$extends`.
-You'll get a feel for why this is useful the more you use app-config.
-
-## CI, Automation and Extension
-
-Another feature you should know about is the special environment variable(s) that
-app-config will read. Either (exclusive) `APP_CONFIG_CI` or `APP_CONFIG_EXTEND`
-can be set in a CI environment variable to add specific values. These variables
-are parsed just like `APP_CONFIG` (they can be JSON, YAML, etc). They are merged
-deeply and override any values that they define.
+TLDR?
+Start off with a `.app-config.{yml|toml|json|json5}` file.
+Define JSON Schema in `.app-config.schema.{yml|toml|json|json5}`.
+Load configuration using the `npx app-config` CLI, or `loadConfig` Node.js API.

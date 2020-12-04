@@ -2,8 +2,9 @@
 title: Code/Types Generation
 ---
 
-Code generation is dictated by the meta file. This file lives alongside app-config
-and schema files.
+## Code/Types Generation
+
+Code generation is dictated by the meta file. This file lives alongside config and schema files.
 
 <h4 style="text-align:center">.app-config.meta.yml</h4>
 
@@ -12,10 +13,10 @@ generate:
   - { file: 'src/@types/lcdev__app-config/index.d.ts' }
 ```
 
-Currently, only TypeScript output is officially supported. Others may work since
-we rely on [quicktype](https://quicktype.io/).
+Currently, only TypeScript output is officially supported.
+Others may work out of the box because we use a library called [quicktype](https://quicktype.io/) internally.
 
-Run the CLI the write the types file.
+Run the CLI to write the type files.
 
 ```sh
 npx app-config generate
@@ -25,7 +26,7 @@ If you have `src/**/*` in your `include` of `tsconfig.json`, then TypeScript
 should be aware of the type of the `config` export. Otherwise, you might want
 to use [typeRoots](https://www.typescriptlang.org/tsconfig#typeRoots).
 
-There are examples of code generation in each of our example projects.
+There are examples of code generation in each of our [example projects](https://github.com/launchcodedev/app-config/tree/master/examples).
 
 An example of the file that's written is below:
 

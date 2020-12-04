@@ -1,5 +1,5 @@
 ---
-title: Encryption
+title: Value Encryption
 ---
 
 ## Project Setup
@@ -16,6 +16,10 @@ npx app-config secret init
 npx app-config secret init-repo
 ```
 
+::: tip Important!
+Encrypted values are per-meta-file. Encryption is context sensitive, **not** global.
+:::
+
 From here, you can encrypt and decrypt values.
 
 ```sh
@@ -25,7 +29,7 @@ npx app-config secret encrypt 'SuperSecret'
 ```
 
 You can use the outputted (encrypted) values anywhere in your app-config files.
-Values look like this, in YAML format:
+Values are placed in configuration files as base64 strings, like this:
 
 ```yaml
 database:
@@ -44,30 +48,30 @@ Both commands support stdin input, and have options to read/write from the syste
 
 ## Secret Agent
 
-It would be tiring to enter your password every time you want to run your app.
-Not only would it be annoying, it's impractical.
+It would be impractical to enter your password every time you want to run your app.
 
 ```
 npx app-config secret agent
 ```
 
-This command starts a daemon processing, which runs a server local to your machine.
+This command starts a daemon process, which runs a local server on your machine.
 Any program that has localhost access can access it, so be wary of running this on
-a shared machine that you don't trust.
+a multi-tenant machine.
 
-When this server is detected, app-config uses it to decrypt values. That means that
-you can run a `node-dev`, `nodemon`, etc. process without having constant passphrase
-prompts.
+When this server is detected, App Config can use it to encrypt and decrypt values.
+That means that you can run a `node-dev`, `nodemon`, etc. process without having constant passphrase prompts.
+
+If you want to opt-out of using the secret agent, the CLI has a `--agent=false` flag.
 
 ## Trusting Users
 
-If you're already trusted, ask the other user to give your their public key:
+If you're already trusted, ask the other user to run this command:
 
 ```sh
 npx app-config secret export ./my-key
 ```
 
-This writes a `my-key` file. Have them give you this file somehow (it's not secret).
+This writes a `my-key` file with their public key. Have them give you this file, so you can import it.
 
 ```sh
 npx app-config secret trust ./my-key
@@ -76,39 +80,47 @@ npx app-config secret trust ./my-key
 This will re-sign all encryption keys of the current repository with their public
 key. This gives them access to any previously encrypted secrets as well.
 
+## Untrusting Users
+
 You can untrust users as well. Please rotate secrets if they are a security concern.
-Once a user has accessed secrets, there's no way to truly revoke that access.
+Once a user has read secrets, there's no way to _truly_ revoke that access.
 
 ```sh
 npx app-config secret untrust somebody@example.com
 ```
 
-This doesn't necessitate re-encrypting any secrets. Any new encryption will use a
+This does not require re-encrypting any secrets. Any new encrypted values will use a
 new key that `somebody@example.com` never had access to.
+
+::: warning
+While the above is true, be wary of how the timeline of events interacts with version control.
+:::
 
 ## CI / Automation
 
-The CLI subcommand `app-config secret ci` can create an artificial team member for
-CI environments. This key (public + private) can be added as protected environment
-variables in your CI provider.
+The CLI subcommand `app-config secret ci` can create an artificial team member for CI environments.
+These keys are like any other team member, but are not protected with a passphrase.
+This key (public + private) can be added as protected environment variables in your CI provider:
 
-- `APP_CONFIG_SECRETS_KEY`: raw armored private key text
-- `APP_CONFIG_SECRETS_PUBLIC_KEY`: raw armored public key text
+- `APP_CONFIG_SECRETS_KEY`
+- `APP_CONFIG_SECRETS_PUBLIC_KEY`
 
-## Core Concepts
+The CLI will output both of these with instructions.
 
-- We store a list of team members public keys in app-config meta files
-- We store a list of 'encryptionKeys' (symmetric keys) in app-config meta files
+## Implementation Details
+
+- We store a list of team members public keys in meta files
+- We store a list of 'encryptionKeys' (symmetric keys) in meta files
   - Keys are symmetric, but are themselves stored in encrypted form (encrypted by team members' public keys, which allows any team member to decrypt it)
   - Once the key is given to somebody, they can always decrypt secrets that were encrypted with it
   - Keys have 'revision' numbers, so we can use the latest one (revision is embedded into the password itself, to prevent tampering in the YAML)
   - By keeping revisions, we can untrust a user without having to re-encrypt every secret made before
     - You'd likely still want to rotate most passwords, but doing so automatically (dumping out YAML files everywhere) would be extremely difficult to do right
     - The secrets are already compromised, so manual intervention is needed regardless
-- Values are encrypted using the app-config CLI
+- Values are encrypted using the CLI
   - They come in the form `enc:{revision}:{base64}`
   - They store which key revision was used to encrypt them
-- Values can be put anywhere in app-config files, and are detected and parsed automatically
+- Values can be put anywhere in config files, and are detected and parsed automatically
 - Rotating keys can be done with the `init-key` CLI subcommand, or when untrusting a user
   - Untrusting requires encrypting all future secrets with a new key
 - Adding a user just re-encrypts all previous key revisions with the new team members list, giving access to previously made secrets
@@ -117,9 +129,11 @@ variables in your CI provider.
 
 ## Security
 
-We rely heavily on OpenPGP.
+We rely heavily on OpenPGP. No sensitive operations are performed directly by App Config.
 
 ## Configuration
 
 App Config will set up your keychain in the standard config file location on your machine.
 If you really need to, you can set `APP_CONFIG_SECRETS_KEYCHAIN_FOLDER` to override this.
+
+Check out the [settings](./settings.md) section for more.

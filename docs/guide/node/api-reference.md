@@ -2,6 +2,10 @@
 title: API Reference
 ---
 
+All of these are probably better described in TypeScript. Check out type files for more!
+
+---
+
 `loadConfig(Options?)`: Read and validate configuration. Fills in the `config` export.
 
 `config` & default export: The single instance of loaded configuration, accessible after `loadConfig`.
