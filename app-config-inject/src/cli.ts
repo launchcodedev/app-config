@@ -43,7 +43,8 @@ const { argv: _ } = yargs
       const html = await consumeStdin();
       const injected = await injectHtml(html, {
         validate,
-        configOptions: { directory: dir, schemaDirectory: schemaDir },
+        configOptions: { directory: dir },
+        schemaOptions: { directory: schemaDir },
       });
 
       process.stdout.write(injected);

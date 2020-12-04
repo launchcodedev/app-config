@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import type { ConfigLoadingOptions } from '@lcdev/app-config';
+import type { ConfigLoadingOptions, SchemaLoadingOptions } from '@lcdev/app-config';
 import { regex } from './loader';
 import { loadConfig } from './compat';
 
@@ -11,15 +11,18 @@ const loader = require.resolve('./loader');
 export interface Options {
   headerInjection?: boolean;
   loading?: ConfigLoadingOptions;
+  schemaLoading?: SchemaLoadingOptions;
 }
 
 export default class AppConfigPlugin {
   headerInjection: boolean;
   loadingOptions?: ConfigLoadingOptions;
+  schemaLoadingOptions?: SchemaLoadingOptions;
 
-  constructor({ headerInjection = false, loading }: Options = {}) {
+  constructor({ headerInjection = false, loading, schemaLoading }: Options = {}) {
     this.headerInjection = headerInjection;
     this.loadingOptions = loading;
+    this.schemaLoadingOptions = schemaLoading;
   }
 
   static loader = loader;
@@ -41,7 +44,7 @@ export default class AppConfigPlugin {
           if (!resolve) return;
 
           if (resolve.request === '@lcdev/app-config' || resolve.request === 'app-config') {
-            const { filePaths } = await loadConfig(this.loadingOptions);
+            const { filePaths } = await loadConfig(this.loadingOptions, this.schemaLoadingOptions);
 
             if (filePaths?.length) {
               [resolve.request] = filePaths; // eslint-disable-line no-param-reassign
@@ -61,7 +64,7 @@ export default class AppConfigPlugin {
       HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
         'AppConfigPlugin',
         async ({ headTags, ...html }) => {
-          const { fullConfig } = await loadConfig(this.loadingOptions);
+          const { fullConfig } = await loadConfig(this.loadingOptions, this.schemaLoadingOptions);
 
           // remove placeholder <script id="app-config"></script> if it exists
           const newTags = headTags.filter(({ attributes }) => attributes.id !== 'app-config');

@@ -4,16 +4,18 @@ import {
   loadValidatedConfig,
   loadUnvalidatedConfig,
   ConfigLoadingOptions,
+  SchemaLoadingOptions,
 } from '@lcdev/app-config';
 
 export interface Options {
   validate: boolean;
   configOptions?: ConfigLoadingOptions;
+  schemaOptions?: SchemaLoadingOptions;
 }
 
 export async function injectHtml(
   html: string,
-  { validate, configOptions }: Options,
+  { validate, configOptions, schemaOptions }: Options,
 ): Promise<string> {
   const parsed = parse(html);
 
@@ -26,7 +28,7 @@ export async function injectHtml(
   let config;
 
   if (validate) {
-    ({ fullConfig: config } = await loadValidatedConfig(configOptions));
+    ({ fullConfig: config } = await loadValidatedConfig(configOptions, schemaOptions));
   } else {
     ({ fullConfig: config } = await loadUnvalidatedConfig(configOptions));
   }

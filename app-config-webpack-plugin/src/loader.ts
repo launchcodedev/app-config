@@ -1,14 +1,15 @@
 import * as wp from 'webpack';
 import { getOptions } from 'loader-utils';
+import type { Options } from './index';
 import { loadConfig } from './compat';
 
 const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { headerInjection = false, loading } = getOptions(this) || {};
+  const { headerInjection = false, loading, schemaLoading }: Options = getOptions(this) || {};
 
-  loadConfig(loading)
+  loadConfig(loading, schemaLoading)
     .then(({ fullConfig, filePaths }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(filePath));
