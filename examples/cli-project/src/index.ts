@@ -5,11 +5,16 @@ import { config, loadConfig } from '@lcdev/app-config';
 // NOTE: this will fail until you make a file in ~/.config/my-cli.yml (or toml, json, json5)
 
 async function main() {
-  await loadConfig({
-    directory: join(homedir(), '.config'),
-    schemaDirectory: join(__dirname, '..'),
-    fileNameBase: 'my-cli',
-  });
+  await loadConfig(
+    {
+      directory: join(homedir(), '.config'),
+      fileNameBase: 'my-cli',
+    },
+    {
+      directory: join(__dirname, '..'),
+      fileNameBase: '.app-config.schema',
+    },
+  );
 
   console.log({ config });
 }

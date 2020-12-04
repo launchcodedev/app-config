@@ -1,5 +1,6 @@
 import { inspect } from 'util';
 import { loadValidatedConfig, Options } from './config';
+import { Options as SchemaOptions } from './schema';
 import { AppConfigError, AccessingAppConfig } from './errors';
 import { logger } from './logging';
 
@@ -16,12 +17,15 @@ const assertLoaded = () => {
   return loadedConfig;
 };
 
-export async function loadConfig(options?: Options): Promise<ExportedConfig> {
+export async function loadConfig(
+  options?: Options,
+  schemaOptions?: SchemaOptions,
+): Promise<ExportedConfig> {
   if (loadedConfig) {
     logger.warn('Called loadConfig, even though config was already loaded elsewhere');
   }
 
-  const { fullConfig } = await loadValidatedConfig(options);
+  const { fullConfig } = await loadValidatedConfig(options, schemaOptions);
 
   loadedConfig = fullConfig as ExportedConfig;
 
