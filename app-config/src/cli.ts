@@ -457,9 +457,21 @@ export const cli = yargs
       {
         name: ['validate'],
         description: 'Checks all environment variants against your schema',
+        options: {
+          environment: {
+            alias: 'env',
+            type: 'string',
+            description: 'Validates only using one environment',
+            group: OptionGroups.Options,
+          },
+        },
       },
-      async () => {
-        await validateAllConfigVariants();
+      async ({ environment }) => {
+        if (environment) {
+          await loadValidatedConfig({ environmentOverride: environment });
+        } else {
+          await validateAllConfigVariants();
+        }
       },
     ),
   )
