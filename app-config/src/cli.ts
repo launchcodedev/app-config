@@ -180,7 +180,7 @@ const formatOption = {
   alias: 'f',
   type: 'string',
   default: 'yaml' as string,
-  choices: ['yaml', 'yml', 'json', 'json5', 'toml'],
+  choices: ['yaml', 'yml', 'json', 'json5', 'toml', 'raw'],
   group: OptionGroups.Options,
 } as const;
 
@@ -299,6 +299,8 @@ function fileTypeForFormatOption(option: string): FileType {
     case 'yml':
     case 'yaml':
       return FileType.YAML;
+    case 'raw':
+      return FileType.RAW;
     default:
       throw new AppConfigError(`${option} is not a valid file type`);
   }

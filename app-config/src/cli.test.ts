@@ -117,6 +117,37 @@ describe('create', () => {
     expect(stdout).toMatchSnapshot();
   });
 
+  it('prints raw format', async () => {
+    const APP_CONFIG = JSON.stringify({
+      anObject: {},
+      aBoolean: true,
+      aNumber: 83.2,
+      aString: 'foo',
+    });
+
+    const { stdout: out1 } = await run(
+      ['create', '-q', '--format', 'raw', '--select', '#/aBoolean'],
+      { env: { APP_CONFIG } },
+    );
+    expect(out1).toMatchSnapshot();
+
+    const { stdout: out2 } = await run(
+      ['create', '-q', '--format', 'raw', '--select', '#/aNumber'],
+      { env: { APP_CONFIG } },
+    );
+    expect(out2).toMatchSnapshot();
+
+    const { stdout: out3 } = await run(
+      ['create', '-q', '--format', 'raw', '--select', '#/aString'],
+      { env: { APP_CONFIG } },
+    );
+    expect(out3).toMatchSnapshot();
+
+    await expect(
+      run(['create', '-q', '--format', 'raw', '--select', '#/anObject'], { env: { APP_CONFIG } }),
+    ).rejects.toThrow();
+  });
+
   it('can select a nested property', async () => {
     const APP_CONFIG = JSON.stringify({ a: { b: { c: true } } });
     const { stdout: nested1 } = await run(['create', '-q', '--format', 'json', '--select', '#/a'], {

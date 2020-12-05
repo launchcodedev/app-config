@@ -38,6 +38,12 @@ exports[`create prints YAML format 1`] = `
 "
 `;
 
+exports[`create prints raw format 1`] = `"true"`;
+
+exports[`create prints raw format 2`] = `"83.2"`;
+
+exports[`create prints raw format 3`] = `"foo"`;
+
 exports[`create prints simple app-config file 1`] = `
 "foo: true
 "

@@ -14,6 +14,9 @@ export enum FileType {
   TOML = 'TOML',
   JSON = 'JSON',
   JSON5 = 'JSON5',
+
+  /** @hidden Raw is only used for CLI output */
+  RAW = 'RAW',
 }
 
 /** Base class for "sources", which are strategies to read configuration (eg. files, environment variables) */
@@ -273,6 +276,12 @@ export function stringify(config: Json, fileType: FileType, minimal: boolean = f
       return stringifyTOML(config as any);
     case FileType.YAML:
       return stringifyYAML(config);
+    case FileType.RAW: {
+      if (typeof config === 'string') return config;
+      if (typeof config === 'number') return `${config}`;
+      if (typeof config === 'boolean') return config ? 'true' : 'false';
+      throw new BadFileType(`Stringifying "raw" only works with primitive values`);
+    }
 
     default:
       throw new BadFileType(`Unsupported FileType '${fileType as string}'`);
