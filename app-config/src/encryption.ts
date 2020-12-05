@@ -4,7 +4,7 @@ import * as pgp from 'openpgp';
 import { inspect } from 'util';
 import { generateKey, encrypt, decrypt, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
-import { Json, promptUser } from './common';
+import { Json, promptUser, promptUserWithRetry } from './common';
 import { stringify, FileType } from './config-source';
 import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
 import { settingsDirectory } from './settings';
@@ -148,8 +148,14 @@ export async function loadPrivateKey(
   if (!key.isDecrypted()) {
     if (!checkTTY()) throw new SecretsRequireTTYError();
 
-    await key.decrypt(
-      await promptUser<string>({ message: 'Your Passphrase', type: 'password' }),
+    await promptUserWithRetry<string>(
+      { message: 'Your Passphrase', type: 'password' },
+      async (passphrase) => {
+        return key.decrypt(passphrase).then(
+          () => true,
+          (error: Error) => error,
+        );
+      },
     );
   }
 
