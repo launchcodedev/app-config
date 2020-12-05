@@ -8,27 +8,62 @@ You are, of course, welcome to use App Config however works best. Some tips when
 
 ### Inject `APP_CONFIG` as a Secret
 
-Create a helm template that uses `app_config` as a Secret value, and expose the secret as `APP_CONFIG` in pods.
+In a helm template, add the app-config opaque secret:
 
-```sh
-APP_CONFIG=$(NODE_ENV=production npx app-config create --secrets --format json)
-
-helm install --set-string app_config="$APP_CONFIG" myapp ./myapp
+```yaml
+{{- if .Values.config -}}
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: app-config
+stringData:
+  .json: {{ .Values.config | toJson | quote }}
+{{- end }}
 ```
 
-### Using config values in helm templates
-
-This can be accomplished using a script like:
+Instead of using a plain YAML file for helm values, perform a preprocessor step:
 
 ```sh
 TMP=$(mktemp -d)
 
+# use app-config to produce plaintext values for Helm
 npx app-config create --secrets \
-  --fileNameBase ingress-nginx > $TMP/ingress-nginx.yml
+  --fileNameBase my-app > $TMP/my-app.yml
 
-helm upgrade --install ingress-nginx \
-  ingress-nginx/ingress-nginx \
-  --values $TMP/ingress-nginx.yml
+# use the output as a values file in Helm
+helm upgrade --install my-app \
+  ./my-app-chart \
+  --values $TMP/my-app.yml
 
+# the temp file has secrets! clean up after yourself
 rm -r $TMP
 ```
+
+This allows you to have a Helm values file that looks like:
+
+```yaml
+config:
+  # You could write the full config object here, or just "import it" from elsewhere
+  $extends:
+    - .app-config.yml
+    - .app-config.secrets.yml
+
+# other helm template values
+```
+
+In your pod/deployment spec, mount the secret as `APP_CONFIG`:
+
+```yaml
+{{- if .Values.config }}
+env:
+  - name: APP_CONFIG
+    valueFrom:
+      secretKeyRef:
+        name: app-config
+        key: .json
+{{- end }}
+```
+
+This should keep app-config values in a Kubernetes secret, and provide access to it in your app.
+This has the benefit of being able to use App Config values in Helm templates if you want (like HTTP ports, volume locations, etc).
