@@ -185,6 +185,7 @@ const formatOption = {
 } as const;
 
 const selectOption = {
+  alias: 'S',
   type: 'string',
   description: 'A JSON pointer to select a nested property in the object',
   group: OptionGroups.Options,
