@@ -46,7 +46,7 @@
     "clipboardy": "2",
     "common-tags": "1",
     "env-paths": "2",
-    "execa": "4",
+    "execa": "5",
     "fs-extra": "9",
     "js-yaml": "3",
     "json-schema-ref-parser": "9",
