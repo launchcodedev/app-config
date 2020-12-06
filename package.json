@@ -26,7 +26,7 @@
     "docs:build": "yarn --cwd ./docs build"
   },
   "devDependencies": {
-    "@commitlint/cli": "9",
+    "@commitlint/cli": "11",
     "@lcdev/commitlint": "1",
     "@lcdev/eslint-config": "0.3",
     "@lcdev/jest": "0.3",
