@@ -387,7 +387,7 @@ describe('$extendsSelf directive', () => {
     });
   });
 
-  it.only('resolves an $extends selector to own file', async () => {
+  it('resolves an $extends selector to own file', async () => {
     await withTempFiles(
       {
         'test-file.yaml': `
