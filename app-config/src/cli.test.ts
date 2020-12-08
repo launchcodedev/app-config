@@ -425,4 +425,30 @@ describe('nested commands', () => {
 
     expect(stdout.includes('APP_CONFIG={"foo":true}')).toBe(true);
   });
+
+  it('passes APP_CONFIG_SCHEMA variable in', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo: true
+        `,
+        '.app-config.schema.yml': `
+          $schema: http://json-schema.org/draft-07/schema
+          type: object
+          properties:
+            foo: { type: boolean }
+        `,
+      },
+      async (inDir) => {
+        const { stdout } = await run(['--format', 'json', '-C', inDir('.'), '--', 'env']);
+
+        expect(stdout.includes('APP_CONFIG={"foo":true}')).toBe(true);
+        expect(
+          stdout.includes(
+            'APP_CONFIG_SCHEMA={"$schema":"http://json-schema.org/draft-07/schema","type":"object","properties":{"foo":{"type":"boolean"}}}',
+          ),
+        ).toBe(true);
+      },
+    );
+  });
 });
