@@ -157,8 +157,6 @@ async function normalizeSchema(
             throw new WasNotObject(`JSON Schema was not an object (${file.url})`);
           }
 
-          parsed.$id = file.url;
-
           return parsed;
         },
       },
