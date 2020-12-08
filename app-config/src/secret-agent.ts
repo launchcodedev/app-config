@@ -117,14 +117,14 @@ export async function connectAgent(
   await client.waitForConnection();
 
   let isClosed = false;
-  let closeTimeout: NodeJS.Timeout;
+  let closeTimeout: NodeJS.Timeout | number;
 
   client.onClose(() => {
     isClosed = true;
   });
 
   const keepAlive = () => {
-    if (closeTimeout) clearTimeout(closeTimeout);
+    if (closeTimeout) clearTimeout(closeTimeout as NodeJS.Timeout);
     if (closeTimeoutMs === Infinity) return;
 
     closeTimeout = setTimeout(() => {
