@@ -4,7 +4,7 @@ import * as yargs from 'yargs';
 import execa from 'execa';
 import clipboardy from 'clipboardy';
 import { outputFile, readFile } from 'fs-extra';
-import { resolve, dereference } from 'json-schema-ref-parser';
+import { resolve } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
 import {
   promptUser,
@@ -435,17 +435,16 @@ export const cli = yargs
 
         let toPrint: Json;
 
-        const normalized = await dereference(schema);
-        const refs = await resolve(normalized);
-
         if (opts.select) {
+          const refs = await resolve(schema);
+
           toPrint = refs.get(opts.select);
 
           if (toPrint === undefined) {
             throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
           }
         } else {
-          toPrint = refs.get('#');
+          toPrint = schema;
         }
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));

@@ -1,9 +1,15 @@
-import { resolve, join, dirname } from 'path';
+import { join, relative, resolve } from 'path';
 import Ajv from 'ajv';
-import { Json, JsonObject, isObject } from './common';
+import RefParser, { bundle } from 'json-schema-ref-parser';
+import { JsonObject, isObject } from './common';
 import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
-import { FlexibleFileSource, FileSource } from './config-source';
+import {
+  FlexibleFileSource,
+  FileSource,
+  parseRawString,
+  filePathAssumedType,
+} from './config-source';
 import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
 
 export interface Options {
@@ -19,9 +25,6 @@ export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 export interface Schema {
   value: JsonObject;
   validate: Validate;
-
-  /** @hidden */
-  schemaRefs: JsonObject;
 }
 
 export async function loadSchema({
@@ -37,17 +40,19 @@ export async function loadSchema({
     environmentAliases,
   );
 
-  const parsed = await source.readToJSON(parsingExtensions);
+  const parsed = await source.read(parsingExtensions);
+  const parsedObject = parsed.toJSON();
 
-  if (!isObject(parsed)) throw new WasNotObject('JSON Schema was not an object');
+  if (!isObject(parsedObject)) throw new WasNotObject('JSON Schema was not an object');
+
+  // default to draft 07
+  if (!parsedObject.$schema) {
+    parsedObject.$schema = 'http://json-schema.org/draft-07/schema#';
+  }
+
+  const normalized = await normalizeSchema(parsedObject, directory);
 
   const ajv = new Ajv({ allErrors: true });
-
-  const schemaRefs = await extractExternalSchemas(parsed, directory);
-
-  Object.entries(schemaRefs).forEach(([$id, schema]) => {
-    ajv.addSchema({ $id, ...schema });
-  });
 
   // array of property paths that should only be present in secrets file
   const schemaSecrets: string[][] = [];
@@ -63,16 +68,10 @@ export async function loadSchema({
     },
   });
 
-  // default to draft 07
-  if (!parsed.$schema) {
-    parsed.$schema = 'http://json-schema.org/draft-07/schema#';
-  }
-
-  const validate = ajv.compile(parsed);
+  const validate = ajv.compile(normalized);
 
   return {
-    value: parsed,
-    schemaRefs,
+    value: normalized as JsonObject,
     validate(fullConfig, parsedConfig) {
       const valid = validate(fullConfig);
 
@@ -116,61 +115,93 @@ export async function loadSchema({
   };
 }
 
-async function extractExternalSchemas(
-  schema: Json,
-  cwd: string,
-  schemas: { [$id: string]: JsonObject } = {},
-): Promise<{ [$id: string]: JsonObject }> {
-  const resolveReference = async (
-    resolvedPathEncoded: string,
-    ref: string,
-    referencedSchema: JsonObject,
-    newCwd: string,
-  ) => {
-    // replace the $ref inline with the canonical path
-    Object.assign(schema, { $ref: `${resolvedPathEncoded}${ref}` });
+async function normalizeSchema(
+  schema: JsonObject,
+  directory: string,
+): Promise<RefParser.JSONSchema> {
+  // NOTE: http is enabled by default
+  const resolveOptions: RefParser.Options['resolve'] = {
+    file: {
+      async read(file) {
+        // resolves file:// urls, windows compat
+        const path = toFileSystemPath(file.url);
 
-    // short-circuit, to prevent circular dependencies from creating infinite recursion
-    if (schemas[resolvedPathEncoded]) {
-      return schemas;
-    }
+        // we get passed in filepaths that are relative to CWD, but we want to ignore that
+        const relativePath = relative(process.cwd(), path);
+        // instead, we want to resolve the path relative to the provided directory
+        const absolutePath = resolve(directory, relativePath);
 
-    // tell the schema who they are, mostly for clarity
-    Object.assign(referencedSchema, { $id: resolvedPathEncoded });
+        const [contents] = await new FileSource(absolutePath).readContents();
 
-    // add schema to schemaRefs object, so they can be added to Ajv
-    Object.assign(schemas, { [resolvedPathEncoded]: referencedSchema });
-
-    // recurse into referenced schema, to retrieve any references
-    await extractExternalSchemas(referencedSchema, newCwd, schemas);
+        return contents;
+      },
+    },
   };
 
-  if (isObject(schema)) {
-    if (schema.$ref && typeof schema.$ref === 'string') {
-      // parse out "filename.json" from "filename.json#/Defs/ServerConfig"
-      const [, , filepath, ref] = /^(\.\/)?([^#]*)(#?.*)/.exec(schema.$ref) ?? [];
+  const options: RefParser.Options = {
+    resolve: resolveOptions,
+    parse: {
+      json: false,
+      yaml: false,
+      text: false,
+      any: {
+        order: 1,
+        canParse: ['.yml', '.yaml', '.json', '.json5', '.toml'],
+        async parse(file) {
+          const text = file.data.toString('utf8');
 
-      if (filepath) {
-        // we resolve filepaths so that ajv resolves them correctly
-        const resolvedPath = resolve(join(cwd, filepath));
-        const resolvedPathEncoded = encodeURI(resolvedPath);
-        const referencedSchema = await new FileSource(resolvedPath).readToJSON();
+          const fileType = filePathAssumedType(file.url);
+          const parsed = await parseRawString(text, fileType);
 
-        if (isObject(referencedSchema)) {
-          await resolveReference(resolvedPathEncoded, ref, referencedSchema, dirname(resolvedPath));
-        }
-      }
+          if (!isObject(parsed)) {
+            throw new WasNotObject(`JSON Schema was not an object (${file.url})`);
+          }
+
+          parsed.$id = file.url;
+
+          return parsed;
+        },
+      },
+    },
+  };
+
+  const normalized = await bundle(schema, options);
+
+  return normalized;
+}
+
+// ALL BELOW IS FROM https://github.com/APIDevTools/json-schema-ref-parser/blob/d3bc1985a9a1d301a5eddc7a4bbfaca542887d8c/lib/util/url.js
+const isWindows = /^win/.test(process.platform);
+const forwardSlashPattern = /\//g;
+const urlDecodePatterns = [/%23/g, '#', /%24/g, '$', /%26/g, '&', /%2C/g, ',', /%40/g, '@'];
+
+function toFileSystemPath(path: string) {
+  let retPath = decodeURI(path);
+
+  for (let i = 0; i < urlDecodePatterns.length; i += 2) {
+    retPath = retPath.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1] as string);
+  }
+
+  let isFileUrl = retPath.substr(0, 7).toLowerCase() === 'file://';
+
+  if (isFileUrl) {
+    retPath = retPath[7] === '/' ? retPath.substr(8) : retPath.substr(7);
+
+    if (isWindows && retPath[1] === '/') {
+      retPath = `${retPath[0]}:${retPath.substr(1)}`;
     }
 
-    // for all other keys, we'll descend into subobjects
-    for (const val of Object.values(schema)) {
-      if (isObject(val)) {
-        await extractExternalSchemas(val, cwd, schemas);
-      } else if (Array.isArray(val)) {
-        await Promise.all(val.map((v) => extractExternalSchemas(v, cwd, schemas)));
-      }
+    isFileUrl = false;
+    retPath = isWindows ? retPath : `/${retPath}`;
+  }
+
+  if (isWindows && !isFileUrl) {
+    retPath = retPath.replace(forwardSlashPattern, '\\');
+
+    if (retPath.substr(1, 2) === ':\\') {
+      retPath = retPath[0].toUpperCase() + retPath.substr(1);
     }
   }
 
-  return schemas;
+  return retPath;
 }

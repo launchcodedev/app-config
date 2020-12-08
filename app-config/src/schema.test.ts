@@ -130,6 +130,96 @@ describe('Schema Loading', () => {
   });
 
   describe('References', () => {
+    it('resolves schema $ref to a TOML file', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              a:
+                $ref: './referenced.schema.toml#/definitions/A'
+          `,
+          'referenced.schema.toml': `
+            [definitions]
+            A = { "type" = "number" }
+          `,
+        },
+        async (inDir) => {
+          const { value: schema } = await loadSchema({ directory: inDir('.') });
+
+          expect(schema.properties).toEqual({ a: { type: 'number' } });
+        },
+      );
+    });
+
+    it('resolves schema $ref to a JSON file', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              a:
+                $ref: './referenced.schema.json#/definitions/A'
+          `,
+          'referenced.schema.json': `{
+            "definitions": {
+              "A": { "type": "number" }
+            }
+          }`,
+        },
+        async (inDir) => {
+          const { value: schema } = await loadSchema({ directory: inDir('.') });
+
+          expect(schema.properties).toEqual({ a: { type: 'number' } });
+        },
+      );
+    });
+
+    it('resolves schema $ref to a JSON5 file', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              a:
+                $ref: './referenced.schema.json5#/definitions/A'
+          `,
+          'referenced.schema.json5': `{
+            definitions: {
+              A: { type: "number" }
+            }
+          }`,
+        },
+        async (inDir) => {
+          const { value: schema } = await loadSchema({ directory: inDir('.') });
+
+          expect(schema.properties).toEqual({ a: { type: 'number' } });
+        },
+      );
+    });
+
+    it('resolves schema $ref to a YAML file', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+            type: object
+            properties:
+              a:
+                $ref: './referenced.schema.yaml#/definitions/A'
+          `,
+          'referenced.schema.yaml': `
+            definitions:
+              A: { type: 'number' }
+          `,
+        },
+        async (inDir) => {
+          const { value: schema } = await loadSchema({ directory: inDir('.') });
+
+          expect(schema.properties).toEqual({ a: { type: 'number' } });
+        },
+      );
+    });
+
     it('loads a schema $ref relative to itself', async () => {
       await withTempFiles(
         {
@@ -244,7 +334,7 @@ describe('Schema Loading', () => {
           expect(a).toMatchObject({
             properties: {
               x: {
-                $ref: inDir('b/.app-config.schema.yml#/definitions/B'),
+                type: 'string',
               },
             },
           });
@@ -252,7 +342,7 @@ describe('Schema Loading', () => {
           expect(b).toMatchObject({
             properties: {
               x: {
-                $ref: inDir('a/.app-config.schema.yml#/definitions/A'),
+                type: 'string',
               },
             },
           });
@@ -280,7 +370,7 @@ describe('Schema Loading', () => {
           expect(value).toMatchObject({
             properties: {
               x: {
-                $ref: inDir('my%20schema.yml#/definitions/B'),
+                type: 'string',
               },
             },
           });
