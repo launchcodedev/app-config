@@ -4,7 +4,7 @@ import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
 import { defaultExtensions, defaultEnvExtensions, markAllValuesAsSecret } from './extensions';
-import { loadSchema, Options as SchemaOptions } from './schema';
+import { loadSchema, JSONSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject, ReservedKeyError } from './errors';
 import { logger } from './logging';
 
@@ -31,6 +31,8 @@ export interface Configuration {
   parsedNonSecrets?: ParsedValue;
   /** non-exhaustive list of files that were read (useful for reloading in plugins) */
   filePaths?: string[];
+  /** if loadValidatedConfig, this is the normalized JSON schema that was used for validation */
+  schema?: JSONSchema;
 }
 
 export async function loadConfig({
@@ -154,10 +156,13 @@ export async function loadValidatedConfig(
   options?: Options,
   schemaOptions?: SchemaOptions,
 ): Promise<Configuration> {
-  const [{ validate }, { fullConfig, parsed, ...rest }] = await Promise.all([
+  const [{ validate, value: schema }, { fullConfig, parsed, ...rest }] = await Promise.all([
     loadSchema({
       directory: options?.directory,
       fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
+      environmentVariableName: options?.environmentVariableName
+        ? `${options.environmentVariableName}_SCHEMA`
+        : undefined,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
       ...schemaOptions,
@@ -172,7 +177,7 @@ export async function loadValidatedConfig(
   logger.verbose('Config was loaded, validating now');
   validate(fullConfig, parsed);
 
-  return { fullConfig, parsed, ...rest };
+  return { fullConfig, parsed, schema, ...rest };
 }
 
 function verifyParsedValue(parsed: ParsedValue) {

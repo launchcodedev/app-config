@@ -10,7 +10,7 @@ describe('TypeScript File Generation', () => {
       properties: {
         foo: { type: 'string' },
       },
-    };
+    } as const;
 
     const generated = await generateQuicktype(schema, 'ts', 'Configuration');
 
@@ -132,7 +132,7 @@ describe('Flow File Generation', () => {
       properties: {
         foo: { type: 'string' },
       },
-    };
+    } as const;
 
     const generated = await generateQuicktype(schema, 'flow', 'Configuration');
 
@@ -148,7 +148,7 @@ describe('Golang File Generation', () => {
       properties: {
         foo: { type: 'string' },
       },
-    };
+    } as const;
 
     const generated = await generateQuicktype(schema, 'go', 'Configuration');
 
@@ -164,7 +164,7 @@ describe('Rust File Generation', () => {
       properties: {
         foo: { type: 'string' },
       },
-    };
+    } as const;
 
     const generated = await generateQuicktype(schema, 'rust', 'Configuration');
 
