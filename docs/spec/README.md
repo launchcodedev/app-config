@@ -36,10 +36,9 @@ This JSON value should an object. Libraries should reject invalid JSON strings o
 
 Whether the value contained in `APP_CONFIG` is valid is up to the schema.
 
-Schemas are JSON files, with the exact name `.app-config.schema.json`.
-This file should be present in the working directory, but libraries should provide an option for this.
+Schemas are JSON values, exposed through another environment variable named `APP_CONFIG_SCHEMA`.
 
-A missing schema file should result in an error, unless the library provides a non-validation opt-out option.
+A missing schema should result in an error, unless the library provides a non-validation opt-out option.
 
 Schemas should follow the exact specification of [JSON Schema](https://json-schema.org/specification.html).
 Users tend to use draft releases of this spec, so libraries are encouraged to support as many versions as possible.
@@ -100,11 +99,11 @@ And for production to look like:
 # extract configuration for the deployment environment, and expose it as an environment variable
 APP_CONFIG=$(NODE_ENV=qa npx @lcdev/app-config -s create --format json)
 
-# normalize your development schema into a JSON file, ensuring that it's present in production
-npx @lcdev/app-config create-schema --format json > .app-config.schema.json
+# normalize your development schema, ensuring that it's present in production
+APP_CONFIG_SCHEMA=$(npx @lcdev/app-config create-schema --format json)
 ```
 
 This is a simple example, meant to show not tell. The idea is that `@lcdev/app-config`
-itself is used for creating the final values / files that your app uses. This allows
-your app to use the configuration easily without having to know about complicated
-parsing extensions, inter-file dependencies, etc.
+itself is used for creating the final values that your app uses. This allows your app
+to use the configuration easily without having to know about complicated parsing
+extensions, inter-file dependencies, etc.
