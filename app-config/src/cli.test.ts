@@ -1,5 +1,6 @@
 import execa from 'execa';
 import { join } from 'path';
+import { isWindows } from './common';
 import { withTempFiles } from './test-util';
 
 const run = async (argv: string[], options?: execa.Options) =>
@@ -402,21 +403,25 @@ describe('nested commands', () => {
 
   it('passes environment variables down', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-q', '--', 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['-q', '--', isWindows ? 'SET' : 'env'], { env: { APP_CONFIG } });
 
     expect(stdout.includes('APP_CONFIG_FOO=true')).toBe(true);
   });
 
   it('uses prefix in environment variables', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-q', '-p', 'MY_CONFIG', '--', 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['-q', '-p', 'MY_CONFIG', '--', isWindows ? 'SET' : 'env'], {
+      env: { APP_CONFIG },
+    });
 
     expect(stdout.includes('MY_CONFIG_FOO=true')).toBe(true);
   });
 
   it('uses file format in main environment variable', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-q', '--format', 'json', '--', 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await run(['-q', '--format', 'json', '--', isWindows ? 'SET' : 'env'], {
+      env: { APP_CONFIG },
+    });
 
     expect(stdout.includes('APP_CONFIG={"foo":true}')).toBe(true);
   });

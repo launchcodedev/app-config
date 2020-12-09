@@ -3,9 +3,7 @@ import { outputFile } from 'fs-extra';
 import {
   quicktype,
   RendererOptions,
-  JSONSchema,
   JSONSchemaInput,
-  JSONSchemaStore,
   JSONSchemaSourceData,
   InputData,
 } from 'quicktype-core';
@@ -32,7 +30,7 @@ export interface GenerateFile {
 }
 
 export async function generateTypeFiles({ directory, schemaOptions, metaOptions }: Options = {}) {
-  const { value: schema, schemaRefs } = await loadSchema({ directory, ...schemaOptions });
+  const { value: schema } = await loadSchema({ directory, ...schemaOptions });
   const {
     value: { generate = [] },
   } = await loadMetaConfig({ directory, ...metaOptions });
@@ -57,7 +55,6 @@ export async function generateTypeFiles({ directory, schemaOptions, metaOptions 
           augmentModule,
           leadingComments,
           rendererOptions,
-          schemaRefs,
         );
 
         await outputFile(join(metaDirectory, file), `${lines.join('\n')}${'\n'}`);
@@ -78,25 +75,14 @@ export async function generateQuicktype(
     "Run app-config with 'generate' command to regenerate this file",
   ],
   rendererOptions: RendererOptions = {},
-  schemaRefs: JsonObject = {},
 ): Promise<string[]> {
   const src: JSONSchemaSourceData = {
     name,
     schema: JSON.stringify(schema),
   };
 
-  class FetchingJSONSchemaStore extends JSONSchemaStore {
-    async fetch(address: string): Promise<JSONSchema | undefined> {
-      return schemaRefs[address] as JSONSchema;
-    }
-  }
-
   const inputData = new InputData();
-  await inputData.addSource(
-    'schema',
-    src,
-    () => new JSONSchemaInput(new FetchingJSONSchemaStore(), []),
-  );
+  await inputData.addSource('schema', src, () => new JSONSchemaInput(undefined));
 
   const { lines } = await quicktype({
     inputData,
