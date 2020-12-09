@@ -117,17 +117,17 @@ export async function connectAgent(
   await client.waitForConnection();
 
   let isClosed = false;
-  let closeTimeout: NodeJS.Timeout | number;
+  let closeTimeout: NodeJS.Timeout;
 
   client.onClose(() => {
     isClosed = true;
   });
 
   const keepAlive = () => {
-    if (closeTimeout) clearTimeout(closeTimeout as NodeJS.Timeout);
+    if (closeTimeout) global.clearTimeout(closeTimeout);
     if (closeTimeoutMs === Infinity) return;
 
-    closeTimeout = setTimeout(() => {
+    closeTimeout = global.setTimeout(() => {
       logger.verbose('Closing websocket');
 
       client.close().finally(() => {
