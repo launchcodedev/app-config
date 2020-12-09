@@ -128,3 +128,5 @@ export async function consumeStdin(): Promise<string> {
     rl.on('close', () => resolve(buffer));
   });
 }
+
+export const isWindows = /^win/.test(process.platform);

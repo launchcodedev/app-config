@@ -1,7 +1,7 @@
 import { join, relative, resolve } from 'path';
 import Ajv from 'ajv';
 import RefParser, { bundle } from 'json-schema-ref-parser';
-import { JsonObject, isObject } from './common';
+import { JsonObject, isObject, isWindows } from './common';
 import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import {
@@ -169,7 +169,6 @@ async function normalizeSchema(
 }
 
 // ALL BELOW IS FROM https://github.com/APIDevTools/json-schema-ref-parser/blob/d3bc1985a9a1d301a5eddc7a4bbfaca542887d8c/lib/util/url.js
-const isWindows = /^win/.test(process.platform);
 const forwardSlashPattern = /\//g;
 const urlDecodePatterns = [/%23/g, '#', /%24/g, '$', /%26/g, '&', /%2C/g, ',', /%40/g, '@'];
 
