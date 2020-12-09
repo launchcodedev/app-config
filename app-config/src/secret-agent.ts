@@ -127,7 +127,7 @@ export async function connectAgent(
     if (closeTimeout) clearTimeout(closeTimeout);
     if (closeTimeoutMs === Infinity) return;
 
-    closeTimeout = setTimeout(() => {
+    closeTimeout = global.setTimeout(() => {
       logger.verbose('Closing websocket');
 
       client.close().finally(() => {
