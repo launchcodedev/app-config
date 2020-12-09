@@ -398,7 +398,7 @@ describe('create-schema', () => {
 
 describe('nested commands', () => {
   it('fails with no app-config', async () => {
-    await expect(run(['-q', '--', 'env'])).rejects.toThrow();
+    await expect(run(['-q', '--', isWindows ? 'SET' : 'env'])).rejects.toThrow();
   });
 
   it('passes environment variables down', async () => {
@@ -440,7 +440,14 @@ describe('nested commands', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['--format', 'json', '-C', inDir('.'), '--', 'env']);
+        const { stdout } = await run([
+          '--format',
+          'json',
+          '-C',
+          inDir('.'),
+          '--',
+          isWindows ? 'SET' : 'env',
+        ]);
 
         expect(stdout.includes('APP_CONFIG={"foo":true}')).toBe(true);
         expect(
