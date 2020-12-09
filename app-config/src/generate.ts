@@ -136,7 +136,6 @@ export async function generateQuicktype(
       '  "encoding/json"',
       '  "log"',
       '  "os"',
-      '  "path/filepath"',
       '',
       '  "github.com/xeipuuv/gojsonschema"',
       ')',
@@ -146,26 +145,31 @@ export async function generateQuicktype(
       var config ${name}
 
       func init() {
-        envValue := os.Getenv("APP_CONFIG")
+        configText := os.Getenv("APP_CONFIG")
+        schemaText := os.Getenv("APP_CONFIG_SCHEMA")
 
-        if envValue == "" {
-          log.Panic("The APP_CONFIG environment variable was undefined")
+        if configText == "" {
+          log.Panic("The APP_CONFIG environment variable was not set")
         }
 
-        loaded, err := UnmarshalConfig([]byte(envValue))
+        if schemaText == "" {
+          log.Panic("The APP_CONFIG_SCHEMA environment variable was not set")
+        }
+
+        loadedSchema, err := UnmarshalConfig([]byte(schemaText))
+
+        if err != nil {
+          log.Panic("Could not parse APP_CONFIG_SCHEMA environment variable: ", err)
+        }
+
+        loadedConfig, err := UnmarshalConfig([]byte(configText))
 
         if err != nil {
           log.Panic("Could not parse APP_CONFIG environment variable: ", err)
         }
 
-        schemaPath, err := filepath.Abs(".app-config.schema.json")
-
-        if err != nil {
-          log.Panic("Could not find .app-config.schema.json file: ", err)
-        }
-
-        schemaLoader := gojsonschema.NewReferenceLoader("file://" + schemaPath)
-        documentLoader := gojsonschema.NewGoLoader(loaded)
+        schemaLoader := gojsonschema.NewGoLoader(loadedSchema)
+        documentLoader := gojsonschema.NewGoLoader(loadedConfig)
 
         result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 
@@ -181,7 +185,7 @@ export async function generateQuicktype(
           log.Panic("The app-config value was not valid.")
         }
 
-        config = loaded
+        config = loadedConfig
       }
 
       func GetConfig() ${name} {
