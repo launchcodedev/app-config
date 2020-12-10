@@ -127,5 +127,27 @@ export async function generateQuicktype(
     );
   }
 
+  if (['rb', 'ruby'].includes(type)) {
+    const configLoading = [
+      "config_text = ENV['APP_CONFIG']",
+      "schema_text = ENV['APP_CONFIG_SCHEMA']",
+      '',
+      'if config_text == nil',
+      '  raise "No APP_CONFIG variable"',
+      'end',
+      '',
+      'if schema_text == nil',
+      '  raise "No APP_CONFIG_SCHEMA variable"',
+      'end',
+      '',
+      '# TODO: test json-schema',
+      '$APP_CONFIG = Config::from_json!(config_text)',
+    ];
+
+    lines.splice(lines.length, 0, ...configLoading);
+
+    return lines.map((line) => line.replace('include Dry::Types.module', 'include Dry::Types()'));
+  }
+
   return lines;
 }
