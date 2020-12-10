@@ -21,7 +21,7 @@ We'll separate parts of App Config:
 So to be clear, **this spec will not define #1 or #4**. These are non-trivial
 parts of App Config, and would be a lot to replicate truthfully in every language.
 
-Instead, we'll try to outline #1 and #3. These may not describe _every_ feature
+Instead, we'll try to outline #2 and #3. These may not describe _every_ feature
 that the App Config library supports, but App Config should faithfully fulfil the requirements.
 
 ## Loading App Config through an environment variable
