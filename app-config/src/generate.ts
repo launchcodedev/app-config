@@ -83,21 +83,23 @@ export async function generateQuicktype(
   const inputData = new InputData();
   await inputData.addSource('schema', src, () => new JSONSchemaInput(undefined));
 
+  if (['ts', 'typescript', 'flow'].includes(type)) {
+    Object.assign(rendererOptions, {
+      'just-types': 'true',
+      'runtime-typecheck': 'false',
+      ...rendererOptions,
+    });
+  }
+
   const { lines } = await quicktype({
     inputData,
     lang: type,
     indentation: '  ',
     leadingComments,
-    rendererOptions: ['ts', 'flow'].includes(type)
-      ? {
-          'just-types': 'true',
-          'runtime-typecheck': 'false',
-          ...rendererOptions,
-        }
-      : rendererOptions,
+    rendererOptions,
   });
 
-  if (type === 'ts') {
+  if (['ts', 'typescript'].includes(type)) {
     lines.splice(leadingComments.length, 0, '', "import '@lcdev/app-config';");
 
     // some configs are empty, so just mark them as an empty object

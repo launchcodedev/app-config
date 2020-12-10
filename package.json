@@ -23,7 +23,8 @@
     "fix": "yarn workspaces run fix",
     "cli": "yarn --cwd ./app-config cli",
     "docs:dev": "yarn --cwd ./docs dev",
-    "docs:build": "yarn --cwd ./docs build"
+    "docs:build": "yarn --cwd ./docs build",
+    "postinstall": "cd ./examples/react-native-project && expo-yarn-workspaces postinstall"
   },
   "devDependencies": {
     "@commitlint/cli": "11",
