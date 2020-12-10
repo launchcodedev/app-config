@@ -1,32 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`create can select a nested property 1`] = `
-"{
-  \\"b\\": {
-    \\"c\\": true
-  }
-}"
-`;
+exports[`create can select a nested property 1`] = `"{\\"b\\":{\\"c\\":true}}"`;
 
-exports[`create can select a nested property 2`] = `
-"{
-  \\"c\\": true
-}"
-`;
+exports[`create can select a nested property 2`] = `"{\\"c\\":true}"`;
 
 exports[`create can select a nested property 3`] = `"true"`;
 
-exports[`create prints JSON format 1`] = `
-"{
-  \\"foo\\": true
-}"
-`;
+exports[`create prints JSON format 1`] = `"{\\"foo\\":true}"`;
 
-exports[`create prints JSON5 format 1`] = `
-"{
-  foo: true,
-}"
-`;
+exports[`create prints JSON5 format 1`] = `"{foo:true}"`;
 
 exports[`create prints TOML format 1`] = `
 "foo = true
@@ -79,29 +61,9 @@ properties:
 "
 `;
 
-exports[`create-schema prints JSON format 1`] = `
-"{
-  \\"type\\": \\"object\\",
-  \\"properties\\": {
-    \\"foo\\": {
-      \\"type\\": \\"boolean\\"
-    }
-  },
-  \\"$schema\\": \\"http://json-schema.org/draft-07/schema#\\"
-}"
-`;
+exports[`create-schema prints JSON format 1`] = `"{\\"type\\":\\"object\\",\\"properties\\":{\\"foo\\":{\\"type\\":\\"boolean\\"}},\\"$schema\\":\\"http://json-schema.org/draft-07/schema#\\"}"`;
 
-exports[`create-schema prints JSON5 format 1`] = `
-"{
-  type: 'object',
-  properties: {
-    foo: {
-      type: 'boolean',
-    },
-  },
-  $schema: 'http://json-schema.org/draft-07/schema#',
-}"
-`;
+exports[`create-schema prints JSON5 format 1`] = `"{type:'object',properties:{foo:{type:'boolean'}},$schema:'http://json-schema.org/draft-07/schema#'}"`;
 
 exports[`create-schema prints TOML format 1`] = `
 "type = \\"object\\"
