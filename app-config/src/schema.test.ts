@@ -10,6 +10,20 @@ describe('Schema Loading', () => {
     await expect(loadSchema()).rejects.toThrow();
   });
 
+  it('loads schema from APP_CONFIG_SCHEMA variable', async () => {
+    process.env.APP_CONFIG_SCHEMA = JSON.stringify({
+      type: 'object',
+      properties: { foo: { type: 'string' } },
+    });
+
+    const { value } = await loadSchema();
+
+    expect(value).toMatchObject({
+      type: 'object',
+      properties: { foo: { type: 'string' } },
+    });
+  });
+
   it('loads a simple YAML schema', async () => {
     await withTempFiles(
       {

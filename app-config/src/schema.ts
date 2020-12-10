@@ -1,20 +1,25 @@
 import { join, relative, resolve } from 'path';
 import Ajv from 'ajv';
-import RefParser, { bundle } from 'json-schema-ref-parser';
+import RefParser, { JSONSchema, bundle } from 'json-schema-ref-parser';
 import { JsonObject, isObject, isWindows } from './common';
 import { ParsedValue, ParsingExtension } from './parsed-value';
 import { defaultAliases, EnvironmentAliases } from './environment';
 import {
+  EnvironmentSource,
   FlexibleFileSource,
   FileSource,
   parseRawString,
   filePathAssumedType,
 } from './config-source';
-import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
+import { ValidationError, SecretsInNonSecrets, WasNotObject, NotFoundError } from './errors';
+import { logger } from './logging';
+
+export { JSONSchema };
 
 export interface Options {
   directory?: string;
   fileNameBase?: string;
+  environmentVariableName?: string;
   environmentOverride?: string;
   environmentAliases?: EnvironmentAliases;
   parsingExtensions?: ParsingExtension[];
@@ -23,27 +28,55 @@ export interface Options {
 export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 
 export interface Schema {
-  value: JsonObject;
+  value: JSONSchema;
   validate: Validate;
 }
 
 export async function loadSchema({
   directory = '.',
   fileNameBase = '.app-config.schema',
+  environmentVariableName = 'APP_CONFIG_SCHEMA',
   environmentOverride,
   environmentAliases = defaultAliases,
   parsingExtensions = [],
 }: Options = {}): Promise<Schema> {
-  const source = new FlexibleFileSource(
-    join(directory, fileNameBase),
-    environmentOverride,
-    environmentAliases,
-  );
+  const env = new EnvironmentSource(environmentVariableName);
+  logger.verbose(`Trying to read ${environmentVariableName} for schema`);
 
-  const parsed = await source.read(parsingExtensions);
+  let parsed: ParsedValue | undefined;
+
+  parsed = await env.read(parsingExtensions).catch((error) => {
+    // having no APP_CONFIG_SCHEMA environment variable is normal, and should fall through to reading files
+    if (error instanceof NotFoundError) {
+      return undefined;
+    }
+
+    return Promise.reject(error);
+  });
+
+  if (!parsed) {
+    logger.verbose(`Searching for ${fileNameBase} file`);
+
+    const source = new FlexibleFileSource(
+      join(directory, fileNameBase),
+      environmentOverride,
+      environmentAliases,
+    );
+
+    parsed = await source.read(parsingExtensions);
+  }
+
   const parsedObject = parsed.toJSON();
 
   if (!isObject(parsedObject)) throw new WasNotObject('JSON Schema was not an object');
+
+  logger.verbose(
+    `Loaded schema from ${
+      parsed.getSource(FileSource)?.filePath ??
+      parsed.getSource(EnvironmentSource)?.variableName ??
+      'unknown source'
+    }`,
+  );
 
   // default to draft 07
   if (!parsedObject.$schema) {
@@ -115,10 +148,7 @@ export async function loadSchema({
   };
 }
 
-async function normalizeSchema(
-  schema: JsonObject,
-  directory: string,
-): Promise<RefParser.JSONSchema> {
+async function normalizeSchema(schema: JsonObject, directory: string): Promise<JSONSchema> {
   // NOTE: http is enabled by default
   const resolveOptions: RefParser.Options['resolve'] = {
     file: {

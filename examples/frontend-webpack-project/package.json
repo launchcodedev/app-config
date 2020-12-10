@@ -4,8 +4,8 @@
   "license": "MPL-2.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development webpack-dev-server",
-    "build": "NODE_ENV=production webpack --mode production",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server",
+    "build": "cross-env NODE_ENV=production webpack --mode production",
     "clean": "rm -rf ./dist",
     "lint": "exit 0",
     "fix": "exit 0",
@@ -17,6 +17,7 @@
   "devDependencies": {
     "@lcdev/app-config-webpack-plugin": "2 || 2.0.0-rc.8",
     "@lcdev/tsconfig": "0.2",
+    "cross-env": "7",
     "html-webpack-plugin": "4",
     "ts-loader": "8",
     "typescript": "4",
