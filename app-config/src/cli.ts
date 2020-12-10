@@ -409,7 +409,7 @@ export const cli = yargs
 
         const toPrint = await loadConfigWithOptions(opts);
 
-        process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
+        process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format), true));
         process.stdout.write('\n');
       },
     ),
@@ -449,7 +449,7 @@ export const cli = yargs
           toPrint = schema;
         }
 
-        process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format)));
+        process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format), true));
         process.stdout.write('\n');
       },
     ),
