@@ -48,12 +48,6 @@ The exact version to use when a schema is ambiguous is up to library authors.
 Non-standard JSON Schema keywords should be ignored. In particular, the "secret" key is often used.
 Because library authors are only required to load environment variables, we don't require checking "secretness".
 
-**To be liberal, a library can skip JSON Schema validation**.
-We encourage authors not to do this, but we intend for this specification to be very minimal.
-So if your language has no off the shelf libraries for JSON Schema, it may be unreasonable.
-In these cases, we strongly encourage strict object-structure validation, at the least.
-We don't want users to receive unexpected values from App Config, which is exactly what the library is meant to avoid.
-
 ## Library Interface
 
 Libraries that are App Config Compliant should provide one function:
