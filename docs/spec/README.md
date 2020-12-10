@@ -79,8 +79,9 @@ We're currently experimenting with:
 
 We've defined a really small subset in this document. The last thing we want
 is to encourage not using the features of App Config. Instead, we want App Config
-to provide the tools you need for development. In production, you can "bootstrap"
-configuration to be compatible with your language without the App Config library.
+to provide the tools you need for development. Features like `$extends` and `$env`
+are useful for developers, and be "erased" by the time your app goes to production.
+By not needing these features, language support can be simple.
 
 The intention here, is for development to look like:
 
