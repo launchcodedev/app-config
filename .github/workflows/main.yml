@@ -23,7 +23,7 @@ jobs:
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./app-config
+        files: ./app-config/coverage/clover.xml,./app-config-inject/coverage/clover.xml,./app-config-webpack-plugin/coverage/clover.xml
         fail_ci_if_error: true
         verbose: true
 
