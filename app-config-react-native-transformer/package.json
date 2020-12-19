@@ -33,7 +33,7 @@
     "semver": "7"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-rc.8",
+    "@lcdev/app-config": "2.0.0-rc.8",
     "react-native": ">=0.45.0"
   },
   "devDependencies": {

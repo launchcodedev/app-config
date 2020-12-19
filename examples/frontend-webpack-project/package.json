@@ -12,10 +12,10 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-rc.8"
+    "@lcdev/app-config": "2.0.0-rc.8"
   },
   "devDependencies": {
-    "@lcdev/app-config-webpack-plugin": "2 || 2.0.0-rc.8",
+    "@lcdev/app-config-webpack-plugin": "2.0.0-rc.8",
     "@lcdev/tsconfig": "0.2",
     "cross-env": "7",
     "html-webpack-plugin": "4",

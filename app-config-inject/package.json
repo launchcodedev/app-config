@@ -34,7 +34,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@lcdev/app-config": "2 || 2.0.0-rc.8",
+    "@lcdev/app-config": "2.0.0-rc.8",
     "node-html-parser": "1",
     "yargs": "16"
   },
