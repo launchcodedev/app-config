@@ -1,6 +1,6 @@
 module.exports = {
   title: 'App Config',
-  description: 'Easy to use configuration loader with schema validation',
+  description: 'App Config is a configuration loader with schema validation',
 
   head: [
     [
@@ -78,6 +78,11 @@ module.exports = {
 
   plugins: [
     ['vuepress-plugin-mermaidjs', { theme: 'base' }],
+    ['vuepress-plugin-seo', {
+      description: () => 'App Config is a configuration loader with schema validation',
+      author: () => 'Launchcode',
+      tags: () => ['configuration', 'config', 'conf', 'app-config', 'launchcode', 'lcdev', 'node.js', 'javascript', 'typescript'],
+    }],
   ],
 
   host: '0.0.0.0',
