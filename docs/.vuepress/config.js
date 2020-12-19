@@ -66,6 +66,7 @@ module.exports = {
         path: '/release-notes',
         children: [
           ['/release-notes', 'Release Notes'],
+          '/v2-announcement',
           '/v2-migration',
         ],
       },
