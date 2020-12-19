@@ -7,9 +7,9 @@
     "dev": "vuepress dev .",
     "build": "vuepress build .",
     "clean": "rm -rf .vuepress/dist",
-    "lint": "#",
-    "fix": "#",
-    "test": "#"
+    "lint": "echo",
+    "fix": "echo",
+    "test": "echo"
   },
   "dependencies": {
     "vuepress": "1"

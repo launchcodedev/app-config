@@ -10,11 +10,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "build": "#",
-    "clean": "#",
-    "lint": "#",
-    "fix": "#",
-    "test": "#"
+    "build": "echo",
+    "clean": "echo",
+    "lint": "echo",
+    "fix": "echo",
+    "test": "echo"
   },
   "dependencies": {
     "@lcdev/app-config": "2.0.0-rc.9",
