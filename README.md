@@ -12,6 +12,9 @@
   <a href="https://github.com/launchcodedev/app-config/actions">
     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/launchcodedev/app-config/main?style=flat-square"/>
   </a>
+  <a href="https://app.codecov.io/gh/launchcodedev/app-config">
+    <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/launchcodedev/app-config?style=flat-square&token=DBB21R1OEY"/>
+  </a>
   <a href="https://app-config.dev">
     <img alt="Netlify Status" src="https://img.shields.io/netlify/8a8b48b6-cae6-4fd9-a085-a39f9d4ac140?style=flat-square"/>
   </a>
