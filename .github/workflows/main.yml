@@ -18,8 +18,14 @@ jobs:
     - run: yarn install
     - run: yarn build
     - run: yarn lint
-    - run: yarn test
+    - run: yarn test --coverage
       env: { CI: 1 }
+    - uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ./app-config
+        fail_ci_if_error: true
+        verbose: true
 
   # for master, we test Linux & Windows & MacOS + Node LTS & Latest
   # note that we don't do linting here, only on Linux + Node LTS (above)
