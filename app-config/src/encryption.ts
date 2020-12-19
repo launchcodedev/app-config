@@ -65,7 +65,7 @@ export async function initializeKeysManually(options: {
   };
 }
 
-export const initializeKeys = async (withPassphrase: boolean = true) => {
+export async function initializeKeys(withPassphrase: boolean = true) {
   if (!checkTTY()) throw new SecretsRequireTTYError();
 
   const name = await promptUser<string>({ message: 'Name', type: 'text' });
@@ -82,9 +82,9 @@ export const initializeKeys = async (withPassphrase: boolean = true) => {
   if (withPassphrase && !passphrase) throw new EmptyStdinOrPromptResponse('No passphrase given');
 
   return initializeKeysManually({ name, email, passphrase });
-};
+}
 
-export const initializeLocalKeys = async () => {
+export async function initializeLocalKeys() {
   if (await fs.pathExists(keyDirs.keychain)) {
     return false;
   }
@@ -112,19 +112,19 @@ export const initializeLocalKeys = async () => {
   }
 
   return { publicKeyArmored };
-};
+}
 
-export const deleteLocalKeys = async () => {
+export async function deleteLocalKeys() {
   await fs.remove(keyDirs.keychain);
-};
+}
 
-export const loadKey = async (contents: string | Buffer): Promise<Key> => {
+export async function loadKey(contents: string | Buffer): Promise<Key> {
   const { err, keys } = await pgp.key.readArmored(contents);
 
   if (err) throw err[0];
 
   return keys[0];
-};
+}
 
 export async function loadPrivateKey(
   override: string | Buffer | undefined = process.env.APP_CONFIG_SECRETS_KEY,
