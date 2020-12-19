@@ -278,3 +278,11 @@ Given `a` and `b`:
 
 We aim to make almost everything about config loading customizable.
 This should be true of the CLI and Node.js API.
+
+## Generating a `.env` file
+
+Fairly easily, we could use App Config as a generator for `.env` files.
+
+```sh
+npx app-config vars -s > .env
+```
