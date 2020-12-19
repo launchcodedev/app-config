@@ -7,9 +7,9 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "clean": "rm -rf ./dist",
-    "lint": "exit 0",
-    "fix": "exit 0",
-    "test": "exit 0"
+    "lint": "#",
+    "fix": "#",
+    "test": "#"
   },
   "dependencies": {
     "@lcdev/app-config": "2.0.0-rc.9"

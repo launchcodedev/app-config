@@ -11,9 +11,9 @@
     "start": "node ./dist/index.js",
     "build": "tsc -b",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "exit 0",
-    "fix": "exit 0",
-    "test": "exit 0"
+    "lint": "#",
+    "fix": "#",
+    "test": "#"
   },
   "dependencies": {
     "@lcdev/app-config": "2.0.0-rc.9",
