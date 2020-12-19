@@ -125,4 +125,12 @@ const config = await loadConfig({
 });
 ```
 
+In essence, every parsing extension is called for every value that's seen in configuration.
+That includes every primitive value, all object keys, and array iteration.
+This process is top-down, which you might not expect. That means that visitors are called
+on root-level properties first, and descends recursively. Extensions descend via opt-in (the `parse` function).
+
+App Config uses the same public interface for its built-in extensions, so if you're looking for examples
+there are a few in the codebase.
+
 We'd like to document this more. Custom resolvers and value transformations have a lot of potential.
