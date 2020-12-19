@@ -1,5 +1,8 @@
 name: main
-on: [push]
+
+on:
+  push:
+    branches: '*'
 
 jobs:
   # for branches, we only need to check Linux + Node LTS
