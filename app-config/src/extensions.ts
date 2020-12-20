@@ -21,6 +21,7 @@ export function defaultExtensions(
     extendsSelfDirective(),
     overrideDirective(),
     encryptedDirective(symmetricKey),
+    timestampDirective(),
     unescape$Directives(),
     environmentVariableSubstitution(aliases, environmentOverride),
   ];
@@ -127,6 +128,36 @@ export function encryptedDirective(symmetricKey?: DecryptedSymmetricKey): Parsin
         const decrypted = await decryptValue(value, symmetricKey);
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
+      };
+    }
+
+    return false;
+  };
+}
+
+/** Provides the current timestamp using { $timestamp: true } */
+export function timestampDirective(dateSource: () => Date = () => new Date()): ParsingExtension {
+  return (value, [_, key]) => {
+    if (key === '$timestamp') {
+      return async (parse) => {
+        let formatted: string;
+        const date = dateSource();
+
+        if (value === true) {
+          formatted = date.toISOString();
+        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+          const { locale, ...options } = value;
+
+          if (typeof locale !== 'string') {
+            throw new AppConfigError('$timestamp was provided a non-string locale');
+          }
+
+          formatted = date.toLocaleDateString(locale, options);
+        } else {
+          throw new AppConfigError('$timestamp was provided an invalid option');
+        }
+
+        return parse(formatted, { shouldFlatten: true });
       };
     }
 

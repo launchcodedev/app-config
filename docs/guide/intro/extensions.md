@@ -105,6 +105,31 @@ The user will be required to unlock their keychain if the secret-agent isn't run
 password: 'enc:1:wy4ECQMI/o7E3nw9SP7g3VsIMg64HGIcRb9HyaXpQnyjozFItwx4HvsP1D2plP6Y0kYBAr2ytzs2v5bN+n2oVthkEmbrq8oqIqCF3Cx+pcjJ+5h+SyxQuJ7neNp4SRtnD4EK32rPJpyDMeHG4+pGwIjFuSH1USqQ=SZWR'
 ```
 
+## The `$timestamp` Directive
+
+Allows injecting the current date and time into configuration. While this option is useful,
+it does of course come at the cost of non-determinism.
+
+```yaml
+buildDate:
+  $timestamp: true
+```
+
+By default, this will resolve as `buildDate: new Date().toISOString()`. Options can also be passed to `toLocaleDateString()`.
+
+```yaml
+buildDate:
+  $timestamp:
+    locale: en-US
+    weekday: long
+    year: numeric
+    month: long
+    day: numeric
+```
+
+Note that the time here is entirely determined by when App Config runs. That might
+be deploy time, it might be build time, or it might be run time.
+
 ## Custom Extensions
 
 It's not all too difficult to make your own!
