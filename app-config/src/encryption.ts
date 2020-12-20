@@ -18,7 +18,7 @@ import {
 import { logger, checkTTY } from './logging';
 import { connectAgentLazy, shouldUseSecretAgent } from './secret-agent';
 
-export type Key = pgp.key.Key;
+export type Key = pgp.key.Key & { keyName?: string };
 
 export const keyDirs = {
   get keychain() {
@@ -421,7 +421,11 @@ export async function loadTeamMembers(lazy = true): Promise<Key[]> {
     value: { teamMembers = [] },
   } = await loadMeta();
 
-  return Promise.all(teamMembers.map(({ publicKey }) => loadKey(publicKey)));
+  return Promise.all(
+    teamMembers.map(({ keyName, publicKey }) =>
+      loadKey(publicKey).then((key) => Object.assign(key, { keyName })),
+    ),
+  );
 }
 
 let loadedTeamMembers: Promise<Key[]> | undefined;
@@ -464,6 +468,7 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
     ...meta,
     teamMembers: newTeamMembers.map((key) => ({
       userId: key.getUserIds()[0],
+      keyName: key.keyName ?? null,
       publicKey: key.armor(),
     })),
     encryptionKeys: newEncryptionKeys,
@@ -473,15 +478,38 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
 export async function untrustTeamMember(email: string, privateKey: Key) {
   const teamMembers = await loadTeamMembersLazy();
 
-  const newTeamMembers = teamMembers.filter((teamMember) => {
+  const removalCandidates = new Set<Key>();
+
+  for (const teamMember of teamMembers) {
     if (teamMember.getUserIds().some((u) => u.includes(`<${email}>`))) {
-      logger.warn(`Removing trust from ${teamMember.getUserIds().join(', ')}`);
-
-      return false;
+      removalCandidates.add(teamMember);
     }
+  }
 
-    return true;
-  });
+  let removeTeamMembers: Key[];
+
+  if (removalCandidates.size > 1) {
+    removeTeamMembers = await promptUser<Key[]>({
+      type: 'multiselect',
+      message: 'Which team members should be untrusted?',
+      hint: '- Space to select. Enter to submit.',
+      instructions: false,
+      choices: Array.from(removalCandidates).map((teamMember) => ({
+        title: teamMember.keyName ? `${email} (${teamMember.keyName})` : email,
+        value: teamMember,
+      })),
+    });
+  } else {
+    removeTeamMembers = Array.from(removalCandidates);
+  }
+
+  for (const teamMember of removeTeamMembers) {
+    logger.warn(`Removing trust from ${teamMember.getUserIds().join(', ')}`);
+  }
+
+  const newTeamMembers = teamMembers.filter(
+    (teamMember) => !removeTeamMembers.includes(teamMember),
+  );
 
   if (newTeamMembers.length === teamMembers.length) {
     throw new AppConfigError(`There were no team members with the email ${email}`);
@@ -515,6 +543,7 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
     ...meta,
     teamMembers: newTeamMembers.map((key) => ({
       userId: key.getUserIds()[0],
+      keyName: key.keyName ?? null,
       publicKey: key.armor(),
     })),
     encryptionKeys: newEncryptionKeys,

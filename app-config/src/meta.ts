@@ -15,6 +15,7 @@ export interface Options {
 
 export interface TeamMember {
   userId: string;
+  keyName?: string | null;
   publicKey: string;
 }
 

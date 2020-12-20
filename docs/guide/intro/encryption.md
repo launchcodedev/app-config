@@ -137,3 +137,24 @@ App Config will set up your keychain in the standard config file location on you
 If you really need to, you can set `APP_CONFIG_SECRETS_KEYCHAIN_FOLDER` to override this.
 
 Check out the [settings](./settings.md) section for more.
+
+## Multiple Devices
+
+If you have many computers, all of which using the same email address in their encryption keys,
+a `keyName` property can be used. This property is kept when App Config makes changes to the meta file.
+It serves no logical roles, it's simply there as metadata for you to identify which key is which.
+
+<h4 style="text-align:center">.app-config.meta.yml</h4>
+
+```yaml
+teamMembers:
+  - userId: Joel Gallant <joel@joelgallant.io>
+    keyName: Desktop
+    publicKey: '...'
+  - userId: Joel Gallant <joel@joelgallant.io>
+    keyName: Laptop
+    publicKey: '...'
+encryptionKeys:
+  - revision: 1
+    key: '...'
+```
