@@ -224,6 +224,7 @@ describe('Schema Loading', () => {
       await withTempFiles(
         {
           'nested-folder/.app-config.schema.yml': `
+            type: object
             required: [x]
             properties:
               x: { $ref: '../rootlevel.schema.yml#/Nested' }
