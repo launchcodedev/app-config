@@ -1,5 +1,6 @@
 import { join, dirname, extname, resolve, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
+import simpleGit from 'simple-git';
 import { isObject, Json } from './common';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
 import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root } from './parsed-value';
@@ -24,6 +25,7 @@ export function defaultExtensions(
     timestampDirective(),
     unescape$Directives(),
     environmentVariableSubstitution(aliases, environmentOverride),
+    gitRefDirectives(),
   ];
 }
 
@@ -249,6 +251,45 @@ export function environmentVariableSubstitution(
   };
 }
 
+/** Access to the git branch and commit ref */
+export function gitRefDirectives(getStatus: typeof gitStatus = gitStatus): ParsingExtension {
+  return (value, [_, key]) => {
+    if (key === '$git') {
+      return async (parse) => {
+        if (typeof value !== 'string') {
+          throw new AppConfigError('$git directive should be passed a string');
+        }
+
+        switch (value) {
+          case 'commit':
+            return getStatus().then(({ commitRef }) => parse(commitRef, { shouldFlatten: true }));
+
+          case 'commitShort':
+            return getStatus().then(({ commitRef }) =>
+              parse(commitRef.slice(0, 7), { shouldFlatten: true }),
+            );
+
+          case 'branch':
+            return getStatus().then(({ branchName }) => {
+              if (!branchName) {
+                throw new AppConfigError(
+                  'The $git directive tried to retrieve branchname, but it appears no branch is checked out',
+                );
+              }
+
+              return parse(branchName, { shouldFlatten: true });
+            });
+
+          default:
+            throw new AppConfigError('$git directive was not passed a valid option');
+        }
+      };
+    }
+
+    return false;
+  };
+}
+
 /** V1 app-config compatibility */
 export function v1Compat(): ParsingExtension {
   return (value, [_, key], context) => {
@@ -431,5 +472,21 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
       return parsed.assignMeta(meta);
     };
+  };
+}
+
+interface GitStatus {
+  commitRef: string;
+  branchName?: string;
+}
+
+async function gitStatus(): Promise<GitStatus> {
+  const git = simpleGit({});
+  const rev = await git.revparse(['HEAD']);
+  const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
+
+  return {
+    commitRef: rev,
+    branchName: branch,
   };
 }

@@ -130,6 +130,20 @@ buildDate:
 Note that the time here is entirely determined by when App Config runs. That might
 be deploy time, it might be build time, or it might be run time.
 
+## The `$git` Directive
+
+To retrieve the current git revision or branch name, use the `$git` directive.
+Do note that this means your config is not deterministic.
+
+```yaml
+builtRevision:
+  $git: commit # use this for the full length commit hash
+  $git: commitShort # use this for the short commit hash
+  $git: branch # use this for the current branch name
+```
+
+Note that this directive _will not fail_ if git status is not clean.
+
 ## Custom Extensions
 
 It's not all too difficult to make your own!

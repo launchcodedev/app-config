@@ -8,6 +8,7 @@ import {
   encryptedDirective,
   timestampDirective,
   environmentVariableSubstitution,
+  gitRefDirectives,
 } from './extensions';
 import { generateSymmetricKey, encryptValue } from './encryption';
 import { NotFoundError } from './errors';
@@ -696,6 +697,59 @@ describe('encryptedDirective', () => {
     const parsed = await source.read([encryptedDirective(symmetricKey)]);
 
     expect(parsed.toJSON()).toEqual({ foo: ['value-1', 'value-2', 'value-3'] });
+  });
+});
+
+describe('$git directive', () => {
+  it('retrieves the commit ref', async () => {
+    const source = new LiteralSource({
+      gitRef: { $git: 'commit' },
+    });
+
+    const parsed = await source.read([
+      gitRefDirectives(() =>
+        Promise.resolve({
+          commitRef: '6e96485ebf21082949c97a477b529b7a1c97a8b9',
+          branchName: 'master',
+        }),
+      ),
+    ]);
+
+    expect(parsed.toJSON()).toEqual({ gitRef: '6e96485ebf21082949c97a477b529b7a1c97a8b9' });
+  });
+
+  it('retrieves the short commit ref', async () => {
+    const source = new LiteralSource({
+      gitRef: { $git: 'commitShort' },
+    });
+
+    const parsed = await source.read([
+      gitRefDirectives(() =>
+        Promise.resolve({
+          commitRef: '6e96485ebf21082949c97a477b529b7a1c97a8b9',
+          branchName: 'master',
+        }),
+      ),
+    ]);
+
+    expect(parsed.toJSON()).toEqual({ gitRef: '6e96485' });
+  });
+
+  it('retrieves the branch name', async () => {
+    const source = new LiteralSource({
+      gitRef: { $git: 'branch' },
+    });
+
+    const parsed = await source.read([
+      gitRefDirectives(() =>
+        Promise.resolve({
+          commitRef: '6e96485ebf21082949c97a477b529b7a1c97a8b9',
+          branchName: 'master',
+        }),
+      ),
+    ]);
+
+    expect(parsed.toJSON()).toEqual({ gitRef: 'master' });
   });
 });
 
