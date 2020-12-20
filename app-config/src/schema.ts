@@ -1,5 +1,5 @@
 import { join, relative, resolve } from 'path';
-import Ajv, { Code } from 'ajv';
+import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import RefParser, { bundle } from 'json-schema-ref-parser';
 import { JsonObject, isObject, isWindows } from './common';
