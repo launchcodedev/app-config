@@ -13,12 +13,12 @@
     "test": "echo"
   },
   "dependencies": {
-    "@lcdev/app-config": "2.0.0-rc.10",
+    "@lcdev/app-config": "2",
     "ajv": "7",
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@lcdev/app-config-webpack-plugin": "2.0.0-rc.10",
+    "@lcdev/app-config-webpack-plugin": "2",
     "@lcdev/tsconfig": "0.2",
     "cross-env": "7",
     "cypress": "6",
