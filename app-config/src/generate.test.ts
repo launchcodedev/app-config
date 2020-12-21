@@ -29,6 +29,7 @@ describe('TypeScript File Generation', () => {
           ]
         }`,
         '.app-config.schema.json5': `{
+          type: "object",
           properties: {
             x: { type: "number" }
           },
@@ -57,6 +58,7 @@ describe('TypeScript File Generation', () => {
           ]
         }`,
         '.app-config.schema.json5': `{
+          type: "object",
           properties: {
             root: { type: "boolean" },
             a: { $ref: "./a.yml" },
@@ -105,6 +107,7 @@ describe('TypeScript File Generation', () => {
           ]
         }`,
         '.app-config.schema.json5': `{
+          type: "object",
           properties: {
             x: { type: "string", format: "date" }
           },

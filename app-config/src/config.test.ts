@@ -114,6 +114,7 @@ describe('Configuration Loading', () => {
     await withTempFiles(
       {
         '.app-config.schema.yml': `
+          type: object
           required: [a, b]
           additionalProperties: false
           properties:
@@ -182,6 +183,7 @@ describe('Configuration Loading', () => {
         `,
 
         '.app-config.schema.yml': `
+          type: object
           required: [a, d, e]
           additionalProperties: false
           properties:

@@ -1,5 +1,6 @@
 import { join, relative, resolve } from 'path';
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import RefParser, { bundle } from 'json-schema-ref-parser';
 import { JsonObject, isObject, isWindows } from './common';
 import { ParsedValue, ParsingExtension } from './parsed-value';
@@ -10,7 +11,7 @@ import {
   parseRawString,
   filePathAssumedType,
 } from './config-source';
-import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
+import { ValidationError, WasNotObject } from './errors';
 
 export interface Options {
   directory?: string;
@@ -52,28 +53,55 @@ export async function loadSchema({
 
   const normalized = await normalizeSchema(parsedObject, directory);
 
-  const ajv = new Ajv({ allErrors: true });
+  const ajv = new Ajv({ strict: true, strictTypes: true, allErrors: true });
 
-  // array of property paths that should only be present in secrets file
-  const schemaSecrets: string[][] = [];
+  addFormats(ajv);
 
-  ajv.addKeyword('secret', {
-    validate(schema: any, _data: any, _parentSchema?: object, dataPath?: string) {
-      if (!dataPath) return false;
+  ajv.addKeyword({
+    keyword: 'secret',
+    schemaType: 'boolean',
+    errors: false,
+    error: {
+      message: 'should not be present in non-secret files (and not encrypted)',
+    },
+    validate(value: boolean, _data, _parentSchema, ctx): boolean {
+      const { dataPath } = ctx ?? {};
 
-      const [_, ...key] = dataPath.split('.');
-      schemaSecrets.push(key);
+      if (!dataPath || !value) return true;
 
-      return schema === true;
+      const [, ...key] = dataPath.split('/');
+
+      // check that any properties marked as secret were from secrets file
+      const found = currentlyParsing?.property(key);
+
+      if (found) {
+        const arr = found.asArray();
+
+        if (arr) {
+          if (!arr.every((v) => v.meta.fromSecrets)) {
+            return false;
+          }
+        }
+
+        if (!found.meta.fromSecrets) {
+          return false;
+        }
+      }
+
+      return true;
     },
   });
 
   const validate = ajv.compile(normalized);
 
+  let currentlyParsing: ParsedValue | undefined;
+
   return {
     value: normalized as JsonObject,
     validate(fullConfig, parsedConfig) {
+      currentlyParsing = parsedConfig;
       const valid = validate(fullConfig);
+      currentlyParsing = undefined;
 
       if (!valid) {
         const err = new ValidationError(
@@ -83,33 +111,6 @@ export async function loadSchema({
         err.stack = undefined;
 
         throw err;
-      }
-
-      if (parsedConfig) {
-        // check that any properties marked as secret were from secrets file
-        const secretsInNonSecrets = schemaSecrets.filter((path) => {
-          const found = parsedConfig.property(path);
-
-          if (found) {
-            const arr = found.asArray();
-
-            if (arr) {
-              return !arr.every((value) => value.meta.fromSecrets);
-            }
-
-            return !found.meta.fromSecrets;
-          }
-
-          return false;
-        });
-
-        if (secretsInNonSecrets.length > 0) {
-          throw new SecretsInNonSecrets(
-            `Found ${secretsInNonSecrets
-              .map((s) => `'.${s.join('.')}'`)
-              .join(', ')} in non secrets file`,
-          );
-        }
       }
     },
   };
