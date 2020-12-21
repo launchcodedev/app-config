@@ -12,7 +12,7 @@ import {
   parseRawString,
   filePathAssumedType,
 } from './config-source';
-import { ValidationError, SecretsInNonSecrets, WasNotObject, NotFoundError } from './errors';
+import { ValidationError, WasNotObject, NotFoundError } from './errors';
 import { logger } from './logging';
 
 export { JSONSchema };
