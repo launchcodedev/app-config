@@ -35,6 +35,9 @@ replace_version_references() {
   sed -i "s#[\"]@lcdev\\/app-config[\"]: [\"]2 || $PREV_VERSION[\"]#\"@lcdev\\/app-config\": \"2 || $VERSION\"#g" $@
   sed -i "s#[\"]@lcdev\\/app-config[\"]: [\"]1 || 2 || $PREV_VERSION[\"]#\"@lcdev\\/app-config\": \"1 || 2 || $VERSION\"#g" $@
 
+  sed -i "s#[\"]@app-config\\/core[\"]: [\"]$PREV_VERSION[\"]#\"@app-config\\/core\": \"$VERSION\"#g" $@
+  sed -i "s#[\"]@app-config\\/core[\"]: [\"]2 || $PREV_VERSION[\"]#\"@app-config\\/core\": \"2 || $VERSION\"#g" $@
+
   sed -i "s#[\"]@lcdev\\/app-config-webpack-plugin[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-webpack-plugin\": \"$VERSION\"#g" $@
   sed -i "s#[\"]@lcdev\\/app-config-inject[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-inject\": \"$VERSION\"#g" $@
   sed -i "s#[\"]@lcdev\\/react-native-app-config-transformer[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/react-native-app-config-transformer\": \"$VERSION\"#g" $@
@@ -43,10 +46,13 @@ replace_version_references() {
 }
 
 new_version ./app-config
+new_version ./app-config-core
 new_version ./app-config-webpack-plugin
 new_version ./app-config-inject
 new_version ./app-config-react-native-transformer
 
+replace_version_references ./app-config/package.json
+replace_version_references ./app-config-core/package.json
 replace_version_references ./app-config-webpack-plugin/package.json
 replace_version_references ./app-config-inject/package.json
 replace_version_references ./app-config-react-native-transformer/package.json

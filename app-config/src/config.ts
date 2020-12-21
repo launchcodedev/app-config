@@ -1,12 +1,19 @@
 import { join } from 'path';
-import { Json, isObject } from './common';
-import { ParsedValue, ParsingExtension } from './parsed-value';
+import {
+  ParsedValue,
+  ParsingExtension,
+  FallbackSource,
+  NotFoundError,
+  WasNotObject,
+  ReservedKeyError,
+  Json,
+  isObject,
+  logger,
+} from '@app-config/core';
 import { defaultAliases, EnvironmentAliases } from './environment';
-import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } from './config-source';
+import { FlexibleFileSource, FileSource, EnvironmentSource } from './config-source';
 import { defaultExtensions, defaultEnvExtensions, markAllValuesAsSecret } from './extensions';
 import { loadSchema, Options as SchemaOptions } from './schema';
-import { NotFoundError, WasNotObject, ReservedKeyError } from './errors';
-import { logger } from './logging';
 
 export interface Options {
   directory?: string;

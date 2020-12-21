@@ -1,6 +1,6 @@
 import getPort from 'get-port';
+import { Json } from '@app-config/core';
 import { startAgent, connectAgent } from './secret-agent';
-import { Json } from './common';
 import {
   initializeKeysManually,
   generateSymmetricKey,

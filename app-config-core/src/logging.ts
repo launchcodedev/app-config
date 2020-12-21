@@ -1,3 +1,5 @@
+import { isBrowser } from './common';
+
 export enum LogLevel {
   Verbose = 'verbose',
   Info = 'info',
@@ -6,20 +8,13 @@ export enum LogLevel {
   None = 'none',
 }
 
-export function checkTTY() {
-  return process.stdin.isTTY && process.stdout.isTTY && process.env.NODE_ENV !== 'test';
-}
+const stdout = isBrowser ? process.stdout.write : console.log;
+const stderr = isBrowser ? process.stderr.write : console.error;
 
-let logLevel: LogLevel;
+let logLevel: LogLevel = LogLevel.Warn;
 
-if (process.env.APP_CONFIG_LOG_LEVEL) {
-  logLevel = process.env.APP_CONFIG_LOG_LEVEL as LogLevel;
-} else if (process.env.NODE_ENV === 'test') {
+if (typeof jest !== 'undefined') {
   logLevel = LogLevel.None;
-} else if (checkTTY()) {
-  logLevel = LogLevel.Info;
-} else {
-  logLevel = LogLevel.Warn;
 }
 
 export const logger = {
@@ -28,17 +23,17 @@ export const logger = {
   },
   verbose(message: string) {
     if (logLevel === LogLevel.Verbose) {
-      process.stdout.write(`[app-config][VERBOSE] ${message}\n`);
+      stdout(`[app-config][VERBOSE] ${message}\n`);
     }
   },
   info(message: string) {
     if (logLevel === LogLevel.Info || logLevel === LogLevel.Verbose) {
-      process.stdout.write(`[app-config][INFO] ${message}\n`);
+      stdout(`[app-config][INFO] ${message}\n`);
     }
   },
   warn(message: string) {
     if (logLevel === LogLevel.Warn || logLevel === LogLevel.Info || logLevel === LogLevel.Verbose) {
-      process.stderr.write(`[app-config][WARN] ${message}\n`);
+      stderr(`[app-config][WARN] ${message}\n`);
     }
   },
   error(message: string) {
@@ -48,7 +43,7 @@ export const logger = {
       logLevel === LogLevel.Info ||
       logLevel === LogLevel.Verbose
     ) {
-      process.stderr.write(`[app-config][ERROR] ${message}\n`);
+      stderr(`[app-config][ERROR] ${message}\n`);
     }
   },
 };

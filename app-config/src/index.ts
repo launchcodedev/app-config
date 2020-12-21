@@ -1,8 +1,7 @@
 import { inspect } from 'util';
+import { AppConfigError, AccessingAppConfig, logger } from '@app-config/core';
 import { loadValidatedConfig, Options } from './config';
 import { Options as SchemaOptions } from './schema';
-import { AppConfigError, AccessingAppConfig } from './errors';
-import { logger } from './logging';
 
 // the config type that is exported to consumers and can be augmented
 export interface ExportedConfig {}
@@ -74,15 +73,28 @@ export const config: ExportedConfig = new Proxy(
 export default config;
 
 export {
+  LogLevel,
+  ParsedValue,
+  ParsedValueMetadata,
+  ConfigSource,
+  LiteralSource,
+  CombinedSource,
+  FallbackSource,
+  FileType,
+  stringify,
+  filePathAssumedType,
+  parseRawString,
+  setLogLevel,
+} from '@app-config/core';
+
+export {
   loadValidatedConfig,
   loadConfig as loadUnvalidatedConfig,
   Options as ConfigLoadingOptions,
 } from './config';
 export { loadSchema, Options as SchemaLoadingOptions } from './schema';
 export { loadMetaConfig } from './meta';
-export { setLogLevel, LogLevel } from './logging';
 export { currentEnvironment, defaultAliases } from './environment';
-export { ParsedValue, ParsedValueMetadata } from './parsed-value';
 export {
   defaultExtensions,
   defaultEnvExtensions,
@@ -93,19 +105,7 @@ export {
   extendsSelfDirective,
   overrideDirective,
 } from './extensions';
-export {
-  ConfigSource,
-  FileSource,
-  FlexibleFileSource,
-  EnvironmentSource,
-  LiteralSource,
-  CombinedSource,
-  FallbackSource,
-  FileType,
-  stringify,
-  filePathAssumedType,
-  parseRawString,
-} from './config-source';
+export { FileSource, FlexibleFileSource, EnvironmentSource } from './config-source';
 
 /** @hidden */
 export function resetConfigInternal() {

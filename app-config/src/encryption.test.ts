@@ -1,4 +1,4 @@
-import { SecretsRequireTTYError } from './errors';
+import { SecretsRequireTTYError } from '@app-config/core';
 import {
   initializeKeysManually,
   loadPrivateKey,

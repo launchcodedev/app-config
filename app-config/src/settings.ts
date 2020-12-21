@@ -2,10 +2,8 @@ import { join } from 'path';
 import { homedir } from 'os';
 import * as fs from 'fs-extra';
 import envPaths from 'env-paths';
-import { FileSource, FileType, stringify } from './config-source';
-import { JsonObject } from './common';
-import { NotFoundError } from './errors';
-import { logger } from './logging';
+import { FileType, JsonObject, NotFoundError, logger, stringify } from '@app-config/core';
+import { FileSource } from './config-source';
 
 export interface Settings {
   secretAgent?: {

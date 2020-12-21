@@ -1,4 +1,5 @@
-import { FileSource, LiteralSource } from './config-source';
+import { LiteralSource, NotFoundError } from '@app-config/core';
+import { FileSource } from './config-source';
 import {
   v1Compat,
   envDirective,
@@ -11,7 +12,6 @@ import {
   gitRefDirectives,
 } from './extensions';
 import { generateSymmetricKey, encryptValue } from './encryption';
-import { NotFoundError } from './errors';
 import { withTempFiles } from './test-util';
 
 describe('$extends directive', () => {

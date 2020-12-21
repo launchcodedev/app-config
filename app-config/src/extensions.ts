@@ -1,13 +1,21 @@
 import { join, dirname, extname, resolve, isAbsolute } from 'path';
 import { pathExists } from 'fs-extra';
 import simpleGit from 'simple-git';
-import { isObject, Json } from './common';
+import {
+  ParsedValue,
+  ParsedValueMetadata,
+  ParsingExtension,
+  AppConfigError,
+  NotFoundError,
+  FailedToSelectSubObject,
+  Root,
+  Json,
+  isObject,
+  logger,
+} from '@app-config/core';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
-import { ParsedValue, ParsedValueMetadata, ParsingExtension, Root } from './parsed-value';
 import { FileSource } from './config-source';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
-import { AppConfigError, NotFoundError, FailedToSelectSubObject } from './errors';
-import { logger } from './logging';
 
 /** ParsingExtensions that are used by default in loadConfig for reading files */
 export function defaultExtensions(

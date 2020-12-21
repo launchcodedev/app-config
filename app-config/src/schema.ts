@@ -1,16 +1,20 @@
 import { join, relative, resolve } from 'path';
 import Ajv from 'ajv';
 import RefParser, { bundle } from 'json-schema-ref-parser';
-import { JsonObject, isObject, isWindows } from './common';
-import { ParsedValue, ParsingExtension } from './parsed-value';
-import { defaultAliases, EnvironmentAliases } from './environment';
 import {
-  FlexibleFileSource,
-  FileSource,
+  ParsedValue,
+  ParsingExtension,
+  ValidationError,
+  SecretsInNonSecrets,
+  WasNotObject,
+  JsonObject,
+  isObject,
   parseRawString,
   filePathAssumedType,
-} from './config-source';
-import { ValidationError, SecretsInNonSecrets, WasNotObject } from './errors';
+} from '@app-config/core';
+import { isWindows } from './common';
+import { defaultAliases, EnvironmentAliases } from './environment';
+import { FlexibleFileSource, FileSource } from './config-source';
 
 export interface Options {
   directory?: string;

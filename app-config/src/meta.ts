@@ -1,11 +1,10 @@
 import { join, resolve } from 'path';
 import { pathExists } from 'fs-extra';
+import { FallbackSource, FileType, NotFoundError, logger } from '@app-config/core';
 import { extendsDirective, overrideDirective } from './extensions';
-import { FlexibleFileSource, FileSource, FallbackSource, FileType } from './config-source';
+import { FlexibleFileSource, FileSource } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
-import { NotFoundError } from './errors';
 import { GenerateFile } from './generate';
-import { logger } from './logging';
 
 export interface Options {
   directory?: string;

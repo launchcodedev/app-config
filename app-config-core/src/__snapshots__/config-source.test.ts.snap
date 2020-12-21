@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`stringify serializes JSON 1`] = `
+"{
+  \\"foo\\": \\"bar\\"
+}"
+`;
+
+exports[`stringify serializes JSON5 1`] = `
+"{
+  foo: 'bar',
+}"
+`;
+
+exports[`stringify serializes TOML 1`] = `
+"foo = \\"bar\\"
+"
+`;
+
+exports[`stringify serializes YAML 1`] = `
+"foo: bar
+"
+`;

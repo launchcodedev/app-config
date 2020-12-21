@@ -35,6 +35,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/core": "2.0.0-rc.9",
     "@iarna/toml": "3",
     "@lcdev/ts": "0.2",
     "@lcdev/ws-rpc": "^0.3.7",

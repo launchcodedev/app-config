@@ -1,6 +1,6 @@
+import { ReservedKeyError } from '@app-config/core';
 import { loadConfig, loadValidatedConfig } from './config';
 import { FileSource, EnvironmentSource } from './config-source';
-import { ReservedKeyError } from './errors';
 import { withTempFiles } from './test-util';
 
 describe('Configuration Loading', () => {

@@ -6,8 +6,5 @@
     "lib": ["dom"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"],
-  "references": [
-    { "path": "../app-config-core" }
-  ]
+  "exclude": ["node_modules"]
 }
