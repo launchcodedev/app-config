@@ -1,6 +1,5 @@
 ---
 home: true
-heroImage: /hero.png
 tagline: Easy Configuration Loader with Strict Validation
 actionText: Get Started →
 actionLink: /guide/intro/
@@ -21,10 +20,3 @@ features:
 
 footer: Licensed MPL 2.0
 ---
-
-<!-- sort of hacky for now, template is not extensible -->
-<div style="margin: 0 auto 30px auto; width: 120px">
-  <a href="https://www.netlify.com">
-    <img src="/netlify-light.svg" alt="Deploys by Netlify" crossorigin=”anonymous” />
-  </a>
-</div>

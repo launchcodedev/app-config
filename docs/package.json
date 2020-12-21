@@ -12,6 +12,7 @@
     "test": "echo"
   },
   "dependencies": {
+    "vue-lottie": "0.2",
     "vuepress": "1"
   },
   "devDependencies": {
