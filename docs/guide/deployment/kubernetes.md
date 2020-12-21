@@ -25,19 +25,10 @@ stringData:
 Instead of using a plain YAML file for helm values, perform a preprocessor step:
 
 ```sh
-TMP=$(mktemp -d)
-
-# use app-config to produce plaintext values for Helm
-npx app-config create --secrets \
-  --fileNameBase my-app > $TMP/my-app.yml
-
-# use the output as a values file in Helm
+# use the output of app-config as a values file in Helm
 helm upgrade --install my-app \
   ./my-app-chart \
-  --values $TMP/my-app.yml
-
-# the temp file has secrets! clean up after yourself
-rm -r $TMP
+  --values <(npx app-config create --secrets --fileNameBase my-app)
 ```
 
 This allows you to have a Helm values file that looks like:
