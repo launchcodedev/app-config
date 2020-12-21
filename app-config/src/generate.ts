@@ -7,9 +7,8 @@ import {
   JSONSchemaSourceData,
   InputData,
 } from 'quicktype-core';
-import { JsonObject } from './common';
 import { loadMetaConfig, Options as MetaOptions } from './meta';
-import { loadSchema, Options as SchemaOptions } from './schema';
+import { loadSchema, JSONSchema, Options as SchemaOptions } from './schema';
 import { logger } from './logging';
 
 export interface Options {
@@ -66,7 +65,7 @@ export async function generateTypeFiles({ directory, schemaOptions, metaOptions 
 }
 
 export async function generateQuicktype(
-  schema: JsonObject,
+  schema: JSONSchema,
   type: string,
   name: string,
   augmentModule: boolean = true,

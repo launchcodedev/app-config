@@ -19,9 +19,6 @@ export class WasNotObject extends AppConfigError {}
 /** Error during schema validation */
 export class ValidationError extends AppConfigError {}
 
-/** Secret values were found in a non-secret file */
-export class SecretsInNonSecrets extends ValidationError {}
-
 /** For encrypting and decrypting secrets, stdin is required for prompts sometimes */
 export class SecretsRequireTTYError extends AppConfigError {}
 

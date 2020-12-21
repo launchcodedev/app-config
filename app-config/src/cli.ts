@@ -40,7 +40,7 @@ import {
   untrustTeamMember,
 } from './encryption';
 import { shouldUseSecretAgent, startAgent, disconnectAgents } from './secret-agent';
-import { loadSchema } from './schema';
+import { loadSchema, JSONSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { validateAllConfigVariants } from './validation';
 import { checkTTY, logger, LogLevel } from './logging';
@@ -221,7 +221,7 @@ async function loadConfigWithOptions({
   fileNameBase,
   environmentOverride,
   environmentVariableName,
-}: LoadConfigCLIOptions): Promise<JsonObject> {
+}: LoadConfigCLIOptions): Promise<[JsonObject, JSONSchema | undefined]> {
   const options: LoadConfigOptions = {
     fileNameBase,
     environmentOverride,
@@ -235,7 +235,7 @@ async function loadConfigWithOptions({
     loaded = await loadValidatedConfig(options);
   }
 
-  const { fullConfig, parsedNonSecrets } = loaded;
+  const { fullConfig, parsedNonSecrets, schema } = loaded;
 
   let jsonConfig: JsonObject;
 
@@ -253,7 +253,7 @@ async function loadConfigWithOptions({
     }
   }
 
-  return jsonConfig;
+  return [jsonConfig, schema];
 }
 
 async function loadVarsWithOptions({
@@ -267,8 +267,8 @@ async function loadVarsWithOptions({
   rename?: string[];
   alias?: string[];
   only?: string[];
-}): Promise<[ReturnType<typeof flattenObjectTree>, JsonObject]> {
-  const config = await loadConfigWithOptions(opts);
+}): Promise<[ReturnType<typeof flattenObjectTree>, JsonObject, JSONSchema | undefined]> {
+  const [config, schema] = await loadConfigWithOptions(opts);
   let flattened = flattenObjectTree(config, prefix);
 
   flattened = renameInFlattenedTree(flattened, rename, false);
@@ -283,10 +283,10 @@ async function loadVarsWithOptions({
       }
     }
 
-    return [filtered, config];
+    return [filtered, config, schema];
   }
 
-  return [flattened, config];
+  return [flattened, config, schema];
 }
 
 function fileTypeForFormatOption(option: string): FileType {
@@ -407,7 +407,7 @@ export const cli = yargs
       async (opts) => {
         shouldUseSecretAgent(opts.agent);
 
-        const toPrint = await loadConfigWithOptions(opts);
+        const [toPrint] = await loadConfigWithOptions(opts);
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format), true));
         process.stdout.write('\n');
@@ -446,7 +446,7 @@ export const cli = yargs
             throw new FailedToSelectSubObject(`Failed to select property ${opts.select}`);
           }
         } else {
-          toPrint = schema;
+          toPrint = schema as Json;
         }
 
         process.stdout.write(stringify(toPrint, fileTypeForFormatOption(opts.format), true));
@@ -877,14 +877,27 @@ export const cli = yargs
           process.exit(1);
         }
 
-        const [env, fullConfig] = await loadVarsWithOptions(opts);
+        const [env, fullConfig, schema] = await loadVarsWithOptions(opts);
 
         // if prefix is set to something non-zero, set it as the full config
-        // this is almost always just APP_CONFIG
         if (opts.prefix.length > 0) {
+          // this is almost always just APP_CONFIG
+          const variableName = opts.prefix;
+
           // if we specified --only FOO, don't include APP_CONFIG
-          if (!opts.only || opts.only.includes(opts.prefix)) {
-            env[opts.prefix] = stringify(fullConfig, fileTypeForFormatOption(opts.format), true);
+          if (!opts.only || opts.only.includes(variableName)) {
+            env[variableName] = stringify(fullConfig, fileTypeForFormatOption(opts.format), true);
+          }
+
+          // this is APP_CONFIG_SCHEMA, a special variable used by programs to do their own validation
+          const schemaVariableName = `${variableName}_SCHEMA`;
+
+          if (schema && (!opts.only || opts.only.includes(schemaVariableName))) {
+            env[schemaVariableName] = stringify(
+              schema as Json,
+              fileTypeForFormatOption(opts.format),
+              true,
+            );
           }
         }
 
