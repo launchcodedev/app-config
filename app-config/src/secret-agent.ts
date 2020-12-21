@@ -65,7 +65,7 @@ export async function startAgent(portOverride?: number, privateKeyOverride?: Key
         return encoded;
       },
     })
-    .listen(new WebSocket.Server({ server: httpsServer }));
+    .listen(httpsServer);
 
   httpsServer.listen(port);
 
