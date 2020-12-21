@@ -1,6 +1,7 @@
 import https from 'https';
 import WebSocket from 'ws';
-import { Server as BaseServer, Client as BaseClient, MessageVariant } from '@lcdev/ws-rpc/bson';
+import { build } from '@lcdev/ws-rpc';
+import bsonSerialization from '@lcdev/ws-rpc/bson';
 import { Json } from './common';
 import {
   Key,
@@ -16,34 +17,13 @@ import { loadSettingsLazy, saveSettings } from './settings';
 import { AppConfigError } from './errors';
 import { logger } from './logging';
 
-export enum MessageType {
-  Ping = 'Ping',
-  Decrypt = 'Decrypt',
-  Encrypt = 'Encrypt',
-}
+const common = build(bsonSerialization)
+  .func<'Ping'>()
+  .func<'Decrypt', { text: string; symmetricKey: EncryptedSymmetricKey }, Json>()
+  .func<'Encrypt', { value: Json; symmetricKey: EncryptedSymmetricKey }, string>();
 
-export type Messages = {
-  [MessageType.Ping]: MessageVariant<MessageType.Ping, void, void>;
-  [MessageType.Decrypt]: MessageVariant<
-    MessageType.Decrypt,
-    {
-      text: string;
-      symmetricKey: EncryptedSymmetricKey;
-    },
-    Json
-  >;
-  [MessageType.Encrypt]: MessageVariant<
-    MessageType.Encrypt,
-    { value: Json; symmetricKey: EncryptedSymmetricKey },
-    string
-  >;
-};
-
-export type EventType = never;
-export type Events = never;
-
-export class Client extends BaseClient<MessageType, EventType, Messages, Events> {}
-export class Server extends BaseServer<MessageType, EventType, Messages, Events> {}
+export type Server = typeof common.Connection;
+export type Client = typeof common.Connection;
 
 export async function startAgent(portOverride?: number, privateKeyOverride?: Key): Promise<Server> {
   let privateKey: Key;
@@ -61,43 +41,33 @@ export async function startAgent(portOverride?: number, privateKeyOverride?: Key
   const { cert, key } = await loadOrCreateCert();
   const httpsServer = https.createServer({ cert, key });
 
-  const server = new Server(new WebSocket.Server({ server: httpsServer }));
+  const server = common
+    .server({
+      async Ping() {},
+      async Decrypt({ text, symmetricKey }) {
+        logger.verbose(`Decrypting a secret for a key rev:${symmetricKey.revision}`);
 
-  server.registerHandler(MessageType.Ping, () => {});
+        const decoded = await decryptValue(
+          text,
+          await decryptSymmetricKey(symmetricKey, privateKey),
+        );
 
-  server.registerHandler(MessageType.Decrypt, async ({ text, symmetricKey }) => {
-    logger.verbose(`Decrypting a secret for a key rev:${symmetricKey.revision}`);
+        return decoded;
+      },
+      async Encrypt({ value, symmetricKey }) {
+        logger.verbose(`Encrypting a secret value with key rev:${symmetricKey.revision}`);
 
-    const decoded = await decryptValue(text, await decryptSymmetricKey(symmetricKey, privateKey));
+        const encoded = await encryptValue(
+          value,
+          await decryptSymmetricKey(symmetricKey, privateKey),
+        );
 
-    return decoded;
-  });
-
-  server.registerHandler(MessageType.Encrypt, async ({ value, symmetricKey }) => {
-    logger.verbose(`Encrypting a secret value with key rev:${symmetricKey.revision}`);
-
-    const encoded = await encryptValue(value, await decryptSymmetricKey(symmetricKey, privateKey));
-
-    return encoded;
-  });
+        return encoded;
+      },
+    })
+    .listen(new WebSocket.Server({ server: httpsServer }));
 
   httpsServer.listen(port);
-
-  const superClose = server.close.bind(server);
-
-  Object.assign(server, {
-    async close() {
-      await superClose();
-
-      // we have to close the http server ourselves, because it was created manually
-      await new Promise<void>((resolve, reject) =>
-        httpsServer.close((err) => {
-          if (err) reject(err);
-          else resolve();
-        }),
-      );
-    },
-  });
 
   return server;
 }
@@ -112,9 +82,10 @@ export async function connectAgent(
   logger.verbose(`Connecting to secret-agent on port ${port}`);
 
   const { cert } = await loadOrCreateCert();
-  const client = new Client(new WebSocket(`wss://localhost:${port}`, { ca: [cert] }));
 
-  await client.waitForConnection();
+  const client = await common
+    .client()
+    .connect(new WebSocket(`wss://localhost:${port}`, { ca: [cert] }));
 
   let isClosed = false;
   let closeTimeout: NodeJS.Timeout;
@@ -147,7 +118,7 @@ export async function connectAgent(
     async ping() {
       keepAlive();
 
-      await client.call(MessageType.Ping, undefined);
+      await client.ping();
     },
     async decryptValue(text: string) {
       keepAlive();
@@ -162,7 +133,7 @@ export async function connectAgent(
       }
 
       const symmetricKey = await loadEncryptedKey(revisionNumber);
-      const decrypted = await client.call(MessageType.Decrypt, { text, symmetricKey });
+      const decrypted = await client.Decrypt({ text, symmetricKey });
 
       keepAlive();
 
@@ -171,7 +142,7 @@ export async function connectAgent(
     async encryptValue(value: Json, symmetricKey: EncryptedSymmetricKey) {
       keepAlive();
 
-      const encoded = await client.call(MessageType.Encrypt, { value, symmetricKey });
+      const encoded = await client.Encrypt({ value, symmetricKey });
 
       keepAlive();
 
