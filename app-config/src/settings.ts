@@ -13,6 +13,7 @@ export interface Settings {
     cert: string;
     expiry: string;
     port?: number;
+    socket?: string;
   };
 }
 
