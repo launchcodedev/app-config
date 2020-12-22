@@ -12,6 +12,9 @@
   <a href="https://github.com/launchcodedev/app-config/actions">
     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/launchcodedev/app-config/main?style=flat-square"/>
   </a>
+  <a href="https://dashboard.cypress.io/projects/fm6zcy/runs">
+    <img alt="Cypress.io Status" src="https://img.shields.io/endpoint?url=https://dashboard.cypress.io/badge/simple/fm6zcy/master&style=flat-square&logo=cypress"/>
+  </a>
   <a href="https://app.codecov.io/gh/launchcodedev/app-config">
     <img alt="Codecov Status" src="https://img.shields.io/codecov/c/github/launchcodedev/app-config?style=flat-square&token=DBB21R1OEY"/>
   </a>
