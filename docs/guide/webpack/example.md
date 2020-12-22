@@ -4,9 +4,16 @@ title: Example Project
 
 <div style="font-size: 2em" align="center">
 
-[View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/master/examples/frontend-webpack-project).
+[View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/master/examples/frontend-webpack-project)
 
 </div>
+
+<iframe src="https://codesandbox.io/embed/app-config-w-webpack-o5q20?fontsize=14&hidenavigation=1&theme=light"
+   style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"
+   title="App Config w/ Webpack"
+   allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+   sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+ ></iframe>
 
 <h4 style="text-align:center">package.json</h4>
 

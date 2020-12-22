@@ -2,7 +2,11 @@
 title: Example Project
 ---
 
-[View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/react-native-app-config-transformer/examples/react-native-project).
+<div style="font-size: 2em" align="center">
+
+[View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/master/examples/react-native-project)
+
+</div>
 
 <h4 style="text-align:center">package.json</h4>
 
