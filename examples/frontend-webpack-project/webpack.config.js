@@ -28,6 +28,7 @@ module.exports = {
   plugins: [new HtmlPlugin(), new AppConfigPlugin({ headerInjection: true })],
   devServer: {
     host: '0.0.0.0',
+    port: 8080,
     disableHostCheck: true,
     historyApiFallback: true,
   },
