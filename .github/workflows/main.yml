@@ -65,3 +65,5 @@ jobs:
         working-directory: examples/frontend-webpack-project
         start: yarn serve -l 8080 ./dist
         wait-on: 'http://localhost:8080'
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
