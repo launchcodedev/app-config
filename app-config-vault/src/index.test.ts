@@ -6,7 +6,7 @@ describe('vaultParsingExtension', () => {
   /*
   it('reads from vault server', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $vault: { secret: 'foo', name: 'bar' },
+      $vault: { secret: 'foo', select: 'bar' },
     });
 
     const { fullConfig } = await loadUnvalidatedConfig({

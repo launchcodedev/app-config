@@ -3,7 +3,7 @@
 ```yaml
 $vault:
   secret: 'foo'
-  name: 'bar'
+  select: 'bar'
 ```
 
 This is like, in the CLI:

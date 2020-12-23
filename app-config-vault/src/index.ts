@@ -39,14 +39,14 @@ function vaultParsingExtension(options: Options = {}): ParsingExtension {
           throw new Error('$vault requires a an object with options');
         }
 
-        const { secret, name } = parsed;
+        const { secret, select } = parsed;
 
         if (typeof secret !== 'string') {
           throw new Error('$vault requires a "secret" option');
         }
 
-        if (typeof name !== 'string') {
-          throw new Error('$vault requires a "name" option');
+        if (typeof select !== 'string') {
+          throw new Error('$vault requires a "select" option');
         }
 
         type VaultResponse<T> = {
@@ -67,10 +67,10 @@ function vaultParsingExtension(options: Options = {}): ParsingExtension {
           .withQuery({ version: '2' })
           .json<VaultResponse<JsonObject>>();
 
-        const namedValue = data[name];
+        const namedValue = data[select];
 
         if (typeof namedValue === 'undefined') {
-          throw new Error(`The named value "${name}" was not found in the KV secret "${secret}"`);
+          throw new Error(`The named value "${select}" was not found in the KV secret "${secret}"`);
         }
 
         return parse(namedValue as Json, { shouldFlatten: true });
