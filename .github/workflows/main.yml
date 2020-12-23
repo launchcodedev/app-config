@@ -50,3 +50,21 @@ jobs:
     - run: yarn build
     - run: yarn test --testTimeout 20000
       env: { CI: 1 }
+
+  cypress:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - run: yarn install
+    - run: yarn build
+    - uses: cypress-io/github-action@v2
+      with:
+        working-directory: examples/frontend-webpack-project
+        start: yarn serve -l 8080 ./dist
+        wait-on: 'http://localhost:8080'
+        record: true
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
