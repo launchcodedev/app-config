@@ -82,7 +82,13 @@ export { loadSchema, Options as SchemaLoadingOptions } from './schema';
 export { loadMetaConfig } from './meta';
 export { setLogLevel, LogLevel } from './logging';
 export { currentEnvironment, defaultAliases } from './environment';
-export { ParsedValue, ParsedValueMetadata } from './parsed-value';
+export { Json } from './common';
+export {
+  ParsedValue,
+  ParsedValueMetadata,
+  ParsingExtension,
+  ParsingExtensionTransform,
+} from './parsed-value';
 export {
   defaultExtensions,
   defaultEnvExtensions,

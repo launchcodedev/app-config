@@ -8,6 +8,7 @@
       "app-config-webpack-plugin",
       "app-config-inject",
       "app-config-react-native-transformer",
+      "app-config-vault",
       "examples/*",
       "docs"
     ],
