@@ -15,7 +15,8 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
         filePaths.forEach((filePath) => this.addDependency(filePath));
       }
 
-      const generateText = (config: string) => `
+      const generateText = (config: string) =>
+        `
         const config = ${config};
 
         export { config };
