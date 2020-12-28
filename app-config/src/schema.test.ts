@@ -16,7 +16,7 @@ describe('Schema Loading', () => {
       properties: { foo: { type: 'string' } },
     });
 
-    const { value } = await loadSchema();
+    const { schema: value } = await loadSchema();
 
     expect(value).toMatchObject({
       type: 'object',
@@ -34,7 +34,7 @@ describe('Schema Loading', () => {
         `,
       },
       async (inDir) => {
-        const { value } = await loadSchema({ directory: inDir('.') });
+        const { schema: value } = await loadSchema({ directory: inDir('.') });
 
         expect(value).toMatchObject({
           type: 'object',
@@ -57,7 +57,7 @@ describe('Schema Loading', () => {
         }`,
       },
       async (inDir) => {
-        const { value } = await loadSchema({ directory: inDir('.') });
+        const { schema: value } = await loadSchema({ directory: inDir('.') });
 
         expect(value).toMatchObject({
           type: 'object',
@@ -80,7 +80,7 @@ describe('Schema Loading', () => {
         }`,
       },
       async (inDir) => {
-        const { value } = await loadSchema({ directory: inDir('.') });
+        const { schema: value } = await loadSchema({ directory: inDir('.') });
 
         expect(value).toMatchObject({
           type: 'object',
@@ -103,7 +103,7 @@ describe('Schema Loading', () => {
         `,
       },
       async (inDir) => {
-        const { value } = await loadSchema({ directory: inDir('.') });
+        const { schema: value } = await loadSchema({ directory: inDir('.') });
 
         expect(value).toMatchObject({
           type: 'object',
@@ -128,7 +128,7 @@ describe('Schema Loading', () => {
         `,
       },
       async (inDir) => {
-        const { value } = await loadSchema({
+        const { schema: value } = await loadSchema({
           directory: inDir('.'),
           parsingExtensions: [extendsDirective()],
         });
@@ -159,7 +159,7 @@ describe('Schema Loading', () => {
           `,
         },
         async (inDir) => {
-          const { value: schema } = await loadSchema({ directory: inDir('.') });
+          const { schema } = await loadSchema({ directory: inDir('.') });
 
           expect(schema.properties).toEqual({ a: { type: 'number' } });
         },
@@ -182,7 +182,7 @@ describe('Schema Loading', () => {
           }`,
         },
         async (inDir) => {
-          const { value: schema } = await loadSchema({ directory: inDir('.') });
+          const { schema } = await loadSchema({ directory: inDir('.') });
 
           expect(schema.properties).toEqual({ a: { type: 'number' } });
         },
@@ -205,7 +205,7 @@ describe('Schema Loading', () => {
           }`,
         },
         async (inDir) => {
-          const { value: schema } = await loadSchema({ directory: inDir('.') });
+          const { schema } = await loadSchema({ directory: inDir('.') });
 
           expect(schema.properties).toEqual({ a: { type: 'number' } });
         },
@@ -227,7 +227,7 @@ describe('Schema Loading', () => {
           `,
         },
         async (inDir) => {
-          const { value: schema } = await loadSchema({ directory: inDir('.') });
+          const { schema } = await loadSchema({ directory: inDir('.') });
 
           expect(schema.properties).toEqual({ a: { type: 'number' } });
         },
@@ -343,8 +343,8 @@ describe('Schema Loading', () => {
           `,
         },
         async (inDir) => {
-          const { value: a } = await loadSchema({ directory: inDir('a') });
-          const { value: b } = await loadSchema({ directory: inDir('b') });
+          const { schema: a } = await loadSchema({ directory: inDir('a') });
+          const { schema: b } = await loadSchema({ directory: inDir('b') });
 
           expect(a).toMatchObject({
             properties: {
@@ -380,7 +380,7 @@ describe('Schema Loading', () => {
           `,
         },
         async (inDir) => {
-          const { value } = await loadSchema({ directory: inDir('.') });
+          const { schema: value } = await loadSchema({ directory: inDir('.') });
 
           expect(value).toMatchObject({
             properties: {

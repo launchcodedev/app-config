@@ -30,7 +30,7 @@ export interface GenerateFile {
 }
 
 export async function generateTypeFiles({ directory, schemaOptions, metaOptions }: Options = {}) {
-  const { value: schema } = await loadSchema({ directory, ...schemaOptions });
+  const { schema } = await loadSchema({ directory, ...schemaOptions });
   const {
     value: { generate = [] },
   } = await loadMetaConfig({ directory, ...metaOptions });

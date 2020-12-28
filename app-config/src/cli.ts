@@ -433,7 +433,7 @@ export const cli = yargs
         },
       },
       async (opts) => {
-        const { value: schema } = await loadSchema();
+        const { schema } = await loadSchema();
 
         let toPrint: Json;
 

@@ -29,7 +29,7 @@ export interface Options {
 export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 
 export interface Schema {
-  value: JSONSchema;
+  schema: JSONSchema;
   validate: Validate;
 }
 
@@ -130,7 +130,7 @@ export async function loadSchema({
   let currentlyParsing: ParsedValue | undefined;
 
   return {
-    value: normalized as JsonObject,
+    schema: normalized as JsonObject,
     validate(fullConfig, parsedConfig) {
       currentlyParsing = parsedConfig;
       const valid = validate(fullConfig);
