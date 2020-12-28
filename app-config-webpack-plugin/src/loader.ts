@@ -10,7 +10,7 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   const { headerInjection = false, loading, schemaLoading }: Options = getOptions(this) || {};
 
   loadConfig(loading, schemaLoading)
-    .then(({ fullConfig, filePaths }) => {
+    .then(({ fullConfig, filePaths, validationFunction }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(filePath));
       }
@@ -21,6 +21,8 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
 
         export { config };
         export default config;
+
+        ${validationFunction ? `export const validateConfig = ${validationFunction};` : ''}
       `.replace(/\n/g, '');
 
       // NOTE: when using webpack-dev-server, we'll just ignore the headerInjection

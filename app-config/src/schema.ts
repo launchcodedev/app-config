@@ -31,6 +31,7 @@ export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 export interface Schema {
   schema: JSONSchema;
   validate: Validate;
+  validationFunction?: string;
 }
 
 export async function loadSchema({
@@ -131,6 +132,7 @@ export async function loadSchema({
 
   return {
     schema: normalized as JsonObject,
+    validationFunction: validate.toString(),
     validate(fullConfig, parsedConfig) {
       currentlyParsing = parsedConfig;
       const valid = validate(fullConfig);
