@@ -15,12 +15,19 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
         filePaths.forEach((filePath) => this.addDependency(filePath));
       }
 
+      const generateText = (config: string) => `
+        const config = ${config};
+
+        export { config };
+        export default config;
+      `.replace(/\n/g, '');
+
       // NOTE: when using webpack-dev-server, we'll just ignore the headerInjection
       if (headerInjection && !process.env.WEBPACK_DEV_SERVER) {
-        return callback(null, `export default window._appConfig;`);
+        return callback(null, generateText('window._appConfig'));
       }
 
-      callback(null, `export default ${JSON.stringify(fullConfig)};`);
+      return callback(null, generateText(JSON.stringify(fullConfig)));
     })
     .catch((err) => callback(err));
 };

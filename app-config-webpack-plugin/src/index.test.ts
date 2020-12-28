@@ -35,9 +35,11 @@ describe('frontend-webpack-project example', () => {
         const { children } = stats.toJson();
         const [{ modules = [] }] = children || [];
 
-        expect(modules.map(({ source }) => source)).toContain(
-          'export default {"externalApiUrl":"https://example.com"};',
-        );
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('const config = {"externalApiUrl":"https://example.com"};'),
+          ),
+        ).toBe(true);
 
         done();
       });
@@ -53,7 +55,9 @@ describe('frontend-webpack-project example', () => {
         const { children } = stats.toJson();
         const [{ modules = [] }] = children || [];
 
-        expect(modules.map(({ source }) => source)).toContain('export default window._appConfig;');
+        expect(
+          modules.some(({ source }) => source?.includes('const config = window._appConfig;')),
+        ).toBe(true);
 
         done();
       });
@@ -71,9 +75,11 @@ describe('frontend-webpack-project example', () => {
         const { children } = stats.toJson();
         const [{ modules = [] }] = children || [];
 
-        expect(modules.map(({ source }) => source)).toContain(
-          'export default {"externalApiUrl":"https://localhost:3999"};',
-        );
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('const config = {"externalApiUrl":"https://localhost:3999"};'),
+          ),
+        ).toBe(true);
 
         done();
       });
@@ -93,9 +99,11 @@ describe('frontend-webpack-project example', () => {
           const { children } = stats.toJson();
           const [{ modules = [] }] = children || [];
 
-          expect(modules.map(({ source }) => source)).toContain(
-            'export default {"externalApiUrl":"https://localhost:9782"};',
-          );
+          expect(
+            modules.some(({ source }) =>
+              source?.includes('const config = {"externalApiUrl":"https://localhost:9782"};'),
+            ),
+          ).toBe(true);
 
           done();
         },
