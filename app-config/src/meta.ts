@@ -1,9 +1,11 @@
 import { join, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { extendsDirective, overrideDirective } from './extensions';
+import { ParsingExtension } from './parsed-value';
 import { FlexibleFileSource, FileSource, FallbackSource, FileType } from './config-source';
 import { EncryptedSymmetricKey } from './encryption';
-import { NotFoundError } from './errors';
+import { JsonObject } from './common';
+import { NotFoundError, AppConfigError } from './errors';
 import { GenerateFile } from './generate';
 import { logger } from './logging';
 
@@ -19,10 +21,16 @@ export interface TeamMember {
   publicKey: string;
 }
 
+export interface ParsingExtensionWithOptions {
+  name: string;
+  options?: JsonObject;
+}
+
 export interface MetaProperties {
   teamMembers?: TeamMember[];
   encryptionKeys?: EncryptedSymmetricKey[];
   generate?: GenerateFile[];
+  parsingExtensions?: (ParsingExtensionWithOptions | string)[];
 }
 
 export interface MetaConfiguration {
@@ -99,4 +107,42 @@ export async function loadMetaConfigLazy(options?: Options): Promise<MetaConfigu
   }
 
   return metaConfig;
+}
+
+export async function loadExtraParsingExtensions(options?: Options): Promise<ParsingExtension[]> {
+  return loadMetaConfig(options).then(({ value }) => {
+    if (value.parsingExtensions) {
+      return Promise.all(
+        value.parsingExtensions.map(async (extensionConfig) => {
+          if (typeof extensionConfig === 'string') {
+            extensionConfig = { name: extensionConfig };
+          }
+
+          logger.verbose(`Loading parsing extension: ${extensionConfig.name}`);
+
+          type CreateExtension = (options?: JsonObject) => ParsingExtension;
+
+          type LoadedExtensionModule =
+            | CreateExtension
+            | {
+                default: (options?: JsonObject) => ParsingExtension;
+              };
+
+          const loaded = (await import(extensionConfig.name)) as LoadedExtensionModule;
+
+          if (typeof loaded === 'function') {
+            return loaded(extensionConfig.options);
+          }
+          if ('default' in loaded) {
+            return loaded.default(extensionConfig.options);
+          }
+          throw new AppConfigError(
+            `Loaded parsing config module was invalid: ${extensionConfig.name}`,
+          );
+        }),
+      );
+    }
+
+    return Promise.resolve([]);
+  });
 }
