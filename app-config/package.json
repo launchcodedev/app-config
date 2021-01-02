@@ -69,6 +69,7 @@
     "@types/lodash.merge": "4",
     "@types/tmp": "0.2",
     "get-port": "5",
+    "mock-stdin": "1",
     "tmp-promise": "3"
   },
   "prettier": "@lcdev/prettier",
