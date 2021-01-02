@@ -1,5 +1,6 @@
 import { readFile, stat } from 'fs-extra';
 import { SecretsRequireTTYError } from './errors';
+import { isWindows } from './common';
 import {
   initializeKeys,
   initializeKeysManually,
@@ -82,7 +83,12 @@ describe('User Keys', () => {
 
       // eslint-disable-next-line no-bitwise
       const modeToOctal = (mode: number) => (mode & 0o777).toString(8);
-      expect(modeToOctal((await stat(inDir('keychain/private-key.asc'))).mode)).toBe('600');
+
+      if (!isWindows) {
+        expect(modeToOctal((await stat(inDir('keychain/private-key.asc'))).mode)).toBe('600');
+      } else {
+        expect(modeToOctal((await stat(inDir('keychain/private-key.asc'))).mode)).toBe('666');
+      }
 
       await deleteLocalKeys(dirs);
     });
