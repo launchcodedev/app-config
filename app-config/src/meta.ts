@@ -122,19 +122,23 @@ export async function loadExtraParsingExtensions(options?: Options): Promise<Par
 
           type CreateExtension = (options?: JsonObject) => ParsingExtension;
 
-          type LoadedExtensionModule = CreateExtension | {
-            default: (options?: JsonObject) => ParsingExtension;
-          };
+          type LoadedExtensionModule =
+            | CreateExtension
+            | {
+                default: (options?: JsonObject) => ParsingExtension;
+              };
 
           const loaded = (await import(extensionConfig.name)) as LoadedExtensionModule;
 
           if (typeof loaded === 'function') {
             return loaded(extensionConfig.options);
-          } else if ('default' in loaded) {
-            return loaded.default(extensionConfig.options);
-          } else {
-            throw new AppConfigError(`Loaded parsing config module was invalid: ${extensionConfig.name}`);
           }
+          if ('default' in loaded) {
+            return loaded.default(extensionConfig.options);
+          }
+          throw new AppConfigError(
+            `Loaded parsing config module was invalid: ${extensionConfig.name}`,
+          );
         }),
       );
     }
