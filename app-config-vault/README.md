@@ -22,17 +22,20 @@ Install and use:
 yarn add @app-config/vault
 ```
 
-```typescript
-import { loadConfig, defaultExtensions } from '@lcdev/app-config';
-import vaultParsingExtension from '@app-config/vault';
+In `.app-config.meta.yml` file:
 
-const vaultOptions = {
-  address: 'http://localhost:8200', // read from VAULT_ADDR if not set
-  token: '...', // read from VAULT_TOKEN if not set
-  namespace: '...', // optional, read from VAULT_NAMESPACE
-};
+```yaml
+parsingExtensions:
+  - '@app-config/vault'
+```
 
-await loadConfig({
-  parsingExtensions: defaultExtensions().concat(vaultParsingExtension(vaultOptions)),
-});
+Options look like this:
+
+```yaml
+parsingExtensions:
+  - name: '@app-config/vault'
+    options:
+      address: 'http://localhost:8200', // read from VAULT_ADDR if not set
+      token: '...', // read from VAULT_TOKEN if not set
+      namespace: '...', // optional, read from VAULT_NAMESPACE
 ```

@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { loadConfig, loadValidatedConfig } from './config';
 import { FileSource, EnvironmentSource } from './config-source';
 import { ReservedKeyError } from './errors';
@@ -509,3 +510,25 @@ describe('Special values', () => {
     );
   });
 });
+
+describe('Dynamic Parsing Extension Loading', () => {
+  it('loads a simple extension', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo: value
+        `,
+        '.app-config.meta.yml': `
+          parsingExtensions:
+            - ${join(__dirname, '../test-parsing-extensions/uppercase.js')}
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'VALUE' });
+      },
+    );
+  });
+});
+
