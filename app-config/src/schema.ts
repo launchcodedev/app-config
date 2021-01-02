@@ -1,5 +1,6 @@
 import { join, relative, resolve } from 'path';
-import Ajv from 'ajv';
+import Ajv, { _ as ajvTemplate } from 'ajv';
+import standalone from 'ajv/dist/standalone';
 import addFormats from 'ajv-formats';
 import RefParser, { JSONSchema, bundle } from 'json-schema-ref-parser';
 import { JsonObject, isObject, isWindows } from './common';
@@ -31,7 +32,7 @@ export type Validate = (fullConfig: JsonObject, parsed?: ParsedValue) => void;
 export interface Schema {
   schema: JSONSchema;
   validate: Validate;
-  validationFunction?: string;
+  validationFunctionCode(): string;
 }
 
 export async function loadSchema({
@@ -87,7 +88,17 @@ export async function loadSchema({
 
   const normalized = await normalizeSchema(parsedObject, directory);
 
-  const ajv = new Ajv({ strict: true, strictTypes: true, allErrors: true });
+  const ajv = new Ajv({
+    strict: true,
+    strictTypes: true,
+    allErrors: true,
+    code: {
+      es5: true,
+      lines: true,
+      source: true,
+      formats: ajvTemplate`require("ajv-formats/dist/formats.js").fullFormats`,
+    },
+  });
 
   addFormats(ajv);
 
@@ -132,7 +143,9 @@ export async function loadSchema({
 
   return {
     schema: normalized as JsonObject,
-    validationFunction: validate.toString(),
+    validationFunctionCode() {
+      return standalone(ajv, validate);
+    },
     validate(fullConfig, parsedConfig) {
       currentlyParsing = parsedConfig;
       const valid = validate(fullConfig);

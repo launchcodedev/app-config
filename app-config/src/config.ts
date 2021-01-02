@@ -35,7 +35,7 @@ export interface Configuration {
   /** if loadValidatedConfig, this is the normalized JSON schema that was used for validation */
   schema?: JSONSchema;
   /** if loadValidatedConfig, this is the raw AJV validation function */
-  validationFunction?: string;
+  validationFunctionCode?(): string;
 }
 
 export async function loadConfig({
@@ -167,7 +167,7 @@ export async function loadValidatedConfig(
   schemaOptions?: SchemaOptions,
 ): Promise<Configuration> {
   const [
-    { validate, validationFunction, schema },
+    { validate, validationFunctionCode, schema },
     { fullConfig, parsed, ...rest },
   ] = await Promise.all([
     loadSchema({
@@ -190,7 +190,7 @@ export async function loadValidatedConfig(
   logger.verbose('Config was loaded, validating now');
   validate(fullConfig, parsed);
 
-  return { fullConfig, parsed, schema, validationFunction, ...rest };
+  return { fullConfig, parsed, schema, validationFunctionCode, ...rest };
 }
 
 function verifyParsedValue(parsed: ParsedValue) {
