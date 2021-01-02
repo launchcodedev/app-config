@@ -1,6 +1,10 @@
+import { readFile, stat } from 'fs-extra';
 import { SecretsRequireTTYError } from './errors';
 import {
+  initializeKeys,
   initializeKeysManually,
+  initializeLocalKeys,
+  deleteLocalKeys,
   loadPrivateKey,
   loadPublicKey,
   generateSymmetricKey,
@@ -9,6 +13,7 @@ import {
   encryptValue,
   decryptValue,
 } from './encryption';
+import { mockedStdin, withTempFiles } from './test-util';
 
 describe('User Keys', () => {
   it('initialize keys without passphrase', async () => {
@@ -30,6 +35,57 @@ describe('User Keys', () => {
 
     await loadPublicKey(publicKeyArmored);
     await expect(loadPrivateKey(privateKeyArmored)).rejects.toBeInstanceOf(SecretsRequireTTYError);
+  });
+
+  it('initializes keys with a passphrase from stdin', async () => {
+    await mockedStdin(async (send) => {
+      send('My Name')
+        .then(() => send('me@example.com'))
+        .then(() => send('$ecure!'))
+        .catch(() => {});
+
+      const { privateKeyArmored, publicKeyArmored } = await initializeKeys();
+
+      await loadPublicKey(publicKeyArmored);
+
+      send('$ecure!').catch(() => {});
+
+      await loadPrivateKey(privateKeyArmored);
+    });
+  });
+
+  it('initializes keys into a directory', async () => {
+    await withTempFiles({}, async (inDir) => {
+      const keys = {
+        privateKeyArmored: 'privateKeyArmored',
+        publicKeyArmored: 'publicKeyArmored',
+        revocationCertificate: 'revocationCertificate',
+      };
+
+      const dirs = {
+        keychain: inDir('keychain'),
+        privateKey: inDir('keychain/private-key.asc'),
+        publicKey: inDir('keychain/public-key.asc'),
+        revocationCert: inDir('keychain/revocation.asc'),
+      };
+
+      const returned = await initializeLocalKeys(keys, dirs);
+
+      expect(returned).toEqual({ publicKeyArmored: 'publicKeyArmored' });
+
+      expect((await readFile(inDir('keychain/private-key.asc'))).toString()).toEqual(
+        'privateKeyArmored',
+      );
+      expect((await readFile(inDir('keychain/public-key.asc'))).toString()).toEqual(
+        'publicKeyArmored',
+      );
+
+      // eslint-disable-next-line no-bitwise
+      const modeToOctal = (mode: number) => (mode & 0o777).toString(8);
+      expect(modeToOctal((await stat(inDir('keychain/private-key.asc'))).mode)).toBe('600');
+
+      await deleteLocalKeys(dirs);
+    });
   });
 });
 

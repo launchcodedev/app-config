@@ -39,11 +39,17 @@ export const keyDirs = {
   },
 };
 
+interface UserKeys {
+  privateKeyArmored: string;
+  publicKeyArmored: string;
+  revocationCertificate: string;
+}
+
 export async function initializeKeysManually(options: {
   name: string;
   email: string;
   passphrase?: string;
-}) {
+}): Promise<UserKeys> {
   const { name, email, passphrase } = options;
 
   if (passphrase) {
@@ -65,7 +71,7 @@ export async function initializeKeysManually(options: {
   };
 }
 
-export async function initializeKeys(withPassphrase: boolean = true) {
+export async function initializeKeys(withPassphrase: boolean = true): Promise<UserKeys> {
   if (!checkTTY()) throw new SecretsRequireTTYError();
 
   const name = await promptUser<string>({ message: 'Name', type: 'text' });
@@ -84,29 +90,30 @@ export async function initializeKeys(withPassphrase: boolean = true) {
   return initializeKeysManually({ name, email, passphrase });
 }
 
-export async function initializeLocalKeys() {
-  if (await fs.pathExists(keyDirs.keychain)) {
+export async function initializeLocalKeys(keys?: UserKeys, dirs: typeof keyDirs = keyDirs) {
+  if (await fs.pathExists(dirs.keychain)) {
     return false;
   }
 
   logger.info('Initializing your encryption keys');
 
-  const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await initializeKeys();
+  const { privateKeyArmored, publicKeyArmored, revocationCertificate } =
+    keys ?? (await initializeKeys());
 
   const prevUmask = process.umask(0o077);
 
   try {
-    await fs.mkdirp(keyDirs.keychain);
+    await fs.mkdirp(dirs.keychain);
 
     process.umask(0o177);
 
     await Promise.all([
-      fs.writeFile(keyDirs.privateKey, privateKeyArmored),
-      fs.writeFile(keyDirs.publicKey, publicKeyArmored),
-      fs.writeFile(keyDirs.revocationCert, revocationCertificate),
+      fs.writeFile(dirs.privateKey, privateKeyArmored),
+      fs.writeFile(dirs.publicKey, publicKeyArmored),
+      fs.writeFile(dirs.revocationCert, revocationCertificate),
     ]);
 
-    logger.info(`Wrote your encryption keys in ${keyDirs.keychain}`);
+    logger.info(`Wrote your encryption keys in ${dirs.keychain}`);
   } finally {
     process.umask(prevUmask);
   }
@@ -114,8 +121,8 @@ export async function initializeLocalKeys() {
   return { publicKeyArmored };
 }
 
-export async function deleteLocalKeys() {
-  await fs.remove(keyDirs.keychain);
+export async function deleteLocalKeys(dirs: typeof keyDirs = keyDirs) {
+  await fs.remove(dirs.keychain);
 }
 
 export async function loadKey(contents: string | Buffer): Promise<Key> {

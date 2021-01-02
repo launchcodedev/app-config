@@ -1,6 +1,8 @@
 import { join } from 'path';
 import { dir } from 'tmp-promise'; // eslint-disable-line import/no-extraneous-dependencies
 import { outputFile, remove } from 'fs-extra';
+import { stdin } from 'mock-stdin';
+import { isTestEnvAndShouldNotPrompt } from './logging';
 
 // function that joins the temp dir to a filename
 type JoinDir = (filename: string) => string;
@@ -31,5 +33,38 @@ export async function withTempFiles(
     await callback((filename) => join(folder, filename), folder);
   } finally {
     await remove(folder);
+  }
+}
+
+export async function mockedStdin(
+  callback: (send: (text: string) => Promise<void>) => Promise<void>,
+) {
+  const mock = stdin();
+  isTestEnvAndShouldNotPrompt(false);
+  process.stdin.isTTY = true;
+  process.stdout.isTTY = true;
+
+  // to keep test output clean, just mock out stdout.write
+  const origWrite = process.stdout.write;
+  const mockWrite = jest.fn();
+  process.stdout.write = mockWrite;
+
+  try {
+    const send = (text: string) =>
+      new Promise<void>((resolve) => {
+        setTimeout(() => {
+          mock.send(text);
+          mock.send('\n');
+          resolve();
+        }, 0);
+      });
+
+    await callback(send);
+  } finally {
+    isTestEnvAndShouldNotPrompt(true);
+    process.stdin.isTTY = false;
+    process.stdout.isTTY = false;
+    process.stdout.write = origWrite;
+    mock.restore();
   }
 }

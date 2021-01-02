@@ -6,8 +6,18 @@ export enum LogLevel {
   None = 'none',
 }
 
+let isTest = process.env.NODE_ENV === 'test';
+
+export function isTestEnvAndShouldNotPrompt(newValue?: boolean) {
+  if (newValue !== undefined) {
+    isTest = newValue;
+  }
+
+  return isTest;
+}
+
 export function checkTTY() {
-  return process.stdin.isTTY && process.stdout.isTTY && process.env.NODE_ENV !== 'test';
+  return process.stdin.isTTY && process.stdout.isTTY && !isTestEnvAndShouldNotPrompt();
 }
 
 let logLevel: LogLevel;
