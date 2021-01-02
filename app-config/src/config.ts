@@ -6,6 +6,7 @@ import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } fro
 import { defaultExtensions, defaultEnvExtensions, markAllValuesAsSecret } from './extensions';
 import { loadSchema, JSONSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject, ReservedKeyError } from './errors';
+import { loadExtraParsingExtensions } from './meta';
 import { logger } from './logging';
 
 export interface Options {
@@ -68,6 +69,13 @@ export async function loadConfig({
   }
 
   logger.verbose(`Trying to read files for configuration`);
+
+  const extraParsingExtensions = await loadExtraParsingExtensions({ directory });
+
+  logger.verbose(`${extraParsingExtensions.length} user-defined parsing extensions found`);
+
+  parsingExtensions.splice(0, 0, ...extraParsingExtensions);
+  secretsFileExtensions.splice(0, 0, ...extraParsingExtensions);
 
   const [mainConfig, secrets] = await Promise.all([
     new FlexibleFileSource(
