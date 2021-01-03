@@ -28,7 +28,7 @@ jobs:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn
+          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
     - run: yarn install
       if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
@@ -69,7 +69,7 @@ jobs:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn
+          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
     - run: yarn install
       if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
@@ -91,7 +91,7 @@ jobs:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn
+          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
     - run: yarn install
       if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
