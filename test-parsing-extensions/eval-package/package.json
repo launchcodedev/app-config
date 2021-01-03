@@ -1,5 +1,12 @@
 {
   "name": "@app-config/test-eval-package",
   "version": "0.0.0",
-  "main": "./main.js"
+  "main": "./main.js",
+  "scripts": {
+    "build": "echo",
+    "clean": "echo",
+    "lint": "echo",
+    "fix": "echo",
+    "test": "echo"
+  }
 }
