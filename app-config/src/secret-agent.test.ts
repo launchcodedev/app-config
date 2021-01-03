@@ -1,7 +1,7 @@
 import getPort from 'get-port';
 import { resolve } from 'path';
 import { startAgent, connectAgent } from './secret-agent';
-import { Json } from './common';
+import { Json, isWindows } from './common';
 import {
   initializeKeysManually,
   generateSymmetricKey,
@@ -68,6 +68,8 @@ describe('Decryption', () => {
 
 describe('Unix Sockets', () => {
   it('connects using unix socket', async () => {
+    if (isWindows) return;
+
     const { privateKeyArmored } = await initializeKeysManually({
       name: 'Test',
       email: 'test@example.com',
