@@ -24,13 +24,18 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
         `;
 
         if (validationFunctionCode) {
-          const content = validationFunctionCode();
-
           generatedText = `${generatedText}
             ${/* nest the generated commonjs module here */ ''}
-            const validateConfigModule = {};
-            (function(module){${content}})(validateConfigModule);
-            export const validateConfig = validateConfigModule.exports;
+            function genValidateConfig(){
+              const validateConfigModule = {};
+              (function(module){
+                ${validationFunctionCode()}
+              })(validateConfigModule);
+              return validateConfigModule.exports;
+            }
+
+            ${/* marking as pure always allows tree shaking in webpack when using es modules */ ''}
+            export const validateConfig = /*#__PURE__*/ genValidateConfig();
           `;
         }
 
