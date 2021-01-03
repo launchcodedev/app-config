@@ -44,3 +44,18 @@ exports[`injectHtml uses provided loadConfig options 1`] = `
         </html>
       "
 `;
+
+exports[`injectHtml validates provided app-config 1`] = `
+"
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset=\\"utf-8\\">
+          <title>Webpack App</title>
+          <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1\\">
+          <script id=\\"app-config\\">window._appConfig={}</script>
+        </head>
+        <body><script src=\\"/main.js\\"></script></body>
+      </html>
+    "
+`;

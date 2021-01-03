@@ -70,6 +70,30 @@ describe('injectHtml', () => {
     expect(injected).toMatchSnapshot();
   });
 
+  it('validates provided app-config', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ foo: 42 });
+    process.env.APP_CONFIG_SCHEMA = JSON.stringify({ type: 'object', additionalProperties: false });
+
+    const html = `
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Webpack App</title>
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <script id="app-config"></script>
+        </head>
+        <body><script src="/main.js"></script></body>
+      </html>
+    `;
+
+    await expect(injectHtml(html, { validate: true })).rejects.toThrow();
+
+    process.env.APP_CONFIG = JSON.stringify({});
+
+    await expect(injectHtml(html, { validate: true })).resolves.toMatchSnapshot();
+  });
+
   it('uses provided loadConfig options', async () => {
     process.env.MY_CONFIG = JSON.stringify({ foo: true });
 
