@@ -4,7 +4,7 @@ title: Example Project
 
 <div style="font-size: 2em" align="center">
 
-[View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/master/examples/nodejs-server).
+[View the example project on GitHub](https://github.com/launchcodedev/app-config/tree/master/examples/nodejs-server)
 
 </div>
 
