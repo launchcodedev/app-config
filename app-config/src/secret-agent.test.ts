@@ -114,7 +114,7 @@ describe('shouldUseSecretAgent', () => {
     expect(shouldUseSecretAgent()).toBe(true);
     shouldUseSecretAgent(false);
     expect(shouldUseSecretAgent()).toBe(false);
-  })
+  });
 });
 
 describe('getAgentPortOrSocket', () => {
