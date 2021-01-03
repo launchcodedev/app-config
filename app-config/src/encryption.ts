@@ -322,6 +322,12 @@ export async function loadSymmetricKeyLazy(
   return symmetricKeys.get(revision)!;
 }
 
+export async function loadLatestSymmetricKey(privateKey: Key): Promise<DecryptedSymmetricKey> {
+  const allKeys = await loadSymmetricKeys(false);
+
+  return loadSymmetricKey(latestSymmetricKeyRevision(allKeys), privateKey, false);
+}
+
 export async function loadLatestSymmetricKeyLazy(privateKey: Key): Promise<DecryptedSymmetricKey> {
   const allKeys = await loadSymmetricKeys();
 
@@ -421,12 +427,10 @@ export async function decryptValue(
   return JSON.parse(data) as Json;
 }
 
-export async function loadTeamMembers(lazy = true): Promise<Key[]> {
-  const loadMeta = lazy ? loadMetaConfigLazy : loadMetaConfig;
-
+export async function loadTeamMembers(): Promise<Key[]> {
   const {
     value: { teamMembers = [] },
-  } = await loadMeta();
+  } = await loadMetaConfig();
 
   return Promise.all(
     teamMembers.map(({ keyName, publicKey }) =>
@@ -446,7 +450,7 @@ export async function loadTeamMembersLazy(): Promise<Key[]> {
 }
 
 export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
-  const teamMembers = await loadTeamMembersLazy();
+  const teamMembers = await loadTeamMembers();
 
   if (newTeamMember.isPrivate()) {
     throw new InvalidEncryptionKey(
@@ -483,7 +487,7 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
 }
 
 export async function untrustTeamMember(email: string, privateKey: Key) {
-  const teamMembers = await loadTeamMembersLazy();
+  const teamMembers = await loadTeamMembers();
 
   const removalCandidates = new Set<Key>();
 
@@ -615,7 +619,7 @@ async function retrieveSecretAgent() {
 }
 
 async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties) {
-  const { value: oldMeta, filePath, fileType } = await loadMetaConfigLazy();
+  const { value: oldMeta, filePath, fileType } = await loadMetaConfig();
 
   const writeMeta = mutate(oldMeta) as Json;
   const writeFilePath = filePath ?? '.app-config.meta.yml';
