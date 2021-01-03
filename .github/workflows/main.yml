@@ -29,7 +29,7 @@ jobs:
         key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-    - run: yarn install
+    - run: yarn install --prefer-offline
     - run: yarn build
     - run: yarn lint
     - run: yarn test --coverage
@@ -69,7 +69,7 @@ jobs:
         key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-    - run: yarn install
+    - run: yarn install --prefer-offline
     - run: yarn build
     - run: yarn test --testTimeout 20000
       env: { CI: 1 }
@@ -90,7 +90,7 @@ jobs:
         key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-    - run: yarn install
+    - run: yarn install --prefer-offline
     - run: yarn build
     - uses: cypress-io/github-action@v2
       with:
