@@ -35,7 +35,7 @@ Options look like this:
 parsingExtensions:
   - name: '@app-config/vault'
     options:
-      address: 'http://localhost:8200', // read from VAULT_ADDR if not set
-      token: '...', // read from VAULT_TOKEN if not set
-      namespace: '...', // optional, read from VAULT_NAMESPACE
+      address: 'http://localhost:8200' // read from VAULT_ADDR if not set
+      token: '...' // read from VAULT_TOKEN if not set
+      namespace: '...' // optional, read from VAULT_NAMESPACE
 ```
