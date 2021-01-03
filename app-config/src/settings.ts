@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { homedir } from 'os';
 import * as fs from 'fs-extra';
 import envPaths from 'env-paths';
@@ -18,6 +18,10 @@ export interface Settings {
 }
 
 export function settingsDirectory() {
+  if (process.env.APP_CONFIG_SETTINGS_FOLDER) {
+    return resolve(process.env.APP_CONFIG_SETTINGS_FOLDER);
+  }
+
   const oldConfigDir = join(homedir(), '.app-config');
   const { config: configDir } = envPaths('app-config', { suffix: '' });
 

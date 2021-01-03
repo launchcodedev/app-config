@@ -1,12 +1,14 @@
-import { unlink } from 'fs-extra';
 import { loadSettings, saveSettings, settingsDirectory } from './settings';
+import { withTempFiles } from './test-util';
 
 describe('Loading and saving', () => {
-  it('saves and loads settings', async () => {
-    // for safety, let's not overwrite user's settings
-    if (!process.env.CI) return;
+  it('saves and loads settings', () =>
+    withTempFiles({}, async (inDir) => {
+      process.env.APP_CONFIG_SETTINGS_FOLDER = inDir('settings');
 
-    await saveSettings({});
-    await expect(loadSettings()).resolves.toEqual({});
-  });
+      expect(settingsDirectory()).toEqual(inDir('settings'));
+
+      await saveSettings({});
+      await expect(loadSettings()).resolves.toEqual({});
+    }));
 });
