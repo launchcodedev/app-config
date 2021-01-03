@@ -112,42 +112,44 @@ export async function loadMetaConfigLazy(options?: Options): Promise<MetaConfigu
 export async function loadExtraParsingExtensions(options?: Options): Promise<ParsingExtension[]> {
   return loadMetaConfig(options).then(({ value }) => {
     if (value.parsingExtensions) {
-      return Promise.all(
-        value.parsingExtensions.map(async (extensionConfig) => {
-          let name: string;
-          let options: JsonObject | undefined;
-
-          if (typeof extensionConfig === 'string') {
-            name = extensionConfig;
-          } else {
-            ({ name, options } = extensionConfig);
-          }
-
-          logger.verbose(`Loading parsing extension: ${name}`);
-
-          type CreateExtension = (options?: JsonObject) => ParsingExtension;
-
-          type LoadedExtensionModule =
-            | CreateExtension
-            | {
-                default: (options?: JsonObject) => ParsingExtension;
-              };
-
-          const loaded = (await import(name)) as LoadedExtensionModule;
-
-          if (typeof loaded === 'function') {
-            return loaded(options);
-          }
-
-          if ('default' in loaded) {
-            return loaded.default(options);
-          }
-
-          throw new AppConfigError(`Loaded parsing config module was invalid: ${name}`);
-        }),
-      );
+      return Promise.all(value.parsingExtensions.map(loadExtraParsingExtension));
     }
 
     return Promise.resolve([]);
   });
+}
+
+export async function loadExtraParsingExtension(
+  extensionConfig: ParsingExtensionWithOptions | string,
+): Promise<ParsingExtension> {
+  let name: string;
+  let options: JsonObject | undefined;
+
+  if (typeof extensionConfig === 'string') {
+    name = extensionConfig;
+  } else {
+    ({ name, options } = extensionConfig);
+  }
+
+  logger.verbose(`Loading parsing extension: ${name}`);
+
+  type CreateExtension = (options?: JsonObject) => ParsingExtension;
+
+  type LoadedExtensionModule =
+    | CreateExtension
+    | {
+        default: (options?: JsonObject) => ParsingExtension;
+      };
+
+  const loaded = (await import(name)) as LoadedExtensionModule;
+
+  if (typeof loaded === 'function') {
+    return loaded(options);
+  }
+
+  if ('default' in loaded) {
+    return loaded.default(options);
+  }
+
+  throw new AppConfigError(`Loaded parsing config module was invalid: ${name}`);
 }
