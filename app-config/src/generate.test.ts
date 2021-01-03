@@ -125,6 +125,27 @@ describe('TypeScript File Generation', () => {
       },
     );
   });
+
+  it('creates an empty interface for config', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.yml': `
+          generate:
+            - file: generated.d.ts
+        `,
+        '.app-config.schema.yml': ``,
+      },
+      async (inDir) => {
+        const output = await generateTypeFiles({ directory: inDir('.') });
+
+        expect(output.length).toBe(1);
+
+        const config = await readFile(inDir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatch('interface Config {}');
+      },
+    );
+  });
 });
 
 describe('Flow File Generation', () => {
