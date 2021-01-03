@@ -10,16 +10,27 @@ jobs:
   linux-and-lts:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]
+
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
-        node-version: 14.x
-    - uses: actions/cache@v2
+        node-version: ${{ matrix.node-version }}
+    - id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - id: yarn-cache
+      uses: actions/cache@v2
       with:
-        path: '**/node_modules'
-        key: ${{ runner.os }}-node-14.x-modules-${{ hashFiles('**/yarn.lock') }}
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn
     - run: yarn install
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
     - run: yarn lint
     - run: yarn test --coverage
@@ -50,11 +61,17 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - uses: actions/cache@v2
+    - id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - id: yarn-cache
+      uses: actions/cache@v2
       with:
-        path: '**/node_modules'
-        key: ${{ runner.os }}-node-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn
     - run: yarn install
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
     - run: yarn test --testTimeout 20000
       env: { CI: 1 }
@@ -66,11 +83,17 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 14.x
-    - uses: actions/cache@v2
+    - id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - id: yarn-cache
+      uses: actions/cache@v2
       with:
-        path: '**/node_modules'
-        key: ${{ runner.os }}-node-14.x-modules-${{ hashFiles('**/yarn.lock') }}
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn
     - run: yarn install
+      if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
     - uses: cypress-io/github-action@v2
       with:
