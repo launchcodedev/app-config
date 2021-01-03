@@ -86,6 +86,24 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
+  it('throws validation errors', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'not a uri' });
+
+    await expect(
+      new Promise<void>((done, reject) => {
+        webpack([createOptions({})], (err, stats) => {
+          if (err) return reject(err);
+          if (stats.hasErrors()) return reject(stats.toString());
+
+          const { children } = stats.toJson();
+          const [{ modules = [] }] = children || [];
+
+          done();
+        });
+      }),
+    ).rejects.toMatch('config/externalApiUrl should match format "uri"');
+  });
+
   it('uses custom loading options to read a specific environment variable', async () => {
     process.env.MY_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:9782' });
 
