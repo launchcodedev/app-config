@@ -30,7 +30,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
     - run: yarn install
-      if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
     - run: yarn lint
     - run: yarn test --coverage
@@ -71,7 +70,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
     - run: yarn install
-      if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
     - run: yarn test --testTimeout 20000
       env: { CI: 1 }
@@ -93,7 +91,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
     - run: yarn install
-      if: steps.yarn-cache.outputs.cache-hit != 'true'
     - run: yarn build
     - uses: cypress-io/github-action@v2
       with:
