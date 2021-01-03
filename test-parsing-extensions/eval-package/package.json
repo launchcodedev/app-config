@@ -1,0 +1,5 @@
+{
+  "name": "@app-config/test-eval-package",
+  "version": "0.0.0",
+  "main": "./main.js"
+}

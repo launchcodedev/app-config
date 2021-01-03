@@ -10,7 +10,8 @@
       "app-config-react-native-transformer",
       "app-config-vault",
       "examples/*",
-      "docs"
+      "docs",
+      "test-parsing-extensions/*"
     ],
     "nohoist": [
       "**/@types/react-native"
