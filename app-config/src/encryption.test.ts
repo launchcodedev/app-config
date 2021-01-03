@@ -8,12 +8,18 @@ import {
   deleteLocalKeys,
   loadPrivateKey,
   loadPublicKey,
+  loadLatestSymmetricKey,
   generateSymmetricKey,
   encryptSymmetricKey,
   decryptSymmetricKey,
+  saveNewSymmetricKey,
   encryptValue,
   decryptValue,
+  loadTeamMembers,
+  trustTeamMember,
+  untrustTeamMember,
 } from './encryption';
+import { loadMetaConfig } from './meta';
 import { mockedStdin, withTempFiles } from './test-util';
 
 describe('User Keys', () => {
@@ -199,5 +205,114 @@ describe('Value Encryption', () => {
     const encrypted = await encryptValue(value, symmetricKey);
 
     await expect(decryptValue(encrypted, wrongKey)).rejects.toThrow();
+  });
+});
+
+describe('E2E Encrypted Repo', () => {
+  it('sets up, trusts and untrusts users correctly', () => {
+    const cwd = process.cwd();
+
+    return withTempFiles({}, async (inDir) => {
+      process.chdir(inDir('.'));
+      process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER = inDir('keychain');
+
+      const keys = await initializeKeysManually({
+        name: 'Tester',
+        email: 'test@example.com',
+      });
+
+      const dirs = {
+        keychain: inDir('keychain'),
+        privateKey: inDir('keychain/private-key.asc'),
+        publicKey: inDir('keychain/public-key.asc'),
+        revocationCert: inDir('keychain/revocation.asc'),
+      };
+
+      expect(await initializeLocalKeys(keys, dirs)).toEqual({
+        publicKeyArmored: keys.publicKeyArmored,
+      });
+
+      const publicKey = await loadPublicKey();
+      const privateKey = await loadPrivateKey();
+
+      // this is what init-repo does
+      await trustTeamMember(publicKey, privateKey);
+
+      // at this point, we should have ourselves trusted, and 1 symmetric key
+      const { value: meta } = await loadMetaConfig();
+
+      expect(meta.teamMembers).toHaveLength(1);
+      expect(meta.encryptionKeys).toHaveLength(1);
+
+      const encryptionKey = await loadLatestSymmetricKey(privateKey);
+      const encrypted = await encryptValue('a secret value', encryptionKey);
+      await expect(decryptValue(encrypted, encryptionKey)).resolves.toBe('a secret value');
+
+      const teammateKeys = await initializeKeysManually({
+        name: 'A Teammate',
+        email: 'teammate@example.com',
+      });
+
+      const teammatePublicKey = await loadPublicKey(teammateKeys.publicKeyArmored);
+      const teammatePrivateKey = await loadPrivateKey(teammateKeys.privateKeyArmored);
+
+      await trustTeamMember(teammatePublicKey, privateKey);
+
+      // at this point, we should have 2 team members, but still 1 symmetric key
+      const { value: metaAfterTrustingTeammate } = await loadMetaConfig();
+
+      expect(metaAfterTrustingTeammate.teamMembers).toHaveLength(2);
+      expect(metaAfterTrustingTeammate.encryptionKeys).toHaveLength(1);
+
+      // ensures that the teammate can now encrypt/decrypt values
+      const encryptedByTeammate = await encryptValue(
+        'a secret value',
+        await loadLatestSymmetricKey(teammatePrivateKey),
+      );
+      await expect(
+        decryptValue(encryptedByTeammate, await loadLatestSymmetricKey(teammatePrivateKey)),
+      ).resolves.toBe('a secret value');
+
+      // ensures that we can still encrypt/decrypt values
+      const encryptedByUs = await encryptValue(
+        'a secret value',
+        await loadLatestSymmetricKey(privateKey),
+      );
+      await expect(
+        decryptValue(encryptedByUs, await loadLatestSymmetricKey(privateKey)),
+      ).resolves.toBe('a secret value');
+
+      await untrustTeamMember('teammate@example.com', privateKey);
+
+      // at this point, we should have 1 team members, and a newly generated symmetric key
+      const { value: metaAfterUntrustingTeammate } = await loadMetaConfig();
+
+      expect(metaAfterUntrustingTeammate.teamMembers).toHaveLength(1);
+      expect(metaAfterUntrustingTeammate.encryptionKeys).toHaveLength(2);
+
+      // ensures that we can still encrypt/decrypt values
+      const newlyEncryptedByUs = await encryptValue(
+        'a secret value',
+        await loadLatestSymmetricKey(privateKey),
+      );
+      await expect(
+        decryptValue(newlyEncryptedByUs, await loadLatestSymmetricKey(privateKey)),
+      ).resolves.toBe('a secret value');
+
+      // now, the teammate should have no access
+      await expect(loadLatestSymmetricKey(teammatePrivateKey)).rejects.toThrow();
+
+      // just for test coverage, create a new symmetric key
+      const latestSymmetricKey = await loadLatestSymmetricKey(privateKey);
+      await saveNewSymmetricKey(
+        await generateSymmetricKey(latestSymmetricKey.revision + 1),
+        await loadTeamMembers(),
+      );
+
+      const { value: metaAfterNewSymmetricKey } = await loadMetaConfig();
+
+      expect(metaAfterNewSymmetricKey.teamMembers).toHaveLength(1);
+      expect(metaAfterNewSymmetricKey.encryptionKeys).toHaveLength(3);
+    }).finally(() => process.chdir(cwd));
   });
 });
