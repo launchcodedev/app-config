@@ -1,4 +1,33 @@
-import { camelToScreamingCase, flattenObjectTree, renameInFlattenedTree } from './common';
+import {
+  isObject,
+  isPrimitive,
+  camelToScreamingCase,
+  flattenObjectTree,
+  renameInFlattenedTree,
+  promptUserWithRetry,
+  consumeStdin,
+} from './common';
+import { mockedStdin } from './test-util';
+
+describe('isObject', () => {
+  it('marks an object as an object', () => {
+    expect(isObject({})).toBe(true);
+    expect(isObject([])).toBe(false);
+    expect(isObject(null)).toBe(false);
+    expect(isObject(42)).toBe(false);
+    expect(isObject('foobar')).toBe(false);
+  });
+});
+
+describe('isPrimitive', () => {
+  it('marks primitives as such', () => {
+    expect(isPrimitive(null)).toBe(true);
+    expect(isPrimitive(42)).toBe(true);
+    expect(isPrimitive('foobar')).toBe(true);
+    expect(isPrimitive([])).toBe(false);
+    expect(isPrimitive({})).toBe(false);
+  });
+});
 
 describe('camelToScreamingCase', () => {
   it('converts a typical camel case name', () => {
@@ -151,6 +180,48 @@ describe('renameInFlattenedTree', () => {
     expect(renameInFlattenedTree({ FOO: 'value', BAZ: '42' }, ['FOO=BAR'])).toEqual({
       BAR: 'value',
       BAZ: '42',
+    });
+  });
+});
+
+describe('promptUserWithRetry', () => {
+  it('accepts first valid response', async () => {
+    await mockedStdin(async (send) => {
+      send('bar').catch(() => {});
+
+      await promptUserWithRetry({ type: 'text', message: 'Foo?' }, async (answer) => {
+        expect(answer).toBe('bar');
+
+        return true;
+      });
+    });
+  });
+
+  it('rejects after 3 tries', async () => {
+    await mockedStdin(async (send) => {
+      send('bar')
+        .then(() => send('bar'))
+        .then(() => send('bar'))
+        .catch(() => {});
+
+      await expect(
+        promptUserWithRetry({ type: 'text', message: 'Foo?' }, async () => new Error('Nope')),
+      ).rejects.toBeTruthy();
+    });
+  });
+});
+
+describe('consumeStdin', () => {
+  it('consumes all lines until end', async () => {
+    await mockedStdin(async (send, end) => {
+      send('foo')
+        .then(() => send('bar'))
+        .then(() => send('baz'))
+        .then(() => end())
+        .catch(() => {});
+
+      // we expect newlines to be eaten up, since this function is used for html and base64 data
+      expect(await consumeStdin()).toBe('foobarbaz');
     });
   });
 });

@@ -37,7 +37,7 @@ export async function withTempFiles(
 }
 
 export async function mockedStdin(
-  callback: (send: (text: string) => Promise<void>) => Promise<void>,
+  callback: (send: (text: string) => Promise<void>, end: () => void) => Promise<void>,
 ) {
   const mock = stdin();
   isTestEnvAndShouldNotPrompt(false);
@@ -59,7 +59,7 @@ export async function mockedStdin(
         }, 0);
       });
 
-    await callback(send);
+    await callback(send, () => mock.end());
   } finally {
     isTestEnvAndShouldNotPrompt(true);
     process.stdin.isTTY = false;
