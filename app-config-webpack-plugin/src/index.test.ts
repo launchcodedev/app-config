@@ -95,9 +95,6 @@ describe('frontend-webpack-project example', () => {
           if (err) return reject(err);
           if (stats.hasErrors()) return reject(stats.toString());
 
-          const { children } = stats.toJson();
-          const [{ modules = [] }] = children || [];
-
           done();
         });
       }),
