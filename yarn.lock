@@ -1670,10 +1670,10 @@
   resolved "https://registry.yarnpkg.com/@lcdev/tsconfig/-/tsconfig-0.2.0.tgz#a0fcbb2c4a83c870454ac4bf2d60cfcd8c8ab7b2"
   integrity sha512-HuFlyAfNsKVCTYZdvRyjFQPtRr9mjbm7yM7WBtqruMRDeOBMnf3fL35eTHKiN/OW8ywvkt+w0WQFEKRCDuyDFQ==
 
-"@lcdev/ws-rpc@^0.3.7":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@lcdev/ws-rpc/-/ws-rpc-0.3.8.tgz#e2bac5d55429e72403191f9cacb69a3f342ef72c"
-  integrity sha512-n2kQTebLhEHrVjhVQcQ5A61JKZwIeUEO+t0bhZz9oVcysL2blGeQWfXQ78ysMYPYjG7Fx3zjQjJaQp/qZr9vwA==
+"@lcdev/ws-rpc@0.4.0-rc.1":
+  version "0.4.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@lcdev/ws-rpc/-/ws-rpc-0.4.0-rc.1.tgz#bb4a3d80cf159e7fc78f0a3fa9cfa432d0aa6971"
+  integrity sha512-A38u7s4dLOepTM2cJ6y2bmbFSaWdOi7l3mRwcm2F0Ck4gyPi8vFEr83TuOLMP1NGKTWnYMYnc8hfY2VdLxxrVQ==
   dependencies:
     "@types/bson" "4"
     "@types/ws" "7"
