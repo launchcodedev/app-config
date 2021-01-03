@@ -114,11 +114,16 @@ export async function loadExtraParsingExtensions(options?: Options): Promise<Par
     if (value.parsingExtensions) {
       return Promise.all(
         value.parsingExtensions.map(async (extensionConfig) => {
+          let name: string;
+          let options: JsonObject | undefined;
+
           if (typeof extensionConfig === 'string') {
-            extensionConfig = { name: extensionConfig };
+            name = extensionConfig;
+          } else {
+            ({ name, options } = extensionConfig);
           }
 
-          logger.verbose(`Loading parsing extension: ${extensionConfig.name}`);
+          logger.verbose(`Loading parsing extension: ${name}`);
 
           type CreateExtension = (options?: JsonObject) => ParsingExtension;
 
@@ -128,17 +133,17 @@ export async function loadExtraParsingExtensions(options?: Options): Promise<Par
                 default: (options?: JsonObject) => ParsingExtension;
               };
 
-          const loaded = (await import(extensionConfig.name)) as LoadedExtensionModule;
+          const loaded = (await import(name)) as LoadedExtensionModule;
 
           if (typeof loaded === 'function') {
-            return loaded(extensionConfig.options);
+            return loaded(options);
           }
+
           if ('default' in loaded) {
-            return loaded.default(extensionConfig.options);
+            return loaded.default(options);
           }
-          throw new AppConfigError(
-            `Loaded parsing config module was invalid: ${extensionConfig.name}`,
-          );
+
+          throw new AppConfigError(`Loaded parsing config module was invalid: ${name}`);
         }),
       );
     }
