@@ -313,6 +313,9 @@ describe('E2E Encrypted Repo', () => {
 
       expect(metaAfterNewSymmetricKey.teamMembers).toHaveLength(1);
       expect(metaAfterNewSymmetricKey.encryptionKeys).toHaveLength(3);
-    }).finally(() => process.chdir(cwd));
+
+      // get out of the directory, Windows doesn't like unlink while cwd
+      process.chdir(cwd);
+    });
   });
 });
