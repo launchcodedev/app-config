@@ -209,8 +209,10 @@ describe('Value Encryption', () => {
 });
 
 describe('E2E Encrypted Repo', () => {
-  it('sets up, trusts and untrusts users correctly', () =>
-    withTempFiles({}, async (inDir) => {
+  it('sets up, trusts and untrusts users correctly', () => {
+    const cwd = process.cwd();
+
+    return withTempFiles({}, async (inDir) => {
       process.chdir(inDir('.'));
       process.env.APP_CONFIG_SECRETS_KEYCHAIN_FOLDER = inDir('keychain');
 
@@ -311,5 +313,6 @@ describe('E2E Encrypted Repo', () => {
 
       expect(metaAfterNewSymmetricKey.teamMembers).toHaveLength(1);
       expect(metaAfterNewSymmetricKey.encryptionKeys).toHaveLength(3);
-    }));
+    }).finally(() => process.chdir(cwd));
+  });
 });
