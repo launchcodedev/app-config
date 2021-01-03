@@ -5,6 +5,8 @@ import {
   FileSource,
   FlexibleFileSource,
   LiteralSource,
+  FileType,
+  stringify,
 } from './config-source';
 import { ParsingExtension } from './parsed-value';
 import { withTempFiles } from './test-util';
@@ -70,6 +72,22 @@ describe('Parsing', () => {
     }).read([flattenExtension, uppercaseExtension]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'BAR' });
+  });
+
+  it('uses readToJSON shorthand', async () => {
+    const parsed = await new LiteralSource({
+      foo: {
+        $flatten: 'bar',
+      },
+    }).readToJSON([flattenExtension]);
+
+    expect(parsed).toEqual({ foo: 'bar' });
+  });
+
+  it('loads using readContents correctly', async () => {
+    const [text, fileType] = await new LiteralSource({ foo: 'bar' }).readContents();
+
+    expect([text, fileType]).toMatchSnapshot();
   });
 });
 
@@ -207,6 +225,22 @@ describe('FlexibleFileSource', () => {
       },
     );
   });
+
+  it('loads using readContents correctly', async () => {
+    await withTempFiles(
+      {
+        'app-config.yml': `
+          foo: bar
+        `,
+      },
+      async (inDir) => {
+        const source = new FlexibleFileSource(inDir('app-config'));
+        const [text, fileType] = await source.readContents();
+
+        expect([text, fileType]).toMatchSnapshot();
+      },
+    );
+  });
 });
 
 describe('EnvironmentSource', () => {
@@ -268,6 +302,26 @@ describe('CombinedSource', () => {
     expect(parsed.sources[0]).toBe(source);
     expect(parsed.toJSON()).toEqual({ foo: 1, bar: 2, baz: 3 });
   });
+
+  it('loads using readContents correctly', async () => {
+    const [text, fileType] = await new CombinedSource([
+      new LiteralSource({ foo: 1 }),
+      new LiteralSource({ bar: 2 }),
+      new LiteralSource({ baz: 3 }),
+    ]).readContents();
+
+    expect([text, fileType]).toMatchSnapshot();
+  });
+
+  it('loads using readValue correctly', async () => {
+    const value = await new CombinedSource([
+      new LiteralSource({ foo: 1 }),
+      new LiteralSource({ bar: 2 }),
+      new LiteralSource({ baz: 3 }),
+    ]).readValue();
+
+    expect(value).toEqual({ foo: 1, bar: 2, baz: 3 });
+  });
 });
 
 describe('FallbackSource', () => {
@@ -299,5 +353,50 @@ describe('FallbackSource', () => {
 
     expect(parsed.sources[0]).toBe(source.sources[1]);
     expect(parsed.toJSON()).toEqual({ bar: 2 });
+  });
+
+  it('loads using readContents correctly', async () => {
+    const [text, fileType] = await new FallbackSource([
+      new LiteralSource({ foo: 1 }),
+      new LiteralSource({ bar: 2 }),
+      new LiteralSource({ baz: 3 }),
+    ]).readContents();
+
+    expect([text, fileType]).toMatchSnapshot();
+  });
+
+  it('loads using readValue correctly', async () => {
+    const value = await new FallbackSource([
+      new LiteralSource({ foo: 1 }),
+      new LiteralSource({ bar: 2 }),
+      new LiteralSource({ baz: 3 }),
+    ]).readValue();
+
+    expect(value).toEqual({ foo: 1 });
+  });
+});
+
+describe('stringify', () => {
+  it('stringifies JSON', () => {
+    expect(stringify({ foo: 'bar' }, FileType.JSON)).toMatchSnapshot();
+  });
+
+  it('stringifies JSON5', () => {
+    expect(stringify({ foo: 'bar' }, FileType.JSON5)).toMatchSnapshot();
+  });
+
+  it('stringifies YAML', () => {
+    expect(stringify({ foo: 'bar' }, FileType.YAML)).toMatchSnapshot();
+  });
+
+  it('stringifies TOML', () => {
+    expect(stringify({ foo: 'bar' }, FileType.TOML)).toMatchSnapshot();
+  });
+
+  it('stringifies RAW', () => {
+    // RAW only stringifies primitive values
+    expect(stringify(11, FileType.RAW)).toMatchSnapshot();
+    expect(stringify('foobar', FileType.RAW)).toMatchSnapshot();
+    expect(stringify(true, FileType.RAW)).toMatchSnapshot();
   });
 });
