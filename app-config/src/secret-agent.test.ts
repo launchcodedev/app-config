@@ -1,7 +1,12 @@
 import getPort from 'get-port';
 import { resolve } from 'path';
-import { startAgent, connectAgent } from './secret-agent';
-import { Json, isWindows } from './common';
+import {
+  startAgent,
+  connectAgent,
+  getAgentPortOrSocket,
+  shouldUseSecretAgent,
+} from './secret-agent';
+import { loadOrCreateCert } from './secret-agent-tls';
 import {
   initializeKeysManually,
   generateSymmetricKey,
@@ -9,6 +14,9 @@ import {
   loadPrivateKey,
   encryptValue,
 } from './encryption';
+import { Json, isWindows } from './common';
+import { saveSettings } from './settings';
+import { withTempFiles } from './test-util';
 
 jest.setTimeout(30000);
 
@@ -98,4 +106,26 @@ describe('Unix Sockets', () => {
 
     expect(client.isClosed()).toBe(true);
   });
+});
+
+describe('shouldUseSecretAgent', () => {
+  it('sets and retrieves value', () => {
+    shouldUseSecretAgent(true);
+    expect(shouldUseSecretAgent()).toBe(true);
+    shouldUseSecretAgent(false);
+    expect(shouldUseSecretAgent()).toBe(false);
+  })
+});
+
+describe('getAgentPortOrSocket', () => {
+  it('loads agent port from settings', () =>
+    withTempFiles({}, async (inDir) => {
+      process.env.APP_CONFIG_SETTINGS_FOLDER = inDir('settings');
+
+      const { cert, key, expiry } = await loadOrCreateCert();
+      await saveSettings({ secretAgent: { port: 1111, cert, key, expiry } });
+      await expect(getAgentPortOrSocket()).resolves.toBe(1111);
+      await saveSettings({ secretAgent: { socket: './foo', cert, key, expiry } });
+      await expect(getAgentPortOrSocket()).resolves.toBe('./foo');
+    }));
 });

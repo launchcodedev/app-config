@@ -211,7 +211,7 @@ export function shouldUseSecretAgent(value?: boolean) {
 
 const defaultPort = 42938;
 
-async function getAgentPortOrSocket(
+export async function getAgentPortOrSocket(
   socketOrPortOverride?: number | string,
 ): Promise<number | string> {
   if (socketOrPortOverride !== undefined) {
