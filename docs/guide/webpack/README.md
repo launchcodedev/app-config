@@ -139,3 +139,6 @@ if (validateConfig.errors) {
   document.body.innerHTML = `<pre>${JSON.stringify(fullConfig, null, 2)}</pre>`;
 }
 ```
+
+**Warning** - please make sure you have `ajv` 7 as a direct dependency of your project.
+Otherwise, you will run into "module not found" errors.
