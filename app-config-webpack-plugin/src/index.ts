@@ -72,7 +72,7 @@ export default class AppConfigPlugin {
           newTags.push({
             tagName: 'script',
             attributes: { id: 'app-config', type: 'text/javascript' },
-            innerHTML: `window._appConfig = JSON.parse('${JSON.stringify(fullConfig)}')`,
+            innerHTML: `window._appConfig = ${JSON.stringify(fullConfig)}`,
             voidTag: false,
           });
 
