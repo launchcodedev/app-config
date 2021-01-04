@@ -24,12 +24,21 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
         `;
 
         if (validationFunctionCode) {
+          const moduleCode = validationFunctionCode()
+            // see https://github.com/ajv-validator/ajv/pull/1376
+            .replace(
+              'require("ajv/dist/compile/ucs2length").default',
+              'require("ajv/lib/compile/ucs2length")',
+            )
+            .replace('ajv/dist/compile/error_classes', 'ajv/lib/compile/error_classes')
+            .replace('ajv/dist/compile/equal', 'ajv/lib/compile/equal');
+
           generatedText = `${generatedText}
             ${/* nest the generated commonjs module here */ ''}
             function genValidateConfig(){
               const validateConfigModule = {};
               (function(module){
-                ${validationFunctionCode()}
+                ${moduleCode}
               })(validateConfigModule);
               return validateConfigModule.exports;
             }
