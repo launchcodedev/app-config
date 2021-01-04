@@ -116,6 +116,8 @@ let fullConfig: typeof config;
 
 // here, a user could specify my-site.com/?config={"foo":"bar"}
 // we'll read the parameter as JSON, and merge it on top of the config
+// the reading and merging strategy here are up to you entirely
+
 if (queryParameters.has('config')) {
   const overrides = JSON.parse(queryParameters.get('config'));
 
@@ -125,14 +127,14 @@ if (queryParameters.has('config')) {
 }
 
 // App Config gives us a validation function, straight from AJV!
-// NOTE that this function is only available when using the Webpack plugin, not in Node.js
-// that's because it's code is generated on the fly at build time, to be as slim as possible
+// NOTE that it is only available when using the Webpack plugin, not in Node.js
+// the code is generated on the fly at build time, to be as slim as possible
 
 validateConfig(fullConfig);
 
 // access the .errors property, like AJV
 if (validateConfig.errors) {
-  console.error(`Config Error: ${validateConfig.errors.map((err) => err.message).join(', ')}`);
+  console.error(validateConfig.errors.map((err) => err.message).join(', '));
 } else {
   document.body.innerHTML = `<pre>${JSON.stringify(fullConfig, null, 2)}</pre>`;
 }
