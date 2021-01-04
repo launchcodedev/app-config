@@ -99,6 +99,7 @@ jobs:
         runTests: false
     - uses: cypress-io/github-action@v2
       with:
+        group: frontend-example-project-test
         working-directory: examples/frontend-webpack-project
         install: false
         record: true
@@ -107,6 +108,7 @@ jobs:
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
     - uses: cypress-io/github-action@v2
       with:
+        group: query-parameter-overrides-test
         working-directory: test-webpack-projects/query-parameter-overrides
         install: false
         record: true
