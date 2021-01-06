@@ -70,10 +70,7 @@ export async function generateQuicktype(
   type: string,
   name: string,
   augmentModule: boolean = true,
-  leadingComments: string[] = [
-    'AUTO GENERATED CODE',
-    "Run app-config with 'generate' command to regenerate this file",
-  ],
+  leadingCommentsOverride?: string[],
   rendererOptions: RendererOptions = {},
 ): Promise<string[]> {
   const src: JSONSchemaSourceData = {
@@ -83,6 +80,11 @@ export async function generateQuicktype(
 
   const inputData = new InputData();
   await inputData.addSource('schema', src, () => new JSONSchemaInput(undefined));
+
+  let leadingComments = leadingCommentsOverride ?? [
+    'AUTO GENERATED CODE',
+    "Run app-config with 'generate' command to regenerate this file",
+  ];
 
   if (['ts', 'typescript', 'flow'].includes(type)) {
     Object.assign(rendererOptions, {
