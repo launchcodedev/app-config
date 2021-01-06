@@ -65,9 +65,6 @@ export const config: ExportedConfig = new Proxy(
     deleteProperty() {
       throw new AppConfigError('Deleting properties from app-config is not allowed');
     },
-    isExtensible() {
-      return false;
-    },
   },
 );
 

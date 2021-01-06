@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import { config, loadConfig, resetConfigInternal } from './index';
 import { withTempFiles } from './test-util';
 
@@ -24,6 +25,20 @@ describe('loadConfig', () => {
         expect({ ...loaded }).toEqual(loaded);
         expect(Object.keys(loaded)).toEqual(['foo']);
         expect(JSON.stringify(loaded)).toEqual(JSON.stringify({ foo: 42 }));
+      },
+    );
+  });
+
+  it('calls toJSON correctly', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `foo: 42`,
+        '.app-config.schema.yml': `type: object`,
+      },
+      async (inDir) => {
+        const loaded = await loadConfig({ directory: inDir('.') });
+
+        expect(inspect(loaded)).toEqual(inspect({ foo: 42 }));
       },
     );
   });
@@ -106,6 +121,22 @@ describe('loadConfig', () => {
         }).toThrow();
         expect(() => {
           loaded.foo = undefined;
+        }).toThrow();
+      },
+    );
+  });
+
+  it('disallows defineProperty', async () => {
+    await withTempFiles(
+      {
+        '.app-config.schema.yml': `type: object`,
+        '.app-config.yml': `foo: 88`,
+      },
+      async (inDir) => {
+        const loaded = await loadConfig({ directory: inDir('.') });
+
+        expect(() => {
+          Object.defineProperty(loaded, 'foo', { value: 99 });
         }).toThrow();
       },
     );
