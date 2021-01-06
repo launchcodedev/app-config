@@ -20,47 +20,85 @@ export function checkTTY() {
   return process.stdin.isTTY && process.stdout.isTTY && !isTestEnvAndShouldNotPrompt();
 }
 
-let logLevel: LogLevel;
-
-if (process.env.APP_CONFIG_LOG_LEVEL) {
-  logLevel = process.env.APP_CONFIG_LOG_LEVEL as LogLevel;
-} else if (process.env.NODE_ENV === 'test') {
-  logLevel = LogLevel.None;
-} else if (checkTTY()) {
-  logLevel = LogLevel.Info;
-} else {
-  logLevel = LogLevel.Warn;
+export function getInitialLogLevel() {
+  if (process.env.APP_CONFIG_LOG_LEVEL) {
+    return process.env.APP_CONFIG_LOG_LEVEL as LogLevel;
+  }
+  if (process.env.NODE_ENV === 'test') {
+    return LogLevel.None;
+  }
+  if (checkTTY()) {
+    return LogLevel.Info;
+  }
+  return LogLevel.Warn;
 }
 
-export const logger = {
+type Writer = (message: string) => void;
+
+interface Logger {
+  setWriter(write: Writer): void;
+  setLevel(level: LogLevel): void;
+  verbose(message: string): void;
+  info(message: string): void;
+  warn(message: string): void;
+  error(message: string): void;
+}
+
+let logLevel: LogLevel = getInitialLogLevel();
+let writeMsg: Writer = process.stderr.write.bind(process.stderr);
+
+export const logger: Logger = {
+  setWriter(write: Writer) {
+    writeMsg = write;
+  },
+
   setLevel(level: LogLevel) {
     logLevel = level;
   },
+
   verbose(message: string) {
-    if (logLevel === LogLevel.Verbose) {
-      process.stdout.write(`[app-config][VERBOSE] ${message}\n`);
+    switch (logLevel) {
+      case LogLevel.Verbose:
+        writeMsg(`[app-config][VERBOSE] ${message}\n`);
+        break;
+      default:
+        break;
     }
   },
   info(message: string) {
-    if (logLevel === LogLevel.Info || logLevel === LogLevel.Verbose) {
-      process.stdout.write(`[app-config][INFO] ${message}\n`);
+    switch (logLevel) {
+      case LogLevel.Verbose:
+      case LogLevel.Info:
+        writeMsg(`[app-config][INFO] ${message}\n`);
+        break;
+      default:
+        break;
     }
   },
   warn(message: string) {
-    if (logLevel === LogLevel.Warn || logLevel === LogLevel.Info || logLevel === LogLevel.Verbose) {
-      process.stderr.write(`[app-config][WARN] ${message}\n`);
+    switch (logLevel) {
+      case LogLevel.Verbose:
+      case LogLevel.Info:
+      case LogLevel.Warn:
+        writeMsg(`[app-config][WARN] ${message}\n`);
+        break;
+      default:
+        break;
     }
   },
   error(message: string) {
-    if (
-      logLevel === LogLevel.Error ||
-      logLevel === LogLevel.Warn ||
-      logLevel === LogLevel.Info ||
-      logLevel === LogLevel.Verbose
-    ) {
-      process.stderr.write(`[app-config][ERROR] ${message}\n`);
+    switch (logLevel) {
+      case LogLevel.Verbose:
+      case LogLevel.Info:
+      case LogLevel.Warn:
+      case LogLevel.Error:
+        writeMsg(`[app-config][ERROR] ${message}\n`);
+        break;
+      default:
+        break;
     }
   },
 };
 
-export const setLogLevel = (level: LogLevel) => logger.setLevel(level);
+export const setLogLevel = logger.setLevel;
+export const setLogWriter = logger.setWriter;
