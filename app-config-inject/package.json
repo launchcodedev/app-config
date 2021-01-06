@@ -38,7 +38,9 @@
     "node-html-parser": "1",
     "yargs": "16"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mock-stdin": "1"
+  },
   "prettier": "@lcdev/prettier",
   "jest": {
     "preset": "@lcdev/jest"
