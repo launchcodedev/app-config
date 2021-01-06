@@ -37,7 +37,7 @@ jobs:
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./app-config/coverage/clover.xml,./app-config-inject/coverage/clover.xml,./app-config-webpack-plugin/coverage/clover.xml
+        files: ./app-config/coverage/coverage-final.json,./app-config-inject/coverage/coverage-final.json,./app-config-webpack-plugin/coverage/coverage-final.json
         fail_ci_if_error: true
         verbose: true
 
