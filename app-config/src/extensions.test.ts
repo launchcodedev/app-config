@@ -351,6 +351,16 @@ describe('$extendsSelf directive', () => {
     await expect(source.read([extendsSelfDirective()])).rejects.toThrow();
   });
 
+  it('fails when $extendsSelf selector is not a string', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $extendsSelf: {},
+      },
+    });
+
+    await expect(source.read([extendsSelfDirective()])).rejects.toThrow();
+  });
+
   it('resolves a simple $extendsSelf selector', async () => {
     const source = new LiteralSource({
       foo: {
@@ -426,11 +436,36 @@ describe('$env directive', () => {
     await expect(source.read([envDirective()])).rejects.toThrow();
   });
 
+  it('fails when options is not an object', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $env: 'invalid',
+      },
+    });
+
+    await expect(source.read([envDirective()])).rejects.toThrow();
+  });
+
   it('resolves to default environment', async () => {
     const source = new LiteralSource({ $env: { default: 42 } });
     const parsed = await source.read([envDirective()]);
 
     expect(parsed.toJSON()).toEqual(42);
+  });
+
+  it('fails to resolve with no current environment', async () => {
+    process.env.NODE_ENV = undefined;
+
+    const source = new LiteralSource({ $env: { test: 42 } });
+    await expect(source.read([envDirective()])).rejects.toThrow();
+  });
+
+  it('resolves to default with no current environment', async () => {
+    process.env.NODE_ENV = undefined;
+
+    const source = new LiteralSource({ $env: { default: 42 } });
+
+    expect(await source.readToJSON([envDirective()])).toBe(42);
   });
 
   it('resolves to test environment', async () => {
@@ -668,6 +703,26 @@ describe('$timestamp directive', () => {
 
     expect(parsed.toJSON()).toEqual({ now: 'Friday, December 25, 2020' });
   });
+
+  it('rejects a bad option', async () => {
+    const now = new Date();
+
+    const source = new LiteralSource({
+      now: { $timestamp: null },
+    });
+
+    await expect(source.read([timestampDirective(() => now)])).rejects.toThrow();
+  });
+
+  it('rejects a bad locale', async () => {
+    const now = new Date();
+
+    const source = new LiteralSource({
+      now: { $timestamp: { locale: null } },
+    });
+
+    await expect(source.read([timestampDirective(() => now)])).rejects.toThrow();
+  });
 });
 
 describe('encryptedDirective', () => {
@@ -750,6 +805,22 @@ describe('$git directive', () => {
     ]);
 
     expect(parsed.toJSON()).toEqual({ gitRef: 'master' });
+  });
+
+  it('fails when no branch is checked out', async () => {
+    const source = new LiteralSource({
+      gitRef: { $git: 'branch' },
+    });
+
+    await expect(
+      source.read([
+        gitRefDirectives(() =>
+          Promise.resolve({
+            commitRef: '6e96485ebf21082949c97a477b529b7a1c97a8b9',
+          }),
+        ),
+      ]),
+    ).rejects.toThrow();
   });
 });
 
