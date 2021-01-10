@@ -1,4 +1,5 @@
 import { inspect } from 'util';
+import type { ValidateFunction } from 'ajv';
 import { loadValidatedConfig, Options } from './config';
 import { Options as SchemaOptions } from './schema';
 import { AppConfigError, AccessingAppConfig } from './errors';
@@ -69,6 +70,11 @@ export const config: ExportedConfig = new Proxy(
 );
 
 export default config;
+
+/**
+ * Only available when using @lcdev/app-config-webpack-plugin. Validates configuration using AJV.
+ */
+export const validateConfig: ValidateFunction<ExportedConfig> = null as any; // eslint-disable-line
 
 export {
   loadValidatedConfig,

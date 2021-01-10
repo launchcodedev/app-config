@@ -11,8 +11,8 @@ jest.setTimeout(30000);
 describe('frontend-webpack-project example', () => {
   process.chdir(frontendProjectExampleDir);
 
-  const createOptions = (options: Options) => ({
-    mode: 'development' as const,
+  const createOptions = (options: Options, production = false) => ({
+    mode: production ? ('production' as const) : ('development' as const),
     entry: join(frontendProjectExampleDir, 'src/index.ts'),
     output: {
       filename: 'main.js',
@@ -123,6 +123,24 @@ describe('frontend-webpack-project example', () => {
           done();
         },
       );
+    });
+  });
+
+  it('does not bundle the validateConfig function', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
+
+    await new Promise<void>((done, reject) => {
+      webpack([createOptions({}, true)], (err, stats) => {
+        if (err) reject(err);
+        if (stats.hasErrors()) reject(stats.toString());
+
+        const { children } = stats.toJson();
+        const [{ modules = [] }] = children || [];
+
+        expect(modules.some(({ source }) => source?.includes('validateConfig'))).toBe(false);
+
+        done();
+      });
     });
   });
 });

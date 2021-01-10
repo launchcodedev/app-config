@@ -34,6 +34,8 @@ export interface Configuration {
   filePaths?: string[];
   /** if loadValidatedConfig, this is the normalized JSON schema that was used for validation */
   schema?: JSONSchema;
+  /** if loadValidatedConfig, this is the raw AJV validation function */
+  validationFunctionCode?(): string;
 }
 
 export async function loadConfig({
@@ -164,7 +166,10 @@ export async function loadValidatedConfig(
   options?: Options,
   schemaOptions?: SchemaOptions,
 ): Promise<Configuration> {
-  const [{ validate, schema }, { fullConfig, parsed, ...rest }] = await Promise.all([
+  const [
+    { validate, validationFunctionCode, schema },
+    { fullConfig, parsed, ...rest },
+  ] = await Promise.all([
     loadSchema({
       directory: options?.directory,
       fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
@@ -185,7 +190,7 @@ export async function loadValidatedConfig(
   logger.verbose('Config was loaded, validating now');
   validate(fullConfig, parsed);
 
-  return { fullConfig, parsed, schema, ...rest };
+  return { fullConfig, parsed, schema, validationFunctionCode, ...rest };
 }
 
 function verifyParsedValue(parsed: ParsedValue) {

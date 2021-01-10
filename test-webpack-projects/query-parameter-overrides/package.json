@@ -1,8 +1,9 @@
 {
-  "name": "frontend-webpack-project",
+  "name": "@app-config/test-query-parameter-overrides",
   "version": "0.0.0",
   "license": "MPL-2.0",
   "private": true,
+  "main": "dist/main.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "cross-env NODE_ENV=production webpack --mode production",
@@ -13,7 +14,8 @@
   },
   "dependencies": {
     "@lcdev/app-config": "2.0.0-rc.10",
-    "ajv": "7"
+    "ajv": "7",
+    "lodash.merge": "4"
   },
   "devDependencies": {
     "@lcdev/app-config-webpack-plugin": "2.0.0-rc.10",
@@ -26,6 +28,6 @@
     "typescript": "4",
     "webpack": "4",
     "webpack-cli": "3",
-    "webpack-dev-server": "^3.2"
+    "webpack-dev-server": "3"
   }
 }

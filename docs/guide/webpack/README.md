@@ -95,3 +95,50 @@ plugins: [
   new AppConfigPlugin({ loading: { /* this should be the same as the loader */ } }),
 ]
 ```
+
+### Validation
+
+A niche but useful way to use App Config involves using query parameters as configuration override.
+This can be a good way to quickly change the way an app behaves, without a full deployment.
+
+Thankfully, App Config gives us the tools to do that! Some small amount of glue code is required,
+since every application could want to do this a slightly different way.
+
+The basics are:
+
+```typescript
+import { config, validateConfig } from '@lcdev/app-config';
+import merge from 'lodash.merge';
+
+const queryParameters = new URLSearchParams(document.location.search);
+
+let fullConfig: typeof config;
+
+// here, a user could specify my-site.com/?config={"foo":"bar"}
+// we'll read the parameter as JSON, and merge it on top of the config
+// the reading and merging strategy here are up to you entirely
+
+if (queryParameters.has('config')) {
+  const overrides = JSON.parse(queryParameters.get('config'));
+
+  fullConfig = merge({}, config, overrides);
+} else {
+  fullConfig = config;
+}
+
+// App Config gives us a validation function, straight from AJV!
+// NOTE that it is only available when using the Webpack plugin, not in Node.js
+// the code is generated on the fly at build time, to be as slim as possible
+
+validateConfig(fullConfig);
+
+// access the .errors property, like AJV
+if (validateConfig.errors) {
+  console.error(validateConfig.errors.map((err) => err.message).join(', '));
+} else {
+  document.body.innerHTML = `<pre>${JSON.stringify(fullConfig, null, 2)}</pre>`;
+}
+```
+
+**Warning** - please make sure you have `ajv` 7 as a direct dependency of your project.
+Otherwise, you will run into "module not found" errors.
