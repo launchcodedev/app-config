@@ -1,3 +1,4 @@
+import { join } from 'path';
 import { loadConfig, loadValidatedConfig } from './config';
 import { FileSource, EnvironmentSource } from './config-source';
 import { ReservedKeyError } from './errors';
@@ -505,6 +506,69 @@ describe('Special values', () => {
         expect(parsed.property(['a', 'b', '$$c'])!.meta).toMatchObject({
           fromEscapedDirective: true,
         });
+      },
+    );
+  });
+});
+
+describe('Dynamic Parsing Extension Loading', () => {
+  it('loads a simple extension', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo: value
+        `,
+        '.app-config.meta.yml': `
+          parsingExtensions:
+            - ${join(__dirname, '../../test-parsing-extensions/uppercase.js')}
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'VALUE' });
+      },
+    );
+  });
+
+  it('loads a package as extension', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $eval: '2 + 2'
+        `,
+        '.app-config.meta.yml': `
+          parsingExtensions:
+            - '@app-config/test-eval-package'
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 4 });
+      },
+    );
+  });
+
+  it('passes options to package extension', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $random: true
+        `,
+        '.app-config.meta.yml': `
+          parsingExtensions:
+            - name: '@app-config/test-random-package'
+              options:
+                seed: consistent
+        `,
+      },
+      async (inDir) => {
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toMatchSnapshot();
       },
     );
   });

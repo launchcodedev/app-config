@@ -173,3 +173,26 @@ App Config uses the same public interface for its built-in extensions, so if you
 there are a few in the codebase.
 
 We'd like to document this more. Custom resolvers and value transformations have a lot of potential.
+
+## Loading Custom Extensions
+
+App Config will look at the meta file for "extra" parsing extensions to use.
+
+For example:
+
+```yaml
+parsingExtensions:
+  - '@app-config/vault'
+```
+
+You can pass options to the extensions as well, by making array items objects.
+
+```yaml
+parsingExtensions:
+  - name: '@app-config/vault'
+    options:
+      address: 'http://localhost:8200'
+```
+
+These parsing extensions are used for loading config files and secret files.
+They do not take effect when parsing `$APP_CONFIG`.

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dynamic Parsing Extension Loading passes options to package extension 1`] = `
+Object {
+  "foo": 0.7834231273452891,
+}
+`;
