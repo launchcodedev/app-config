@@ -1,7 +1,7 @@
 {
   "name": "@app-config/vault",
   "description": "Hashicorp Vault support for App Config",
-  "version": "2.0.0-rc.10",
+  "version": "2.0.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -35,10 +35,10 @@
     "node-vault": "0.9"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "2.0.0-rc.10"
+    "@lcdev/app-config": "2"
   },
   "devDependencies": {
-    "@lcdev/app-config": "2.0.0-rc.10"
+    "@lcdev/app-config": "2"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
