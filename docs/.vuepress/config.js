@@ -80,8 +80,9 @@ module.exports = {
   plugins: [
     ['vuepress-plugin-mermaidjs', { theme: 'base' }],
     ['vuepress-plugin-seo', {
-      description: () => 'App Config is a configuration loader with schema validation',
+      description: () => 'App Config is an Easy Configuration Loader with Strict Validation',
       author: () => 'Launchcode',
+      image: () => 'https://app-config.dev/hero.png',
       tags: () => ['configuration', 'config', 'conf', 'app-config', 'launchcode', 'lcdev', 'node.js', 'javascript', 'typescript'],
     }],
   ],
