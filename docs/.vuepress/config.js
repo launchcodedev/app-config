@@ -40,11 +40,7 @@ module.exports = {
       {
         title: 'Webpack',
         path: '/guide/webpack/',
-        children: [
-          '/guide/webpack/',
-          '/guide/webpack/inject',
-          '/guide/webpack/example',
-        ],
+        children: ['/guide/webpack/', '/guide/webpack/inject', '/guide/webpack/example'],
       },
       {
         title: 'React Native',
@@ -59,16 +55,12 @@ module.exports = {
       {
         title: 'Specification',
         path: '/spec/',
-        children: ['/spec/'],
+        children: ['/spec/', '/spec/golang', '/spec/rust'],
       },
       {
         title: 'Releases',
         path: '/release-notes',
-        children: [
-          ['/release-notes', 'Release Notes'],
-          '/v2-announcement',
-          '/v2-migration',
-        ],
+        children: [['/release-notes', 'Release Notes'], '/v2-announcement', '/v2-migration'],
       },
     ],
 
@@ -79,12 +71,25 @@ module.exports = {
 
   plugins: [
     ['vuepress-plugin-mermaidjs', { theme: 'base' }],
-    ['vuepress-plugin-seo', {
-      description: () => 'App Config is an Easy Configuration Loader with Strict Validation',
-      author: () => 'Launchcode',
-      image: () => 'https://app-config.dev/hero.png',
-      tags: () => ['configuration', 'config', 'conf', 'app-config', 'launchcode', 'lcdev', 'node.js', 'javascript', 'typescript'],
-    }],
+    [
+      'vuepress-plugin-seo',
+      {
+        description: () => 'App Config is an Easy Configuration Loader with Strict Validation',
+        author: () => 'Launchcode',
+        image: () => 'https://app-config.dev/hero.png',
+        tags: () => [
+          'configuration',
+          'config',
+          'conf',
+          'app-config',
+          'launchcode',
+          'lcdev',
+          'node.js',
+          'javascript',
+          'typescript',
+        ],
+      },
+    ],
   ],
 
   host: '0.0.0.0',

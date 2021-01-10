@@ -2,12 +2,15 @@
 title: Specification
 ---
 
+## Specification
+
 This document defines the exact instructions required to be "App Config Compliant".
+
 What does that mean? App Config intends to be more than a library confined to the Node.js ecosystem.
-So in that spirit, we're providing instructions for language bindings to follow in order to interoperate.
+So in that spirit, we're providing instructions for **other programming languages** to follow in order to interoperate.
 
 Does that mean we want N+1 ports of the App Config package? No, not really.
-This spec defines **minimal required support**, and App Config itself will be free to provide more features.
+This spec defines **minimal required support**, and App Config itself will be free to provide more features that are beyond that scope.
 
 ## High Level Overview
 
@@ -22,7 +25,7 @@ So to be clear, **this spec will not define #1 or #4**. These are non-trivial
 parts of App Config, and would be a lot to replicate truthfully in every language.
 
 Instead, we'll try to outline #2 and #3. These may not describe _every_ feature
-that the App Config library supports, but App Config should faithfully fulfil the requirements.
+that the App Config library supports, but App Config should faithfully fulfill the requirements.
 
 ## Loading App Config through an environment variable
 
@@ -30,7 +33,7 @@ App Config is defined as an environment variable. This variable is named `APP_CO
 Libraries can support different names, but all should use `APP_CONFIG` by default.
 
 This environment variable should be a string, containing text that can be parsed as JSON.
-This JSON value should an object. Libraries should reject invalid JSON strings or non-objects, if possible.
+This JSON value should an object. Libraries should reject invalid JSON strings or non-objects.
 
 ## JSON Schema Validation
 
@@ -67,19 +70,18 @@ The App Config library intends to officially support as many of these libraries 
 Primarily, we believe that we can leverage our existing tooling to "jump start" these efforts.
 
 In many languages, it should be possible to dynamically **generate an App Config Compliant library for you**.
-This is especially easy in strongly typed languages, like golang, Rust or Java.
+This is especially easy in strongly typed languages, like Go, Rust or Java.
 
-We're currently experimenting with:
+We're currently have built-in support for generating: **[Go](./golang.md)** and **[Rust](./rust.md)**.
 
-- golang (using xeipuuv/gojsonschema)
-- rust (using valico)
+File a GitHub [issue](https://github.com/launchcodedev/app-config/issues/new) if you want support in your language of choice.
 
 ## Interoperation
 
 We've defined a really small subset in this document. The last thing we want
 is to encourage not using the features of App Config. Instead, we want App Config
 to provide the tools you need for development. Features like `$extends` and `$env`
-are useful for developers, and be "erased" by the time your app goes to production.
+are useful for developers, and can be "erased" by the time your app goes to production.
 By not needing these features, language support can be simple.
 
 The intention here, is for development to look like:
