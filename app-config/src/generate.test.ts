@@ -178,6 +178,22 @@ describe('Golang File Generation', () => {
 
     expect(generated).toMatchSnapshot();
   });
+
+  it('creates a Go file without singleton', async () => {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        foo: { type: 'string' },
+      },
+    } as const;
+
+    const generated = await generateQuicktype(schema, 'go', 'Configuration', undefined, undefined, {
+      'no-singleton': 'true',
+    });
+
+    expect(generated).toMatchSnapshot();
+  });
 });
 
 describe('Rust File Generation', () => {
