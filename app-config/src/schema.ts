@@ -123,12 +123,11 @@ export async function loadSchema({
         const arr = found.asArray();
 
         if (arr) {
-          if (!arr.every((v) => v.meta.fromSecrets)) {
-            return false;
-          }
+          return arr.every((v) => v.meta.fromSecrets);
         }
 
         if (!found.meta.fromSecrets) {
+          // arrays that are "secret" don't need to be secret themselves, just the items in that array do
           return false;
         }
       }

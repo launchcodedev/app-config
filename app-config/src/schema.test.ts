@@ -1,7 +1,7 @@
 import { JsonObject } from './common';
 import { ParsedValue } from './parsed-value';
 import { generateSymmetricKey, encryptValue } from './encryption';
-import { encryptedDirective, extendsDirective } from './extensions';
+import { encryptedDirective, extendsDirective, envDirective } from './extensions';
 import { loadSchema } from './schema';
 import { withTempFiles } from './test-util';
 
@@ -553,6 +553,35 @@ describe('Validation', () => {
           );
 
           expect(() => validate(parsed.toJSON() as JsonObject, parsed)).toThrow();
+        },
+      );
+    });
+
+    it('allows a "secret" array with all secret values, but not secret itself', async () => {
+      await withTempFiles(
+        {
+          '.app-config.schema.yml': `
+          type: object
+          properties:
+            foo:
+              type: array
+              secret: true
+              items:
+                type: string
+        `,
+        },
+        async (inDir) => {
+          const { validate } = await loadSchema({ directory: inDir('.') });
+          const symmetricKey = await generateSymmetricKey(1);
+
+          const parsed = await ParsedValue.parseLiteral(
+            {
+              foo: [await encryptValue('secret-1', symmetricKey)],
+            },
+            [encryptedDirective(symmetricKey), envDirective()],
+          );
+
+          validate(parsed.toJSON() as JsonObject, parsed);
         },
       );
     });
