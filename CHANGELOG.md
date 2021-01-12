@@ -1,3 +1,8 @@
+## v2.0.1
+
+Fixes schema validation of "secret" values whe an array is marked as `secret: true`.
+This should only check that all items are secret, not that the array itself is secret.
+
 ## Version 2 (v2.0.0)
 
 [🎁 Features](#features-v2-0-0) [🔨 Breaking Changes](#breaking-changes-v2-0-0)
