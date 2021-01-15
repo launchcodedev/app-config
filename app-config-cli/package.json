@@ -29,7 +29,7 @@
     "clean": "rm -rf dist *.tsbuildinfo",
     "lint": "eslint src",
     "fix": "eslint --fix src",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
