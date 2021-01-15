@@ -16,8 +16,7 @@ If you haven't done so already, initialize your local keychain by running:
 yarn app-config secrets init
 ```
 
-In order to trust yourself to this project, you can export your public certificate by running:
-In order to trust yourself in this project, run:
+To trust yourself in this project, you can export your public certificate by running:
 
 ```
 yarn app-config secrets export my_public_key.asc
@@ -28,7 +27,7 @@ APP_CONFIG_SECRETS_KEY=`cat ci.asc` yarn app-config secrets trust my_public_key.
 More on trusting users [here](https://app-config.dev/guide/intro/encryption.html#trusting-users).
 
 **NOTE:**
-We're using the variable `APP_CONFIG_SECRETS_KEY` in order to authorize your key in this repo.
+We're using the variable `APP_CONFIG_SECRETS_KEY` to authorize your key in this repo.
 [More info here](https://app-config.dev/guide/intro/encryption.html#ci-automation).
 
 ---
