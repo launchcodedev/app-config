@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Easy to use configuration loader with schema validation",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -38,10 +38,10 @@
     "@iarna/toml": "3",
     "@lcdev/ts": "0.2",
     "@lcdev/ws-rpc": "0.4",
+    "@types/json-schema": "7",
     "@types/openpgp": "4",
     "@types/prompts": "2",
     "@types/readable-stream": "2",
-    "@types/json-schema": "7",
     "@types/urijs": "1",
     "ajv": "7",
     "ajv-formats": "1",
