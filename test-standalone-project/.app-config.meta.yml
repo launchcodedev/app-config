@@ -1,0 +1,2 @@
+generate:
+  - file: ./src/app-config.d.ts

@@ -41,6 +41,7 @@
     "@types/openpgp": "4",
     "@types/prompts": "2",
     "@types/readable-stream": "2",
+    "@types/json-schema": "7",
     "@types/urijs": "1",
     "ajv": "7",
     "ajv-formats": "1",

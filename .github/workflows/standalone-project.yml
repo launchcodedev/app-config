@@ -1,0 +1,34 @@
+name: standalone-project
+
+on:
+  push:
+    branches: '*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: ./test-standalone-project
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - run: yarn install && yarn build
+      working-directory: ./app-config
+
+    - run: rm -rf ./node_modules ./app-config/node_modules
+      working-directory: .
+
+    - run: yarn install
+    - run: yarn build
+    - run: node ./dist/index.js
