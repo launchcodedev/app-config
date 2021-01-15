@@ -1,3 +1,8 @@
+## v2.0.2
+
+Adds `@types/json-schema` explicitly as a dependency, so that installs are "one step".
+Added a CI test to ensure this doesn't regress.
+
 ## v2.0.1
 
 Fixes schema validation of "secret" values whe an array is marked as `secret: true`.
