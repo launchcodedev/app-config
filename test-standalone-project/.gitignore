@@ -1,0 +1,2 @@
+# don't commit lockfile, we want to test with latest
+yarn.lock

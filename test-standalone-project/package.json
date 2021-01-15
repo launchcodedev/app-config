@@ -1,0 +1,21 @@
+{
+  "name": "test-standalone-project",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "build": "tsc -b",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "echo",
+    "fix": "echo",
+    "test": "echo"
+  },
+  "dependencies": {
+    "@lcdev/app-config": "file:../app-config"
+  },
+  "devDependencies": {
+    "typescript": "*"
+  }
+}
