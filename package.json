@@ -5,6 +5,7 @@
   "workspaces": {
     "packages": [
       "app-config",
+      "app-config-cli",
       "app-config-webpack-plugin",
       "app-config-inject",
       "app-config-react-native-transformer",
