@@ -309,7 +309,7 @@ function fileTypeForFormatOption(option: string): FileType {
 
 export const cli = yargs
   .scriptName('app-config')
-  .wrap(yargs.terminalWidth() - 5)
+  .wrap(Math.max(yargs.terminalWidth() - 5, 80))
   .strict()
   .version()
   .alias('v', 'version')
