@@ -1,3 +1,7 @@
+## v2.0.3
+
+Adds `mockConfig` function that accepts an override for configuration internally.
+
 ## v2.0.2
 
 Adds `@types/json-schema` explicitly as a dependency, so that installs are "one step".
