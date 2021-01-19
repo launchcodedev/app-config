@@ -10,6 +10,7 @@ export interface ExportedConfig {}
 
 // the export of this module is a proxy in front of this value
 let loadedConfig: ExportedConfig | undefined;
+let isMocked = false;
 
 const assertLoaded = () => {
   if (!loadedConfig) {
@@ -24,6 +25,10 @@ export async function loadConfig(
 ): Promise<ExportedConfig> {
   if (loadedConfig) {
     logger.warn('Called loadConfig, even though config was already loaded elsewhere');
+
+    if (isMocked) {
+      throw new AppConfigError(`Called loadConfig after config was mocked with mockConfig!`);
+    }
   }
 
   const { fullConfig } = await loadValidatedConfig(options, schemaOptions);
@@ -119,4 +124,12 @@ export {
 /** @hidden */
 export function resetConfigInternal() {
   loadedConfig = undefined;
+}
+
+/**
+ * Overrides the configuration internally, setting it to the provided override.
+ */
+export function mockConfig(override: ExportedConfig) {
+  loadedConfig = override;
+  isMocked = true;
 }

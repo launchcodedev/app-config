@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { config, loadConfig, resetConfigInternal } from './index';
+import { config, loadConfig, mockConfig, resetConfigInternal } from './index';
 import { withTempFiles } from './test-util';
 
 beforeEach(() => resetConfigInternal());
@@ -142,3 +142,12 @@ describe('loadConfig', () => {
     );
   });
 });
+
+describe('mockConfig', () => {
+  it('mocks out the config expert', async () => {
+    mockConfig({ foo: 'bar' });
+    expect(config).toEqual({ foo: 'bar' });
+    await expect(() => loadConfig()).rejects.toThrow();
+  });
+});
+
