@@ -45,3 +45,12 @@ Find a way to add Webpack configuration (there's plenty out there), and follow o
 ::: details Answer
 File a GitHub issue on our repository, and we'll see if we can officially support it.
 :::
+
+---
+
+**How I use mock App Config?**
+
+::: details Answer
+The App Config module exports an `mockConfig(override)` function. It allows you to
+internally set configuration without loading from files / the environment.
+:::
