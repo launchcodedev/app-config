@@ -150,4 +150,3 @@ describe('mockConfig', () => {
     await expect(() => loadConfig()).rejects.toThrow();
   });
 });
-
