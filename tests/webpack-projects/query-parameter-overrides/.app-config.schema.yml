@@ -1,0 +1,14 @@
+type: object
+additionalProperties: false
+
+required:
+  - urlProperty
+  - longStringProperty
+
+properties:
+  urlProperty:
+    type: string
+    format: uri
+  longStringProperty:
+    type: string
+    minLength: 10
