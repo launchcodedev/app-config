@@ -520,7 +520,7 @@ describe('Dynamic Parsing Extension Loading', () => {
         `,
         '.app-config.meta.yml': `
           parsingExtensions:
-            - ${join(__dirname, '../../test-parsing-extensions/uppercase.js')}
+            - ${join(__dirname, '../../tests/parsing-extensions/uppercase.js')}
         `,
       },
       async (inDir) => {

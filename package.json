@@ -11,7 +11,7 @@
       "app-config-react-native-transformer",
       "app-config-vault",
       "examples/*",
-      "test-parsing-extensions/*",
+      "tests/parsing-extensions/*",
       "test-webpack-projects/*",
       "docs"
     ],
