@@ -1,6 +1,0 @@
-type: object
-additionalProperties: false
-
-properties:
-  propA:
-    type: integer

@@ -15,7 +15,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./test-standalone-project
+        working-directory: ./tests/standalone-project
 
     steps:
     - uses: actions/checkout@v2

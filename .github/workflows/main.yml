@@ -109,7 +109,7 @@ jobs:
     - uses: cypress-io/github-action@v2
       with:
         group: query-parameter-overrides-test
-        working-directory: test-webpack-projects/query-parameter-overrides
+        working-directory: tests/webpack-projects/query-parameter-overrides
         install: false
         record: true
         start: yarn serve -l 8990 ./dist
