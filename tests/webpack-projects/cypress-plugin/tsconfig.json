@@ -1,0 +1,12 @@
+{
+  "extends": "@lcdev/tsconfig",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "es2020",
+    "target": "es2020",
+    "lib": ["dom"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
