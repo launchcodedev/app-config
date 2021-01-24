@@ -40,6 +40,7 @@ replace_version_references() {
   sed -i "s#[\"]@lcdev\\/app-config-inject[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-inject\": \"$VERSION\"#g" $@
   sed -i "s#[\"]@lcdev\\/app-config-vault[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-vault\": \"$VERSION\"#g" $@
   sed -i "s#[\"]@lcdev\\/react-native-app-config-transformer[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/react-native-app-config-transformer\": \"$VERSION\"#g" $@
+  sed -i "s#[\"]@lcdev\\/app-config-exec[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-exec\": \"$VERSION\"#g" $@
 
   git add $@
 }
@@ -50,12 +51,14 @@ new_version ./app-config-webpack-plugin
 new_version ./app-config-inject
 new_version ./app-config-vault
 new_version ./app-config-react-native-transformer
+new_version ./app-config-exec
 
 replace_version_references ./app-config-cli/package.json
 replace_version_references ./app-config-webpack-plugin/package.json
 replace_version_references ./app-config-inject/package.json
 replace_version_references ./app-config-react-native-transformer/package.json
 replace_version_references ./app-config-vault/package.json
+replace_version_references ./app-config-exec/package.json
 replace_version_references ./examples/*/package.json
 
 git commit -m "chore: release v$VERSION"
