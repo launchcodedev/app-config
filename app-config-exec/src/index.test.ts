@@ -69,7 +69,6 @@ describe('execParsingExtension', () => {
 
   it('does not fail on stderr by default', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      // eslint-disable-next-line no-useless-escape, prettier/prettier
       $exec: {
         command: `node -e 'process.stdout.write("stdout"); process.stderr.write("stderr");'`,
       },
