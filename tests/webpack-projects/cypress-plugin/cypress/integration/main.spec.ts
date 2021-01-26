@@ -1,3 +1,5 @@
+import '@app-config/cypress';
+
 describe('Config Loading', () => {
   it('should render the configuration', () => {
     cy.visit('/');

@@ -6,6 +6,6 @@
     "lib": ["dom"],
     "types": ["node", "cypress"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "types.d.ts"],
   "exclude": ["node_modules"]
 }

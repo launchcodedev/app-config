@@ -1,1 +1,1 @@
-import './commands'
+require('@app-config/cypress').register();

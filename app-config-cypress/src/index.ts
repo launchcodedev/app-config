@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import type { ExportedConfig } from '@lcdev/app-config';
 
 export function register() {
@@ -14,8 +15,10 @@ export function register() {
   });
 }
 
-declare namespace Cypress {
-  interface Chainable {
-    setAppConfig(configuration: ExportedConfig): Chainable;
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      setAppConfig(configuration: ExportedConfig): Chainable<Element>;
+    }
   }
 }
