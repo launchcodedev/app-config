@@ -1,4 +1,5 @@
 import '@app-config/cypress';
+import config from '@lcdev/app-config';
 
 describe('Config Loading', () => {
   it('should render the configuration', () => {
@@ -32,5 +33,16 @@ describe('Config Loading', () => {
     cy.visit('/');
 
     cy.get('body').should('contain', `Config Error: should NOT have fewer than 10 characters`);
+  });
+
+  it('uses config from webpack preprocessor', () => {
+    cy.setAppConfig(config);
+    cy.visit('/');
+
+    cy.get('body').should('contain', `"urlProperty": "https://example.com"`);
+    cy.get('body').should(
+      'contain',
+      `"longStringProperty": "some long string with a \\" char and '\\\\n"`,
+    );
   });
 });

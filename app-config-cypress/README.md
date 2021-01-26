@@ -37,4 +37,46 @@ describe('Config Loading', () => {
 
 Use the [Webpack Preprocessor](https://github.com/cypress-io/cypress/blob/master/npm/webpack-preprocessor/README.md) with the [App Config Plugin](https://app-config.dev/guide/webpack/).
 
-Cypress only allows one preprocessor at once, so we cannot provide a small alternative.
+Cypress only allows one preprocessor at once, so we can't provide a preprocessor to do this.
+
+Example `./cypress/plugins/index.js`:
+
+```javascript
+const webpackPreprocessor = require('@cypress/webpack-preprocessor');
+const { default: AppConfigPlugin } = require('@lcdev/app-config-webpack-plugin');
+
+module.exports = (on) => {
+  const options = {
+    webpackOptions: {
+      mode: 'development',
+      module: {
+        rules: [
+          { test: AppConfigPlugin.regex, use: { loader: AppConfigPlugin.loader } },
+          {
+            test: /\.jsx?$/,
+            exclude: [/node_modules/],
+            use: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  presets: ['@babel/preset-env'],
+                },
+              },
+            ],
+          },
+          {
+            test: /\.tsx?$/,
+            use: 'ts-loader',
+            exclude: /node_modules/,
+          },
+        ],
+      },
+      plugins: [new AppConfigPlugin()],
+    },
+  };
+
+  on('file:preprocessor', webpackPreprocessor(options));
+};
+```
+
+This allows you to use `@lcdev/app-config` imports in your tests, hassle free.
