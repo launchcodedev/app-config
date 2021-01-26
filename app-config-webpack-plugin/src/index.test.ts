@@ -56,7 +56,7 @@ describe('frontend-webpack-project example', () => {
         const [{ modules = [] }] = children || [];
 
         expect(
-          modules.some(({ source }) => source?.includes('const configValue = window._appConfig;')),
+          modules.some(({ source }) => source?.includes('const configValue = undefined;')),
         ).toBe(true);
 
         done();
