@@ -32,3 +32,9 @@ describe('Config Loading', () => {
   });
 });
 ```
+
+### Using Config in Tests
+
+Use the [Webpack Preprocessor](https://github.com/cypress-io/cypress/blob/master/npm/webpack-preprocessor/README.md) with the [App Config Plugin](https://app-config.dev/guide/webpack/).
+
+Cypress only allows one preprocessor at once, so we cannot provide a small alternative.
