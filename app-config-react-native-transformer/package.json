@@ -37,6 +37,7 @@
     "react-native": ">=0.45.0"
   },
   "devDependencies": {
+    "@lcdev/app-config": "2",
     "@types/semver": "7"
   },
   "prettier": "@lcdev/prettier",
