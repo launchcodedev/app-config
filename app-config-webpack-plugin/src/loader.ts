@@ -17,13 +17,9 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
 
       const generateText = (config: string) => {
         let generatedText = `
-          const win = window || globalThis || {};
+          const config = ${config};
 
-          if (!win._appConfig) {
-            win._appConfig = ${config};
-          }
-
-          const config = win._appConfig;
+          (window || globalThis || {})._appConfig = config;
 
           export { config };
           export default config;
