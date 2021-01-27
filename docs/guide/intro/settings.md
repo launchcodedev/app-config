@@ -46,7 +46,7 @@ The meta file can contain:
 - `parsingExtensions`: an array of NPM modules to load as parsing extensions ([more](./extensions.md#loading-custom-extensions))
 - `environmentAliases`: an object that maps 'aliases' to real environment names
   - eg. `{ Release: 'production' }`
-- `environmentTypeNames`: a string or array of strings that are used an environment variable names to read for the current environment
+- `environmentSourceNames`: a string or array of strings that are used an environment variable names to read for the current environment
   - eg. `['ENV', 'NODE_ENV', 'MY_ENV']`
 
 ## App Config Settings

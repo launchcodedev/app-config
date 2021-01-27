@@ -9,13 +9,13 @@ export const defaultAliases: EnvironmentAliases = {
 
 export function currentEnvironment(
   environmentAliases: EnvironmentAliases = defaultAliases,
-  environmentTypeNames: string[] | string = ['APP_CONFIG_ENV', 'NODE_ENV', 'ENV'],
+  environmentSourceNames: string[] | string = ['APP_CONFIG_ENV', 'NODE_ENV', 'ENV'],
 ) {
   let value: string | undefined;
 
-  for (const name of Array.isArray(environmentTypeNames)
-    ? environmentTypeNames
-    : [environmentTypeNames]) {
+  for (const name of Array.isArray(environmentSourceNames)
+    ? environmentSourceNames
+    : [environmentSourceNames]) {
     if (process.env[name]?.length) {
       value = process.env[name];
       break;

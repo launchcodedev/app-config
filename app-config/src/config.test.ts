@@ -631,7 +631,7 @@ describe('Environment Aliases', () => {
         '.app-config.meta.yml': `
           environmentAliases:
             Release: production
-          environmentTypeNames:
+          environmentSourceNames:
             - CONFIGURATION
         `,
       },
@@ -646,7 +646,7 @@ describe('Environment Aliases', () => {
 });
 
 describe('Environment Variable Name', () => {
-  it('uses environmentTypeNames', async () => {
+  it('uses environmentSourceNames', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
@@ -656,7 +656,7 @@ describe('Environment Variable Name', () => {
           foo: bar-production
         `,
         '.app-config.meta.yml': `
-          environmentTypeNames: CONFIGURATION
+          environmentSourceNames: CONFIGURATION
         `,
       },
       async (inDir) => {
@@ -668,7 +668,7 @@ describe('Environment Variable Name', () => {
     );
   });
 
-  it('uses environmentTypeNames for $env', async () => {
+  it('uses environmentSourceNames for $env', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
@@ -678,7 +678,7 @@ describe('Environment Variable Name', () => {
               production: bar-production
         `,
         '.app-config.meta.yml': `
-          environmentTypeNames: CONFIGURATION
+          environmentSourceNames: CONFIGURATION
         `,
       },
       async (inDir) => {
@@ -690,7 +690,7 @@ describe('Environment Variable Name', () => {
     );
   });
 
-  it('uses array for environmentTypeNames', async () => {
+  it('uses array for environmentSourceNames', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
@@ -700,7 +700,7 @@ describe('Environment Variable Name', () => {
               production: bar-production
         `,
         '.app-config.meta.yml': `
-          environmentTypeNames:
+          environmentSourceNames:
             - CONFIGURATION
             - OTHER_ENV
         `,
@@ -714,7 +714,7 @@ describe('Environment Variable Name', () => {
     );
   });
 
-  it('uses environmentTypeNames for $APP_CONFIG_ENV substitution', async () => {
+  it('uses environmentSourceNames for $APP_CONFIG_ENV substitution', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
@@ -722,7 +722,7 @@ describe('Environment Variable Name', () => {
             $subs: $APP_CONFIG_ENV
         `,
         '.app-config.meta.yml': `
-          environmentTypeNames:
+          environmentSourceNames:
             - CONFIGURATION
         `,
       },
