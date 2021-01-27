@@ -74,24 +74,9 @@ export async function loadConfig({
 
   const meta = await loadMetaConfig({ directory });
 
-  let environmentAliases = environmentAliasesArg ?? defaultAliases;
-  let environmentTypeNames = environmentTypeNamesArg;
-
-  if (meta.value.environmentAliases) {
-    logger.verbose('Using environmentAliases override from meta file');
-
-    ({
-      value: { environmentAliases },
-    } = meta);
-  }
-
-  if (meta.value.environmentTypeNames) {
-    logger.verbose('Using environmentTypeNames override from meta file');
-
-    ({
-      value: { environmentTypeNames },
-    } = meta);
-  }
+  const environmentTypeNames = environmentTypeNamesArg ?? meta.value.environmentTypeNames;
+  const environmentAliases =
+    environmentAliasesArg ?? meta.value.environmentAliases ?? defaultAliases;
 
   const parsingExtensions =
     parsingExtensionsArg ??
