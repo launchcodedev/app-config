@@ -31,6 +31,8 @@ export interface MetaProperties {
   encryptionKeys?: EncryptedSymmetricKey[];
   generate?: GenerateFile[];
   parsingExtensions?: (ParsingExtensionWithOptions | string)[];
+  environmentAliases?: Record<string, string>;
+  environmentSourceNames?: string[] | string;
 }
 
 export interface MetaConfiguration {
@@ -109,14 +111,14 @@ export async function loadMetaConfigLazy(options?: Options): Promise<MetaConfigu
   return metaConfig;
 }
 
-export async function loadExtraParsingExtensions(options?: Options): Promise<ParsingExtension[]> {
-  return loadMetaConfig(options).then(({ value }) => {
-    if (value.parsingExtensions) {
-      return Promise.all(value.parsingExtensions.map(loadExtraParsingExtension));
-    }
+export async function loadExtraParsingExtensions({
+  value,
+}: MetaConfiguration): Promise<ParsingExtension[]> {
+  if (value.parsingExtensions) {
+    return Promise.all(value.parsingExtensions.map(loadExtraParsingExtension));
+  }
 
-    return Promise.resolve([]);
-  });
+  return Promise.resolve([]);
 }
 
 export async function loadExtraParsingExtension(

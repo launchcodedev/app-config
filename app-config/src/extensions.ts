@@ -14,17 +14,18 @@ export function defaultExtensions(
   aliases: EnvironmentAliases = defaultAliases,
   environmentOverride?: string,
   symmetricKey?: DecryptedSymmetricKey,
+  environmentSourceNames?: string[] | string,
 ): ParsingExtension[] {
   return [
     v1Compat(),
-    envDirective(aliases, environmentOverride),
+    envDirective(aliases, environmentOverride, environmentSourceNames),
     extendsDirective(),
     extendsSelfDirective(),
     overrideDirective(),
     encryptedDirective(symmetricKey),
     timestampDirective(),
     unescape$Directives(),
-    environmentVariableSubstitution(aliases, environmentOverride),
+    environmentVariableSubstitution(aliases, environmentOverride, environmentSourceNames),
     gitRefDirectives(),
   ];
 }
@@ -81,8 +82,9 @@ export function extendsSelfDirective(): ParsingExtension {
 export function envDirective(
   aliases: EnvironmentAliases = defaultAliases,
   environmentOverride?: string,
+  environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const environment = environmentOverride ?? currentEnvironment(aliases);
+  const environment = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
   const metadata = { shouldOverride: true };
 
   return (value, [_, key]) => {
@@ -184,6 +186,7 @@ export function unescape$Directives(): ParsingExtension {
 export function environmentVariableSubstitution(
   aliases: EnvironmentAliases = defaultAliases,
   environmentOverride?: string,
+  environmentSourceNames?: string[] | string,
 ): ParsingExtension {
   const performAllSubstitutions = (text: string): string => {
     let output = text;
@@ -216,7 +219,8 @@ export function environmentVariableSubstitution(
           // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
           output = performAllSubstitutions(output.replace(fullMatch, fallback));
         } else if (varName === 'APP_CONFIG_ENV') {
-          const envType = environmentOverride ?? currentEnvironment(aliases);
+          const envType =
+            environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
           if (!envType) {
             throw new AppConfigError(`Could not find environment variable ${varName}`);

@@ -6,7 +6,7 @@ import { FlexibleFileSource, FileSource, EnvironmentSource, FallbackSource } fro
 import { defaultExtensions, defaultEnvExtensions, markAllValuesAsSecret } from './extensions';
 import { loadSchema, JSONSchema, Options as SchemaOptions } from './schema';
 import { NotFoundError, WasNotObject, ReservedKeyError } from './errors';
-import { loadExtraParsingExtensions } from './meta';
+import { loadMetaConfig, loadExtraParsingExtensions } from './meta';
 import { logger } from './logging';
 
 export interface Options {
@@ -17,6 +17,7 @@ export interface Options {
   extensionEnvironmentVariableNames?: string[];
   environmentOverride?: string;
   environmentAliases?: EnvironmentAliases;
+  environmentSourceNames?: string[] | string;
   parsingExtensions?: ParsingExtension[];
   secretsFileExtensions?: ParsingExtension[];
   environmentExtensions?: ParsingExtension[];
@@ -45,9 +46,10 @@ export async function loadConfig({
   environmentVariableName = 'APP_CONFIG',
   extensionEnvironmentVariableNames = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
   environmentOverride,
-  environmentAliases = defaultAliases,
-  parsingExtensions = defaultExtensions(environmentAliases, environmentOverride),
-  secretsFileExtensions = parsingExtensions.concat(markAllValuesAsSecret()),
+  environmentAliases: environmentAliasesArg,
+  environmentSourceNames: environmentSourceNamesArg,
+  parsingExtensions: parsingExtensionsArg,
+  secretsFileExtensions: secretsFileExtensionsArg,
   environmentExtensions = defaultEnvExtensions(),
   defaultValues,
 }: Options = {}): Promise<Configuration> {
@@ -70,26 +72,44 @@ export async function loadConfig({
     if (!(error instanceof NotFoundError)) throw error;
   }
 
-  logger.verbose(`Trying to read files for configuration`);
+  const meta = await loadMetaConfig({ directory });
 
-  const extraParsingExtensions = await loadExtraParsingExtensions({ directory });
+  const environmentSourceNames = environmentSourceNamesArg ?? meta.value.environmentSourceNames;
+  const environmentAliases =
+    environmentAliasesArg ?? meta.value.environmentAliases ?? defaultAliases;
+
+  const parsingExtensions =
+    parsingExtensionsArg ??
+    defaultExtensions(environmentAliases, environmentOverride, undefined, environmentSourceNames);
+
+  const secretsFileExtensions =
+    secretsFileExtensionsArg ?? parsingExtensions.concat(markAllValuesAsSecret());
+
+  logger.verbose(`Loading extra parsing extensions`);
+  const extraParsingExtensions = await loadExtraParsingExtensions(meta);
 
   logger.verbose(`${extraParsingExtensions.length} user-defined parsing extensions found`);
 
   parsingExtensions.splice(0, 0, ...extraParsingExtensions);
   secretsFileExtensions.splice(0, 0, ...extraParsingExtensions);
 
+  logger.verbose(`Trying to read files for configuration`);
+
   const [mainConfig, secrets] = await Promise.all([
     new FlexibleFileSource(
       join(directory, fileNameBase),
       environmentOverride,
       environmentAliases,
+      undefined,
+      environmentSourceNames,
     ).read(parsingExtensions),
 
     new FlexibleFileSource(
       join(directory, secretsFileNameBase),
       environmentOverride,
       environmentAliases,
+      undefined,
+      environmentSourceNames,
     )
       .read(secretsFileExtensions)
       .catch((error) => {
