@@ -37,7 +37,7 @@ describe('frontend-webpack-project example', () => {
 
         expect(
           modules.some(({ source }) =>
-            source?.includes('const config = {"externalApiUrl":"https://example.com"};'),
+            source?.includes('const configValue = {"externalApiUrl":"https://example.com"};'),
           ),
         ).toBe(true);
 
@@ -56,7 +56,7 @@ describe('frontend-webpack-project example', () => {
         const [{ modules = [] }] = children || [];
 
         expect(
-          modules.some(({ source }) => source?.includes('const config = window._appConfig;')),
+          modules.some(({ source }) => source?.includes('const configValue = undefined;')),
         ).toBe(true);
 
         done();
@@ -77,7 +77,7 @@ describe('frontend-webpack-project example', () => {
 
         expect(
           modules.some(({ source }) =>
-            source?.includes('const config = {"externalApiUrl":"https://localhost:3999"};'),
+            source?.includes('const configValue = {"externalApiUrl":"https://localhost:3999"};'),
           ),
         ).toBe(true);
 
@@ -116,7 +116,7 @@ describe('frontend-webpack-project example', () => {
 
           expect(
             modules.some(({ source }) =>
-              source?.includes('const config = {"externalApiUrl":"https://localhost:9782"};'),
+              source?.includes('const configValue = {"externalApiUrl":"https://localhost:9782"};'),
             ),
           ).toBe(true);
 

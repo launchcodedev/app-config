@@ -1,0 +1,14 @@
+{
+  "extends": "@lcdev/tsconfig",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "lib": ["dom"],
+    "types": ["node", "cypress"]
+  },
+  "include": ["src/**/*", "types.d.ts"],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../app-config" }
+  ]
+}

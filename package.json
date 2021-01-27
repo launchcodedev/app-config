@@ -10,6 +10,7 @@
       "app-config-inject",
       "app-config-react-native-transformer",
       "app-config-vault",
+      "app-config-cypress",
       "examples/*",
       "tests/parsing-extensions/*",
       "tests/webpack-projects/*",

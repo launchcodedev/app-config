@@ -3,6 +3,8 @@ import { getOptions, stringifyRequest } from 'loader-utils';
 import type { Options } from './index';
 import { loadConfig } from './compat';
 
+const privateName = '_appConfig';
+
 const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
@@ -17,7 +19,13 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
 
       const generateText = (config: string) => {
         let generatedText = `
-          const config = ${config};
+          const configValue = ${config};
+
+          const globalNamespace = window || globalThis || {};
+
+          // if the global was already defined, use it (and define it if not)
+          const config = globalNamespace.${privateName} =
+            (globalNamespace.${privateName} || configValue);
 
           export { config };
           export default config;
@@ -44,7 +52,7 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
 
       // NOTE: when using webpack-dev-server, we'll just ignore the headerInjection
       if (headerInjection && !process.env.WEBPACK_DEV_SERVER) {
-        return callback(null, generateText('window._appConfig'));
+        return callback(null, generateText('undefined'));
       }
 
       return callback(null, generateText(JSON.stringify(fullConfig)));
