@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cypress",
   "description": "Cypress testing plugin for @lcdev/app-config",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -29,8 +29,7 @@
     "test": "jest",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@lcdev/app-config": "2",
     "cypress": "6"
