@@ -1,3 +1,7 @@
+## v2.0.4
+
+Support for Cypress through [@app-config/cypress](https://www.npmjs.com/package/@app-config/cypress).
+
 ## v2.0.3
 
 Adds `mockConfig` function that accepts an override for configuration internally.
