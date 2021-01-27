@@ -18,9 +18,12 @@
     "ajv": "7"
   },
   "devDependencies": {
+    "@babel/core": "7",
+    "@babel/preset-env": "7",
     "@cypress/webpack-preprocessor": "5",
     "@lcdev/app-config-webpack-plugin": "2",
     "@lcdev/tsconfig": "0.2",
+    "babel-loader": "8",
     "cross-env": "7",
     "cypress": "6",
     "html-webpack-plugin": "4",
