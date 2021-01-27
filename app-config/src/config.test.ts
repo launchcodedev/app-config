@@ -573,3 +573,51 @@ describe('Dynamic Parsing Extension Loading', () => {
     );
   });
 });
+
+describe('Environment Aliases', () => {
+  it('uses environmentAliases as an override', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo: bar-default
+        `,
+        '.app-config.production.yml': `
+          foo: bar-production
+        `,
+        '.app-config.meta.yml': `
+          environmentAliases:
+            Release: production
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_ENV = 'Release';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'bar-production' });
+      },
+    );
+  });
+
+  it('uses environmentAliases in $env', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $env:
+              default: bar-default
+              production: bar-production
+        `,
+        '.app-config.meta.yml': `
+          environmentAliases:
+            Release: production
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_ENV = 'Release';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'bar-production' });
+      },
+    );
+  });
+});
