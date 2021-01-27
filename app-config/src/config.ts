@@ -17,6 +17,7 @@ export interface Options {
   extensionEnvironmentVariableNames?: string[];
   environmentOverride?: string;
   environmentAliases?: EnvironmentAliases;
+  environmentTypeNames?: string[] | string;
   parsingExtensions?: ParsingExtension[];
   secretsFileExtensions?: ParsingExtension[];
   environmentExtensions?: ParsingExtension[];
@@ -46,6 +47,7 @@ export async function loadConfig({
   extensionEnvironmentVariableNames = ['APP_CONFIG_EXTEND', 'APP_CONFIG_CI'],
   environmentOverride,
   environmentAliases: environmentAliasesArg,
+  environmentTypeNames: environmentTypeNamesArg,
   parsingExtensions: parsingExtensionsArg,
   secretsFileExtensions: secretsFileExtensionsArg,
   environmentExtensions = defaultEnvExtensions(),
@@ -73,6 +75,7 @@ export async function loadConfig({
   const meta = await loadMetaConfig({ directory });
 
   let environmentAliases = environmentAliasesArg ?? defaultAliases;
+  let environmentTypeNames = environmentTypeNamesArg;
 
   if (meta.value.environmentAliases) {
     logger.verbose('Using environmentAliases override from meta file');
@@ -82,8 +85,18 @@ export async function loadConfig({
     } = meta);
   }
 
+  if (meta.value.environmentTypeNames) {
+    logger.verbose('Using environmentTypeNames override from meta file');
+
+    ({
+      value: { environmentTypeNames },
+    } = meta);
+  }
+
   const parsingExtensions =
-    parsingExtensionsArg ?? defaultExtensions(environmentAliases, environmentOverride);
+    parsingExtensionsArg ??
+    defaultExtensions(environmentAliases, environmentOverride, undefined, environmentTypeNames);
+
   const secretsFileExtensions =
     secretsFileExtensionsArg ?? parsingExtensions.concat(markAllValuesAsSecret());
 
@@ -102,12 +115,16 @@ export async function loadConfig({
       join(directory, fileNameBase),
       environmentOverride,
       environmentAliases,
+      undefined,
+      environmentTypeNames,
     ).read(parsingExtensions),
 
     new FlexibleFileSource(
       join(directory, secretsFileNameBase),
       environmentOverride,
       environmentAliases,
+      undefined,
+      environmentTypeNames,
     )
       .read(secretsFileExtensions)
       .catch((error) => {

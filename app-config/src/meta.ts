@@ -32,6 +32,7 @@ export interface MetaProperties {
   generate?: GenerateFile[];
   parsingExtensions?: (ParsingExtensionWithOptions | string)[];
   environmentAliases?: Record<string, string>;
+  environmentTypeNames?: string[] | string;
 }
 
 export interface MetaConfiguration {

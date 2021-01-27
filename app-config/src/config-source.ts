@@ -81,6 +81,7 @@ export class FlexibleFileSource extends ConfigSource {
     private readonly environmentOverride?: string,
     private readonly environmentAliases: EnvironmentAliases = defaultAliases,
     private readonly fileExtensions: string[] = ['yml', 'yaml', 'toml', 'json', 'json5'],
+    private readonly environmentTypeNames?: string[] | string,
   ) {
     super();
   }
@@ -88,7 +89,8 @@ export class FlexibleFileSource extends ConfigSource {
   // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource
   private async resolveSource(): Promise<FileSource> {
     const aliases = this.environmentAliases;
-    const environment = this.environmentOverride ?? currentEnvironment(aliases);
+    const environment =
+      this.environmentOverride ?? currentEnvironment(aliases, this.environmentTypeNames);
     const environmentAlias = Object.entries(aliases).find(([, v]) => v === environment)?.[0];
 
     const filesToTry = [];

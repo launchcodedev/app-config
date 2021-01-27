@@ -620,4 +620,118 @@ describe('Environment Aliases', () => {
       },
     );
   });
+
+  it('uses environmentAliases for $APP_CONFIG_ENV substitution', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $subs: bar-$APP_CONFIG_ENV
+        `,
+        '.app-config.meta.yml': `
+          environmentAliases:
+            Release: production
+          environmentTypeNames:
+            - CONFIGURATION
+        `,
+      },
+      async (inDir) => {
+        process.env.CONFIGURATION = 'Release';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'bar-production' });
+      },
+    );
+  });
+});
+
+describe('Environment Variable Name', () => {
+  it('uses environmentTypeNames', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo: bar-default
+        `,
+        '.app-config.production.yml': `
+          foo: bar-production
+        `,
+        '.app-config.meta.yml': `
+          environmentTypeNames: CONFIGURATION
+        `,
+      },
+      async (inDir) => {
+        process.env.CONFIGURATION = 'production';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'bar-production' });
+      },
+    );
+  });
+
+  it('uses environmentTypeNames for $env', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $env:
+              default: bar-default
+              production: bar-production
+        `,
+        '.app-config.meta.yml': `
+          environmentTypeNames: CONFIGURATION
+        `,
+      },
+      async (inDir) => {
+        process.env.CONFIGURATION = 'production';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'bar-production' });
+      },
+    );
+  });
+
+  it('uses array for environmentTypeNames', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $env:
+              default: bar-default
+              production: bar-production
+        `,
+        '.app-config.meta.yml': `
+          environmentTypeNames:
+            - CONFIGURATION
+            - OTHER_ENV
+        `,
+      },
+      async (inDir) => {
+        process.env.OTHER_ENV = 'production';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'bar-production' });
+      },
+    );
+  });
+
+  it('uses environmentTypeNames for $APP_CONFIG_ENV substitution', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          foo:
+            $subs: $APP_CONFIG_ENV
+        `,
+        '.app-config.meta.yml': `
+          environmentTypeNames:
+            - CONFIGURATION
+        `,
+      },
+      async (inDir) => {
+        process.env.CONFIGURATION = 'production';
+        const { fullConfig } = await loadConfig({ directory: inDir('.') });
+
+        expect(fullConfig).toEqual({ foo: 'production' });
+      },
+    );
+  });
 });
