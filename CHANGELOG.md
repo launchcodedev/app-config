@@ -1,3 +1,8 @@
+## v2.0.5
+
+Adds support for meta file properties `environmentAliases` and `environmentSourceNames`.
+([PR](https://github.com/launchcodedev/app-config/pull/98)).
+
 ## v2.0.4
 
 Support for Cypress through [@app-config/cypress](https://www.npmjs.com/package/@app-config/cypress).
