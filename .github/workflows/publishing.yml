@@ -84,3 +84,19 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-vault/package.json
+
+  app-config-cypress:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - run: yarn install
+    - run: yarn build
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-cypress/package.json
