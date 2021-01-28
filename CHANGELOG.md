@@ -1,3 +1,7 @@
+## v2.0.6
+
+Returns an unsubscribe callback from `mockConfig`.
+
 ## v2.0.5
 
 Adds support for meta file properties `environmentAliases` and `environmentSourceNames`.
