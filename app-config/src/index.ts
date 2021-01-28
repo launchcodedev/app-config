@@ -129,7 +129,12 @@ export function resetConfigInternal() {
 /**
  * Overrides the configuration internally, setting it to the provided override.
  */
-export function mockConfig(override: ExportedConfig) {
+export function mockConfig(override: ExportedConfig): () => void {
   loadedConfig = override;
   isMocked = true;
+
+  return () => {
+    loadedConfig = undefined;
+    isMocked = false;
+  };
 }
