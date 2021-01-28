@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config-inject",
   "description": "Runtime injection of app-config into static HTML files",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
