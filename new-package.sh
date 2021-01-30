@@ -1,0 +1,108 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+if [ "$#" == "0" ]; then
+  printf "No package name given\n"
+  exit 1
+fi
+
+echo -n "Description: "
+read description
+
+NAME=$1
+PACKAGE_NAME=app-config-$NAME
+PACKAGE_VERSION=$(jq ".version" ./app-config/package.json)
+
+PACKAGE_JSON='
+{
+  "name": "@app-config/$NAME",
+  "description": "$description",
+  "version": "$version",
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/launchcodedev/app-config.git"
+  },
+  "main": "dist/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist",
+    "!*.tsbuildinfo",
+    "!*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "build:es": "tsc -b tsconfig.es.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint src",
+    "fix": "eslint --fix src",
+    "test": "jest",
+    "prepublishOnly": "yarn clean && yarn build && yarn build:es"
+  },
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "@lcdev/app-config": "2"
+  },
+  "devDependencies": {
+    "@lcdev/app-config": "2"
+  },
+  "prettier": "@lcdev/prettier",
+  "jest": {
+    "preset": "@lcdev/jest"
+  }
+}
+'
+
+TSCONFIG='
+{
+  "extends": "@lcdev/tsconfig",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../app-config" }
+  ]
+}
+'
+
+echo "-- Adding to workspace"
+WORKSPACE_PACKAGE_JSON=$(\
+  jq ".workspaces.packages += [\"app-config-$NAME\"]" package.json
+)
+echo $WORKSPACE_PACKAGE_JSON > package.json
+npx prettier -w ./package.json
+
+echo "-- Creating ./$PACKAGE_NAME"
+mkdir -p ./$PACKAGE_NAME
+
+echo "  -- Creating ./package.json"
+echo "$PACKAGE_JSON" | jq . > $PACKAGE_NAME/package.json
+
+echo "  -- Creating ./.eslintrc.js"
+cp ./app-config/.eslintrc.js ./$PACKAGE_NAME/.eslintrc.js
+
+echo "  -- Creating ./tsconfig.json"
+echo "$TSCONFIG" | jq . > $PACKAGE_NAME/tsconfig.json
+
+echo "  -- Creating ./tsconfig.es.json"
+cp ./app-config/tsconfig.es.json ./$PACKAGE_NAME/tsconfig.es.json
+
+echo "  -- Creating ./README.md"
+touch ./$PACKAGE_NAME/README.md
+
+echo "  -- Creating ./src/index.ts"
+mkdir ./$PACKAGE_NAME/src
+touch ./$PACKAGE_NAME/src/index.ts
+
+yarn install

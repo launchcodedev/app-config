@@ -4,7 +4,7 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
     { "path": "../app-config" }
