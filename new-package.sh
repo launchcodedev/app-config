@@ -8,17 +8,17 @@ if [ "$#" == "0" ]; then
 fi
 
 echo -n "Description: "
-read description
+read PACKAGE_DESCRIPTION
 
 NAME=$1
 PACKAGE_NAME=app-config-$NAME
-PACKAGE_VERSION=$(jq ".version" ./app-config/package.json)
+PACKAGE_VERSION=$(jq -r ".version" ./app-config/package.json)
 
-PACKAGE_JSON='
+PACKAGE_JSON=$(printf '
 {
-  "name": "@app-config/$NAME",
-  "description": "$description",
-  "version": "$version",
+  "name": "@app-config/%s",
+  "description": "%s",
+  "version": "%s",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -59,7 +59,7 @@ PACKAGE_JSON='
     "preset": "@lcdev/jest"
   }
 }
-'
+' $NAME $PACKAGE_DESCRIPTION $PACKAGE_VERSION)
 
 TSCONFIG='
 {
@@ -87,13 +87,14 @@ echo "-- Creating ./$PACKAGE_NAME"
 mkdir -p ./$PACKAGE_NAME
 
 echo "  -- Creating ./package.json"
-echo "$PACKAGE_JSON" | jq . > $PACKAGE_NAME/package.json
+echo "$PACKAGE_JSON" > $PACKAGE_NAME/package.json
+npx prettier -w $PACKAGE_NAME/package.json
 
 echo "  -- Creating ./.eslintrc.js"
 cp ./app-config/.eslintrc.js ./$PACKAGE_NAME/.eslintrc.js
 
 echo "  -- Creating ./tsconfig.json"
-echo "$TSCONFIG" | jq . > $PACKAGE_NAME/tsconfig.json
+echo "$TSCONFIG" > $PACKAGE_NAME/tsconfig.json
 
 echo "  -- Creating ./tsconfig.es.json"
 cp ./app-config/tsconfig.es.json ./$PACKAGE_NAME/tsconfig.es.json
