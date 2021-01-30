@@ -35,7 +35,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@iarna/toml": "3",
+    "@app-config/core": "2",
     "@lcdev/ts": "0.2",
     "@lcdev/ws-rpc": "0.4",
     "@types/json-schema": "7",
@@ -50,10 +50,7 @@
     "env-paths": "2",
     "execa": "5",
     "fs-extra": "9",
-    "js-yaml": "^3.13.1",
     "json-schema-ref-parser": "9",
-    "json5": "2",
-    "lodash.merge": "^4.6.2",
     "openpgp": "^4.3.0",
     "prompts": "2",
     "quicktype-core": "6.0.69",

@@ -1,5 +1,6 @@
 import getPort from 'get-port';
 import { resolve } from 'path';
+import { Json, isWindows } from '@app-config/core';
 import {
   startAgent,
   connectAgent,
@@ -14,7 +15,6 @@ import {
   loadPrivateKey,
   encryptValue,
 } from './encryption';
-import { Json, isWindows } from './common';
 import { saveSettings } from './settings';
 import { withTempFiles } from './test-util';
 

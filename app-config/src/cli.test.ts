@@ -1,6 +1,6 @@
 import execa from 'execa';
 import { join } from 'path';
-import { isWindows } from './common';
+import { isWindows } from '@app-config/core';
 import { withTempFiles } from './test-util';
 
 const run = async (argv: string[], options?: execa.Options) =>

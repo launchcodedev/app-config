@@ -1,4 +1,4 @@
-import { logger } from './logging';
+import { logger } from '@app-config/core';
 import { loadSettingsLazy, saveSettings } from './settings';
 
 interface SelfSigned {

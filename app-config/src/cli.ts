@@ -13,8 +13,16 @@ import {
   renameInFlattenedTree,
   Json,
   JsonObject,
-} from './common';
-import { FileType, stringify } from './config-source';
+  FileType,
+  stringify,
+  checkTTY,
+  logger,
+  LogLevel,
+  AppConfigError,
+  FailedToSelectSubObject,
+  EmptyStdinOrPromptResponse,
+} from '@app-config/core';
+
 import {
   Configuration,
   Options as LoadConfigOptions,
@@ -43,8 +51,6 @@ import { shouldUseSecretAgent, startAgent, disconnectAgents } from './secret-age
 import { loadSchema, JSONSchema } from './schema';
 import { generateTypeFiles } from './generate';
 import { validateAllConfigVariants } from './validation';
-import { checkTTY, logger, LogLevel } from './logging';
-import { AppConfigError, FailedToSelectSubObject, EmptyStdinOrPromptResponse } from './errors';
 
 enum OptionGroups {
   Options = 'Options:',

@@ -4,18 +4,23 @@ import * as pgp from 'openpgp';
 import { inspect } from 'util';
 import { generateKey, encrypt, decrypt, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
-import { Json, promptUser, promptUserWithRetry } from './common';
-import { stringify, FileType } from './config-source';
-import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
-import { settingsDirectory } from './settings';
 import {
+  Json,
+  promptUser,
+  promptUserWithRetry,
+  stringify,
+  FileType,
   AppConfigError,
   EmptyStdinOrPromptResponse,
   InvalidEncryptionKey,
   EncryptionEncoding,
   SecretsRequireTTYError,
-} from './errors';
-import { logger, checkTTY } from './logging';
+  logger,
+  checkTTY,
+} from '@app-config/core';
+
+import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
+import { settingsDirectory } from './settings';
 import { connectAgentLazy, shouldUseSecretAgent } from './secret-agent';
 
 export type Key = pgp.key.Key & { keyName?: string };

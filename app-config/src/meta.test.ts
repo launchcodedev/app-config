@@ -1,5 +1,5 @@
 import { mkdirp } from 'fs-extra';
-import { FileType } from './config-source';
+import { FileType } from '@app-config/core';
 import { loadMetaConfig } from './meta';
 import { withTempFiles } from './test-util';
 

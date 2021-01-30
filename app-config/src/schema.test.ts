@@ -1,5 +1,5 @@
-import { JsonObject } from './common';
-import { ParsedValue } from './parsed-value';
+import { JsonObject, ParsedValue } from '@app-config/core';
+
 import { generateSymmetricKey, encryptValue } from './encryption';
 import { encryptedDirective, extendsDirective, envDirective } from './extensions';
 import { loadSchema } from './schema';

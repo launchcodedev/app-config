@@ -1,9 +1,8 @@
 import { inspect } from 'util';
 import type { ValidateFunction } from 'ajv';
+import { AppConfigError, AccessingAppConfig, logger } from '@app-config/core';
 import { loadValidatedConfig, Options } from './config';
 import { Options as SchemaOptions } from './schema';
-import { AppConfigError, AccessingAppConfig } from './errors';
-import { logger } from './logging';
 
 // the config type that is exported to consumers and can be augmented
 export interface ExportedConfig {}
@@ -88,15 +87,6 @@ export {
 } from './config';
 export { loadSchema, Options as SchemaLoadingOptions } from './schema';
 export { loadMetaConfig } from './meta';
-export { setLogLevel, LogLevel } from './logging';
-export { currentEnvironment, defaultAliases } from './environment';
-export { Json } from './common';
-export {
-  ParsedValue,
-  ParsedValueMetadata,
-  ParsingExtension,
-  ParsingExtensionTransform,
-} from './parsed-value';
 export {
   defaultExtensions,
   defaultEnvExtensions,
@@ -107,7 +97,17 @@ export {
   extendsSelfDirective,
   overrideDirective,
 } from './extensions';
+
 export {
+  setLogLevel,
+  LogLevel,
+  currentEnvironment,
+  defaultAliases,
+  Json,
+  ParsedValue,
+  ParsedValueMetadata,
+  ParsingExtension,
+  ParsingExtensionTransform,
   ConfigSource,
   FileSource,
   FlexibleFileSource,
@@ -119,7 +119,7 @@ export {
   stringify,
   filePathAssumedType,
   parseRawString,
-} from './config-source';
+} from '@app-config/core';
 
 /** @hidden */
 export function resetConfigInternal() {

@@ -14,7 +14,8 @@
       "examples/*",
       "tests/parsing-extensions/*",
       "tests/webpack-projects/*",
-      "docs"
+      "docs",
+      "app-config-core"
     ],
     "nohoist": [
       "**/@types/react-native"

@@ -3,18 +3,24 @@ import Ajv, { _ as ajvTemplate } from 'ajv';
 import standalone from 'ajv/dist/standalone';
 import addFormats from 'ajv-formats';
 import RefParser, { JSONSchema, bundle } from 'json-schema-ref-parser';
-import { JsonObject, isObject, isWindows } from './common';
-import { ParsedValue, ParsingExtension } from './parsed-value';
-import { defaultAliases, EnvironmentAliases } from './environment';
 import {
+  JsonObject,
+  isObject,
+  isWindows,
+  ParsedValue,
+  ParsingExtension,
+  defaultAliases,
+  EnvironmentAliases,
   EnvironmentSource,
   FlexibleFileSource,
   FileSource,
   parseRawString,
   filePathAssumedType,
-} from './config-source';
-import { ValidationError, WasNotObject, NotFoundError } from './errors';
-import { logger } from './logging';
+  ValidationError,
+  WasNotObject,
+  NotFoundError,
+  logger,
+} from '@app-config/core';
 
 export { JSONSchema };
 

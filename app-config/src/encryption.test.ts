@@ -1,6 +1,6 @@
 import { readFile, stat } from 'fs-extra';
-import { SecretsRequireTTYError } from './errors';
-import { isWindows } from './common';
+import { SecretsRequireTTYError, isWindows } from '@app-config/core';
+
 import {
   initializeKeys,
   initializeKeysManually,

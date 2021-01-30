@@ -1,13 +1,22 @@
 import { join, resolve } from 'path';
 import { pathExists } from 'fs-extra';
-import { extendsDirective, overrideDirective } from './extensions';
-import { ParsingExtension } from './parsed-value';
-import { FlexibleFileSource, FileSource, FallbackSource, FileType } from './config-source';
+import {
+  ParsingExtension,
+  FlexibleFileSource,
+  FileSource,
+  FallbackSource,
+  FileType,
+  JsonObject,
+  NotFoundError,
+  AppConfigError,
+  logger,
+} from '@app-config/core';
+
 import { EncryptedSymmetricKey } from './encryption';
-import { JsonObject } from './common';
-import { NotFoundError, AppConfigError } from './errors';
+
 import { GenerateFile } from './generate';
-import { logger } from './logging';
+
+import { extendsDirective, overrideDirective } from './extensions';
 
 export interface Options {
   directory?: string;

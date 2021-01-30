@@ -2,7 +2,7 @@ import { join } from 'path';
 import { dir } from 'tmp-promise'; // eslint-disable-line import/no-extraneous-dependencies
 import { outputFile, remove } from 'fs-extra';
 import { stdin } from 'mock-stdin'; // eslint-disable-line import/no-extraneous-dependencies
-import { isTestEnvAndShouldNotPrompt } from '@app-config/core';
+import { isTestEnvAndShouldNotPrompt } from './logging';
 
 // function that joins the temp dir to a filename
 type JoinDir = (filename: string) => string;

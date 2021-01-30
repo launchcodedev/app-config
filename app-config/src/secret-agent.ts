@@ -2,7 +2,7 @@ import https from 'https';
 import WebSocket from 'ws';
 import { build } from '@lcdev/ws-rpc';
 import bsonSerialization from '@lcdev/ws-rpc/bson';
-import { Json } from './common';
+import { Json, AppConfigError, logger } from '@app-config/core';
 import {
   Key,
   decryptValue,
@@ -14,8 +14,6 @@ import {
 } from './encryption';
 import { loadOrCreateCert } from './secret-agent-tls';
 import { loadSettingsLazy, saveSettings } from './settings';
-import { AppConfigError } from './errors';
-import { logger } from './logging';
 
 const common = build(bsonSerialization)
   .func<'Ping'>()

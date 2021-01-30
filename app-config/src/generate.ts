@@ -8,9 +8,9 @@ import {
   JSONSchemaSourceData,
   InputData,
 } from 'quicktype-core';
+import { logger } from '@app-config/core';
 import { loadMetaConfig, Options as MetaOptions } from './meta';
 import { loadSchema, JSONSchema, Options as SchemaOptions } from './schema';
-import { logger } from './logging';
 
 export interface Options {
   directory?: string;
