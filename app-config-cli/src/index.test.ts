@@ -1,10 +1,10 @@
 import execa from 'execa';
 import { join } from 'path';
 import { isWindows } from '@app-config/core';
-import { withTempFiles } from './test-util';
+import { withTempFiles } from '@app-config/test-utils';
 
 const run = async (argv: string[], options?: execa.Options) =>
-  execa('node', [join(__dirname, '..', './dist/cli.js'), ...argv], {
+  execa('node', [join(__dirname, '..', './dist/index.js'), ...argv], {
     stdout: 'pipe',
     stderr: 'ignore',
     stdin: 'ignore',

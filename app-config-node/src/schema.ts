@@ -4,23 +4,29 @@ import standalone from 'ajv/dist/standalone';
 import addFormats from 'ajv-formats';
 import RefParser, { JSONSchema, bundle } from 'json-schema-ref-parser';
 import {
-  JsonObject,
   isObject,
   isWindows,
-  ParsedValue,
-  ParsingExtension,
-  defaultAliases,
-  EnvironmentAliases,
-  EnvironmentSource,
-  FlexibleFileSource,
-  FileSource,
   parseRawString,
   filePathAssumedType,
-  ValidationError,
+  JsonObject,
+  ParsedValue,
+  ParsingExtension,
   WasNotObject,
+  ValidationError,
   NotFoundError,
   logger,
 } from '@app-config/core';
+import {
+  EnvironmentSource,
+} from './environment-source';
+import {
+  FileSource,
+  FlexibleFileSource,
+} from './file-source';
+import {
+  defaultAliases,
+  EnvironmentAliases,
+} from './environment';
 
 export { JSONSchema };
 

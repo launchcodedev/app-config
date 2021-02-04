@@ -1,6 +1,8 @@
 import { readdir } from 'fs-extra';
-import { FileSource, defaultAliases, EnvironmentAliases, logger } from '@app-config/core';
+import { logger } from '@app-config/core';
 
+import { FileSource } from './file-source';
+import { defaultAliases, EnvironmentAliases } from './environment';
 import { loadValidatedConfig } from './config';
 
 export interface Options {

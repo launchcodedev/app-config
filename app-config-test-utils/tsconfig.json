@@ -1,3 +1,4 @@
+
 {
   "extends": "@lcdev/tsconfig",
   "compilerOptions": {
@@ -5,9 +6,6 @@
     "outDir": "./dist"
   },
   "include": ["src"],
-  "exclude": ["node_modules"],
-  "references": [
-    { "path": "../app-config-core" },
-    { "path": "../app-config-node" }
-  ]
+  "exclude": ["node_modules"]
 }
+

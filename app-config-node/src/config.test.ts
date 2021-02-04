@@ -1,8 +1,10 @@
 import { join } from 'path';
-import { FileSource, EnvironmentSource, ReservedKeyError } from '@app-config/core';
+import { ReservedKeyError } from '@app-config/core';
+import { withTempFiles } from '@app-config/test-utils';
 
+import { FileSource } from './file-source';
+import { EnvironmentSource } from './environment-source';
 import { loadConfig, loadValidatedConfig } from './config';
-import { withTempFiles } from './test-util';
 
 describe('Configuration Loading', () => {
   it('loads configuration from a YAML file', async () => {

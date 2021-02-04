@@ -1,9 +1,9 @@
 import { JsonObject, ParsedValue } from '@app-config/core';
+import { withTempFiles } from '@app-config/test-utils';
 
 import { generateSymmetricKey, encryptValue } from './encryption';
 import { encryptedDirective, extendsDirective, envDirective } from './extensions';
 import { loadSchema } from './schema';
-import { withTempFiles } from './test-util';
 
 describe('Schema Loading', () => {
   it('fails when no schema is present', async () => {

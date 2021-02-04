@@ -1,4 +1,6 @@
-import { FileSource, LiteralSource, NotFoundError } from '@app-config/core';
+import { withTempFiles } from '@app-config/test-utils';
+import { LiteralSource, NotFoundError } from '@app-config/core';
+
 import {
   v1Compat,
   envDirective,
@@ -10,9 +12,8 @@ import {
   environmentVariableSubstitution,
   gitRefDirectives,
 } from './extensions';
+import { FileSource } from './file-source';
 import { generateSymmetricKey, encryptValue } from './encryption';
-
-import { withTempFiles } from './test-util';
 
 describe('$extends directive', () => {
   it('fails if file is missing', async () => {

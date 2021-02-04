@@ -3,13 +3,14 @@ import { homedir } from 'os';
 import * as fs from 'fs-extra';
 import envPaths from 'env-paths';
 import {
-  FileSource,
   FileType,
   stringify,
   JsonObject,
   NotFoundError,
   logger,
 } from '@app-config/core';
+
+import { FileSource } from './file-source';
 
 export interface Settings {
   secretAgent?: {

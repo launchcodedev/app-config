@@ -1,3 +1,4 @@
+import { mockedStdin } from '@app-config/test-utils';
 import {
   isObject,
   isPrimitive,
@@ -7,7 +8,6 @@ import {
   promptUserWithRetry,
   consumeStdin,
 } from './common';
-import { mockedStdin } from './test-util';
 
 describe('isObject', () => {
   it('marks an object as an object', () => {

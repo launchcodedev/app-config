@@ -4,20 +4,18 @@ import simpleGit from 'simple-git';
 import {
   isObject,
   Json,
-  currentEnvironment,
-  defaultAliases,
-  EnvironmentAliases,
   ParsedValue,
   ParsedValueMetadata,
   ParsingExtension,
   Root,
-  FileSource,
   AppConfigError,
   NotFoundError,
   FailedToSelectSubObject,
   logger,
 } from '@app-config/core';
 
+import { FileSource } from './file-source';
+import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
 import { decryptValue, DecryptedSymmetricKey } from './encryption';
 
 /** ParsingExtensions that are used by default in loadConfig for reading files */

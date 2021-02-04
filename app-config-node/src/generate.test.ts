@@ -1,6 +1,6 @@
 import { readFile } from 'fs-extra';
+import { withTempFiles } from '@app-config/test-utils';
 import { generateQuicktype, generateTypeFiles } from './generate';
-import { withTempFiles } from './test-util';
 
 describe('TypeScript File Generation', () => {
   it('creates a simple TypeScript file', async () => {

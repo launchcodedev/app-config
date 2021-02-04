@@ -4,11 +4,6 @@ import {
   isObject,
   ParsedValue,
   ParsingExtension,
-  defaultAliases,
-  EnvironmentAliases,
-  FlexibleFileSource,
-  FileSource,
-  EnvironmentSource,
   FallbackSource,
   NotFoundError,
   WasNotObject,
@@ -16,9 +11,11 @@ import {
   logger,
 } from '@app-config/core';
 
+import { FileSource, FlexibleFileSource } from './file-source';
+import { defaultAliases, EnvironmentAliases } from './environment';
+import { EnvironmentSource } from './environment-source';
 import { defaultExtensions, defaultEnvExtensions, markAllValuesAsSecret } from './extensions';
 import { loadSchema, JSONSchema, Options as SchemaOptions } from './schema';
-
 import { loadMetaConfig, loadExtraParsingExtensions } from './meta';
 
 export interface Options {

@@ -1,6 +1,6 @@
 {
-  "name": "@lcdev/app-config",
-  "description": "Easy to use configuration loader with schema validation",
+  "name": "@app-config/test-utils",
+  "description": "Internal test utilities",
   "version": "2.0.6",
   "license": "MPL-2.0",
   "author": {
@@ -20,11 +20,7 @@
     "!*.tsbuildinfo",
     "!*.test.*"
   ],
-  "bin": {
-    "app-config": "dist/cli.js"
-  },
   "scripts": {
-    "cli": "node ./dist/cli.js",
     "build": "tsc -b",
     "build:es": "tsc -b tsconfig.es.json",
     "clean": "rm -rf dist *.tsbuildinfo",
@@ -35,12 +31,11 @@
   },
   "dependencies": {
     "@app-config/core": "2",
-    "@app-config/cli": "2",
-    "@app-config/node": "2",
-    "ajv": "7"
-  },
-  "devDependencies": {
-    "@app-config/test-utils": "2"
+    "@types/fs-extra": "9",
+    "@types/tmp": "0.2",
+    "fs-extra": "9",
+    "mock-stdin": "1",
+    "tmp-promise": "3"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

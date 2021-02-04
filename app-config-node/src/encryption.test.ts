@@ -1,5 +1,6 @@
 import { readFile, stat } from 'fs-extra';
 import { SecretsRequireTTYError, isWindows } from '@app-config/core';
+import { withTempFiles, mockedStdin } from '@app-config/test-utils';
 
 import {
   initializeKeys,
@@ -20,7 +21,6 @@ import {
   untrustTeamMember,
 } from './encryption';
 import { loadMetaConfig } from './meta';
-import { mockedStdin, withTempFiles } from './test-util';
 
 describe('User Keys', () => {
   it('initialize keys without passphrase', async () => {

@@ -1,6 +1,7 @@
 import getPort from 'get-port';
 import { resolve } from 'path';
 import { Json, isWindows } from '@app-config/core';
+import { withTempFiles } from '@app-config/test-utils';
 import {
   startAgent,
   connectAgent,
@@ -16,7 +17,6 @@ import {
   encryptValue,
 } from './encryption';
 import { saveSettings } from './settings';
-import { withTempFiles } from './test-util';
 
 jest.setTimeout(30000);
 

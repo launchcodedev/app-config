@@ -1,0 +1,77 @@
+{
+  "name": "@app-config/node",
+  "description": "Node.js API for @app-config",
+  "version": "2.0.6",
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/launchcodedev/app-config.git"
+  },
+  "main": "dist/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist",
+    "!*.tsbuildinfo",
+    "!*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "build:es": "tsc -b tsconfig.es.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint src",
+    "fix": "eslint --fix src",
+    "test": "jest",
+    "prepublishOnly": "yarn clean && yarn build && yarn build:es"
+  },
+  "dependencies": {
+    "@app-config/core": "2",
+    "@lcdev/ts": "0.2",
+    "@lcdev/ws-rpc": "0.4",
+    "@types/json-schema": "7",
+    "@types/openpgp": "4",
+    "@types/prompts": "2",
+    "@types/readable-stream": "2",
+    "@types/urijs": "1",
+    "ajv": "7",
+    "ajv-formats": "1",
+    "clipboardy": "2",
+    "common-tags": "1",
+    "env-paths": "2",
+    "execa": "5",
+    "fs-extra": "9",
+    "json-schema-ref-parser": "9",
+    "openpgp": "^4.3.0",
+    "prompts": "2",
+    "quicktype-core": "6.0.69",
+    "selfsigned": "1",
+    "simple-git": "2",
+    "text-encoding-utf-8": "1",
+    "ws": "7",
+    "yargs": "16"
+  },
+  "devDependencies": {
+    "@app-config/test-utils": "2",
+    "@types/common-tags": "1",
+    "@types/fs-extra": "9",
+    "get-port": "5"
+  },
+  "prettier": "@lcdev/prettier",
+  "jest": {
+    "preset": "@lcdev/jest",
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "dist",
+      ".yarn-cache",
+      "<rootDir>/src/setup.test.ts"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setup.test.ts"
+    ]
+  }
+}

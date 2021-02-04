@@ -21,7 +21,8 @@
     "!*.test.*"
   ],
   "bin": {
-    "app-config": "dist/index.js"
+    "app-config": "dist/index.js",
+    "app-config-secret-agent": "dist/start-secret-agent.js"
   },
   "scripts": {
     "build": "tsc -b",
@@ -33,7 +34,9 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/core": "2",
+    "@app-config/node": "2",
+    "execa": "5"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

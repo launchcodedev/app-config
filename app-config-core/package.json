@@ -31,13 +31,14 @@
   },
   "dependencies": {
     "@iarna/toml": "3",
-    "fs-extra": "9",
     "js-yaml": "^3.13.1",
     "json5": "2",
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "9"
+    "@app-config/test-utils": "2",
+    "@types/js-yaml": "3",
+    "@types/lodash.merge": "4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

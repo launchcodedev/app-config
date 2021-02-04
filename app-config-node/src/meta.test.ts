@@ -1,7 +1,7 @@
 import { mkdirp } from 'fs-extra';
 import { FileType } from '@app-config/core';
+import { withTempFiles } from '@app-config/test-utils';
 import { loadMetaConfig } from './meta';
-import { withTempFiles } from './test-util';
 
 describe('meta file loading', () => {
   it('gracefully fails when meta file is missing', async () => {

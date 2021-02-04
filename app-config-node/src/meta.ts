@@ -2,8 +2,6 @@ import { join, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import {
   ParsingExtension,
-  FlexibleFileSource,
-  FileSource,
   FallbackSource,
   FileType,
   JsonObject,
@@ -12,11 +10,10 @@ import {
   logger,
 } from '@app-config/core';
 
+import { FlexibleFileSource, FileSource } from './file-source';
 import { EncryptedSymmetricKey } from './encryption';
-
-import { GenerateFile } from './generate';
-
 import { extendsDirective, overrideDirective } from './extensions';
+import { GenerateFile } from './generate';
 
 export interface Options {
   directory?: string;
