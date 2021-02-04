@@ -6,8 +6,6 @@ import { generateKey, encrypt, decrypt, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
 import {
   Json,
-  promptUser,
-  promptUserWithRetry,
   stringify,
   FileType,
   AppConfigError,
@@ -19,6 +17,7 @@ import {
   checkTTY,
 } from '@app-config/core';
 
+import { promptUser, promptUserWithRetry } from './prompts';
 import { loadMetaConfig, loadMetaConfigLazy, MetaProperties } from './meta';
 import { settingsDirectory } from './settings';
 import { connectAgentLazy, shouldUseSecretAgent } from './secret-agent';

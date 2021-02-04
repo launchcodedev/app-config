@@ -37,7 +37,7 @@ jobs:
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./app-config/coverage/coverage-final.json,./app-config-inject/coverage/coverage-final.json,./app-config-webpack-plugin/coverage/coverage-final.json
+        files: ./app-config/coverage/coverage-final.json,./app-config-core/coverage/coverage-final.json,./app-config-node/coverage/coverage-final.json,./app-config-cli/coverage/coverage-final.json,./app-config-inject/coverage/coverage-final.json,./app-config-webpack-plugin/coverage/coverage-final.json
         fail_ci_if_error: true
         verbose: true
 

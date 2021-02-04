@@ -2,13 +2,7 @@ import { join, resolve } from 'path';
 import { homedir } from 'os';
 import * as fs from 'fs-extra';
 import envPaths from 'env-paths';
-import {
-  FileType,
-  stringify,
-  JsonObject,
-  NotFoundError,
-  logger,
-} from '@app-config/core';
+import { FileType, stringify, JsonObject, NotFoundError, logger } from '@app-config/core';
 
 import { FileSource } from './file-source';
 

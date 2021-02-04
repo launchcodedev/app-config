@@ -1,4 +1,3 @@
-
 import { EnvironmentSource } from './environment-source';
 
 describe('EnvironmentSource', () => {

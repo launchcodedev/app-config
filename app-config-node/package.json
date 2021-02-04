@@ -52,8 +52,7 @@
     "selfsigned": "1",
     "simple-git": "2",
     "text-encoding-utf-8": "1",
-    "ws": "7",
-    "yargs": "16"
+    "ws": "7"
   },
   "devDependencies": {
     "@app-config/test-utils": "2",

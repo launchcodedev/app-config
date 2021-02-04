@@ -16,17 +16,9 @@ import {
   NotFoundError,
   logger,
 } from '@app-config/core';
-import {
-  EnvironmentSource,
-} from './environment-source';
-import {
-  FileSource,
-  FlexibleFileSource,
-} from './file-source';
-import {
-  defaultAliases,
-  EnvironmentAliases,
-} from './environment';
+import { EnvironmentSource } from './environment-source';
+import { FileSource, FlexibleFileSource } from './file-source';
+import { defaultAliases, EnvironmentAliases } from './environment';
 
 export { JSONSchema };
 

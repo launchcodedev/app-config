@@ -1,4 +1,3 @@
-import { stdin } from 'mock-stdin'; // eslint-disable-line import/no-extraneous-dependencies
 import { injectHtml } from './index';
 
 const originalEnvironment = { ...process.env };

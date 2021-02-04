@@ -1,4 +1,4 @@
-import { resolve, extname } from 'path';
+import { extname } from 'path';
 import { parse as parseTOML, stringify as stringifyTOML } from '@iarna/toml';
 import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
 import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';

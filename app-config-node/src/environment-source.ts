@@ -1,5 +1,4 @@
 import { guessFileType, ConfigSource, FileType, NotFoundError, logger } from '@app-config/core';
-import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
 
 /** Read configuration from an environment variable */
 export class EnvironmentSource extends ConfigSource {

@@ -2,7 +2,8 @@
 
 import * as yargs from 'yargs';
 import { setLogLevel, LogLevel } from '@lcdev/app-config';
-import { injectHtml, consumeStdin } from './index';
+import { consumeStdin } from '@app-config/node';
+import { injectHtml } from './index';
 
 // we can't have it interfere with our stdout
 setLogLevel(LogLevel.None);

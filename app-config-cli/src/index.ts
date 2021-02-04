@@ -7,8 +7,6 @@ import { outputFile, readFile } from 'fs-extra';
 import { resolve } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
 import {
-  promptUser,
-  consumeStdin,
   flattenObjectTree,
   renameInFlattenedTree,
   Json,
@@ -49,6 +47,8 @@ import {
   loadSchema,
   generateTypeFiles,
   validateAllConfigVariants,
+  promptUser,
+  consumeStdin,
   JSONSchema,
 } from '@app-config/node';
 

@@ -40,3 +40,4 @@ export {
   untrustTeamMember,
 } from './encryption';
 export { startAgent, disconnectAgents, shouldUseSecretAgent } from './secret-agent';
+export { promptUser, promptUserWithRetry, consumeStdin } from './prompts';
