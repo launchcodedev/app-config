@@ -30,36 +30,15 @@ new_version() {
   cd $prev
 }
 
-replace_version_references() {
-  sed -i "s#[\"]@lcdev\\/app-config[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config\": \"$VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/app-config[\"]: [\"]2 || $PREV_VERSION[\"]#\"@lcdev\\/app-config\": \"2 || $VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/app-config[\"]: [\"]1 || 2 || $PREV_VERSION[\"]#\"@lcdev\\/app-config\": \"1 || 2 || $VERSION\"#g" $@
-
-  sed -i "s#[\"]@lcdev\\/app-config-cli[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-cli\": \"$VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/app-config-webpack-plugin[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-webpack-plugin\": \"$VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/app-config-inject[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-inject\": \"$VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/app-config-vault[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-vault\": \"$VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/app-config-cypress[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/app-config-cypress\": \"$VERSION\"#g" $@
-  sed -i "s#[\"]@lcdev\\/react-native-app-config-transformer[\"]: [\"]$PREV_VERSION[\"]#\"@lcdev\\/react-native-app-config-transformer\": \"$VERSION\"#g" $@
-
-  git add $@
-}
-
-new_version ./app-config
+new_version ./app-config-core
+new_version ./app-config-node
 new_version ./app-config-cli
+new_version ./app-config
 new_version ./app-config-webpack-plugin
 new_version ./app-config-inject
 new_version ./app-config-vault
 new_version ./app-config-cypress
 new_version ./app-config-react-native-transformer
-
-replace_version_references ./app-config-cli/package.json
-replace_version_references ./app-config-webpack-plugin/package.json
-replace_version_references ./app-config-inject/package.json
-replace_version_references ./app-config-react-native-transformer/package.json
-replace_version_references ./app-config-vault/package.json
-replace_version_references ./app-config-cypress/package.json
-replace_version_references ./examples/*/package.json
 
 git commit -m "chore: release v$VERSION"
 git tag v$VERSION
