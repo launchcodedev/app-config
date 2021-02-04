@@ -25,6 +25,7 @@
     "app-config-secret-agent": "dist/start-secret-agent.js"
   },
   "scripts": {
+    "start": "node ./dist/index.js",
     "build": "tsc -b",
     "build:es": "tsc -b tsconfig.es.json",
     "clean": "rm -rf dist *.tsbuildinfo",
