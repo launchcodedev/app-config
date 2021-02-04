@@ -26,7 +26,7 @@ jobs:
     - run: yarn install && yarn build
       working-directory: ./app-config
 
-    - run: rm -rf ./node_modules ./app-config/node_modules
+    - run: find . -name node_modules -exec rm -rf {} \;
       working-directory: .
 
     - run: yarn install

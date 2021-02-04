@@ -40,7 +40,6 @@
     "@types/urijs": "1",
     "ajv": "7",
     "ajv-formats": "1",
-    "clipboardy": "2",
     "common-tags": "1",
     "env-paths": "2",
     "execa": "5",
