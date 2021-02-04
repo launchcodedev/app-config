@@ -129,4 +129,8 @@ export async function consumeStdin(): Promise<string> {
   });
 }
 
-export const isWindows = /^win/.test(process.platform);
+export const isBrowser =
+  typeof window === 'object' && typeof document === 'object' && document.nodeType === 9;
+
+export const isNode = typeof process !== 'undefined';
+export const isWindows = isNode && /^win/.test(process.platform);

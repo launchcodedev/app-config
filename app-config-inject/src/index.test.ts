@@ -1,5 +1,5 @@
 import { stdin } from 'mock-stdin'; // eslint-disable-line import/no-extraneous-dependencies
-import { injectHtml, consumeStdin } from './index';
+import { injectHtml } from './index';
 
 const originalEnvironment = { ...process.env };
 
@@ -117,39 +117,3 @@ describe('injectHtml', () => {
     expect(injected).toMatchSnapshot();
   });
 });
-
-describe('consumeStdin', () => {
-  it('consumes all lines until end', async () => {
-    await mockedStdin(async (send, end) => {
-      send('foo')
-        .then(() => send('bar'))
-        .then(() => send('baz'))
-        .then(() => end())
-        .catch(() => {});
-
-      // we expect newlines to be eaten up, since this function is used for html and base64 data
-      expect(await consumeStdin()).toBe('foobarbaz');
-    });
-  });
-});
-
-async function mockedStdin(
-  callback: (send: (text: string) => Promise<void>, end: () => void) => Promise<void>,
-) {
-  const mock = stdin();
-
-  try {
-    const send = (text: string) =>
-      new Promise<void>((resolve) => {
-        setTimeout(() => {
-          mock.send(text);
-          mock.send('\n');
-          resolve();
-        }, 0);
-      });
-
-    await callback(send, () => mock.end());
-  } finally {
-    mock.restore();
-  }
-}

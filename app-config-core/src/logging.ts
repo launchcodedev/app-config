@@ -1,3 +1,5 @@
+import { isNode } from './common';
+
 export enum LogLevel {
   Verbose = 'verbose',
   Info = 'info',
@@ -6,7 +8,7 @@ export enum LogLevel {
   None = 'none',
 }
 
-let isTest = process.env.NODE_ENV === 'test';
+let isTest = isNode && process.env.NODE_ENV === 'test';
 
 export function isTestEnvAndShouldNotPrompt(newValue?: boolean) {
   if (newValue !== undefined) {
@@ -17,19 +19,24 @@ export function isTestEnvAndShouldNotPrompt(newValue?: boolean) {
 }
 
 export function checkTTY() {
-  return process.stdin.isTTY && process.stdout.isTTY && !isTestEnvAndShouldNotPrompt();
+  return isNode && process.stdin.isTTY && process.stdout.isTTY && !isTestEnvAndShouldNotPrompt();
 }
 
 export function getInitialLogLevel() {
+  if (!isNode) return LogLevel.Warn;
+
   if (process.env.APP_CONFIG_LOG_LEVEL) {
     return process.env.APP_CONFIG_LOG_LEVEL as LogLevel;
   }
+
   if (process.env.NODE_ENV === 'test') {
     return LogLevel.None;
   }
+
   if (checkTTY()) {
     return LogLevel.Info;
   }
+
   return LogLevel.Warn;
 }
 

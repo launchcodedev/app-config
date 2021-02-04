@@ -1,4 +1,3 @@
-import readline from 'readline';
 import { parse } from 'node-html-parser';
 import {
   loadValidatedConfig,
@@ -36,18 +35,4 @@ export async function injectHtml(
   scriptTag.set_content(`window._appConfig=${JSON.stringify(config)}`);
 
   return parsed.toString();
-}
-
-export async function consumeStdin(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const rl = readline.createInterface({ input: process.stdin });
-
-    let buffer = '';
-    rl.on('line', (line) => {
-      buffer += line;
-    });
-
-    rl.on('error', reject);
-    rl.on('close', () => resolve(buffer));
-  });
 }
