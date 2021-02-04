@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FlexibleFileSource loads using readContents correctly 1`] = `
+Array [
+  "
+          foo: bar
+        ",
+  "YAML",
+]
+`;
