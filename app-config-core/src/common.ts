@@ -89,5 +89,5 @@ export function renameInFlattenedTree(
 export const isBrowser =
   typeof window === 'object' && typeof document === 'object' && document.nodeType === 9;
 
-export const isNode = typeof process !== 'undefined';
+export const isNode = typeof process !== 'undefined' && !isBrowser;
 export const isWindows = isNode && /^win/.test(process.platform);

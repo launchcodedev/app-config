@@ -1,10 +1,17 @@
 import {
+  isNode,
   isObject,
   isPrimitive,
   camelToScreamingCase,
   flattenObjectTree,
   renameInFlattenedTree,
 } from './common';
+
+describe('isNode', () => {
+  it('detects node.js env', () => {
+    expect(isNode).toBe(true);
+  });
+});
 
 describe('isObject', () => {
   it('marks an object as an object', () => {
