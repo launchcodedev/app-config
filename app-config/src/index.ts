@@ -1,10 +1,13 @@
 import { inspect } from 'util';
 import type { ValidateFunction } from 'ajv';
-import { AppConfigError, AccessingAppConfig, logger } from '@app-config/core';
+import { AppConfigError, logger } from '@app-config/core';
 import { loadValidatedConfig, ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/node';
 
 // the config type that is exported to consumers and can be augmented
 export interface ExportedConfig {}
+
+/** Tried to read app-config value before it was loaded */
+export class AccessingAppConfig extends AppConfigError {}
 
 // the export of this module is a proxy in front of this value
 let loadedConfig: ExportedConfig | undefined;

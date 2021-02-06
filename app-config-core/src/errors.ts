@@ -1,9 +1,6 @@
 /** Any generic error that comes directly from this package */
 export class AppConfigError extends Error {}
 
-/** Tried to read app-config value before it was loaded */
-export class AccessingAppConfig extends AppConfigError {}
-
 /** When a ConfigSource cannot be found */
 export class NotFoundError extends AppConfigError {}
 
