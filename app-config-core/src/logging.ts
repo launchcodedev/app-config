@@ -52,7 +52,7 @@ interface Logger {
 }
 
 let logLevel: LogLevel = getInitialLogLevel();
-let writeMsg: Writer = process.stderr.write.bind(process.stderr);
+let writeMsg: Writer = isNode ? process.stderr.write.bind(process.stderr) : console.info;
 
 export const logger: Logger = {
   setWriter(write: Writer) {
