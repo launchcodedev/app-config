@@ -36,6 +36,7 @@
     "fs-extra": "7"
   },
   "devDependencies": {
+    "@app-config/extensions": "2",
     "@app-config/test-utils": "2"
   },
   "prettier": "@lcdev/prettier",
