@@ -30,6 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/utils": "2",
     "@iarna/toml": "3",
     "js-yaml": "^3.13.1",
     "json5": "2",

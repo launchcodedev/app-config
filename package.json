@@ -4,16 +4,8 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "app-config-core",
-      "app-config-node",
       "app-config",
-      "app-config-cli",
-      "app-config-webpack-plugin",
-      "app-config-inject",
-      "app-config-react-native-transformer",
-      "app-config-vault",
-      "app-config-cypress",
-      "app-config-test-utils",
+      "app-config-*",
       "tests/parsing-extensions/*",
       "tests/webpack-projects/*",
       "examples/*",

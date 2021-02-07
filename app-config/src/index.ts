@@ -1,7 +1,9 @@
 import { inspect } from 'util';
 import type { ValidateFunction } from 'ajv';
-import { AppConfigError, logger } from '@app-config/core';
-import { loadValidatedConfig, ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/node';
+import { AppConfigError } from '@app-config/core';
+import { logger } from '@app-config/logging';
+import { loadValidatedConfig, ConfigLoadingOptions } from '@app-config/config';
+import { SchemaLoadingOptions } from '@app-config/schema';
 
 // the config type that is exported to consumers and can be augmented
 export interface ExportedConfig {}
@@ -83,10 +85,9 @@ export default config;
  */
 export const validateConfig: ValidateFunction<ExportedConfig> = null as any; // eslint-disable-line
 
+export { Json } from '@app-config/utils';
+
 export {
-  setLogLevel,
-  LogLevel,
-  Json,
   ParsedValue,
   ParsedValueMetadata,
   ParsingExtension,
@@ -101,27 +102,41 @@ export {
   parseRawString,
 } from '@app-config/core';
 
+export { setLogLevel, LogLevel } from '@app-config/logging';
+
 export {
   loadValidatedConfig,
   loadUnvalidatedConfig,
-  loadSchema,
-  loadMetaConfig,
+  ConfigLoadingOptions,
+} from '@app-config/config';
+
+export { loadSchema, SchemaLoadingOptions } from '@app-config/schema';
+
+export { loadMetaConfig } from '@app-config/meta';
+
+export {
   currentEnvironment,
   defaultAliases,
-  defaultExtensions,
-  defaultEnvExtensions,
-  environmentVariableSubstitution,
-  encryptedDirective,
-  envDirective,
-  extendsDirective,
-  extendsSelfDirective,
-  overrideDirective,
-  ConfigLoadingOptions,
-  SchemaLoadingOptions,
   FileSource,
   FlexibleFileSource,
   EnvironmentSource,
 } from '@app-config/node';
+
+export {
+  environmentVariableSubstitution,
+  envDirective,
+  extendsDirective,
+  extendsSelfDirective,
+  overrideDirective,
+} from '@app-config/extensions';
+
+export { default as encryptedDirective } from '@app-config/encryption';
+
+export {
+  defaultExtensions,
+  defaultEnvExtensions,
+  defaultMetaExtensions,
+} from '@app-config/default-extensions';
 
 /** @hidden */
 export function resetConfigInternal() {

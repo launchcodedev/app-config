@@ -2,10 +2,10 @@ import { extname } from 'path';
 import { parse as parseTOML, stringify as stringifyTOML } from '@iarna/toml';
 import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
 import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
-import { Json, JsonObject } from './common';
+import { Json, JsonObject } from '@app-config/utils';
+import { logger } from '@app-config/logging';
 import { ParsedValue, ParsingExtension } from './parsed-value';
 import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
-import { logger } from './logging';
 
 export enum FileType {
   YAML = 'YAML',

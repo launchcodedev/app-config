@@ -6,25 +6,25 @@ import clipboardy from 'clipboardy';
 import { outputFile, readFile } from 'fs-extra';
 import { resolve } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
+import { Json, JsonObject } from '@app-config/utils';
 import {
   flattenObjectTree,
   renameInFlattenedTree,
-  Json,
-  JsonObject,
   FileType,
   stringify,
-  checkTTY,
-  logger,
-  LogLevel,
   AppConfigError,
   FailedToSelectSubObject,
   EmptyStdinOrPromptResponse,
 } from '@app-config/core';
+import { promptUser, consumeStdin } from '@app-config/node';
+import { checkTTY, LogLevel, logger } from '@app-config/logging';
 import {
   LoadedConfiguration,
   ConfigLoadingOptions,
   loadUnvalidatedConfig,
   loadValidatedConfig,
+} from '@app-config/config';
+import {
   keyDirs,
   initializeLocalKeys,
   loadPrivateKeyLazy,
@@ -44,13 +44,10 @@ import {
   shouldUseSecretAgent,
   startAgent,
   disconnectAgents,
-  loadSchema,
-  generateTypeFiles,
-  validateAllConfigVariants,
-  promptUser,
-  consumeStdin,
-  JSONSchema,
-} from '@app-config/node';
+} from '@app-config/encryption';
+import { loadSchema, JSONSchema } from '@app-config/schema';
+import { generateTypeFiles } from '@app-config/generate';
+import { validateAllConfigVariants } from './validation';
 
 enum OptionGroups {
   Options = 'Options:',

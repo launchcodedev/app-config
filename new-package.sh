@@ -48,11 +48,8 @@ PACKAGE_JSON=$(printf '
   },
   "dependencies": {
   },
-  "peerDependencies": {
-    "@lcdev/app-config": "2"
-  },
   "devDependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/test-utils": "2"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
@@ -71,17 +68,10 @@ TSCONFIG='
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../app-config" }
+    { "path": "../app-config-test-utils" }
   ]
 }
 '
-
-echo "-- Adding to workspace"
-WORKSPACE_PACKAGE_JSON=$(\
-  jq ".workspaces.packages += [\"app-config-$NAME\"]" package.json
-)
-echo $WORKSPACE_PACKAGE_JSON > package.json
-npx prettier -w ./package.json
 
 echo "-- Creating ./$PACKAGE_NAME"
 mkdir -p ./$PACKAGE_NAME

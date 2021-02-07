@@ -7,8 +7,8 @@ import {
   ParsedValue,
   ParsingExtension,
   NotFoundError,
-  logger,
 } from '@app-config/core';
+import { logger } from '@app-config/logging';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
 
 /** Read configuration from a single file */

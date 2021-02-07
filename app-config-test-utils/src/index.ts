@@ -2,11 +2,7 @@ import { join } from 'path';
 import { dir } from 'tmp-promise';
 import { outputFile, remove } from 'fs-extra';
 import { stdin } from 'mock-stdin';
-
-// eslint-disable-next-line global-require
-const { isTestEnvAndShouldNotPrompt } = require('@app-config/core') as {
-  isTestEnvAndShouldNotPrompt(v: boolean): void;
-};
+import { isTestEnvAndShouldNotPrompt } from '@app-config/logging';
 
 // function that joins the temp dir to a filename
 type JoinDir = (filename: string) => string;

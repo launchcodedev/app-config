@@ -31,45 +31,19 @@
   },
   "dependencies": {
     "@app-config/core": "2",
-    "@lcdev/ts": "0.2",
-    "@lcdev/ws-rpc": "0.4",
-    "@types/json-schema": "7",
-    "@types/openpgp": "4",
     "@types/prompts": "2",
-    "@types/readable-stream": "2",
-    "@types/urijs": "1",
-    "ajv": "7",
-    "ajv-formats": "1",
-    "common-tags": "1",
-    "env-paths": "2",
-    "execa": "5",
     "fs-extra": "9",
-    "json-schema-ref-parser": "9",
-    "openpgp": "^4.3.0",
-    "prompts": "2",
-    "quicktype-core": "6.0.69",
-    "selfsigned": "1",
-    "simple-git": "2",
-    "text-encoding-utf-8": "1",
-    "ws": "7"
+    "prompts": "2"
   },
   "devDependencies": {
     "@app-config/test-utils": "2",
-    "@types/common-tags": "1",
-    "@types/fs-extra": "9",
-    "get-port": "5"
+    "@types/fs-extra": "9"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
     "preset": "@lcdev/jest",
-    "testPathIgnorePatterns": [
-      "node_modules",
-      "dist",
-      ".yarn-cache",
-      "<rootDir>/src/setup.test.ts"
-    ],
     "setupFilesAfterEnv": [
-      "<rootDir>/src/setup.test.ts"
+      "<rootDir>/test-setup.js"
     ]
   }
 }

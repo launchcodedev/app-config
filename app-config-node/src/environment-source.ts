@@ -1,4 +1,5 @@
-import { guessFileType, ConfigSource, FileType, NotFoundError, logger } from '@app-config/core';
+import { guessFileType, ConfigSource, FileType, NotFoundError } from '@app-config/core';
+import { logger } from '@app-config/logging';
 
 /** Read configuration from an environment variable */
 export class EnvironmentSource extends ConfigSource {

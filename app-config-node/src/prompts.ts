@@ -1,7 +1,8 @@
 import readline from 'readline';
 import prompts from 'prompts';
 import type { PromptObject } from 'prompts';
-import { AppConfigError, logger } from '@app-config/core';
+import { AppConfigError } from '@app-config/core';
+import { logger } from '@app-config/logging';
 
 export async function promptUser<T>(options: Omit<PromptObject, 'name'>): Promise<T> {
   const { named } = await prompts({ ...options, name: 'named' });

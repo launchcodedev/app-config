@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { logger } from '@app-config/core';
-import { startAgent } from '@app-config/node';
+import { logger } from '@app-config/logging';
+import { startAgent } from '@app-config/encryption';
 
 startAgent().catch((error: unknown) => {
   if (error instanceof Error) {

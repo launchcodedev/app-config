@@ -1,9 +1,9 @@
 import { inspect } from 'util';
 import merge from 'lodash.merge';
-import { Json, JsonObject, JsonPrimitive, PromiseOrNot, isObject } from './common';
+import { Json, JsonObject, JsonPrimitive, isObject } from '@app-config/utils';
+import { logger } from '@app-config/logging';
 import { ConfigSource, LiteralSource } from './config-source';
 import { AppConfigError } from './errors';
-import { logger } from './logging';
 
 /** The property being visited was a property in an object */
 export const InObject = Symbol('InObject');
@@ -34,7 +34,7 @@ export type ParsingExtensionTransform = (
   source: ConfigSource,
   extensions: ParsingExtension[],
   root: Json,
-) => PromiseOrNot<ParsedValue>;
+) => Promise<ParsedValue> | ParsedValue;
 
 export interface ParsedValueMetadata {
   [key: string]: any;
