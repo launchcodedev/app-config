@@ -1,4 +1,3 @@
-import { withTempFiles } from '@app-config/test-utils';
 import { LiteralSource } from '@app-config/core';
 import { generateSymmetricKey, encryptValue } from './encryption';
 import encryptedDirective from './index';

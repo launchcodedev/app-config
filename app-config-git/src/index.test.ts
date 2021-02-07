@@ -1,4 +1,3 @@
-import { withTempFiles } from '@app-config/test-utils';
 import { LiteralSource } from '@app-config/core';
 import gitRefDirectives from './index';
 
