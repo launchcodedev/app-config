@@ -1,6 +1,6 @@
 ## App Config Inject
 
-Runtime injection of app-config into static HTML files.
+Runtime injection of [App Config](https://app-config.dev) into static HTML files.
 See the [guide](https://app-config.dev/guide/webpack/inject.html) for more info.
 
 ```sh

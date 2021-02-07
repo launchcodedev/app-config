@@ -25,7 +25,7 @@ Or, start by installing through your package manager:
 yarn add @lcdev/app-config@2
 ```
 
-Or, if you use NPM.
+Or, using NPM.
 
 ```shell
 npm i @lcdev/app-config@2

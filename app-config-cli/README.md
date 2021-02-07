@@ -1,11 +1,11 @@
 ## App Config CLI
 
-This is a package for the CLI portion of App Config. It's also accesible through the main package.
+This is the CLI for [App Config](https://app-config.dev).
+It's also accessible through [@lcdev/app-config](https://www.npmjs.com/package/@lcdev/app-config).
 
 ```shell
-# these two are essentially the same thing
-
 npx @app-config/cli
-
-npx @lcdev/app-config
 ```
+
+Read the [Introduction](https://app-config.dev/guide/intro/) or
+[Quick Start](https://app-config.dev/guide/intro/quick-start/) guides on our website.
