@@ -9,11 +9,10 @@
     "clean": "rm -rf ./dist",
     "lint": "echo",
     "fix": "echo",
-    "test": "echo"
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@lcdev/app-config": "2",
-    "ajv": "7"
+    "@lcdev/app-config": "2"
   },
   "devDependencies": {
     "@app-config/webpack": "2",
@@ -27,5 +26,14 @@
     "webpack": "4",
     "webpack-cli": "3",
     "webpack-dev-server": "^3.2"
+  },
+  "jest": {
+    "preset": "@lcdev/jest",
+    "testPathIgnorePatterns": [
+      ".yarn-cache",
+      "node_modules",
+      "dist",
+      "cypress"
+    ]
   }
 }
