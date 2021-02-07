@@ -22,6 +22,7 @@ export default function gitRefDirectives(
             );
 
           case 'branch':
+          case 'branchName':
             return getStatus().then(({ branchName }) => {
               if (!branchName) {
                 throw new AppConfigError(
@@ -30,6 +31,11 @@ export default function gitRefDirectives(
               }
 
               return parse(branchName, { shouldFlatten: true });
+            });
+
+          case 'tag':
+            return getStatus().then(({ tag }) => {
+              return parse(tag ?? null, { shouldFlatten: true });
             });
 
           default:
@@ -45,15 +51,18 @@ export default function gitRefDirectives(
 interface GitStatus {
   commitRef: string;
   branchName?: string;
+  tag?: string;
 }
 
 async function gitStatus(): Promise<GitStatus> {
   const git = simpleGit({});
   const rev = await git.revparse(['HEAD']);
   const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
+  const tag = await git.tag(['--points-at', 'HEAD']);
 
   return {
     commitRef: rev,
     branchName: branch,
+    tag: (tag.trim() || undefined)?.split(' ')[0],
   };
 }
