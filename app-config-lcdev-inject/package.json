@@ -1,6 +1,6 @@
 {
-  "name": "@app-config/inject",
-  "description": "Runtime injection of app-config into static HTML files",
+  "name": "@lcdev/app-config-inject",
+  "description": "Alias for @app-config/inject",
   "version": "2.0.6",
   "license": "MPL-2.0",
   "author": {
@@ -34,20 +34,11 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/node": "2",
-    "@lcdev/app-config": "2",
-    "node-html-parser": "1",
-    "yargs": "16"
+    "@app-config/inject": "2"
   },
-  "devDependencies": {
-    "mock-stdin": "1"
-  },
+  "devDependencies": {},
   "prettier": "@lcdev/prettier",
   "jest": {
-    "preset": "@lcdev/jest",
-    "setupFilesAfterEnv": [
-      "<rootDir>/test-setup.js"
-    ]
+    "preset": "@lcdev/jest"
   }
 }

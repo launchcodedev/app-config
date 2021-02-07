@@ -6,6 +6,8 @@ import {
   SchemaLoadingOptions,
 } from '@lcdev/app-config';
 
+export { cli } from './cli';
+
 export interface Options {
   validate: boolean;
   configOptions?: ConfigLoadingOptions;

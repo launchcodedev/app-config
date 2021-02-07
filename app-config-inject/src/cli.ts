@@ -8,7 +8,7 @@ import { injectHtml } from './index';
 // we can't have it interfere with our stdout
 setLogLevel(LogLevel.None);
 
-const { argv: _ } = yargs
+export const cli = yargs
   .strict()
   .version()
   .help('h', 'Shows help message with examples and options')
@@ -53,3 +53,7 @@ const { argv: _ } = yargs
       process.stderr.write('Injected HTML from stdin!\n');
     },
   });
+
+if (require.main === module) {
+  cli.parse();
+}
