@@ -20,7 +20,7 @@ module.exports = {
   plugins: [new HtmlPlugin()],
   devServer: {
     host: '0.0.0.0',
-    port: 8990,
+    port: 8992,
     disableHostCheck: true,
     historyApiFallback: true,
   },
