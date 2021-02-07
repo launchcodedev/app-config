@@ -36,7 +36,8 @@
   "dependencies": {
     "@app-config/core": "2",
     "@app-config/cli": "2",
-    "@app-config/node": "2"
+    "@app-config/node": "2",
+    "ajv": "7"
   },
   "devDependencies": {
     "@app-config/test-utils": "2"
