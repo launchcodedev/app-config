@@ -604,12 +604,6 @@ describe('Code Generation', () => {
     });
   });
 
-  it('generates a basic validation function', async () => {
-    const { validationFunctionCode } = await loadSchema();
-
-    expect(validationFunctionCode()).toMatchSnapshot();
-  });
-
   it('validates using the generated code', async () => {
     const { validationFunction } = await loadSchema();
 
