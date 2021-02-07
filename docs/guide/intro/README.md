@@ -13,9 +13,11 @@ App Config helps you manage settings for your application.
 It is a Node.js library, a CLI application, and a set of standards.
 
 App Config is suitable for Web Apps, Servers, CLI Applications, Mobile Apps and more.
-App Config is written in TypeScript, but it's designed for use in other kinds of environments.
+App Config is written in TypeScript, but it's designed for use in other languages.
 It can act as a consumer or producer of configuration values.
-This is possible because of its simple standards for reading and exposing configuration.
+This is possible because of some simple standards for reading and exposing configuration.
+
+---
 
 Your application should be configurable, plain and simple.
 Changing a database hostname, email address or an AWS key should never be code changes.
@@ -35,15 +37,15 @@ On their own, environment variables are unsafe to use without additional checks.
 ## Configuration
 
 Configuration comes in the form of a JSON-like structure of values.
-App Config provides an accessible way to read these values through environment variables, Node.js API or CLI.
-It defines a standard way to store these values in files, make changes, and share them with others in version control.
+App Config provides an accessible way to read these values through environment variables, a Node.js API or CLI.
+It defines a standard way to store these values in files, make changes to them, and share with others in version control.
 
-We can **validate** this configuration. That means checking that values and their structure are _as intended_.
+We can **validate** configuration. That means checking that values and their structure are _as intended_.
 Typos, missing keys, or values outside of limits should never make it to production.
 
-Yet another config library? We thought so too, until we needed a solution for configuration at [Launchcode](https://lc.dev).
+Yet another config library? We thought so too, until we looked a solution for configuration at [Launchcode](https://lc.dev).
 We needed an isomorphic solution to load configuration values, that strictly prevents mistakes.
-We needed this for frontend, backend and mobile projects. Using the same tool for all these was a must.
+We needed this for frontend, backend and mobile app projects. Using the same tool for all these was a must.
 We also didn't like the trend of "opinionated" libraries, with a lot of implicit behavior.
 
 We looked around the Node.js ecosystem for something that would fit this need.
@@ -101,31 +103,31 @@ We currently support YAML, JSON, TOML and JSON5.
 
 #### Strong Typing
 
-App Config has built-in support for creating type files that are inferred from your JSON Schema.
+App Config has built-in support for generating type files that are inferred from your JSON Schema.
 This support leverages a tool called [quicktype](https://quicktype.io).
 Because of that, app-config comes with ways to generate code for many different languages.
-Currently, the only _official_ support is for TypeScript.
+Currently, we support **TypeScript**, **Go** and **Rust**.
 
 #### Environment Specific Values
 
 Create a `.app-config.production.{yml|toml|json|json5}` file with values to use when `NODE_ENV=production`.
-Or, use the embedded helper `$env` for colocated configurations.
+Or, use the embedded helper `$env` for colocated configurations. [More here](./config-loading.md).
 
 #### Value Sharing
 
 With the `$extends` and `$override` keys, you can load values from shared files.
-Use this in a monorepo for powerful sharing of common configuration values.
-Learn more in [Parsing Extensions](./extensions.md).
+You can use this in a monorepo as a convenient way of sharing of common configuration values.
+[More here](./extensions.md).
 
 #### Value Encryption
 
-Share secret values in source control, encrypted with your computer's private key.
-You'll find more information about this in [Value Encryption](./encryption.md).
+Share secret values in source control with your team, encrypted with local private keys.
+[More here](./encryption.md).
 
 #### Producer & Consumer
 
-Use App Config as a consumer in a Node.js app.
-Or, use App Config to read and validate config, before passing values into your app.
+Use App Config to read configuration in a Node.js app.
+Or, use the CLI to read and validate config, before passing values into your app.
 
 #### Extensible Parsing
 
@@ -156,7 +158,7 @@ We encourage you to read through the Introduction Guide before committing to App
 You can visit the [Quick Start Guide](./quick-start.md), [Node.js Setup](../node/README.md), [Webpack Setup](../webpack/README.md),
 or [React Native Setup](../react-native/README.md) for more starting instructions.
 
-TLDR?
-Start off with a `.app-config.{yml|toml|json|json5}` file.
-Define JSON Schema in `.app-config.schema.{yml|toml|json|json5}`.
-Load configuration using the `npx app-config` CLI, or `loadConfig` Node.js API.
+**TLDR?**
+1. Start off with a `.app-config.{yml|toml|json|json5}` file.
+2. Define JSON Schema in `.app-config.schema.{yml|toml|json|json5}`.
+3. Load configuration using `npx @app-config/cli` or `loadConfig` Node.js API.

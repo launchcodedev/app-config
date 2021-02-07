@@ -44,7 +44,7 @@ generate:
 Running the generate CLI will write the file referenced in the meta file.
 
 ```sh
-npx app-config generate
+npx @app-config/cli generate
 ```
 
 If your `include` section in tsconfig includes the generated `index.d.ts` file, this should

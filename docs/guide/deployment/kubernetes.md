@@ -28,7 +28,7 @@ Instead of using a plain YAML file for helm values, perform a preprocessor step:
 # use the output of app-config as a values file in Helm
 helm upgrade --install my-app \
   ./my-app-chart \
-  --values <(npx app-config create --secrets --fileNameBase my-app)
+  --values <(npx @app-config/cli create --secrets --fileNameBase my-app)
 ```
 
 This allows you to have a Helm values file that looks like:

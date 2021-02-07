@@ -49,7 +49,7 @@ Defining a schema is all well and good, but you're more concerned with the actua
 Let's try just running app-config with the schema so far.
 
 ```sh
-npx app-config vars
+npx @app-config/cli vars
 ```
 
 You should receive an error, something like this:
@@ -77,12 +77,12 @@ We created a file called `.app-config.toml`. Our choice of TOML here is complete
 We'll try running again.
 
 ```sh
-$ npx app-config vars
+$ npx @app-config/cli vars
 APP_CONFIG_SERVER_PORT=8888
 APP_CONFIG_DATABASE_HOST="central-server"
 APP_CONFIG_DATABASE_PORT=5432
 
-$ npx app-config create -f json5
+$ npx @app-config/cli create -f json5
 {
   server: {
     port: 8888,
@@ -108,7 +108,7 @@ port = 5432
 
 
 ```sh
-$ npx app-config vars
+$ npx @app-config/cli vars
 # ... output omitted
 [ValidationError: Config is invalid: config.database.host should be string]
 ```
@@ -177,12 +177,12 @@ server:
 In any App Config file, this structure is flattened at load time.
 
 ```sh
-$ NODE_ENV=production npx app-config v
+$ NODE_ENV=production npx @app-config/cli v
 APP_CONFIG_DATABASE_HOST="central-server"
 APP_CONFIG_DATABASE_PORT=5432
 APP_CONFIG_SERVER_PORT=80
 
-$ NODE_ENV=qa npx app-config v
+$ NODE_ENV=qa npx @app-config/cli v
 APP_CONFIG_DATABASE_HOST="central-server"
 APP_CONFIG_DATABASE_PORT=5432
 APP_CONFIG_SERVER_PORT=3000
@@ -210,7 +210,7 @@ But we feel that it's better to use `APP_CONFIG`.
 
 ```sh
 docker run \
-  -e APP_CONFIG=$(NODE_ENV=production npx app-config create -s --format json) \
+  -e APP_CONFIG=$(NODE_ENV=production npx @app-config/cli create -s --format json) \
   my-app
 ```
 
@@ -222,7 +222,7 @@ Along these lines, the App Config CLI provides `APP_CONFIG` when running nested 
 This is easy to demonstrate by "calling itself".
 
 ```sh
-$ npx app-config -- ./node_modules/.bin/app-config c --verbose
+$ npx @app-config/cli -- ./node_modules/.bin/app-config c --verbose
 [app-config][VERBOSE] Trying to read APP_CONFIG for configuration
 [app-config][VERBOSE] EnvironmentSource guessed that APP_CONFIG is JSON FileType
 ```
@@ -237,7 +237,7 @@ These variables are parsed just like `APP_CONFIG` (they can be JSON, YAML, etc).
 They are merged deeply and override any values that they define.
 
 ```sh
-$ APP_CONFIG_EXTEND='{database:{host:"mock-server"}}' npx app-config v -s
+$ APP_CONFIG_EXTEND='{database:{host:"mock-server"}}' npx @app-config/cli v -s
 APP_CONFIG_DATABASE_HOST="mock-server"
 APP_CONFIG_DATABASE_PORT=5432
 APP_CONFIG_SERVER_PORT=3000
@@ -279,10 +279,15 @@ Given `a` and `b`:
 We aim to make almost everything about config loading customizable.
 This should be true of the CLI and Node.js API.
 
+See [meta file options](./settings.md#parse-and-loading-configuration) for a list
+of available customizations. The [Node.js API](../node/api-reference.md) has more possible options.
+
 ## Generating a `.env` file
 
 Fairly easily, we could use App Config as a generator for `.env` files.
 
 ```sh
-npx app-config vars -s > .env
+npx @app-config/cli vars -s > .env
 ```
+
+This might be useful for applications you don't control, but want to use App Config for.

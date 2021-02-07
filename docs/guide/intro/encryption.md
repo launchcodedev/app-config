@@ -9,11 +9,11 @@ We've tried to make using encrypted secrets as easy as it possibly can be.
 ```sh
 # this initializes your machine-local keychain
 # this is global to your system, stored in your home folder
-npx app-config secret init
+npx @app-config/cli secret init
 
 # this initializes a specific repository's encryption keys
 # any new repository will have different encryption keys
-npx app-config secret init-repo
+npx @app-config/cli secret init-repo
 ```
 
 ::: tip Important!
@@ -23,9 +23,9 @@ Encrypted values are per-meta-file. Encryption is context sensitive, **not** glo
 From here, you can encrypt and decrypt values.
 
 ```sh
-npx app-config secret encrypt 42
-npx app-config secret encrypt null
-npx app-config secret encrypt 'SuperSecret'
+npx @app-config/cli secret encrypt 42
+npx @app-config/cli secret encrypt null
+npx @app-config/cli secret encrypt 'SuperSecret'
 ```
 
 You can use the outputted (encrypted) values anywhere in your app-config files.
@@ -40,8 +40,8 @@ database:
 Note that the CLI also has many useful shortcuts.
 
 ```sh
-npx app-config secret encrypt --clipboard 42
-npx app-config secret decrypt 'enc:1:...'
+npx @app-config/cli secret encrypt --clipboard 42
+npx @app-config/cli secret decrypt 'enc:1:...'
 ```
 
 Both commands support stdin input, and have options to read/write from the system clipboard.
@@ -51,7 +51,7 @@ Both commands support stdin input, and have options to read/write from the syste
 It would be impractical to enter your password every time you want to run your app.
 
 ```
-npx app-config secret agent
+npx @app-config/cli secret agent
 ```
 
 This command starts a daemon process, which runs a local server on your machine.
@@ -68,13 +68,13 @@ If you want to opt-out of using the secret agent, the CLI has a `--agent=false` 
 If you're already trusted, ask the other user to run this command:
 
 ```sh
-npx app-config secret export ./my-key
+npx @app-config/cli secret export ./my-key
 ```
 
 This writes a `my-key` file with their public key. Have them give you this file, so you can import it.
 
 ```sh
-npx app-config secret trust ./my-key
+npx @app-config/cli secret trust ./my-key
 ```
 
 This will re-sign all encryption keys of the current repository with their public
@@ -86,7 +86,7 @@ You can untrust users as well. Please rotate secrets if they are a security conc
 Once a user has read secrets, there's no way to _truly_ revoke that access.
 
 ```sh
-npx app-config secret untrust somebody@example.com
+npx @app-config/cli secret untrust somebody@example.com
 ```
 
 This does not require re-encrypting any secrets. Any new encrypted values will use a

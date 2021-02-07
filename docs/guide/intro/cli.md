@@ -43,7 +43,7 @@ graph LR
 App Config will run child commands for you, with extra environment variables injected.
 
 ```sh
-npx app-config -- env
+npx @app-config/cli -- env
 ```
 
 This is the canonical example because it's simple to explain.
@@ -55,7 +55,7 @@ The output will include `APP_CONFIG` and many other `APP_CONFIG_{FLATTEND_NAME}`
 You can run `app-config vars` to see them all on their own.
 
 ```sh
-npx app-config -- docker-compose up -d
+npx @app-config/cli -- docker-compose up -d
 ```
 
 This is a more realistic example. You might have a `docker-compose.yml` file that uses some
@@ -88,7 +88,7 @@ This allows you to inject the current `APP_CONFIG` directly into a running insta
 ## Viewing and Formatting Values
 
 ```sh
-npx app-config create --format json
+npx @app-config/cli create --format json
 ```
 
 The `create` subcommand will generate a config object from loaded configuration.
@@ -100,7 +100,7 @@ to select a specific nested value inside of the config. Selecting a sub-object
 can be handy for deployment, or for quick copy-pasting.
 
 ```sh
-npx app-config vars
+npx @app-config/cli vars
 ```
 
 The variables subcommand prints out all variables that will be injected when running [nested commands](#nested-commands).
@@ -118,14 +118,14 @@ The `variables` subcommand can also be told to "rename" and filter variables.
 These options are available for nested commands as well.
 
 ```sh
-npx app-config vars --only APP_CONFIG_DATABASE_PASSWORD --only APP_CONFIG_DATABASE_USER
-npx app-config vars --rename APP_CONFIG_DATABASE_PASSWORD=POSTGRES_PASSWORD --only POSTGRES_PASSWORD
+npx @app-config/cli vars --only APP_CONFIG_DATABASE_PASSWORD --only APP_CONFIG_DATABASE_USER
+npx @app-config/cli vars --rename APP_CONFIG_DATABASE_PASSWORD=POSTGRES_PASSWORD --only POSTGRES_PASSWORD
 ```
 
 This is handy for using App Config as an entrance point for other programs.
 
 ```sh
-npx app-config create-schema
+npx @app-config/cli create-schema
 ```
 
 The create-schema subcommand provides a way to write a fully resolved schema, with all of its `$ref` file references inline.
@@ -134,7 +134,7 @@ This can be useful for deployments, so that you don't need to include multiple s
 ## Code Generation
 
 ```sh
-npx app-config generate
+npx @app-config/cli generate
 ```
 
 The generate command reads the meta file, and does all [code / types generation](./codegen.md).
@@ -143,73 +143,73 @@ Code generation is driven by options in the meta file.
 ## Encryption Commands
 
 ```sh
-npx app-config secret init
+npx @app-config/cli secret init
 ```
 
 Initializes your encryption keychain on your machine. These are stored in a shared directory.
 
 ```sh
-npx app-config secret init-repo
+npx @app-config/cli secret init-repo
 ```
 
 Creates a new symmetric key and initializes team members for a repository.
 By default, you are the only trusted team member.
 
 ```sh
-npx app-config secret init-key
+npx @app-config/cli secret init-key
 ```
 
 Creates a new symmetric key for encrypting new secrets. This is usually not required,
 since it's automatically done when untrusting team members.
 
 ```sh
-npx app-config secret key
-npx app-config secret export <path>
+npx @app-config/cli secret key
+npx @app-config/cli secret export <path>
 ```
 
 View or export your public key to a file. This is used to share your public key with
 others so that they can trust you. See more in [encryption](./encryption.md#trusting-users).
 
 ```sh
-npx app-config secret ci
+npx @app-config/cli secret ci
 ```
 
 Creates an encryption key that can be used without a passphrase. This is useful for
 providing CI access to encrypted values, as the name suggests.
 
 ```sh
-npx app-config secret trust <keyPath>
+npx @app-config/cli secret trust <keyPath>
 ```
 
 Adds a team member who can encrypt and decrypt values. See more in [encryption](./encryption.md#trusting-users).
 
 ```sh
-npx app-config secret untrust <email>
+npx @app-config/cli secret untrust <email>
 ```
 
 Revokes encryption access (in the future) for a trusted team member.
 
 ```sh
-npx app-config secret encrypt
+npx @app-config/cli secret encrypt
 ```
 
 Encrypts a secret value. Reads from stdin, or provide an extra argument with the value.
 
 ```sh
-npx app-config secret decrypt
+npx @app-config/cli secret decrypt
 ```
 
 Decrypts a secret value. Reads from stdin, or provide an extra argument with the value.
 
 ```sh
-npx app-config secret agent
+npx @app-config/cli secret agent
 ```
 
 Starts the background decryption process to avoid passphrase prompts. This process
 is not automatically daemonized - you'll need to run it in a separate tab.
 
 ```sh
-npx app-config secret reset
+npx @app-config/cli secret reset
 ```
 
 Removes your encryption keychain. You will lose access to all repositories that

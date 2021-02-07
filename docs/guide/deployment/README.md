@@ -10,7 +10,7 @@ To make deployment easier, "resolve" your schema at build time using the `create
 This will inline all schema references into one file, which is easy to set as the `APP_CONFIG_SCHEMA` variable.
 
 ```sh
-APP_CONFIG_SCHEMA=$(npx app-config create-schema --format json)
+APP_CONFIG_SCHEMA=$(npx @app-config/cli create-schema --format json)
 ```
 
 One option is to pass this into a Dockerfile as a build argument and use `ENV`.
@@ -23,7 +23,7 @@ Generate a "frozen" value using the CLI, for the environment you're deploying to
 This simplifies all of the values in config, and enables [spec compliant](../../spec/README.md) apps to work.
 
 ```sh
-APP_CONFIG=$(NODE_ENV=production npx app-config create --format json --secrets)
+APP_CONFIG=$(NODE_ENV=production npx @app-config/cli create --format json --secrets)
 ```
 
 Configuration should be dynamic, so you should set this variable when deploying.
