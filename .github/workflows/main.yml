@@ -37,7 +37,25 @@ jobs:
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./app-config/coverage/coverage-final.json,./app-config-core/coverage/coverage-final.json,./app-config-node/coverage/coverage-final.json,./app-config-cli/coverage/coverage-final.json,./app-config-inject/coverage/coverage-final.json,./app-config-webpack-plugin/coverage/coverage-final.json
+        files: |
+          ./app-config-cli/coverage/coverage-final.json,
+          ./app-config-config/coverage/coverage-final.json,
+          ./app-config-core/coverage/coverage-final.json,
+          ./app-config-cypress/coverage/coverage-final.json,
+          ./app-config-default-extensions/coverage/coverage-final.json,
+          ./app-config-encryption/coverage/coverage-final.json,
+          ./app-config-generate/coverage/coverage-final.json,
+          ./app-config-git/coverage/coverage-final.json,
+          ./app-config-inject/coverage/coverage-final.json,
+          ./app-config-logging/coverage/coverage-final.json,
+          ./app-config-meta/coverage/coverage-final.json,
+          ./app-config-node/coverage/coverage-final.json,
+          ./app-config-schema/coverage/coverage-final.json,
+          ./app-config-settings/coverage/coverage-final.json,
+          ./app-config-utils/coverage/coverage-final.json,
+          ./app-config-v1-compat/coverage/coverage-final.json,
+          ./app-config-webpack-plugin/coverage/coverage-final.json,
+          ./app-config/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true
 
