@@ -97,7 +97,7 @@ export async function loadMetaConfig({
   const source = new FallbackSource(sources);
 
   try {
-const { defaultMetaExtensions } = require('@app-config/default-extensions');
+    const { defaultMetaExtensions } = require('@app-config/default-extensions');
     const parsed = await source.read(DefaultExtensions.defaultMetaExtensions());
     const value = parsed.toJSON() as MetaProperties;
 
