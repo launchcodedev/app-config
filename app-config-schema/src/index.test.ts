@@ -588,3 +588,36 @@ describe('Validation', () => {
     });
   });
 });
+
+describe('Code Generation', () => {
+  beforeEach(() => {
+    process.env.APP_CONFIG_SCHEMA = JSON.stringify({
+      type: 'object',
+      additionalProperties: false,
+      required: ['foo'],
+      properties: {
+        // use format to trigger an ajv-formats import
+        foo: { type: 'string', format: 'uri' },
+        // use maxLength to trigger an ajv import
+        bar: { type: 'string', maxLength: 42 },
+      },
+    });
+  });
+
+  it('generates a basic validation function', async () => {
+    const { validationFunctionCode } = await loadSchema();
+
+    expect(validationFunctionCode()).toMatchSnapshot();
+  });
+
+  it('validates using the generated code', async () => {
+    const { validationFunction } = await loadSchema();
+
+    expect(validationFunction({})).toBe(false);
+    expect(validationFunction.errors).toHaveLength(1);
+    expect(validationFunction.errors).toMatchSnapshot();
+
+    expect(validationFunction({ foo: 'str' })).toBe(false);
+    expect(validationFunction({ foo: 'http://google.com' })).toBe(true);
+  });
+});

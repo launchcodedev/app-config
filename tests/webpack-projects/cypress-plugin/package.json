@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "@lcdev/app-config": "2",
-    "@app-config/cypress": "2",
-    "ajv": "7"
+    "@app-config/cypress": "2"
   },
   "devDependencies": {
     "@babel/core": "7",

@@ -1,5 +1,5 @@
 import { join, relative, resolve } from 'path';
-import Ajv, { _ as ajvTemplate } from 'ajv';
+import Ajv, { ValidateFunction, _ as ajvTemplate } from 'ajv';
 import standalone from 'ajv/dist/standalone';
 import addFormats from 'ajv-formats';
 import RefParser, { JSONSchema, bundle } from 'json-schema-ref-parser';
@@ -39,6 +39,8 @@ export interface Schema {
   schema: JSONSchema;
   validate: Validate;
   validationFunctionCode(): string;
+  validationFunctionModule(): string;
+  validationFunction: ValidateFunction;
 }
 
 export async function loadSchema({
@@ -146,11 +148,8 @@ export async function loadSchema({
 
   let currentlyParsing: ParsedValue | undefined;
 
-  return {
+  const schema: Schema = {
     schema: normalized as JsonObject,
-    validationFunctionCode() {
-      return standalone(ajv, validate);
-    },
     validate(fullConfig, parsedConfig) {
       currentlyParsing = parsedConfig;
       const valid = validate(fullConfig);
@@ -166,7 +165,40 @@ export async function loadSchema({
         throw err;
       }
     },
+    validationFunctionCode() {
+      let code = standalone(ajv, validate);
+
+      // resolve imports to absolute paths relative to _this_ package
+      // this allows users of the webpack project not to have ajv as a dependency
+
+      const resolvedAjvPath = join(require.resolve('ajv/package.json'), '..');
+      const resolvedAjvFormatsPath = join(require.resolve('ajv-formats/package.json'), '..');
+
+      code = code.replace(/require\("ajv\//g, `require("${resolvedAjvPath}/`);
+      code = code.replace(/require\("ajv-formats\//g, `require("${resolvedAjvFormatsPath}/`);
+
+      return code;
+    },
+    validationFunctionModule() {
+      return `
+        const validateConfigModule = {};
+
+        (function(module){
+          ${schema.validationFunctionCode()}
+        })(validateConfigModule);
+
+        return validateConfigModule.exports;
+      `;
+    },
+    get validationFunction() {
+      const fnCode = schema.validationFunctionModule();
+
+      // eslint-disable-next-line
+      return new Function('require', fnCode)(require) as ValidateFunction;
+    },
   };
+
+  return schema;
 }
 
 async function normalizeSchema(schema: JsonObject, directory: string): Promise<JSONSchema> {

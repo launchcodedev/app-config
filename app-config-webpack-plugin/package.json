@@ -35,7 +35,6 @@
   },
   "peerDependencies": {
     "@lcdev/app-config": "1 || 2",
-    "ajv": "7",
     "html-webpack-plugin": "4",
     "webpack": "4"
   },
