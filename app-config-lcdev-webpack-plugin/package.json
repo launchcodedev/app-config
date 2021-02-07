@@ -1,6 +1,6 @@
 {
-  "name": "@app-config/webpack",
-  "description": "Webpack plugin that loads your app-config values into bundles statically",
+  "name": "@lcdev/app-config-webpack-plugin",
+  "description": "Alias for @app-config/webpack",
   "version": "2.0.6",
   "license": "MPL-2.0",
   "author": {
@@ -17,7 +17,6 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    ".config-placeholder",
     "!*.tsbuildinfo",
     "!*.test.*"
   ],
@@ -31,19 +30,9 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "loader-utils": "2"
+    "@app-config/webpack": "2"
   },
-  "peerDependencies": {
-    "@lcdev/app-config": "1 || 2",
-    "html-webpack-plugin": "4",
-    "webpack": "4"
-  },
-  "devDependencies": {
-    "@lcdev/app-config": "1 || 2",
-    "@types/loader-utils": "1",
-    "html-webpack-plugin": "4",
-    "webpack": "4"
-  },
+  "devDependencies": {},
   "prettier": "@lcdev/prettier",
   "jest": {
     "preset": "@lcdev/jest"

@@ -81,7 +81,7 @@ export const config: ExportedConfig = new Proxy(
 export default config;
 
 /**
- * Only available when using @lcdev/app-config-webpack-plugin. Validates configuration using AJV.
+ * Only available when using @app-config/webpack. Validates configuration using AJV.
  */
 export const validateConfig: ValidateFunction<ExportedConfig> = null as any; // eslint-disable-line
 

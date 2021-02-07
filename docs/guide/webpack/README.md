@@ -9,13 +9,13 @@ Head on over to the [Introduction](../intro/) or [Quick Start](../intro/quick-st
 The webpack plugin is a separate package, which you'll need to install:
 
 ```sh
-yarn add @lcdev/app-config-webpack-plugin@2
+yarn add @app-config/webpack@2
 ```
 
 In your webpack.config.js file, add the following:
 
 ```javascript
-import AppConfigPlugin from '@lcdev/app-config-webpack-plugin';
+import AppConfigPlugin from '@app-config/webpack';
 
 // in your loaders:
 module: {

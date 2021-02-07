@@ -17,10 +17,10 @@
     "@app-config/cypress": "2"
   },
   "devDependencies": {
+    "@app-config/webpack": "2",
     "@babel/core": "7",
     "@babel/preset-env": "7",
     "@cypress/webpack-preprocessor": "5",
-    "@lcdev/app-config-webpack-plugin": "2",
     "@lcdev/tsconfig": "0.2",
     "babel-loader": "8",
     "cross-env": "7",
