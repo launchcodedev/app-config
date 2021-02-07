@@ -21,4 +21,3 @@ export function isObject(obj: Json): obj is JsonObject {
 export function isPrimitive(obj: Json): obj is JsonPrimitive {
   return !isObject(obj) && !Array.isArray(obj);
 }
-

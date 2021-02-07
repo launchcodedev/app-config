@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@app-config/default-extensions": "2",
-    "@app-config/node": "2"
+    "@app-config/node": "2",
+    "fs-extra": "7"
   },
   "devDependencies": {
     "@app-config/test-utils": "2",

@@ -1,4 +1,4 @@
-import { join, dirname, extname, resolve, isAbsolute } from 'path';
+import { join, dirname, extname } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject } from '@app-config/utils';
 import { ParsingExtension, Root } from '@app-config/core';

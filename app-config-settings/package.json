@@ -33,7 +33,8 @@
     "@app-config/core": "2",
     "@app-config/logging": "2",
     "@app-config/node": "2",
-    "env-paths": "2"
+    "env-paths": "2",
+    "fs-extra": "7"
   },
   "devDependencies": {
     "@app-config/test-utils": "2"

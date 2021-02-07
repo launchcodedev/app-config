@@ -12,8 +12,7 @@ import {
 import { logger } from '@app-config/logging';
 
 import { FlexibleFileSource, FileSource } from '@app-config/node';
-// import { defaultMetaExtensions } from '@app-config/default-extensions';
-import * as DefaultExtensions from '@app-config/default-extensions';
+import { defaultMetaExtensions } from '@app-config/default-extensions';
 
 export interface MetaLoadingOptions {
   directory?: string;
@@ -97,8 +96,7 @@ export async function loadMetaConfig({
   const source = new FallbackSource(sources);
 
   try {
-    const { defaultMetaExtensions } = require('@app-config/default-extensions');
-    const parsed = await source.read(DefaultExtensions.defaultMetaExtensions());
+    const parsed = await source.read(defaultMetaExtensions());
     const value = parsed.toJSON() as MetaProperties;
 
     const fileSources = parsed.sources.filter((s) => s instanceof FileSource) as FileSource[];
