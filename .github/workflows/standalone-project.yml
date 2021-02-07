@@ -2,7 +2,7 @@ name: standalone-project
 
 on:
   push:
-    branches: '*'
+    branches: 'master'
 
 jobs:
   build:
