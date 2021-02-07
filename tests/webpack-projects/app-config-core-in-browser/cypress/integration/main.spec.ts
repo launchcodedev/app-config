@@ -1,4 +1,4 @@
-import { isBrowser, isNode } from '@app-config/core';
+import { isBrowser, isNode } from '@app-config/utils';
 
 describe('Config Loading', () => {
   it('should render the parsed value', () => {

@@ -13,7 +13,8 @@
     "test": "echo"
   },
   "dependencies": {
-    "@app-config/core": "2"
+    "@app-config/core": "2",
+    "@app-config/utils": "2"
   },
   "devDependencies": {
     "@lcdev/tsconfig": "0.2",
