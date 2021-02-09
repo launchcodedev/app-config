@@ -30,3 +30,28 @@ pass and that the linter is happy before filling a PR, otherwise we'll
 need to tell you to fix those issues.
 
 If you are adding anything new or changing behavior, please add applicable tests.
+
+### Architecture
+
+- `@app-config/utils`: common isomorphic utilities
+- `@app-config/test-utils`: common logic for tests
+- `@app-config/logging`: common logging logic
+- `@app-config/core`: isomorphic shared logic - ParsedValue and extensions
+- `@app-config/node`: utilities specific to node.js
+- `@app-config/encryption`: for pgp logic and keychains
+- `@app-config/cli`: for the CLI
+- `@app-config/git`: `$git` parsing extension
+- `@app-config/v1-compat`: v1 version compatibility extension
+- `@app-config/extensions`: common parsing extensions
+- `@app-config/default-extensions`: all default parsing extensions
+- `@app-config/generate`: code generation
+- `@app-config/config`: config loading
+- `@app-config/meta`: meta file loading
+- `@app-config/settings`: settings file loading
+- `@app-config/schema`: schema loading and validation
+- `@app-config/inject`: runtime injection into HTML files
+- `@app-config/webpack`: webpack plugin
+- `@app-config/main`: main config singleton and loading logic
+- `@lcdev/app-config`: alias for `@app-config/main`
+- `@lcdev/app-config-webpack-plugin`: alias for `@app-config/webpack`
+- `@lcdev/app-config-inject`: alias for `@app-config/inject`
