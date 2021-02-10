@@ -210,8 +210,35 @@ export function environmentVariableSubstitution(
 
     if (key === '$substitute' || key === '$subs') {
       return (parse) => {
-        if (typeof value !== 'string')
+        if (isObject(value)) {
+          if (!value.$name) {
+            throw new AppConfigError('$substitute was provided an object without $name');
+          }
+
+          if (typeof value.$name !== 'string') {
+            throw new AppConfigError('$substitute was provided an object without a string $name');
+          }
+
+          const variableName = value.$name;
+          const fallback = value.$fallback;
+          const resolvedValue = process.env[variableName];
+
+          if (fallback !== undefined) {
+            return parse(resolvedValue || fallback, { shouldFlatten: true });
+          }
+
+          if (!resolvedValue) {
+            throw new AppConfigError(
+              `$substitute could not find ${variableName} environment variable`,
+            );
+          }
+
+          return parse(resolvedValue, { shouldFlatten: true });
+        }
+
+        if (typeof value !== 'string') {
           throw new AppConfigError('$substitute expects a string value');
+        }
 
         return parse(performAllSubstitutions(value), { shouldFlatten: true });
       };

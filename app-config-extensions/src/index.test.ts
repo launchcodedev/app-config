@@ -665,6 +665,48 @@ describe('$substitute directive', () => {
 
     expect(parsed.toJSON()).toEqual({ foo: 'qa' });
   });
+
+  it('reads object with $name', async () => {
+    process.env.FOO = 'foo';
+
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO' } },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'foo' });
+  });
+
+  it('fails with $name when not defined', async () => {
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO' } },
+    });
+
+    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+  });
+
+  it('uses $name when $fallback is defined', async () => {
+    process.env.FOO = 'foo';
+
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO', $fallback: 'bar' } },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'foo' });
+  });
+
+  it('uses $fallback when $name was not found', async () => {
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO', $fallback: 'bar' } },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'bar' });
+  });
 });
 
 describe('$timestamp directive', () => {
