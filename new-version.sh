@@ -30,15 +30,31 @@ new_version() {
   cd $prev
 }
 
-new_version ./app-config-core
-new_version ./app-config-node
-new_version ./app-config-cli
 new_version ./app-config
-new_version ./app-config-webpack-plugin
-new_version ./app-config-inject
-new_version ./app-config-vault
+new_version ./app-config-cli
+new_version ./app-config-config
+new_version ./app-config-core
 new_version ./app-config-cypress
+new_version ./app-config-default-extensions
+new_version ./app-config-encryption
+new_version ./app-config-extensions
+new_version ./app-config-generate
+new_version ./app-config-git
+new_version ./app-config-inject
+new_version ./app-config-lcdev-inject
+new_version ./app-config-lcdev-main
+new_version ./app-config-lcdev-webpack-plugin
+new_version ./app-config-logging
+new_version ./app-config-meta
+new_version ./app-config-node
 new_version ./app-config-react-native-transformer
+new_version ./app-config-schema
+new_version ./app-config-settings
+new_version ./app-config-test-utils
+new_version ./app-config-utils
+new_version ./app-config-v1-compat
+new_version ./app-config-vault
+new_version ./app-config-webpack-plugin
 
 git commit -m "chore: release v$VERSION"
 git tag v$VERSION
