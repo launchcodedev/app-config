@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Alias for @app-config/main",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
