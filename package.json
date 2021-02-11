@@ -1,5 +1,5 @@
 {
-  "name": "@lcdev/app-config-monorepo",
+  "name": "@app-config/monorepo",
   "version": "0.0.0",
   "private": true,
   "workspaces": {

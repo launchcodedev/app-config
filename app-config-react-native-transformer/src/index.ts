@@ -1,4 +1,4 @@
-import { loadValidatedConfig } from '@lcdev/app-config';
+import { loadValidatedConfig } from '@app-config/main';
 import { relative } from 'path';
 import { Transformer, upstreamTransformer } from './upstream-transformer';
 
@@ -9,7 +9,7 @@ export const transform: Transformer['transform'] = async ({ src, filename, optio
   // Get the relative path to app-config's entry point
   const appConfigPath = relative(
     options.projectRoot,
-    require.resolve('@lcdev/app-config', {
+    require.resolve('@app-config/main', {
       // Search relative to the project's root
       paths: [options.projectRoot],
     }),

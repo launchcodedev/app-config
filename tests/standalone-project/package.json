@@ -15,7 +15,7 @@
   "dependencies": {
     "@app-config/core": "file:../../app-config-core",
     "@app-config/node": "file:../../app-config-node",
-    "@lcdev/app-config": "file:../../app-config"
+    "@app-config/main": "file:../../app-config"
   },
   "devDependencies": {
     "typescript": "*"

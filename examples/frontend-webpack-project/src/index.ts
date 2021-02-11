@@ -1,4 +1,4 @@
-import { config } from '@lcdev/app-config';
+import { config } from '@app-config/main';
 
 // here simply to demonstrate how config is loaded in
 document.body.innerHTML = JSON.stringify(config);

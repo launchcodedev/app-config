@@ -4,16 +4,16 @@ React Native Metro transformer that loads your `app-config` values into bundles 
 
 ## Installation
 
-### 1. Install `@lcdev/app-config`
+### 1. Install `@app-config/main`
 
 ```shell
-yarn add @lcdev/app-config
+yarn add @app-config/main
 ```
 
 Or, if you use NPM.
 
 ```shell
-npm i @lcdev/app-config
+npm i @app-config/main
 ```
 
 ### 2. Install `@lcdev/react-native-app-config-transformer`

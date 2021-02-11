@@ -143,13 +143,13 @@ You'll find more information for the environment you're targeting in the Node.js
 :::
 
 ```sh
-yarn add @lcdev/app-config@2
+yarn add @app-config/main@2
 ```
 
 Or, if you use NPM.
 
 ```sh
-npm i @lcdev/app-config@2
+npm i @app-config/main@2
 ```
 
 ## Usage

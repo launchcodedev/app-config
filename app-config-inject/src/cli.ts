@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as yargs from 'yargs';
-import { setLogLevel, LogLevel } from '@lcdev/app-config';
+import { setLogLevel, LogLevel } from '@app-config/main';
 import { consumeStdin } from '@app-config/node';
 import { injectHtml } from './index';
 

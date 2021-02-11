@@ -107,7 +107,7 @@ since every application could want to do this a slightly different way.
 The basics are:
 
 ```typescript
-import { config, validateConfig } from '@lcdev/app-config';
+import { config, validateConfig } from '@app-config/main';
 import merge from 'lodash.merge';
 
 const queryParameters = new URLSearchParams(document.location.search);

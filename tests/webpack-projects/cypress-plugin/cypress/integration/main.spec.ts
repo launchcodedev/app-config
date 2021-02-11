@@ -1,5 +1,5 @@
 import '@app-config/cypress';
-import config from '@lcdev/app-config';
+import config from '@app-config/main';
 
 describe('Config Loading', () => {
   it('should render the configuration', () => {

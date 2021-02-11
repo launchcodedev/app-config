@@ -16,7 +16,7 @@
     "test": "echo"
   },
   "dependencies": {
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "fastify": "3"
   },
   "devDependencies": {

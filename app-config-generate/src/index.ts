@@ -101,7 +101,7 @@ export async function generateQuicktype(
   });
 
   if (['ts', 'typescript'].includes(type)) {
-    lines.splice(leadingComments.length, 0, '', "import '@lcdev/app-config';");
+    lines.splice(leadingComments.length, 0, '', "import '@app-config/main';");
 
     // some configs are empty, so just mark them as an empty object
     if (!lines.some((line) => line.startsWith('export'))) {
@@ -112,7 +112,7 @@ export async function generateQuicktype(
       lines.push(
         ...[
           '// augment the default export from app-config',
-          "declare module '@lcdev/app-config' {",
+          "declare module '@app-config/main' {",
           `  export interface ExportedConfig extends ${name} {}`,
           '}',
         ],

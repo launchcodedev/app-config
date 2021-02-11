@@ -4,7 +4,7 @@ import {
   loadUnvalidatedConfig,
   ConfigLoadingOptions,
   SchemaLoadingOptions,
-} from '@lcdev/app-config';
+} from '@app-config/main';
 
 export { cli } from './cli';
 

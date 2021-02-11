@@ -8,7 +8,7 @@ const config = {
   externalApiUrl: 'http://localhost:3002',
 };
 
-jest.mock('@lcdev/app-config', () => ({ config, default: config }));
+jest.mock('@app-config/main', () => ({ config, default: config }));
 
 import './index';
 

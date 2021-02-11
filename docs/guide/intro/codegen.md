@@ -31,7 +31,7 @@ An example of the file that's written is below:
 // AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
 
-import '@lcdev/app-config';
+import '@app-config/main';
 
 export interface Config {
   user?: User;
@@ -42,7 +42,7 @@ export interface User {
 }
 
 // augment the default export from app-config
-declare module '@lcdev/app-config' {
+declare module '@app-config/main' {
   export interface ExportedConfig extends Config {}
 }
 ```

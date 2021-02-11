@@ -276,14 +276,14 @@ exports[`TypeScript File Generation corrects Date type in TypeScript files 1`] =
 "// AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
 
-import '@lcdev/app-config';
+import '@app-config/main';
 
 export interface MyCustomConfigName {
   x?: string;
 }
 
 // augment the default export from app-config
-declare module '@lcdev/app-config' {
+declare module '@app-config/main' {
   export interface ExportedConfig extends MyCustomConfigName {}
 }
 "
@@ -293,14 +293,14 @@ exports[`TypeScript File Generation creates a TypeScript file from meta file pro
 "// AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
 
-import '@lcdev/app-config';
+import '@app-config/main';
 
 export interface MyCustomConfigName {
   x?: number;
 }
 
 // augment the default export from app-config
-declare module '@lcdev/app-config' {
+declare module '@app-config/main' {
   export interface ExportedConfig extends MyCustomConfigName {}
 }
 "
@@ -310,7 +310,7 @@ exports[`TypeScript File Generation creates a TypeScript file from schema with m
 "// AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
 
-import '@lcdev/app-config';
+import '@app-config/main';
 
 export interface Config {
   a?: A;
@@ -330,7 +330,7 @@ export interface C {
 }
 
 // augment the default export from app-config
-declare module '@lcdev/app-config' {
+declare module '@app-config/main' {
   export interface ExportedConfig extends Config {}
 }
 "
@@ -341,14 +341,14 @@ Array [
   "// AUTO GENERATED CODE",
   "// Run app-config with 'generate' command to regenerate this file",
   "",
-  "import '@lcdev/app-config';",
+  "import '@app-config/main';",
   "",
   "export interface Configuration {",
   "  foo?: string;",
   "}",
   "",
   "// augment the default export from app-config",
-  "declare module '@lcdev/app-config' {",
+  "declare module '@app-config/main' {",
   "  export interface ExportedConfig extends Configuration {}",
   "}",
 ]

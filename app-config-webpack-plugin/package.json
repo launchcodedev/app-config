@@ -34,12 +34,12 @@
     "loader-utils": "2"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "1 || 2",
+    "@app-config/main": "2",
     "html-webpack-plugin": "4",
     "webpack": "4"
   },
   "devDependencies": {
-    "@lcdev/app-config": "1 || 2",
+    "@app-config/main": "2",
     "@types/loader-utils": "1",
     "html-webpack-plugin": "4",
     "webpack": "4"

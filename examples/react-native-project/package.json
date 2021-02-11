@@ -17,7 +17,7 @@
     "test": "echo"
   },
   "dependencies": {
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "expo": "39",
     "expo-status-bar": "1",
     "react": "16",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@babel/core": "7",
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "@lcdev/react-native-app-config-transformer": "2",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",

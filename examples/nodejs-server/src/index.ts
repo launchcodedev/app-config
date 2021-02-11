@@ -1,5 +1,5 @@
 import fastify from 'fastify';
-import { config, loadConfig } from '@lcdev/app-config';
+import { config, loadConfig } from '@app-config/main';
 
 const server = fastify();
 

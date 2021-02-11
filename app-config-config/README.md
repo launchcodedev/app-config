@@ -1,7 +1,7 @@
 ## App Config
 
 This is a package for configuration loading in [App Config](https://app-config.dev).
-It's also accessible through [@lcdev/app-config](https://www.npmjs.com/package/@lcdev/app-config).
+It's also accessible through [@app-config/main](https://www.npmjs.com/package/@app-config/main).
 
 ```typescript
 import { loadValidatedConfig, ConfigLoadingOptions } from '@app-config/config';

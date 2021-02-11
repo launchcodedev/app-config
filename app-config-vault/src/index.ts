@@ -1,7 +1,7 @@
 import fetch from 'cross-fetch';
 import { api, buildPath, setGlobalFetch } from '@lcdev/fetch';
 import type { JsonObject } from '@lcdev/ts';
-import type { ParsingExtension, Json } from '@lcdev/app-config';
+import type { ParsingExtension, Json } from '@app-config/main';
 
 setGlobalFetch(fetch);
 

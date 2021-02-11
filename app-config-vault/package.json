@@ -35,10 +35,10 @@
     "node-vault": "0.9"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/main": "2"
   },
   "devDependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/main": "2"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

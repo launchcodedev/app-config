@@ -11,7 +11,7 @@ and a source for configuration values (as outlined in the intro), there's only t
 lines of code required.
 
 ```typescript
-import { config, loadConfig } from '@lcdev/app-config';
+import { config, loadConfig } from '@app-config/main';
 
 // you're best off initializing config ASAP in your program
 async function main() {

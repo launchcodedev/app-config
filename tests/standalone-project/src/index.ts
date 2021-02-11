@@ -1,4 +1,4 @@
-import { config, loadConfig } from "@lcdev/app-config";
+import { config, loadConfig } from "@app-config/main";
 
 async function main() {
   await loadConfig();

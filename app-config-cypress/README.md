@@ -79,4 +79,4 @@ module.exports = (on) => {
 };
 ```
 
-This allows you to use `@lcdev/app-config` imports in your tests, hassle free.
+This allows you to use `@app-config/main` imports in your tests, hassle free.

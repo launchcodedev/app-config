@@ -12,7 +12,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/main": "2"
   },
   "devDependencies": {
     "@app-config/webpack": "2",

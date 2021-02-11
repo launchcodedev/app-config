@@ -11,13 +11,13 @@ If not - head over to the [introduction](./README.md).
 For yarn projects:
 
 ```
-yarn add @lcdev/app-config@2
+yarn add @app-config/main@2
 ```
 
 For npm projects:
 
 ```
-npm i @lcdev/app-config@2
+npm i @app-config/main@2
 ```
 
 ### Usage
@@ -99,7 +99,7 @@ here's how a simple Node.js app works.
 <h4 style="text-align:center">my-app.ts</h4>
 
 ```typescript
-import { config, loadConfig } from '@lcdev/app-config';
+import { config, loadConfig } from '@app-config/main';
 
 async function main() {
   await loadConfig();

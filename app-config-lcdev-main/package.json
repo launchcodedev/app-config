@@ -1,6 +1,6 @@
 {
-  "name": "@app-config/cli",
-  "description": "CLI for @app-config",
+  "name": "@app-config/lcdev-main",
+  "description": "Alias for @app-config/main",
   "version": "2.0.6",
   "license": "MPL-2.0",
   "author": {
@@ -21,40 +21,24 @@
     "!**/*.test.*"
   ],
   "bin": {
-    "app-config": "dist/index.js",
-    "app-config-secret-agent": "dist/start-secret-agent.js"
+    "app-config": "dist/cli.js"
   },
   "scripts": {
-    "start": "node ./dist/index.js",
     "build": "tsc -b",
     "build:es": "tsc -b tsconfig.es.json",
     "clean": "rm -rf dist *.tsbuildinfo",
     "lint": "eslint src",
     "fix": "eslint --fix src",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/config": "2",
-    "@app-config/node": "2",
-    "@app-config/generate": "2",
-    "clipboardy": "2",
-    "common-tags": "1",
-    "execa": "5",
-    "fs-extra": "9",
-    "json-schema-ref-parser": "9",
-    "yargs": "16"
+    "@app-config/cli": "2",
+    "@app-config/main": "2"
   },
-  "devDependencies": {
-    "@types/common-tags": "1",
-    "@types/fs-extra": "9"
-  },
+  "devDependencies": {},
   "prettier": "@lcdev/prettier",
   "jest": {
-    "preset": "@lcdev/jest",
-    "setupFilesAfterEnv": [
-      "<rootDir>/test-setup.js"
-    ]
+    "preset": "@lcdev/jest"
   }
 }
