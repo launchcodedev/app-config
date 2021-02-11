@@ -34,8 +34,8 @@ PACKAGE_JSON=$(printf '
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
   ],
   "scripts": {
     "build": "tsc -b",
