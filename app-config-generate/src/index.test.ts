@@ -126,6 +126,41 @@ describe('TypeScript File Generation', () => {
     );
   });
 
+  it('corrects date with multiple space', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.json5': `{
+          generate: [{ file: "generated.d.ts" }]
+        }`,
+        '.app-config.schema.yaml': `
+          type: object
+          additionalProperties: false
+          required:
+            - commit
+            - date
+
+          properties:
+            commit:
+              type: string
+
+            date:
+              type: string
+              format: date-time
+        `,
+      },
+      async (dir) => {
+        const output = await generateTypeFiles({ directory: dir('.') });
+
+        expect(output.length).toBe(1);
+
+        const config = await readFile(dir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatch('date: string');
+        expect(config).toMatchSnapshot();
+      },
+    );
+  });
+
   it('creates an empty interface for config', async () => {
     await withTempFiles(
       {

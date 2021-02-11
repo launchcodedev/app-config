@@ -289,6 +289,24 @@ declare module '@app-config/main' {
 "
 `;
 
+exports[`TypeScript File Generation corrects date with multiple space 1`] = `
+"// AUTO GENERATED CODE
+// Run app-config with 'generate' command to regenerate this file
+
+import '@app-config/main';
+
+export interface Config {
+  commit: string;
+  date: string;
+}
+
+// augment the default export from app-config
+declare module '@app-config/main' {
+  export interface ExportedConfig extends Config {}
+}
+"
+`;
+
 exports[`TypeScript File Generation creates a TypeScript file from meta file properties 1`] = `
 "// AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
