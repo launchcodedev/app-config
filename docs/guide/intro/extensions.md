@@ -93,6 +93,16 @@ username: { $substitute: '$USER' }
 Works essentially the same way as [bash variable substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html)
 (including fallback syntax).
 
+The other form of substitution is via `$name`:
+
+```yaml
+username:
+  $substitute:
+    # Look for $USER, use 'no-user' as fallback value
+    $name: 'USER'
+    $fallback: 'no-user'
+```
+
 ## Decryption
 
 Values that are encrypted will automatically be decrypted.
