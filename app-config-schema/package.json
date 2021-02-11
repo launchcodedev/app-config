@@ -32,6 +32,7 @@
   "dependencies": {
     "@app-config/core": "2",
     "@app-config/node": "2",
+    "@types/json-schema": "7",
     "ajv": "7",
     "ajv-formats": "1",
     "json-schema-ref-parser": "9"

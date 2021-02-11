@@ -37,6 +37,7 @@
     "@app-config/core": "2",
     "@app-config/main": "2",
     "@app-config/node": "2",
+    "@types/yargs": "16",
     "node-html-parser": "1",
     "yargs": "16"
   },
