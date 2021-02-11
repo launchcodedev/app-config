@@ -1,7 +1,7 @@
 {
   "name": "@app-config/git",
   "description": "$git directive parsing extension for @app-config",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
