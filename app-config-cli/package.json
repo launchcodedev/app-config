@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cli",
   "description": "CLI for @app-config",
-  "version": "2.0.6",
+  "version": "2.1.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -35,10 +35,10 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
     "@app-config/config": "2",
-    "@app-config/node": "2",
+    "@app-config/core": "2",
     "@app-config/generate": "2",
+    "@app-config/node": "2",
     "clipboardy": "2",
     "common-tags": "1",
     "execa": "5",

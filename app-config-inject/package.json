@@ -1,7 +1,7 @@
 {
   "name": "@app-config/inject",
   "description": "Runtime injection of app-config into static HTML files",
-  "version": "2.0.6",
+  "version": "2.1.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -35,8 +35,8 @@
   },
   "dependencies": {
     "@app-config/core": "2",
-    "@app-config/node": "2",
     "@app-config/main": "2",
+    "@app-config/node": "2",
     "node-html-parser": "1",
     "yargs": "16"
   },

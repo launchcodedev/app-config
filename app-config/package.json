@@ -1,7 +1,7 @@
 {
   "name": "@app-config/main",
   "description": "Easy to use configuration loader with schema validation",
-  "version": "2.0.6",
+  "version": "2.1.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -34,8 +34,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
     "@app-config/cli": "2",
+    "@app-config/core": "2",
     "@app-config/node": "2",
     "ajv": "7"
   },

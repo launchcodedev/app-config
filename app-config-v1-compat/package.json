@@ -1,7 +1,7 @@
 {
   "name": "@app-config/v1-compat",
   "description": "Version 1 compatibility layer for @app-config",
-  "version": "2.0.6",
+  "version": "2.1.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@app-config/core": "2",
-    "@app-config/node": "2",
     "@app-config/logging": "2",
+    "@app-config/node": "2",
     "fs-extra": "7"
   },
   "devDependencies": {
