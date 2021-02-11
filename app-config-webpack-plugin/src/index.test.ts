@@ -144,3 +144,14 @@ describe('frontend-webpack-project example', () => {
     });
   });
 });
+
+describe('regex', () => {
+  it('matches the correct packages', () => {
+    expect(regex.exec('@app-config/main')).toBeTruthy();
+    expect(regex.exec('@lcdev/app-config')).toBeTruthy();
+    expect(regex.exec('.app-config.yml')).toBeTruthy();
+    expect(regex.exec('.app-config.prod.yml')).toBeTruthy();
+    expect(regex.exec('app-config.yml')).toBeTruthy();
+    expect(regex.exec('foo')).toBe(null);
+  });
+});

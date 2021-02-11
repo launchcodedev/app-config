@@ -61,4 +61,4 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
 };
 
 export default loader;
-export const regex = /(^@(lcdev|servall)\/app-config)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
+export const regex = /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
