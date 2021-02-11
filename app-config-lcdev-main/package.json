@@ -1,5 +1,5 @@
 {
-  "name": "@app-config/lcdev-main",
+  "name": "@lcdev/app-config",
   "description": "Alias for @app-config/main",
   "version": "2.1.0",
   "license": "MPL-2.0",
