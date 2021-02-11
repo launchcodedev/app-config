@@ -18,8 +18,8 @@
   "files": [
     "/dist",
     ".config-placeholder",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
   ],
   "scripts": {
     "build": "tsc -b",

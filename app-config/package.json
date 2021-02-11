@@ -17,8 +17,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
   ],
   "bin": {
     "app-config": "dist/cli.js"
