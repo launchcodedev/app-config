@@ -24,7 +24,7 @@
     "cli": "yarn --cwd ./app-config-cli start",
     "docs:dev": "yarn --cwd ./docs dev",
     "docs:build": "yarn --cwd ./docs build",
-    "postinstall": "rm -f examples/react-native-project/node_modules/react-native-unimodules && cd ./examples/react-native-project && expo-yarn-workspaces postinstall"
+    "postinstall": "cd ./examples/react-native-project && expo-yarn-workspaces postinstall"
   },
   "devDependencies": {
     "@commitlint/cli": "11",

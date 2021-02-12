@@ -6657,9 +6657,9 @@ expo-status-bar@1:
   integrity sha512-/Orgla1nkIrfswNHbuAOTbPVq0g3+GrhoQVk7MRafY2dwrFLgXhaPExS+eN2hpmzqPv2LG5cqAZDCQUAjmZYBQ==
 
 expo-yarn-workspaces@1:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/expo-yarn-workspaces/-/expo-yarn-workspaces-1.3.0.tgz#4723731b408ba0362eb491dd540d76c998eac517"
-  integrity sha512-BvoLqfMAxA+vae/2Vrhdubd/JLMcpMpNUAPaPj3/Jzdm5LJyyxBvaAUrAORuT9iAY1D4Jh6GOcT7/pKnST3IYg==
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/expo-yarn-workspaces/-/expo-yarn-workspaces-1.3.1.tgz#1a084aab405e5307549ce2605e58fae8f656c47f"
+  integrity sha512-UTd4hJ0f2wyAq/l94rQ3ePquEx4PF4p/liHIIl+qDcb2xI5P0CSWKPp0ie4oc9GO5zLwd0QG+iv3Uy3luJUNOQ==
   dependencies:
     debug "^4.1.1"
     find-yarn-workspace-root "^2.0.0"
