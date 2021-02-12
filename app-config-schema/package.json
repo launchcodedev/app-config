@@ -1,7 +1,7 @@
 {
   "name": "@app-config/schema",
   "description": "Schema validation for @app-config",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
