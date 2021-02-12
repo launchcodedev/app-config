@@ -219,3 +219,13 @@ trusted you before.
 
 All commands have `--verbose`, `--quiet` and `--silent` options. You can also set
 an environment variable called `APP_CONFIG_LOG_LEVEL` to "verbose", "info", "warn" or "error".
+
+## Running in Docker
+
+We ship a docker container called `ghcr.io/launchcodedev/app-config`.
+
+Try it like this:
+
+```bash
+docker run --rm -it -v $(realpath .):/mnt ghcr.io/launchcodedev/app-config -C /mnt v
+```
