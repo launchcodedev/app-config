@@ -2,7 +2,7 @@ name: docker-image
 
 on:
   push:
-    branches: '*'
+    branches: 'master'
     tags: '*'
 
 jobs:
@@ -20,6 +20,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - uses: docker/build-push-action@v2
+        if: github.ref == 'refs/heads/master'
         with:
           push: true
           tags: |
