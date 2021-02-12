@@ -174,8 +174,15 @@ export async function loadSchema({
       const resolvedAjvPath = join(require.resolve('ajv/package.json'), '..');
       const resolvedAjvFormatsPath = join(require.resolve('ajv-formats/package.json'), '..');
 
-      code = code.replace(/require\("ajv\//g, `require("${resolvedAjvPath}/`);
-      code = code.replace(/require\("ajv-formats\//g, `require("${resolvedAjvFormatsPath}/`);
+      code = code.replace(
+        /require\("ajv\/(.+)"\)/g,
+        (_, match) => `require("${join(resolvedAjvPath, match).replaceAll('\\', '\\\\\\\\')}")`,
+      );
+
+      code = code.replace(
+        /require\("ajv-formats\/(.+)"\)/g,
+        (_, match) => `require("${join(resolvedAjvFormatsPath, match).replaceAll('\\', '\\\\\\\\')}")`,
+      );
 
       return code;
     },
