@@ -4,12 +4,12 @@ title: Rust Support
 
 ## App Config in Rust
 
-The Node.js `@lcdev/app-config` library has built-in support for generating Rust code.
+The Node.js `@app-config/cli` library has built-in support for generating Rust code.
 
 1. Install it:
 
    ```sh
-   npm i --save-dev @lcdev/app-config@2
+   npm i --save-dev @app-config/cli@2
    ```
 
 2. Add codegen instructions to the `.app-config.meta.yml` file:
@@ -22,7 +22,7 @@ The Node.js `@lcdev/app-config` library has built-in support for generating Rust
 3. Run the code generation:
 
    ```sh
-   npx @lcdev/app-config gen
+   npx @app-config/cli gen
    ```
 
 4. Use the config module!
@@ -42,11 +42,11 @@ The Node.js `@lcdev/app-config` library has built-in support for generating Rust
 - have `serde`, `serde_derive` and `serde_json` v1 in your crate dependencies
 - have `valico` v3 in your crate dependencies
 
-Typically, users will wrap usage of their app in the `@lcdev/app-config` CLI.
+Typically, users will wrap usage of their app in the `@app-config/cli` CLI.
 For example:
 
 ```sh
-npx @lcdev/app-config -s -- cargo run
+npx @app-config/cli -s -- cargo run
 ```
 
 <br />

@@ -1,7 +1,7 @@
 import * as wp from 'webpack';
 import { getOptions, stringifyRequest } from 'loader-utils';
+import { loadValidatedConfig } from '@app-config/main';
 import type { Options } from './index';
-import { loadConfig } from './compat';
 
 const privateName = '_appConfig';
 
@@ -11,7 +11,7 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   const callback = this.async()!;
   const { headerInjection = false, loading, schemaLoading }: Options = getOptions(this) || {};
 
-  loadConfig(loading, schemaLoading)
+  loadValidatedConfig(loading, schemaLoading)
     .then(({ fullConfig, filePaths, validationFunctionCode }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(stringifyRequest(this, filePath)));
@@ -61,4 +61,4 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
 };
 
 export default loader;
-export const regex = /(^@(lcdev|servall)\/app-config)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
+export const regex = /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;

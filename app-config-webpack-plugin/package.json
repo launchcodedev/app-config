@@ -1,7 +1,7 @@
 {
-  "name": "@lcdev/app-config-webpack-plugin",
+  "name": "@app-config/webpack",
   "description": "Webpack plugin that loads your app-config values into bundles statically",
-  "version": "2.0.6",
+  "version": "2.1.3",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -18,8 +18,8 @@
   "files": [
     "/dist",
     ".config-placeholder",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
   ],
   "scripts": {
     "build": "tsc -b",
@@ -34,13 +34,12 @@
     "loader-utils": "2"
   },
   "peerDependencies": {
-    "@lcdev/app-config": "1 || 2",
-    "ajv": "7",
+    "@app-config/main": "2",
     "html-webpack-plugin": "4",
     "webpack": "4"
   },
   "devDependencies": {
-    "@lcdev/app-config": "1 || 2",
+    "@app-config/main": "2",
     "@types/loader-utils": "1",
     "html-webpack-plugin": "4",
     "webpack": "4"

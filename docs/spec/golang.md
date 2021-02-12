@@ -4,12 +4,12 @@ title: Go Support
 
 ## App Config in Go
 
-The Node.js `@lcdev/app-config` library has built-in support for generating go code.
+The Node.js `@app-config/cli` library has built-in support for generating go code.
 
 1. Install it:
 
    ```sh
-   npm i --save-dev @lcdev/app-config@2
+   npm i --save-dev @app-config/cli@2
    ```
 
 2. Add codegen instructions to the `.app-config.meta.yml` file:
@@ -22,7 +22,7 @@ The Node.js `@lcdev/app-config` library has built-in support for generating go c
 3. Run the code generation:
 
    ```sh
-   npx @lcdev/app-config gen
+   npx @app-config/cli gen
    ```
 
 4. Use the config module!
@@ -34,11 +34,11 @@ The Node.js `@lcdev/app-config` library has built-in support for generating go c
 This will result in a type-safe struct that represents your config faithfully.
 It also validates the config against the App Config schema.
 
-Typically, users will wrap usage of their app in the `@lcdev/app-config` CLI.
+Typically, users will wrap usage of their app in the `@app-config/cli` CLI.
 For example:
 
 ```sh
-npx @lcdev/app-config -s -- go run .
+npx @app-config/cli -s -- go run .
 ```
 
 <br />

@@ -4,28 +4,28 @@ React Native Metro transformer that loads your `app-config` values into bundles 
 
 ## Installation
 
-### 1. Install `@lcdev/app-config`
+### 1. Install `@app-config/main`
 
 ```shell
-yarn add @lcdev/app-config
+yarn add @app-config/main
 ```
 
 Or, if you use NPM.
 
 ```shell
-npm i @lcdev/app-config
+npm i @app-config/main
 ```
 
-### 2. Install `@lcdev/react-native-app-config-transformer`
+### 2. Install `@app-config/react-native`
 
 ```shell
-yarn add -D @lcdev/react-native-app-config-transformer
+yarn add -D @app-config/react-native
 ```
 
 Or, if you use NPM.
 
 ```shell
-npm i -D @lcdev/react-native-app-config-transformer
+npm i -D @app-config/react-native
 ```
 
 ### 3. Configure React Native bundler (Metro)
@@ -39,7 +39,7 @@ module.exports = {
   // Force cache reset in order to load app-config changes
   resetCache: true,
   transformer: {
-    babelTransformerPath: require.resolve('@lcdev/react-native-app-config-transformer'),
+    babelTransformerPath: require.resolve('@app-config/react-native'),
   },
 };
 ```

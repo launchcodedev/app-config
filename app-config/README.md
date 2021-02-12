@@ -22,11 +22,11 @@ Read the [Introduction](https://app-config.dev/guide/intro/) or [Quick Start](ht
 Or, start by installing through your package manager:
 
 ```sh
-yarn add @lcdev/app-config@2
+yarn add @app-config/main@2
 ```
 
-Or, if you use NPM.
+Or, using NPM.
 
 ```shell
-npm i @lcdev/app-config@2
+npm i @app-config/main@2
 ```

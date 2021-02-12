@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cypress",
-  "description": "Cypress testing plugin for @lcdev/app-config",
-  "version": "2.0.6",
+  "description": "Cypress testing plugin for @app-config",
+  "version": "2.1.3",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -17,8 +17,8 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
   ],
   "scripts": {
     "build": "tsc -b",
@@ -31,11 +31,11 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "cypress": "6"
   },
   "devDependencies": {
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "cypress": "6"
   },
   "prettier": "@lcdev/prettier",

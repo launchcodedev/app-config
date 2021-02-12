@@ -93,6 +93,16 @@ username: { $substitute: '$USER' }
 Works essentially the same way as [bash variable substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html)
 (including fallback syntax).
 
+The other form of substitution is via `$name`:
+
+```yaml
+username:
+  $substitute:
+    # Look for $USER, use 'no-user' as fallback value
+    $name: 'USER'
+    $fallback: 'no-user'
+```
+
 ## Decryption
 
 Values that are encrypted will automatically be decrypted.
@@ -149,7 +159,7 @@ Note that this directive _will not fail_ if git status is not clean.
 It's not all too difficult to make your own!
 
 ```typescript
-import { loadConfig, defaultExtensions, ParsingExtension } from '@lcdev/app-config';
+import { loadConfig, defaultExtensions, ParsingExtension } from '@app-config/main';
 
 const uppercaseExtension: ParsingExtension = (value, [_, key]) => {
   if (key === '$uppercase') {

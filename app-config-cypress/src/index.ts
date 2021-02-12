@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import type { ExportedConfig } from '@lcdev/app-config';
+import type { ExportedConfig } from '@app-config/main';
 
 export function register() {
   Cypress.Commands.add('setAppConfig', { prevSubject: false }, (configuration: ExportedConfig) => {

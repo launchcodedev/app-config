@@ -1,19 +1,14 @@
 {
-  "name": "@lcdev/app-config-monorepo",
+  "name": "@app-config/monorepo",
   "version": "0.0.0",
   "private": true,
   "workspaces": {
     "packages": [
       "app-config",
-      "app-config-cli",
-      "app-config-webpack-plugin",
-      "app-config-inject",
-      "app-config-react-native-transformer",
-      "app-config-vault",
-      "app-config-cypress",
-      "examples/*",
+      "app-config-*",
       "tests/parsing-extensions/*",
       "tests/webpack-projects/*",
+      "examples/*",
       "docs"
     ],
     "nohoist": [
@@ -23,13 +18,13 @@
   "scripts": {
     "build": "yarn workspaces run build",
     "clean": "yarn workspaces run clean",
-    "test": "yarn workspaces run test",
+    "test": "yarn workspaces run test --passWithNoTests",
     "lint": "yarn workspaces run lint",
     "fix": "yarn workspaces run fix",
-    "cli": "yarn --cwd ./app-config cli",
+    "cli": "yarn --cwd ./app-config-cli start",
     "docs:dev": "yarn --cwd ./docs dev",
     "docs:build": "yarn --cwd ./docs build",
-    "postinstall": "rm -f examples/react-native-project/node_modules/react-native-unimodules && cd ./examples/react-native-project && expo-yarn-workspaces postinstall"
+    "postinstall": "cd ./examples/react-native-project && expo-yarn-workspaces postinstall"
   },
   "devDependencies": {
     "@commitlint/cli": "11",

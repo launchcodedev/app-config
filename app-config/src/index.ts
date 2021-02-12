@@ -1,12 +1,15 @@
 import { inspect } from 'util';
 import type { ValidateFunction } from 'ajv';
-import { loadValidatedConfig, Options } from './config';
-import { Options as SchemaOptions } from './schema';
-import { AppConfigError, AccessingAppConfig } from './errors';
-import { logger } from './logging';
+import { AppConfigError } from '@app-config/core';
+import { logger } from '@app-config/logging';
+import { loadValidatedConfig, ConfigLoadingOptions } from '@app-config/config';
+import { SchemaLoadingOptions } from '@app-config/schema';
 
 // the config type that is exported to consumers and can be augmented
 export interface ExportedConfig {}
+
+/** Tried to read app-config value before it was loaded */
+export class AccessingAppConfig extends AppConfigError {}
 
 // the export of this module is a proxy in front of this value
 let loadedConfig: ExportedConfig | undefined;
@@ -16,12 +19,13 @@ const assertLoaded = () => {
   if (!loadedConfig) {
     throw new AccessingAppConfig('Tried to read app-config value before calling loadConfig!');
   }
+
   return loadedConfig;
 };
 
 export async function loadConfig(
-  options?: Options,
-  schemaOptions?: SchemaOptions,
+  options?: ConfigLoadingOptions,
+  schemaOptions?: SchemaLoadingOptions,
 ): Promise<ExportedConfig> {
   if (loadedConfig) {
     logger.warn('Called loadConfig, even though config was already loaded elsewhere');
@@ -77,41 +81,18 @@ export const config: ExportedConfig = new Proxy(
 export default config;
 
 /**
- * Only available when using @lcdev/app-config-webpack-plugin. Validates configuration using AJV.
+ * Only available when using @app-config/webpack. Validates configuration using AJV.
  */
 export const validateConfig: ValidateFunction<ExportedConfig> = null as any; // eslint-disable-line
 
-export {
-  loadValidatedConfig,
-  loadConfig as loadUnvalidatedConfig,
-  Options as ConfigLoadingOptions,
-} from './config';
-export { loadSchema, Options as SchemaLoadingOptions } from './schema';
-export { loadMetaConfig } from './meta';
-export { setLogLevel, LogLevel } from './logging';
-export { currentEnvironment, defaultAliases } from './environment';
-export { Json } from './common';
+export { Json } from '@app-config/utils';
+
 export {
   ParsedValue,
   ParsedValueMetadata,
   ParsingExtension,
   ParsingExtensionTransform,
-} from './parsed-value';
-export {
-  defaultExtensions,
-  defaultEnvExtensions,
-  environmentVariableSubstitution,
-  encryptedDirective,
-  envDirective,
-  extendsDirective,
-  extendsSelfDirective,
-  overrideDirective,
-} from './extensions';
-export {
   ConfigSource,
-  FileSource,
-  FlexibleFileSource,
-  EnvironmentSource,
   LiteralSource,
   CombinedSource,
   FallbackSource,
@@ -119,7 +100,43 @@ export {
   stringify,
   filePathAssumedType,
   parseRawString,
-} from './config-source';
+} from '@app-config/core';
+
+export { setLogLevel, LogLevel } from '@app-config/logging';
+
+export {
+  loadValidatedConfig,
+  loadUnvalidatedConfig,
+  ConfigLoadingOptions,
+} from '@app-config/config';
+
+export { loadSchema, SchemaLoadingOptions } from '@app-config/schema';
+
+export { loadMetaConfig } from '@app-config/meta';
+
+export {
+  currentEnvironment,
+  defaultAliases,
+  FileSource,
+  FlexibleFileSource,
+  EnvironmentSource,
+} from '@app-config/node';
+
+export {
+  environmentVariableSubstitution,
+  envDirective,
+  extendsDirective,
+  extendsSelfDirective,
+  overrideDirective,
+} from '@app-config/extensions';
+
+export { default as encryptedDirective } from '@app-config/encryption';
+
+export {
+  defaultExtensions,
+  defaultEnvExtensions,
+  defaultMetaExtensions,
+} from '@app-config/default-extensions';
 
 /** @hidden */
 export function resetConfigInternal() {

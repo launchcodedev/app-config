@@ -87,20 +87,20 @@ By not needing these features, language support can be simple.
 The intention here, is for development to look like:
 
 ```sh
-npx @lcdev/app-config -s -- go run .
+npx @app-config/cli -s -- go run .
 ```
 
 And for production to look like:
 
 ```sh
 # extract configuration for the deployment environment, and expose it as an environment variable
-APP_CONFIG=$(NODE_ENV=qa npx @lcdev/app-config -s create --format json)
+APP_CONFIG=$(NODE_ENV=qa npx @app-config/cli -s create --format json)
 
 # normalize your development schema, ensuring that it's present in production
-APP_CONFIG_SCHEMA=$(npx @lcdev/app-config create-schema --format json)
+APP_CONFIG_SCHEMA=$(npx @app-config/cli create-schema --format json)
 ```
 
-This is a simple example, meant to show not tell. The idea is that `@lcdev/app-config`
+This is a simple example, meant to show not tell. The idea is that `@app-config/cli`
 itself is used for creating the final values that your app uses. This allows your app
 to use the configuration easily without having to know about complicated parsing
 extensions, inter-file dependencies, etc.

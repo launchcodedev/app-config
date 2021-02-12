@@ -1,0 +1,43 @@
+{
+  "name": "@app-config/logging",
+  "description": "Logging for @app-config",
+  "version": "2.1.3",
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/launchcodedev/app-config.git"
+  },
+  "main": "dist/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist",
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "build:es": "tsc -b tsconfig.es.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint src",
+    "fix": "eslint --fix src",
+    "test": "jest",
+    "prepublishOnly": "yarn clean && yarn build && yarn build:es"
+  },
+  "dependencies": {
+    "@app-config/utils": "2"
+  },
+  "devDependencies": {},
+  "prettier": "@lcdev/prettier",
+  "jest": {
+    "preset": "@lcdev/jest",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test-setup.js"
+    ]
+  }
+}

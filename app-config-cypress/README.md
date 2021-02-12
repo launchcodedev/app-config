@@ -43,7 +43,7 @@ Example `./cypress/plugins/index.js`:
 
 ```javascript
 const webpackPreprocessor = require('@cypress/webpack-preprocessor');
-const { default: AppConfigPlugin } = require('@lcdev/app-config-webpack-plugin');
+const { default: AppConfigPlugin } = require('@app-config/webpack');
 
 module.exports = (on) => {
   const options = {
@@ -79,4 +79,4 @@ module.exports = (on) => {
 };
 ```
 
-This allows you to use `@lcdev/app-config` imports in your tests, hassle free.
+This allows you to use `@app-config/main` imports in your tests, hassle free.

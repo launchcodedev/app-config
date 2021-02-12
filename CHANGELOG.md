@@ -1,3 +1,15 @@
+## v2.1.0
+
+Modularizes code entirely, separating parsing extensions, encryption, etc.
+
+Renames the main module to `@app-config/main`, aliased by `@lcdev/app-config`.
+
+Adds `tag` option for `$git` directive.
+
+Adds `$name` and `$fallback` options for `$substitute`.
+
+Removes v1 support from webpack plugin.
+
 ## v2.0.6
 
 Returns an unsubscribe callback from `mockConfig`.

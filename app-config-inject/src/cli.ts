@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import * as yargs from 'yargs';
-import { setLogLevel, LogLevel } from '@lcdev/app-config';
-import { injectHtml, consumeStdin } from './index';
+import { setLogLevel, LogLevel } from '@app-config/main';
+import { consumeStdin } from '@app-config/node';
+import { injectHtml } from './index';
 
 // we can't have it interfere with our stdout
 setLogLevel(LogLevel.None);
 
-const { argv: _ } = yargs
+export const cli = yargs
   .strict()
   .version()
   .help('h', 'Shows help message with examples and options')
@@ -52,3 +53,7 @@ const { argv: _ } = yargs
       process.stderr.write('Injected HTML from stdin!\n');
     },
   });
+
+if (require.main === module) {
+  cli.parse();
+}

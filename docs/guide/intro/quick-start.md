@@ -11,13 +11,13 @@ If not - head over to the [introduction](./README.md).
 For yarn projects:
 
 ```
-yarn add @lcdev/app-config@2
+yarn add @app-config/main@2
 ```
 
 For npm projects:
 
 ```
-npm i @lcdev/app-config@2
+npm i @app-config/main@2
 ```
 
 ### Usage
@@ -62,8 +62,7 @@ definitions:
     maximum: 65535
 ```
 
-Of course, you're likely to want different options here. Build any JSON Schema
-that fits your use case.
+Of course, you will want different options here. Build any JSON Schema that fits your use case.
 
 Now, add an app-config file in the same directory.
 
@@ -87,7 +86,7 @@ You've now seen an example of `$env`. This is governed by `APP_CONFIG_ENV`, `NOD
 Now try to load the configuration that you just wrote, using the app-config CLI.
 
 ```sh
-$ npx app-config vars
+$ npx @app-config/cli vars
 APP_CONFIG_SERVER_PORT=3000
 APP_CONFIG_DATABASE_HOST="localhost"
 APP_CONFIG_DATABASE_PORT=5432
@@ -100,7 +99,7 @@ here's how a simple Node.js app works.
 <h4 style="text-align:center">my-app.ts</h4>
 
 ```typescript
-import { config, loadConfig } from '@lcdev/app-config';
+import { config, loadConfig } from '@app-config/main';
 
 async function main() {
   await loadConfig();

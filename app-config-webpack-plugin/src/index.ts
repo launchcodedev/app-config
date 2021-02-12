@@ -1,9 +1,8 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import type { ConfigLoadingOptions, SchemaLoadingOptions } from '@lcdev/app-config';
+import { loadValidatedConfig, ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
 import { regex } from './loader';
-import { loadConfig } from './compat';
 
 // loader is the filepath, not the export
 const loader = require.resolve('./loader');
@@ -43,8 +42,15 @@ export default class AppConfigPlugin {
         async (resolve?: { request: string }) => {
           if (!resolve) return;
 
-          if (resolve.request === '@lcdev/app-config' || resolve.request === 'app-config') {
-            const { filePaths } = await loadConfig(this.loadingOptions, this.schemaLoadingOptions);
+          if (
+            resolve.request === '@app-config/main' ||
+            resolve.request === '@lcdev/app-config' ||
+            resolve.request === 'app-config'
+          ) {
+            const { filePaths } = await loadValidatedConfig(
+              this.loadingOptions,
+              this.schemaLoadingOptions,
+            );
 
             if (filePaths?.length) {
               [resolve.request] = filePaths; // eslint-disable-line no-param-reassign
@@ -64,7 +70,10 @@ export default class AppConfigPlugin {
       HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
         'AppConfigPlugin',
         async ({ headTags, ...html }) => {
-          const { fullConfig } = await loadConfig(this.loadingOptions, this.schemaLoadingOptions);
+          const { fullConfig } = await loadValidatedConfig(
+            this.loadingOptions,
+            this.schemaLoadingOptions,
+          );
 
           // remove placeholder <script id="app-config"></script> if it exists
           const newTags = headTags.filter(({ attributes }) => attributes.id !== 'app-config');

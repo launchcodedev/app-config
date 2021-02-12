@@ -1,5 +1,7 @@
 ## App Config Vault Plugin
 
+This is a package for using Hashicorp Vault values in [App Config](https://app-config.dev).
+
 ```yaml
 $vault:
   secret: 'foo'

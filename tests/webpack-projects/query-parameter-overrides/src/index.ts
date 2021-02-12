@@ -1,4 +1,4 @@
-import { config, validateConfig } from '@lcdev/app-config';
+import { config, validateConfig } from '@app-config/main';
 import merge from 'lodash.merge';
 
 const queryParameters = new URLSearchParams(document.location.search);

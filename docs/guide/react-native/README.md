@@ -9,7 +9,7 @@ Head on over to the [Introduction](../intro/) or [Quick Start](../intro/quick-st
 The React Native transformer is a separate package, which you'll need to install:
 
 ```shell
-yarn add -D @lcdev/react-native-app-config-transformer@2
+yarn add -D @app-config/react-native@2
 ```
 
 ### Configure React Native bundler (Metro)
@@ -23,7 +23,7 @@ module.exports = (async () => ({
   // Force cache reset in order to load app-config changes
   resetCache: true,
   transformer: {
-    babelTransformerPath: require.resolve('@lcdev/react-native-app-config-transformer'),
+    babelTransformerPath: require.resolve('@app-config/react-native'),
   },
 }))();
 ```

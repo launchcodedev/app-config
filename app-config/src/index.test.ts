@@ -1,6 +1,6 @@
 import { inspect } from 'util';
+import { withTempFiles } from '@app-config/test-utils';
 import { config, loadConfig, mockConfig, resetConfigInternal } from './index';
-import { withTempFiles } from './test-util';
 
 beforeEach(() => resetConfigInternal());
 

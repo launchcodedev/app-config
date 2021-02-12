@@ -1,7 +1,7 @@
 // AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
 
-import '@lcdev/app-config';
+import '@app-config/main';
 
 export interface Config {
   longStringProperty: string;
@@ -9,6 +9,6 @@ export interface Config {
 }
 
 // augment the default export from app-config
-declare module '@lcdev/app-config' {
+declare module '@app-config/main' {
   export interface ExportedConfig extends Config {}
 }

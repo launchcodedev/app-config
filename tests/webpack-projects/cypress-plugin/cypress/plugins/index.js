@@ -1,5 +1,5 @@
 const webpackPreprocessor = require('@cypress/webpack-preprocessor');
-const { default: AppConfigPlugin } = require('@lcdev/app-config-webpack-plugin');
+const { default: AppConfigPlugin } = require('@app-config/webpack');
 
 module.exports = (on) => {
   const options = {

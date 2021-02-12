@@ -1,0 +1,40 @@
+{
+  "name": "@app-config/default-extensions",
+  "description": "Default parsing extensions for @app-config",
+  "version": "2.1.3",
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/launchcodedev/app-config.git"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "scripts": {
+    "build": "echo",
+    "clean": "echo",
+    "lint": "echo",
+    "fix": "echo",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@app-config/core": "2",
+    "@app-config/encryption": "2",
+    "@app-config/extensions": "2",
+    "@app-config/git": "2",
+    "@app-config/v1-compat": "2"
+  },
+  "devDependencies": {},
+  "prettier": "@lcdev/prettier",
+  "jest": {
+    "preset": "@lcdev/jest"
+  }
+}

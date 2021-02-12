@@ -1,5 +1,5 @@
 import React from 'react';
-import config from '@lcdev/app-config';
+import config from '@app-config/main';
 import { StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
