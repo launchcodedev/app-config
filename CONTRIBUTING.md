@@ -55,3 +55,4 @@ If you are adding anything new or changing behavior, please add applicable tests
 - `@lcdev/app-config`: alias for `@app-config/main`
 - `@lcdev/app-config-webpack-plugin`: alias for `@app-config/webpack`
 - `@lcdev/app-config-inject`: alias for `@app-config/inject`
+- `@lcdev/react-native-app-config-transformer`: alias for `@app-config/inject`

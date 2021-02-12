@@ -28,7 +28,7 @@
   "devDependencies": {
     "@babel/core": "7",
     "@app-config/main": "2",
-    "@lcdev/react-native-app-config-transformer": "2",
+    "@app-config/react-native": "2",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-native": "0.63",
