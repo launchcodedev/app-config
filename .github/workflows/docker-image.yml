@@ -1,5 +1,10 @@
 name: docker-image
 
+on:
+  push:
+    branches: '*'
+    tags: '*'
+
 jobs:
   publish:
     runs-on: ubuntu-latest
