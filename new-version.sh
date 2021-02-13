@@ -44,6 +44,7 @@ new_version ./app-config-inject
 new_version ./app-config-lcdev-inject
 new_version ./app-config-lcdev-main
 new_version ./app-config-lcdev-webpack-plugin
+new_version ./app-config-lcdev-react-native
 new_version ./app-config-logging
 new_version ./app-config-meta
 new_version ./app-config-node
