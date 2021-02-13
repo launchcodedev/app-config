@@ -176,12 +176,12 @@ export async function loadSchema({
 
       code = code.replace(
         /require\("ajv\/(.+)"\)/g,
-        (_, match) => `require("${join(resolvedAjvPath, match).replaceAll('\\', '\\\\\\\\')}")`,
+        (_, match) => `require("${join(resolvedAjvPath, match).replace(/\\/g, '\\\\\\\\')}")`,
       );
 
       code = code.replace(
         /require\("ajv-formats\/(.+)"\)/g,
-        (_, match) => `require("${join(resolvedAjvFormatsPath, match).replaceAll('\\', '\\\\\\\\')}")`,
+        (_, match) => `require("${join(resolvedAjvFormatsPath, match).replace(/\\/g, '\\\\\\\\')}")`,
       );
 
       return code;
