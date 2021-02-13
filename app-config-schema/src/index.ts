@@ -181,7 +181,8 @@ export async function loadSchema({
 
       code = code.replace(
         /require\("ajv-formats\/(.+)"\)/g,
-        (_, match) => `require("${join(resolvedAjvFormatsPath, match).replace(/\\/g, '\\\\\\\\')}")`,
+        (_, match) =>
+          `require("${join(resolvedAjvFormatsPath, match).replace(/\\/g, '\\\\\\\\')}")`,
       );
 
       return code;
