@@ -24,7 +24,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - run: yarn install && yarn build
-      working-directory: ./app-config
+      working-directory: ./app-config-main
 
     - run: find . -name node_modules -exec rm -rf {} \; -prune
       working-directory: .
