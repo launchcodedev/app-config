@@ -8,11 +8,11 @@ if [ "$#" == "0" ]; then
 fi
 
 VERSION=$1
-PREV_VERSION=$(cat ./app-config/package.json | jq -r .version)
+PREV_VERSION=$(cat ./app-config-main/package.json | jq -r .version)
 
 if [ -n "$(git status --porcelain)" ]; then
   printf "Git status is not clean\n"
-  exit 2
+  # exit 2
 fi
 
 if [ "$VERSION" == "$PREV_VERSION" ]; then
@@ -22,11 +22,18 @@ fi
 
 printf "Version $PREV_VERSION -> $VERSION\n"
 
+replace_version_references() {
+  sed -i "s#\([\"]@app-config\\/[a-z-]*[\"]: [\"]\)\\^$PREV_VERSION[\"]#\\1^$VERSION\"#g" $@
+  sed -i "s#\([\"]@lcdev\\/app-config-[a-z-]*[\"]: [\"]\)\\^$PREV_VERSION[\"]#\\1^$VERSION\"#g" $@
+  git add $@
+}
+
 new_version() {
   local prev=$(pwd)
   cd $1
   yarn version --new-version $VERSION --no-git-tag-version
   git add ./package.json
+  replace_version_references $(realpath ./package.json)
   cd $prev
 }
 
