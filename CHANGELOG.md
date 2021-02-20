@@ -1,3 +1,7 @@
+## v2.1.5
+
+Adjusts inter-package dependencies to use caret version ranges, making upgrades easier.
+
 ## v2.1.0
 
 Modularizes code entirely, separating parsing extensions, encryption, etc.
