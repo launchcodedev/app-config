@@ -30,7 +30,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.1.5"
+    "@app-config/core": "^2.1.5",
+    "@serafin/schema-builder": "0.14"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

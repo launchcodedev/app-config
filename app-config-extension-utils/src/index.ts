@@ -1,5 +1,18 @@
-import type { ParsingExtension, ParsingExtensionKey } from '@app-config/core';
-import { parseValue, Root } from '@app-config/core';
+import type {
+  ParsingExtension,
+  ParsingExtensionKey,
+  ParsingExtensionTransform,
+} from '@app-config/core';
+import { parseValue, Root, AppConfigError } from '@app-config/core';
+import { SchemaBuilder } from '@serafin/schema-builder';
+
+export function composeExtensions(extensions: ParsingExtension[]): ParsingExtension {
+  return (value, [k]) => {
+    if (k !== Root) return false;
+
+    return (_, __, source) => parseValue(value, source, extensions, { shouldFlatten: true });
+  };
+}
 
 export function forKey(
   key: string | string[],
@@ -24,10 +37,37 @@ export function forKey(
   };
 }
 
-export function composeExtensions(extensions: ParsingExtension[]): ParsingExtension {
-  return (value, [k]) => {
-    if (k !== Root) return false;
+export class ParsingExtensionInvalidOptions extends AppConfigError {}
 
-    return (_, __, source) => parseValue(value, source, extensions, { shouldFlatten: true });
+export function validateOptions<T>(
+  builder: (builder: typeof SchemaBuilder) => SchemaBuilder<T>,
+  extension: (
+    value: T,
+    key: ParsingExtensionKey,
+    context: ParsingExtensionKey[],
+  ) => ParsingExtensionTransform | false,
+): ParsingExtension {
+  const schema = builder(SchemaBuilder);
+
+  schema.cacheValidationFunction();
+
+  return (value, ctxKey, ctx) => {
+    const valid = (value as unknown) as T;
+
+    try {
+      schema.validate(valid);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown';
+
+      const parents =
+        [...ctx, ctxKey]
+          .map(([, k]) => k)
+          .filter((v) => !!v)
+          .join('.') || 'root';
+
+      throw new ParsingExtensionInvalidOptions(`Validation failed in "${parents}": ${message}`);
+    }
+
+    return extension(valid, ctxKey, ctx);
   };
 }
