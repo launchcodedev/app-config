@@ -1,7 +1,7 @@
 {
   "name": "@app-config/encryption",
   "description": "Secret value encryption for @app-config",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,10 +30,10 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.1.4",
-    "@app-config/meta": "^2.1.4",
-    "@app-config/node": "^2.1.4",
-    "@app-config/settings": "^2.1.4",
+    "@app-config/core": "^2.1.5",
+    "@app-config/meta": "^2.1.5",
+    "@app-config/node": "^2.1.5",
+    "@app-config/settings": "^2.1.5",
     "@lcdev/ws-rpc": "0.4",
     "@types/openpgp": "4",
     "common-tags": "1",
@@ -44,7 +44,7 @@
     "ws": "7"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.1.4",
+    "@app-config/test-utils": "^2.1.5",
     "get-port": "5"
   },
   "prettier": "@lcdev/prettier",
