@@ -20,7 +20,7 @@
     "run:all": "lerna run --stream",
     "build": "yarn run:all build",
     "clean": "yarn run:all clean",
-    "test": "yarn run:all test --passWithNoTests",
+    "test": "lerna run test -- --passWithNoTests",
     "lint": "yarn run:all lint",
     "fix": "yarn run:all fix",
     "cli": "yarn --cwd ./app-config-cli start",
