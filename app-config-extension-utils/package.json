@@ -1,6 +1,6 @@
 {
-  "name": "@app-config/extensions",
-  "description": "Common parsing extensions for @app-config",
+  "name": "@app-config/extension-utils",
+  "description": "Utilities for writing @app-config parsing extensions",
   "version": "2.1.5",
   "license": "MPL-2.0",
   "author": {
@@ -30,20 +30,11 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.1.5",
-    "@app-config/extension-utils": "^2.1.5",
-    "@app-config/logging": "^2.1.5",
-    "@app-config/node": "^2.1.5",
-    "@app-config/utils": "^2.1.5"
+    "@app-config/core": "^2.1.5"
   },
-  "devDependencies": {
-    "@app-config/test-utils": "^2.1.5"
-  },
+  "devDependencies": {},
   "prettier": "@lcdev/prettier",
   "jest": {
-    "preset": "@lcdev/jest",
-    "setupFilesAfterEnv": [
-      "<rootDir>/test-setup.js"
-    ]
+    "preset": "@lcdev/jest"
   }
 }
