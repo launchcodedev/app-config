@@ -70,27 +70,12 @@ jobs:
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
-        package: ./app-config-lcdev-inject/package.json
-    - uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-lcdev-main/package.json
-    - uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-lcdev-react-native/package.json
-    - uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-lcdev-webpack-plugin/package.json
-    - uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
         package: ./app-config-logging/package.json
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-main/package.json
     - uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
@@ -105,7 +90,7 @@ jobs:
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
-        package: ./app-config-react-native-transformer/package.json
+        package: ./app-config-react-native/package.json
     - uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
@@ -135,9 +120,24 @@ jobs:
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
-        package: ./app-config-webpack-plugin/package.json
+        package: ./app-config-webpack/package.json
     - uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
-        package: ./app-config/package.json
+        package: ./lcdev-app-config-inject/package.json
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./lcdev-app-config-webpack-plugin/package.json
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./lcdev-app-config/package.json
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./lcdev-react-native-app-config-transformer/package.json
