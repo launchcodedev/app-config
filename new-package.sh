@@ -48,7 +48,6 @@ PACKAGE_JSON=$(printf '{
   "dependencies": {
   },
   "devDependencies": {
-    "@app-config/test-utils": "2"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
