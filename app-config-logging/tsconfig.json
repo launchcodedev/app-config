@@ -1,4 +1,3 @@
-
 {
   "extends": "@lcdev/tsconfig",
   "compilerOptions": {
@@ -11,4 +10,3 @@
     { "path": "../app-config-utils" }
   ]
 }
-
