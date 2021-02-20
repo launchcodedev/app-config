@@ -22,11 +22,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/encryption": "2",
-    "@app-config/extensions": "2",
-    "@app-config/git": "2",
-    "@app-config/v1-compat": "2"
+    "@app-config/core": "^2.1.4",
+    "@app-config/encryption": "^2.1.4",
+    "@app-config/extensions": "^2.1.4",
+    "@app-config/git": "^2.1.4",
+    "@app-config/v1-compat": "^2.1.4"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

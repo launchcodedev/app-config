@@ -35,10 +35,10 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "2",
-    "@app-config/core": "2",
-    "@app-config/generate": "2",
-    "@app-config/node": "2",
+    "@app-config/config": "^2.1.4",
+    "@app-config/core": "^2.1.4",
+    "@app-config/generate": "^2.1.4",
+    "@app-config/node": "^2.1.4",
     "clipboardy": "2",
     "common-tags": "1",
     "execa": "5",

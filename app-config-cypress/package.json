@@ -31,11 +31,11 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "^2.1.4",
     "cypress": "6"
   },
   "devDependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "^2.1.4",
     "cypress": "6"
   },
   "prettier": "@lcdev/prettier",

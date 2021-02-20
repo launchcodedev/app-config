@@ -30,13 +30,13 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
+    "@app-config/core": "^2.1.4",
     "@types/prompts": "2",
     "fs-extra": "9",
     "prompts": "2"
   },
   "devDependencies": {
-    "@app-config/test-utils": "2",
+    "@app-config/test-utils": "^2.1.4",
     "@types/fs-extra": "9"
   },
   "prettier": "@lcdev/prettier",

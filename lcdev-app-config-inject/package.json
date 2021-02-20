@@ -34,7 +34,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/inject": "2"
+    "@app-config/inject": "^2.1.4"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

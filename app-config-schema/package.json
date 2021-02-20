@@ -30,17 +30,17 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/node": "2",
+    "@app-config/core": "^2.1.4",
+    "@app-config/node": "^2.1.4",
     "@types/json-schema": "7",
     "ajv": "7",
     "ajv-formats": "1",
     "json-schema-ref-parser": "9"
   },
   "devDependencies": {
-    "@app-config/encryption": "2",
-    "@app-config/extensions": "2",
-    "@app-config/test-utils": "2"
+    "@app-config/encryption": "^2.1.4",
+    "@app-config/extensions": "^2.1.4",
+    "@app-config/test-utils": "^2.1.4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

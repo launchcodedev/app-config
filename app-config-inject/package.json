@@ -34,9 +34,9 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/main": "2",
-    "@app-config/node": "2",
+    "@app-config/core": "^2.1.4",
+    "@app-config/main": "^2.1.4",
+    "@app-config/node": "^2.1.4",
     "@types/yargs": "16",
     "node-html-parser": "1",
     "yargs": "16"

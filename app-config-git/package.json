@@ -30,11 +30,11 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
+    "@app-config/core": "^2.1.4",
     "simple-git": "2"
   },
   "devDependencies": {
-    "@app-config/test-utils": "2"
+    "@app-config/test-utils": "^2.1.4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

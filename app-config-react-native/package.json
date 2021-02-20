@@ -33,11 +33,11 @@
     "semver": "7"
   },
   "peerDependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "^2.1.4",
     "react-native": ">=0.45.0"
   },
   "devDependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "^2.1.4",
     "@types/semver": "7"
   },
   "prettier": "@lcdev/prettier",

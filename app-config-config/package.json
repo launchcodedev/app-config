@@ -30,14 +30,14 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/extensions": "2",
-    "@app-config/meta": "2",
-    "@app-config/node": "2",
-    "@app-config/schema": "2"
+    "@app-config/core": "^2.1.4",
+    "@app-config/extensions": "^2.1.4",
+    "@app-config/meta": "^2.1.4",
+    "@app-config/node": "^2.1.4",
+    "@app-config/schema": "^2.1.4"
   },
   "devDependencies": {
-    "@app-config/test-utils": "2"
+    "@app-config/test-utils": "^2.1.4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

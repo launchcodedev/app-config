@@ -34,12 +34,12 @@
     "loader-utils": "2"
   },
   "peerDependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "^2.1.4",
     "html-webpack-plugin": "4",
     "webpack": "4"
   },
   "devDependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "^2.1.4",
     "@types/loader-utils": "1",
     "html-webpack-plugin": "4",
     "webpack": "4"
