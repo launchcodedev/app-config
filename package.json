@@ -16,11 +16,13 @@
     ]
   },
   "scripts": {
-    "build": "yarn workspaces run build",
-    "clean": "yarn workspaces run clean",
-    "test": "yarn workspaces run test --passWithNoTests",
-    "lint": "yarn workspaces run lint",
-    "fix": "yarn workspaces run fix",
+    "exec:all": "lerna exec",
+    "run:all": "lerna run",
+    "build": "yarn run:all build",
+    "clean": "yarn run:all clean",
+    "test": "yarn run:all test --passWithNoTests",
+    "lint": "yarn run:all lint",
+    "fix": "yarn run:all fix",
     "cli": "yarn --cwd ./app-config-cli start",
     "docs:dev": "yarn --cwd ./docs dev",
     "docs:build": "yarn --cwd ./docs build",
@@ -37,6 +39,7 @@
     "eslint": "7",
     "husky": "4",
     "jest": "26",
+    "lerna": "3",
     "prettier": "2",
     "typescript": "4"
   },

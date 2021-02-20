@@ -19,10 +19,6 @@
     "index.d.ts"
   ],
   "scripts": {
-    "build": "echo",
-    "clean": "echo",
-    "lint": "echo",
-    "fix": "echo",
     "test": "jest"
   },
   "dependencies": {

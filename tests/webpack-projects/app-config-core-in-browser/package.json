@@ -7,10 +7,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "clean": "rm -rf ./dist",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "clean": "rm -rf ./dist"
   },
   "dependencies": {
     "@app-config/core": "2",

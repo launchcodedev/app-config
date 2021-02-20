@@ -6,10 +6,7 @@
   "scripts": {
     "dev": "vuepress dev .",
     "build": "vuepress build .",
-    "clean": "rm -rf .vuepress/dist",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "clean": "rm -rf .vuepress/dist"
   },
   "dependencies": {
     "vue-lottie": "0.2",

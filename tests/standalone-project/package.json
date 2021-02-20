@@ -7,10 +7,7 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "build": "tsc -b",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
     "@app-config/core": "file:../../app-config-core",
