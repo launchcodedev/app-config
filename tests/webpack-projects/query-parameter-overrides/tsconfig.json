@@ -11,6 +11,6 @@
   "exclude": ["node_modules"],
   "references": [
     { "path": "../../../app-config" },
-    { "path": "../../../app-config-webpack-plugin" }
+    { "path": "../../../app-config-webpack" }
   ]
 }

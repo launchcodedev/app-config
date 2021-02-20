@@ -1,4 +1,3 @@
-
 {
   "extends": "@lcdev/tsconfig",
   "compilerOptions": {
@@ -8,7 +7,6 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../app-config-webpack-plugin" }
+    { "path": "../app-config-main" }
   ]
 }
-

@@ -1,3 +1,4 @@
+
 {
   "extends": "@lcdev/tsconfig",
   "compilerOptions": {
@@ -7,7 +8,7 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../app-config-test-utils" },
-    { "path": "../app-config-react-native-transformer" }
+    { "path": "../app-config-webpack" }
   ]
 }
+

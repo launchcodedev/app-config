@@ -9,6 +9,6 @@
   "include": ["src", "types.d.ts"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../app-config" }
+    { "path": "../app-config-main" }
   ]
 }

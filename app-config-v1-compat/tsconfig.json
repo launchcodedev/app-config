@@ -10,6 +10,7 @@
     { "path": "../app-config-test-utils" },
     { "path": "../app-config-core" },
     { "path": "../app-config-node" },
-    { "path": "../app-config-logging" }
+    { "path": "../app-config-logging" },
+    { "path": "../app-config-extensions" }
   ]
 }

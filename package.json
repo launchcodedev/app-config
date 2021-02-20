@@ -4,8 +4,8 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "app-config",
       "app-config-*",
+      "lcdev-*",
       "tests/parsing-extensions/*",
       "tests/webpack-projects/*",
       "examples/*",
