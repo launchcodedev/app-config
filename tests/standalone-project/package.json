@@ -12,7 +12,7 @@
   "dependencies": {
     "@app-config/core": "file:../../app-config-core",
     "@app-config/node": "file:../../app-config-node",
-    "@app-config/main": "file:../../app-config"
+    "@app-config/main": "file:../../app-config-main"
   },
   "devDependencies": {
     "typescript": "*"
