@@ -127,6 +127,28 @@ The user will be required to unlock their keychain if the secret-agent isn't run
 password: 'enc:1:wy4ECQMI/o7E3nw9SP7g3VsIMg64HGIcRb9HyaXpQnyjozFItwx4HvsP1D2plP6Y0kYBAr2ytzs2v5bN+n2oVthkEmbrq8oqIqCF3Cx+pcjJ+5h+SyxQuJ7neNp4SRtnD4EK32rPJpyDMeHG4+pGwIjFuSH1USqQ=SZWR'
 ```
 
+## The `$if` and `$try` Directives
+
+Performs basic control flow.
+
+```yaml
+$try:
+  $value:
+    $extends: ./other-file.yml
+  $fallback: {}
+```
+
+Use `$unsafe: true` if you want to catch _any_ error. Some "safe" errors are caught by default.
+
+```yaml
+$if:
+  $check: true
+  $then: foo
+  $else: bar
+```
+
+The `$if` directive is straightforward, see the example.
+
 ## The `$timestamp` Directive
 
 Allows injecting the current date and time into configuration. While this option is useful,
