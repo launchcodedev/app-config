@@ -35,6 +35,7 @@
     "@app-config/meta": "^2.1.5",
     "@app-config/node": "^2.1.5",
     "@app-config/settings": "^2.1.5",
+    "@app-config/utils": "^2.1.5",
     "@lcdev/ws-rpc": "0.4",
     "@types/openpgp": "4",
     "common-tags": "1",

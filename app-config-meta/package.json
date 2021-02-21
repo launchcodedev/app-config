@@ -30,9 +30,11 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/core": "^2.1.5",
     "@app-config/default-extensions": "^2.1.5",
     "@app-config/logging": "^2.1.5",
     "@app-config/node": "^2.1.5",
+    "@app-config/utils": "^2.1.5",
     "fs-extra": "7"
   },
   "devDependencies": {

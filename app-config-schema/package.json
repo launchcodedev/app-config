@@ -33,6 +33,7 @@
     "@app-config/core": "^2.1.5",
     "@app-config/logging": "^2.1.5",
     "@app-config/node": "^2.1.5",
+    "@app-config/utils": "^2.1.5",
     "@types/json-schema": "7",
     "ajv": "7",
     "ajv-formats": "1",
