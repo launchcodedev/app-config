@@ -34,10 +34,12 @@
     "@app-config/extension-utils": "^2.1.7",
     "@app-config/logging": "^2.1.7",
     "@app-config/node": "^2.1.7",
-    "@app-config/utils": "^2.1.7"
+    "@app-config/utils": "^2.1.7",
+    "lodash.isequal": "4"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.1.7"
+    "@app-config/test-utils": "^2.1.7",
+    "@types/lodash.isequal": "4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
