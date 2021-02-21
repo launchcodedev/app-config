@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@app-config/core": "^2.1.5",
+    "@app-config/extension-utils": "^2.1.5",
     "simple-git": "2"
   },
   "devDependencies": {
