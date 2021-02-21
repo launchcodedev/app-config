@@ -1108,4 +1108,18 @@ describe('extension combinations', () => {
       fellBack: true,
     });
   });
+
+  it('combines $if and $eq', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: {
+          $eq: ['foo', 'foo'],
+        },
+        $then: 'foo',
+        $else: 'bar',
+      },
+    });
+
+    await expect(source.readToJSON([ifDirective(), eqDirective()])).resolves.toEqual('foo');
+  });
 });
