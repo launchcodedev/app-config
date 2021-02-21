@@ -52,22 +52,32 @@ export function validateOptions<T>(
   schema.cacheValidationFunction();
 
   return (value, ctxKey, ctx) => {
-    const valid = (value as unknown) as T;
+    return async (parse, ...args) => {
+      const valid = ((await parse(value)).toJSON() as unknown) as T;
 
-    try {
-      schema.validate(valid);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown';
+      try {
+        schema.validate(valid);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'unknown';
 
-      const parents =
-        [...ctx, ctxKey]
-          .map(([, k]) => k)
-          .filter((v) => !!v)
-          .join('.') || 'root';
+        const parents =
+          [...ctx, ctxKey]
+            .map(([, k]) => k)
+            .filter((v) => !!v)
+            .join('.') || 'root';
 
-      throw new ParsingExtensionInvalidOptions(`Validation failed in "${parents}": ${message}`);
-    }
+        throw new ParsingExtensionInvalidOptions(`Validation failed in "${parents}": ${message}`);
+      }
 
-    return extension(valid, ctxKey, ctx);
+      const call = extension(valid, ctxKey, ctx);
+
+      if (call) {
+        return call(parse, ...args);
+      } else {
+        throw new AppConfigError(
+          `A parsing extension returned as non-applicable, when using validateOptions. This isn't supported.`,
+        );
+      }
+    };
   };
 }
