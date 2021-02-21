@@ -1,6 +1,4 @@
-import type { Json } from '@app-config/utils';
 import type {
-  ParsedValue,
   ParsingExtension,
   ParsingExtensionKey,
   ParsingExtensionTransform,
