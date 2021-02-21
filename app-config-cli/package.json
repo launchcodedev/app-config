@@ -38,6 +38,7 @@
     "@app-config/config": "^2.1.5",
     "@app-config/core": "^2.1.5",
     "@app-config/generate": "^2.1.5",
+    "@app-config/logging": "^2.1.5",
     "@app-config/node": "^2.1.5",
     "clipboardy": "2",
     "common-tags": "1",

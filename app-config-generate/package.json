@@ -30,6 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/logging": "^2.1.5",
     "@app-config/meta": "^2.1.5",
     "@app-config/schema": "^2.1.5",
     "@types/readable-stream": "2",
