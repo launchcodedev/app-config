@@ -149,6 +149,20 @@ $if:
 
 The `$if` directive is straightforward, see the example.
 
+## The `$eq` Directive
+
+Checks if two values are equal (using deep equality).
+
+```yaml
+$if:
+  $check:
+    $eq:
+      - 42
+      - 42
+  $then: foo
+  $else: bar
+```
+
 ## The `$timestamp` Directive
 
 Allows injecting the current date and time into configuration. While this option is useful,
