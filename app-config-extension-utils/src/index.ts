@@ -1,4 +1,6 @@
+import type { Json } from '@app-config/utils';
 import type {
+  ParsedValue,
   ParsingExtension,
   ParsingExtensionKey,
   ParsingExtensionTransform,
@@ -48,33 +50,19 @@ export function validateOptions<T>(
   ) => ParsingExtensionTransform | false,
   { lazy = false }: { lazy?: boolean } = {},
 ): ParsingExtension {
-  const schema = builder(SchemaBuilder);
-
-  schema.cacheValidationFunction();
+  const validate: ValidationFunction<T> = validationFunction(builder);
 
   return (value, ctxKey, ctx) => {
     return async (parse, ...args) => {
-      let valid: T;
+      let valid: unknown;
 
       if (lazy) {
-        valid = (value as unknown) as T;
+        valid = value;
       } else {
-        valid = ((await parse(value)).toJSON() as unknown) as T;
+        valid = (await parse(value)).toJSON();
       }
 
-      try {
-        schema.validate(valid);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'unknown';
-
-        const parents =
-          [...ctx, ctxKey]
-            .map(([, k]) => k)
-            .filter((v) => !!v)
-            .join('.') || 'root';
-
-        throw new ParsingExtensionInvalidOptions(`Validation failed in "${parents}": ${message}`);
-      }
+      validate(valid, [...ctx, ctxKey]);
 
       const call = extension(valid, ctxKey, ctx);
 
@@ -86,5 +74,31 @@ export function validateOptions<T>(
         `A parsing extension returned as non-applicable, when using validateOptions. This isn't supported.`,
       );
     };
+  };
+}
+
+export type ValidationFunction<T> = (value: any, ctx: ParsingExtensionKey[]) => asserts value is T;
+
+export function validationFunction<T>(
+  builder: (builder: typeof SchemaBuilder) => SchemaBuilder<T>,
+): ValidationFunction<T> {
+  const schema = builder(SchemaBuilder);
+
+  schema.cacheValidationFunction();
+
+  return (value, ctx): asserts value is T => {
+    try {
+      schema.validate(value);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown';
+
+      const parents =
+        ctx
+          .map(([, k]) => k)
+          .filter((v) => !!v)
+          .join('.') || 'root';
+
+      throw new ParsingExtensionInvalidOptions(`Validation failed in "${parents}": ${message}`);
+    }
   };
 }

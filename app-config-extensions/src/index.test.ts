@@ -722,6 +722,22 @@ describe('$substitute directive', () => {
 
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
+
+  it('doesnt visit fallback if name is defined', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Error();
+    });
+
+    process.env.FOO = 'foo';
+
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO', $fallback: { $fail: true } } },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution(), failDirective]);
+
+    expect(parsed.toJSON()).toEqual({ foo: 'foo' });
+  });
 });
 
 describe('$timestamp directive', () => {

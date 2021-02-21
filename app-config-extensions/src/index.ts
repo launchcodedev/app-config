@@ -1,5 +1,10 @@
 import { join, dirname, resolve, isAbsolute } from 'path';
-import { forKey, validateOptions } from '@app-config/extension-utils';
+import {
+  forKey,
+  validateOptions,
+  validationFunction,
+  ValidationFunction,
+} from '@app-config/extension-utils';
 import {
   ParsedValue,
   ParsedValueMetadata,
@@ -7,6 +12,7 @@ import {
   AppConfigError,
   NotFoundError,
   FailedToSelectSubObject,
+  InObject,
 } from '@app-config/core';
 import {
   currentEnvironment,
@@ -46,26 +52,27 @@ export function extendsDirective(): ParsingExtension {
 
 /** Lookup a property in the same file, and "copy" it */
 export function extendsSelfDirective(): ParsingExtension {
-  return forKey(
-    '$extendsSelf',
-    validateOptions(
-      (SchemaBuilder) => SchemaBuilder.stringSchema(),
-      (value) => async (parse, _, __, ___, root) => {
-        // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
-        const selected = ParsedValue.literal(root).property(value.split('.'));
-
-        if (selected === undefined) {
-          throw new AppConfigError(`$extendsSelf selector was not found (${value})`);
-        }
-
-        if (selected.asObject() !== undefined) {
-          return parse(selected.toJSON(), { shouldMerge: true });
-        }
-
-        return parse(selected.toJSON(), { shouldFlatten: true });
-      },
-    ),
+  const validate: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
+    stringSchema(),
   );
+
+  return forKey('$extendsSelf', (input, key, ctx) => async (parse, _, __, ___, root) => {
+    const value = (await parse(input)).toJSON();
+    validate(value, [...ctx, key]);
+
+    // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
+    const selected = ParsedValue.literal(root).property(value.split('.'));
+
+    if (selected === undefined) {
+      throw new AppConfigError(`$extendsSelf selector was not found (${value})`);
+    }
+
+    if (selected.asObject() !== undefined) {
+      return parse(selected.toJSON(), { shouldMerge: true });
+    }
+
+    return parse(selected.toJSON(), { shouldFlatten: true });
+  });
 }
 
 /** Looks up an environment-specific value ($env) */
@@ -108,6 +115,7 @@ export function envDirective(
           `An $env directive was used, but none matched the current environment (wanted ${environment}, saw [${found}])`,
         );
       },
+      // $env is lazy so that non-applicable envs don't get evaluated
       { lazy: true },
     ),
   );
@@ -158,36 +166,44 @@ export function environmentVariableSubstitution(
 ): ParsingExtension {
   const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
-  return forKey(
-    ['$substitute', '$subs'],
-    validateOptions(
-      (SchemaBuilder) =>
-        SchemaBuilder.oneOf(
-          SchemaBuilder.stringSchema(),
-          SchemaBuilder.emptySchema().addString('$name').addString('$fallback', {}, false),
-        ),
-      (value) => (parse) => {
-        if (typeof value === 'object') {
-          const { $name: variableName, $fallback: fallback } = value;
-          const resolvedValue = process.env[variableName];
+  const validateObject: ValidationFunction<
+    Record<string, any>
+  > = validationFunction(({ emptySchema }) => emptySchema().addAdditionalProperties());
 
-          if (fallback !== undefined) {
-            return parse(resolvedValue || fallback, { shouldFlatten: true });
-          }
-
-          if (!resolvedValue) {
-            throw new AppConfigError(
-              `$substitute could not find ${variableName} environment variable`,
-            );
-          }
-
-          return parse(resolvedValue, { shouldFlatten: true });
-        }
-
-        return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
-      },
-    ),
+  const validateString: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
+    stringSchema(),
   );
+
+  return forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
+    if (typeof value === 'string') {
+      return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
+    }
+
+    validateObject(value, [...ctx, key]);
+    if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
+
+    const { $name: variableName, $fallback: fallback } = value;
+    validateString(variableName, [...ctx, key, [InObject, '$name']]);
+
+    const resolvedValue = process.env[variableName];
+
+    if (resolvedValue) {
+      return parse(resolvedValue, { shouldFlatten: true });
+    }
+
+    if (fallback !== undefined) {
+      const fallbackValue = (await parse(fallback)).toJSON();
+      validateString(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
+
+      return parse(fallbackValue, { shouldFlatten: true });
+    }
+
+    if (!resolvedValue) {
+      throw new AppConfigError(`$substitute could not find ${variableName} environment variable`);
+    }
+
+    return parse(resolvedValue, { shouldFlatten: true });
+  });
 }
 
 // common logic for $extends and $override
@@ -206,7 +222,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
         return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
       },
-      (value) => async (parse, _, context, extensions) => {
+      (value) => async (_, __, context, extensions) => {
         const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
           let resolvedPath = filepath;
 
