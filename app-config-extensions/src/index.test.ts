@@ -1,8 +1,9 @@
 import { withTempFiles } from '@app-config/test-utils';
-import { LiteralSource, NotFoundError } from '@app-config/core';
+import { LiteralSource, NotFoundError, Fallbackable } from '@app-config/core';
 import { FileSource } from '@app-config/node';
 import { forKey } from '@app-config/extension-utils';
 import {
+  tryDirective,
   envDirective,
   extendsDirective,
   extendsSelfDirective,
@@ -10,6 +11,88 @@ import {
   timestampDirective,
   environmentVariableSubstitution,
 } from './index';
+
+describe('$try directive', () => {
+  it('uses main value', async () => {
+    const source = new LiteralSource({
+      $try: {
+        $value: 'foobar',
+        $fallback: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective()])).toEqual('foobar');
+  });
+
+  it('uses fallback value', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Fallbackable();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $fail: true,
+        },
+        $fallback: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective(), failDirective])).toEqual('barfoo');
+  });
+
+  it('doesnt evaluate fallback if value works', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Fallbackable();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: 'barfoo',
+        $fallback: {
+          $fail: true,
+        },
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective(), failDirective])).toEqual('barfoo');
+  });
+
+  it('doesnt swallow plain errors', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Error();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $fail: true,
+        },
+        $fallback: 'barfoo',
+      },
+    });
+
+    await expect(source.readToJSON([tryDirective(), failDirective])).rejects.toThrow(Error);
+  });
+
+  it('swallows plain errors with "unsafe" option', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Error();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $fail: true,
+        },
+        $fallback: 'barfoo',
+        $unsafe: true,
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective(), failDirective])).toEqual('barfoo');
+  });
+});
 
 describe('$extends directive', () => {
   it('fails if file is missing', async () => {
@@ -872,6 +955,23 @@ describe('extension combinations', () => {
       const parsed = await source.read([extendsDirective(), environmentVariableSubstitution()]);
 
       expect(parsed.toJSON()).toEqual({ foo: 'bar' });
+    });
+  });
+
+  it('combines $try and $extends', async () => {
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $extends: './test-file.json',
+        },
+        $fallback: {
+          fellBack: true,
+        },
+      },
+    });
+
+    await expect(source.readToJSON([extendsDirective(), tryDirective()])).resolves.toEqual({
+      fellBack: true,
     });
   });
 });

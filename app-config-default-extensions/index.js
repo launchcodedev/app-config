@@ -14,12 +14,13 @@ module.exports = {
     environmentSourceNames,
   ) {
     const {
+      unescape$Directives,
+      tryDirective,
       envDirective,
       extendsDirective,
       extendsSelfDirective,
       overrideDirective,
       timestampDirective,
-      unescape$Directives,
       environmentVariableSubstitution,
     } = require('@app-config/extensions');
 
@@ -28,6 +29,8 @@ module.exports = {
     const { default: gitRefDirectives } = require('@app-config/git');
 
     return [
+      unescape$Directives(),
+      tryDirective(),
       v1Compat(),
       envDirective(aliases, environmentOverride, environmentSourceNames),
       extendsDirective(),
@@ -35,23 +38,34 @@ module.exports = {
       overrideDirective(),
       encryptedDirective(symmetricKey),
       timestampDirective(),
-      unescape$Directives(),
       environmentVariableSubstitution(aliases, environmentOverride, environmentSourceNames),
       gitRefDirectives(),
     ];
   },
   defaultEnvExtensions() {
-    const { unescape$Directives, markAllValuesAsSecret } = require('@app-config/extensions');
+    const {
+      unescape$Directives,
+      tryDirective,
+      markAllValuesAsSecret,
+    } = require('@app-config/extensions');
 
-    return [unescape$Directives(), markAllValuesAsSecret()];
+    return [unescape$Directives(), tryDirective(), markAllValuesAsSecret()];
   },
   defaultMetaExtensions() {
     const {
+      unescape$Directives,
+      tryDirective,
       extendsDirective,
       extendsSelfDirective,
       overrideDirective,
     } = require('@app-config/extensions');
 
-    return [extendsDirective(), extendsSelfDirective(), overrideDirective()];
+    return [
+      unescape$Directives(),
+      tryDirective(),
+      extendsDirective(),
+      extendsSelfDirective(),
+      overrideDirective(),
+    ];
   },
 };
