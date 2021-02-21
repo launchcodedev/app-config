@@ -52,6 +52,7 @@ export function tryDirective(): ParsingExtension {
           .addProperty('$fallback', SchemaBuilder.fromJsonSchema({}))
           .addBoolean('$unsafe', {}, false),
       (value) => async (parse) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { $value, $fallback, $unsafe } = value;
 
         try {
@@ -80,14 +81,14 @@ export function ifDirective(): ParsingExtension {
           .addProperty('$then', SchemaBuilder.fromJsonSchema({}))
           .addProperty('$else', SchemaBuilder.fromJsonSchema({})),
       (value) => async (parse) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { $check, $then, $else } = value;
         const condition = (await parse($check)).toJSON();
 
         if (condition) {
           return parse($then, { shouldFlatten: true });
-        } else {
-          return parse($else, { shouldFlatten: true });
         }
+        return parse($else, { shouldFlatten: true });
       },
       { lazy: true },
     ),

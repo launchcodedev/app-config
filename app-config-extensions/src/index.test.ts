@@ -121,10 +121,6 @@ describe('$if directive', () => {
   });
 
   it('doesnt evaluate the else branch', async () => {
-    const failDirective = forKey('$fail', () => () => {
-      throw new Error();
-    });
-
     const source = new LiteralSource({
       $if: {
         $check: true,
@@ -139,10 +135,6 @@ describe('$if directive', () => {
   });
 
   it('doesnt evaluate the other branch', async () => {
-    const failDirective = forKey('$fail', () => () => {
-      throw new Error();
-    });
-
     const source = new LiteralSource({
       $if: {
         $check: false,
