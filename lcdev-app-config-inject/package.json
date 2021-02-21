@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config-inject",
   "description": "Alias for @app-config/inject",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -34,7 +34,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/inject": "^2.1.6"
+    "@app-config/inject": "^2.1.7"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
