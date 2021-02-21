@@ -52,7 +52,6 @@ export function tryDirective(): ParsingExtension {
           .addProperty('$fallback', SchemaBuilder.fromJsonSchema({}))
           .addBoolean('$unsafe', {}, false),
       (value) => async (parse) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const { $value, $fallback, $unsafe } = value;
 
         try {
@@ -63,6 +62,31 @@ export function tryDirective(): ParsingExtension {
           }
 
           throw error;
+        }
+      },
+      { lazy: true },
+    ),
+  );
+}
+
+/** Checks a condition, uses then/else */
+export function ifDirective(): ParsingExtension {
+  return forKey(
+    '$if',
+    validateOptions(
+      (SchemaBuilder) =>
+        SchemaBuilder.emptySchema()
+          .addProperty('$check', SchemaBuilder.fromJsonSchema({}))
+          .addProperty('$then', SchemaBuilder.fromJsonSchema({}))
+          .addProperty('$else', SchemaBuilder.fromJsonSchema({})),
+      (value) => async (parse) => {
+        const { $check, $then, $else } = value;
+        const condition = (await parse($check)).toJSON();
+
+        if (condition) {
+          return parse($then, { shouldFlatten: true });
+        } else {
+          return parse($else, { shouldFlatten: true });
         }
       },
       { lazy: true },

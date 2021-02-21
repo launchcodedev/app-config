@@ -16,6 +16,7 @@ module.exports = {
     const {
       unescape$Directives,
       tryDirective,
+      ifDirective,
       envDirective,
       extendsDirective,
       extendsSelfDirective,
@@ -31,6 +32,7 @@ module.exports = {
     return [
       unescape$Directives(),
       tryDirective(),
+      ifDirective(),
       v1Compat(),
       envDirective(aliases, environmentOverride, environmentSourceNames),
       extendsDirective(),
@@ -43,18 +45,15 @@ module.exports = {
     ];
   },
   defaultEnvExtensions() {
-    const {
-      unescape$Directives,
-      tryDirective,
-      markAllValuesAsSecret,
-    } = require('@app-config/extensions');
+    const { unescape$Directives, markAllValuesAsSecret } = require('@app-config/extensions');
 
-    return [unescape$Directives(), tryDirective(), markAllValuesAsSecret()];
+    return [unescape$Directives(), markAllValuesAsSecret()];
   },
   defaultMetaExtensions() {
     const {
       unescape$Directives,
       tryDirective,
+      ifDirective,
       extendsDirective,
       extendsSelfDirective,
       overrideDirective,
@@ -63,6 +62,7 @@ module.exports = {
     return [
       unescape$Directives(),
       tryDirective(),
+      ifDirective(),
       extendsDirective(),
       extendsSelfDirective(),
       overrideDirective(),
