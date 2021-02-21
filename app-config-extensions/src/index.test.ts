@@ -221,10 +221,7 @@ describe('$eq directive', () => {
   it('parses before checking equality', async () => {
     process.env.APP_CONFIG_ENV = 'test';
     const source = new LiteralSource({
-      $eq: [
-        { $env: { default: { a: true } }},
-        { $env: { test: { a: true } }},
-      ],
+      $eq: [{ $env: { default: { a: true } } }, { $env: { test: { a: true } } }],
     });
 
     expect(await source.readToJSON([eqDirective(), envDirective()])).toBe(true);
