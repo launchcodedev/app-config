@@ -1,6 +1,7 @@
 import { withTempFiles } from '@app-config/test-utils';
 import { LiteralSource, NotFoundError } from '@app-config/core';
 import { FileSource } from '@app-config/node';
+import { forKey } from '@app-config/extension-utils';
 import {
   envDirective,
   extendsDirective,
@@ -505,6 +506,20 @@ describe('$env directive', () => {
     });
 
     const parsed = await source.read([envDirective()]);
+    expect(parsed.toJSON()).toEqual(null);
+  });
+
+  it('doesnt evaluate non-current environment', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Error();
+    });
+
+    process.env.NODE_ENV = 'test';
+    const source = new LiteralSource({
+      $env: { test: null, dev: { $fail: true } },
+    });
+
+    const parsed = await source.read([envDirective(), failDirective]);
     expect(parsed.toJSON()).toEqual(null);
   });
 

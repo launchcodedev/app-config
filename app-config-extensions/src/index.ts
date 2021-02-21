@@ -108,6 +108,7 @@ export function envDirective(
           `An $env directive was used, but none matched the current environment (wanted ${environment}, saw [${found}])`,
         );
       },
+      { lazy: true },
     ),
   );
 }

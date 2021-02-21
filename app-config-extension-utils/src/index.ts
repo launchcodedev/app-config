@@ -46,6 +46,7 @@ export function validateOptions<T>(
     key: ParsingExtensionKey,
     context: ParsingExtensionKey[],
   ) => ParsingExtensionTransform | false,
+  { lazy = false }: { lazy?: boolean } = {},
 ): ParsingExtension {
   const schema = builder(SchemaBuilder);
 
@@ -53,7 +54,13 @@ export function validateOptions<T>(
 
   return (value, ctxKey, ctx) => {
     return async (parse, ...args) => {
-      const valid = ((await parse(value)).toJSON() as unknown) as T;
+      let valid: T;
+
+      if (lazy) {
+        valid = (value as unknown) as T;
+      } else {
+        valid = ((await parse(value)).toJSON() as unknown) as T;
+      }
 
       try {
         schema.validate(valid);
@@ -74,6 +81,7 @@ export function validateOptions<T>(
       if (call) {
         return call(parse, ...args);
       }
+
       throw new AppConfigError(
         `A parsing extension returned as non-applicable, when using validateOptions. This isn't supported.`,
       );
