@@ -1,5 +1,4 @@
 import { join, dirname, resolve, isAbsolute } from 'path';
-import { isObject, Json } from '@app-config/utils';
 import { forKey, validateOptions } from '@app-config/extension-utils';
 import {
   ParsedValue,

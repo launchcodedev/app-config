@@ -73,11 +73,10 @@ export function validateOptions<T>(
 
       if (call) {
         return call(parse, ...args);
-      } else {
-        throw new AppConfigError(
-          `A parsing extension returned as non-applicable, when using validateOptions. This isn't supported.`,
-        );
       }
+      throw new AppConfigError(
+        `A parsing extension returned as non-applicable, when using validateOptions. This isn't supported.`,
+      );
     };
   };
 }

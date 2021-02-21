@@ -95,7 +95,7 @@ describe('composeExtensions', () => {
 describe('validateOptions', () => {
   const ext1 = validateOptions(
     (SchemaBuilder) => SchemaBuilder.stringSchema(),
-    (value) => (parse) => parse(value + '!', { shouldFlatten: true }),
+    (value) => (parse) => parse(`${value}!`, { shouldFlatten: true }),
   );
 
   const ext2 = validateOptions(
