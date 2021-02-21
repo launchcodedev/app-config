@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@app-config/core": "^2.1.5",
+    "@app-config/extension-utils": "^2.1.5",
     "@app-config/logging": "^2.1.5",
     "@app-config/node": "^2.1.5",
     "@app-config/utils": "^2.1.5"

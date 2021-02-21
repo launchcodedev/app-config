@@ -2712,6 +2712,14 @@
   dependencies:
     any-observable "^0.3.0"
 
+"@serafin/schema-builder@0.14":
+  version "0.14.2"
+  resolved "https://registry.yarnpkg.com/@serafin/schema-builder/-/schema-builder-0.14.2.tgz#38d3c712e8642787a4e87e272b0a60ca5b1f671c"
+  integrity sha512-JvGTNp5P4BNxB+olM4E89E1W7/GXAi4JRpaxKnN4S6C/YpMq5RIJzaJUYEmSaCWWpmANK9juEx2x1DgVueE5Uw==
+  dependencies:
+    ajv "^6.12.4"
+    verror "^1.10.0"
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
@@ -17165,7 +17173,7 @@ vendors@^1.0.0:
   resolved "https://registry.yarnpkg.com/vendors/-/vendors-1.0.4.tgz#e2b800a53e7a29b93506c3cf41100d16c4c4ad8e"
   integrity sha512-/juG65kTL4Cy2su4P8HjtkTxk6VmJDiOPBufWniqQ6wknac6jNiXS9vU+hO3wgusiyqWlzTbVHi0dyJqRONg3w==
 
-verror@1.10.0:
+verror@1.10.0, verror@^1.10.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/verror/-/verror-1.10.0.tgz#3a105ca17053af55d6e270c1f8288682e18da400"
   integrity sha1-OhBcoXBTr1XW4nDB+CiGguGNpAA=

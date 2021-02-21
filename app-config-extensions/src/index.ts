@@ -1,5 +1,5 @@
 import { join, dirname, resolve, isAbsolute } from 'path';
-import { isObject, Json } from '@app-config/utils';
+import { forKey, validateOptions } from '@app-config/extension-utils';
 import {
   ParsedValue,
   ParsedValueMetadata,
@@ -21,9 +21,17 @@ export function markAllValuesAsSecret(): ParsingExtension {
   return (value) => (parse) => parse(value, { fromSecrets: true });
 }
 
-/** Uses another file as a "base", and extends on top of it */
-export function extendsDirective(): ParsingExtension {
-  return fileReferenceDirective('$extends', { shouldMerge: true });
+/** When a key $$foo is seen, change it to be $foo and mark with meta property fromEscapedDirective */
+export function unescape$Directives(): ParsingExtension {
+  return (value, [_, key]) => {
+    if (typeof key === 'string' && key.startsWith('$$')) {
+      return async (parse) => {
+        return parse(value, { rewriteKey: key.slice(1), fromEscapedDirective: true });
+      };
+    }
+
+    return false;
+  };
 }
 
 /** Uses another file as overriding values, layering them on top of current file */
@@ -31,32 +39,33 @@ export function overrideDirective(): ParsingExtension {
   return fileReferenceDirective('$override', { shouldOverride: true });
 }
 
+/** Uses another file as a "base", and extends on top of it */
+export function extendsDirective(): ParsingExtension {
+  return fileReferenceDirective('$extends', { shouldMerge: true });
+}
+
 /** Lookup a property in the same file, and "copy" it */
 export function extendsSelfDirective(): ParsingExtension {
-  return (value, [_, key]) => {
-    if (key !== '$extendsSelf') return false;
+  return forKey(
+    '$extendsSelf',
+    validateOptions(
+      (SchemaBuilder) => SchemaBuilder.stringSchema(),
+      (value) => async (parse, _, __, ___, root) => {
+        // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
+        const selected = ParsedValue.literal(root).property(value.split('.'));
 
-    return async (parse, _, __, ___, root) => {
-      const selector = (await parse(value)).toJSON();
+        if (selected === undefined) {
+          throw new AppConfigError(`$extendsSelf selector was not found (${value})`);
+        }
 
-      if (typeof selector !== 'string') {
-        throw new AppConfigError(`$extendsSelf was provided a non-string value`);
-      }
+        if (selected.asObject() !== undefined) {
+          return parse(selected.toJSON(), { shouldMerge: true });
+        }
 
-      // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
-      const selected = ParsedValue.literal(root).property(selector.split('.'));
-
-      if (selected === undefined) {
-        throw new AppConfigError(`$extendsSelf selector was not found (${selector})`);
-      }
-
-      if (selected.asObject() !== undefined) {
-        return parse(selected.toJSON(), { shouldMerge: true });
-      }
-
-      return parse(selected.toJSON(), { shouldFlatten: true });
-    };
-  };
+        return parse(selected.toJSON(), { shouldFlatten: true });
+      },
+    ),
+  );
 }
 
 /** Looks up an environment-specific value ($env) */
@@ -68,15 +77,15 @@ export function envDirective(
   const environment = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
   const metadata = { shouldOverride: true };
 
-  return (value, [_, key]) => {
-    if (key === '$env') {
-      return (parse) => {
-        if (!isObject(value)) {
-          throw new AppConfigError('An $env directive was used with a non-object value');
-        }
-
+  return forKey(
+    '$env',
+    validateOptions(
+      (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
+      (value) => (parse) => {
         if (!environment) {
-          if (value.default) return parse(value.default, metadata);
+          if ('default' in value) {
+            return parse(value.default, metadata);
+          }
 
           throw new AppConfigError(
             `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
@@ -98,29 +107,36 @@ export function envDirective(
         throw new AppConfigError(
           `An $env directive was used, but none matched the current environment (wanted ${environment}, saw [${found}])`,
         );
-      };
-    }
-
-    return false;
-  };
+      },
+    ),
+  );
 }
 
 /** Provides the current timestamp using { $timestamp: true } */
 export function timestampDirective(dateSource: () => Date = () => new Date()): ParsingExtension {
-  return (value, [_, key]) => {
-    if (key === '$timestamp') {
-      return async (parse) => {
+  return forKey(
+    '$timestamp',
+    validateOptions(
+      (SchemaBuilder) =>
+        SchemaBuilder.oneOf(
+          SchemaBuilder.booleanSchema(),
+          SchemaBuilder.emptySchema()
+            .addString('day', {}, false)
+            .addString('month', {}, false)
+            .addString('year', {}, false)
+            .addString('weekday', {}, false)
+            .addString('locale', {}, false)
+            .addString('timeZone', {}, false)
+            .addString('timeZoneName', {}, false),
+        ),
+      (value) => (parse) => {
         let formatted: string;
         const date = dateSource();
 
         if (value === true) {
           formatted = date.toISOString();
-        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+        } else if (typeof value === 'object') {
           const { locale, ...options } = value;
-
-          if (typeof locale !== 'string') {
-            throw new AppConfigError('$timestamp was provided a non-string locale');
-          }
 
           formatted = date.toLocaleDateString(locale, options);
         } else {
@@ -128,24 +144,9 @@ export function timestampDirective(dateSource: () => Date = () => new Date()): P
         }
 
         return parse(formatted, { shouldFlatten: true });
-      };
-    }
-
-    return false;
-  };
-}
-
-/** When a key $$foo is seen, change it to be $foo and mark with meta property fromEscapedDirective */
-export function unescape$Directives(): ParsingExtension {
-  return (value, [_, key]) => {
-    if (typeof key === 'string' && key.startsWith('$$')) {
-      return async (parse) => {
-        return parse(value, { rewriteKey: key.slice(1), fromEscapedDirective: true });
-      };
-    }
-
-    return false;
-  };
+      },
+    ),
+  );
 }
 
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
@@ -154,73 +155,19 @@ export function environmentVariableSubstitution(
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const performAllSubstitutions = (text: string): string => {
-    let output = text;
+  const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
-    /* eslint-disable-next-line no-constant-condition */
-    while (true) {
-      // this regex matches:
-      //   $FOO
-      //   ${FOO}
-      //   ${FOO:-fallback}
-      //   ${FOO:-${FALLBACK}}
-      //
-      // var name is group 1 || 2
-      // fallback value is group 3
-      // https://regex101.com/r/6ZMmx7/3
-      const match = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g.exec(output);
-
-      if (!match) break;
-
-      const fullMatch = match[0];
-      const varName = match[1] || match[2];
-      const fallback = match[3];
-
-      if (varName) {
-        const env = process.env[varName];
-
-        if (env !== undefined) {
-          output = output.replace(fullMatch, env);
-        } else if (fallback !== undefined) {
-          // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-          output = performAllSubstitutions(output.replace(fullMatch, fallback));
-        } else if (varName === 'APP_CONFIG_ENV') {
-          const envType =
-            environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
-
-          if (!envType) {
-            throw new AppConfigError(`Could not find environment variable ${varName}`);
-          }
-
-          // there's a special case for APP_CONFIG_ENV, which is always the envType
-          output = output.replace(fullMatch, envType);
-        } else {
-          throw new AppConfigError(`Could not find environment variable ${varName}`);
-        }
-      }
-    }
-
-    logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
-
-    return output;
-  };
-
-  return (value, [_, key]) => {
-    if (key === '$subsitute') logger.warn('Noticed a typo! Key of $subsitute was found.');
-
-    if (key === '$substitute' || key === '$subs') {
-      return (parse) => {
-        if (isObject(value)) {
-          if (!value.$name) {
-            throw new AppConfigError('$substitute was provided an object without $name');
-          }
-
-          if (typeof value.$name !== 'string') {
-            throw new AppConfigError('$substitute was provided an object without a string $name');
-          }
-
-          const variableName = value.$name;
-          const fallback = value.$fallback;
+  return forKey(
+    ['$substitute', '$subs'],
+    validateOptions(
+      (SchemaBuilder) =>
+        SchemaBuilder.oneOf(
+          SchemaBuilder.stringSchema(),
+          SchemaBuilder.emptySchema().addString('$name').addString('$fallback', {}, false),
+        ),
+      (value) => (parse) => {
+        if (typeof value === 'object') {
+          const { $name: variableName, $fallback: fallback } = value;
           const resolvedValue = process.env[variableName];
 
           if (fallback !== undefined) {
@@ -236,104 +183,142 @@ export function environmentVariableSubstitution(
           return parse(resolvedValue, { shouldFlatten: true });
         }
 
-        if (typeof value !== 'string') {
-          throw new AppConfigError('$substitute expects a string value');
-        }
-
-        return parse(performAllSubstitutions(value), { shouldFlatten: true });
-      };
-    }
-
-    return false;
-  };
+        return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
+      },
+    ),
+  );
 }
 
 // common logic for $extends and $override
 function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): ParsingExtension {
-  return (value, [_, key]) => {
-    if (key !== keyName) return false;
+  return forKey(
+    keyName,
+    validateOptions(
+      (SchemaBuilder) => {
+        const reference = SchemaBuilder.oneOf(
+          SchemaBuilder.stringSchema(),
+          SchemaBuilder.emptySchema()
+            .addString('path')
+            .addBoolean('optional', {}, false)
+            .addString('select', {}, false),
+        );
 
-    return async (parse, _, context, extensions) => {
-      const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
-        let resolvedPath = filepath;
+        return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
+      },
+      (value) => async (parse, _, context, extensions) => {
+        const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
+          let resolvedPath = filepath;
 
-        // resolve filepaths that are relative to the current FileSource
-        if (!isAbsolute(filepath) && context instanceof FileSource) {
-          resolvedPath = join(dirname(context.filePath), filepath);
+          // resolve filepaths that are relative to the current FileSource
+          if (!isAbsolute(filepath) && context instanceof FileSource) {
+            resolvedPath = join(dirname(context.filePath), filepath);
 
-          if (resolve(context.filePath) === resolvedPath) {
-            throw new AppConfigError(
-              `A ${keyName} directive resolved to it's own file (${resolvedPath}). Please use $extendsSelf instead.`,
-            );
-          }
-        }
-
-        logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
-
-        const source = new FileSource(resolvedPath);
-
-        const parsed = await source.read(extensions).catch((error) => {
-          if (error instanceof NotFoundError && isOptional) {
-            return ParsedValue.literal({});
-          }
-
-          throw error;
-        });
-
-        if (subselector) {
-          const found = parsed.property(subselector.split('.'));
-
-          if (!found) {
-            throw new FailedToSelectSubObject(`Failed to select ${subselector} in ${resolvedPath}`);
+            if (resolve(context.filePath) === resolvedPath) {
+              throw new AppConfigError(
+                `A ${keyName} directive resolved to it's own file (${resolvedPath}). Please use $extendsSelf instead.`,
+              );
+            }
           }
 
-          return found;
+          logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
+
+          const source = new FileSource(resolvedPath);
+
+          const parsed = await source.read(extensions).catch((error) => {
+            if (error instanceof NotFoundError && isOptional) {
+              return ParsedValue.literal({});
+            }
+
+            throw error;
+          });
+
+          if (subselector) {
+            const found = parsed.property(subselector.split('.'));
+
+            if (!found) {
+              throw new FailedToSelectSubObject(
+                `Failed to select ${subselector} in ${resolvedPath}`,
+              );
+            }
+
+            return found;
+          }
+
+          return parsed;
+        };
+
+        let parsed: ParsedValue;
+
+        if (typeof value === 'string') {
+          parsed = await retrieveFile(value);
+        } else if (Array.isArray(value)) {
+          parsed = ParsedValue.literal({});
+
+          for (const ext of value) {
+            if (typeof ext === 'string') {
+              parsed = ParsedValue.merge(parsed, await retrieveFile(ext));
+            } else {
+              const { path, optional, select } = ext;
+
+              parsed = ParsedValue.merge(parsed, await retrieveFile(path, select, optional));
+            }
+          }
+        } else {
+          const { path, optional, select } = value;
+
+          parsed = await retrieveFile(path, select, optional);
         }
 
-        return parsed;
-      };
+        return parsed.assignMeta(meta);
+      },
+    ),
+  );
+}
 
-      const forOptions = async (options: Json) => {
-        const parsed = (await parse(options)).toJSON();
+function performAllSubstitutions(text: string, envType?: string): string {
+  let output = text;
 
-        if (typeof parsed === 'string') {
-          return retrieveFile(parsed);
+  /* eslint-disable-next-line no-constant-condition */
+  while (true) {
+    // this regex matches:
+    //   $FOO
+    //   ${FOO}
+    //   ${FOO:-fallback}
+    //   ${FOO:-${FALLBACK}}
+    //
+    // var name is group 1 || 2
+    // fallback value is group 3
+    // https://regex101.com/r/6ZMmx7/3
+    const match = /\$(?:([a-zA-Z_]\w+)|(?:{([a-zA-Z_]\w+)(?::- *(.*?) *)?}))/g.exec(output);
+
+    if (!match) break;
+
+    const fullMatch = match[0];
+    const varName = match[1] || match[2];
+    const fallback = match[3];
+
+    if (varName) {
+      const env = process.env[varName];
+
+      if (env !== undefined) {
+        output = output.replace(fullMatch, env);
+      } else if (fallback !== undefined) {
+        // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+        output = performAllSubstitutions(output.replace(fullMatch, fallback), envType);
+      } else if (varName === 'APP_CONFIG_ENV') {
+        if (!envType) {
+          throw new AppConfigError(`Could not find environment variable ${varName}`);
         }
 
-        if (!isObject(parsed)) {
-          throw new AppConfigError(`${keyName} was provided an invalid option`);
-        }
-
-        const { path, optional, select } = parsed;
-
-        if (!path || typeof path !== 'string') {
-          throw new AppConfigError(`Invalid ${keyName} filepath found`);
-        }
-
-        if (select !== undefined && typeof select !== 'string') {
-          throw new AppConfigError(`Invalid ${keyName} select found`);
-        }
-
-        if (optional !== undefined && typeof optional !== 'boolean') {
-          throw new AppConfigError(`Invalid ${keyName} optional found`);
-        }
-
-        return retrieveFile(path, select, optional);
-      };
-
-      let parsed: ParsedValue;
-
-      if (Array.isArray(value)) {
-        parsed = ParsedValue.literal({});
-
-        for (const ext of value) {
-          parsed = ParsedValue.merge(parsed, await forOptions(ext));
-        }
+        // there's a special case for APP_CONFIG_ENV, which is always the envType
+        output = output.replace(fullMatch, envType);
       } else {
-        parsed = await forOptions(value);
+        throw new AppConfigError(`Could not find environment variable ${varName}`);
       }
+    }
+  }
 
-      return parsed.assignMeta(meta);
-    };
-  };
+  logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
+
+  return output;
 }
