@@ -723,6 +723,24 @@ describe('$substitute directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
 
+  it('allows null value when $allowNull', async () => {
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO', $fallback: null, $allowNull: true } },
+    });
+
+    const parsed = await source.read([environmentVariableSubstitution()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: null });
+  });
+
+  it('does not allow number even when $allowNull', async () => {
+    const source = new LiteralSource({
+      foo: { $substitute: { $name: 'FOO', $fallback: 42, $allowNull: true } },
+    });
+
+    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+  });
+
   it('doesnt visit fallback if name is defined', async () => {
     const failDirective = forKey('$fail', () => () => {
       throw new Error();

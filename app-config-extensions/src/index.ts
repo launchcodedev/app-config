@@ -174,6 +174,10 @@ export function environmentVariableSubstitution(
     stringSchema(),
   );
 
+  const validateStringOrNull: ValidationFunction<string> = validationFunction(
+    ({ fromJsonSchema }) => fromJsonSchema({ type: ['null', 'string'] } as const),
+  );
+
   return forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
     if (typeof value === 'string') {
       return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
@@ -182,7 +186,7 @@ export function environmentVariableSubstitution(
     validateObject(value, [...ctx, key]);
     if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
-    const { $name: variableName, $fallback: fallback } = value;
+    const { $name: variableName, $fallback: fallback, $allowNull: allowNull } = value;
     validateString(variableName, [...ctx, key, [InObject, '$name']]);
 
     const resolvedValue = process.env[variableName];
@@ -193,7 +197,12 @@ export function environmentVariableSubstitution(
 
     if (fallback !== undefined) {
       const fallbackValue = (await parse(fallback)).toJSON();
-      validateString(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
+
+      if (allowNull) {
+        validateStringOrNull(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
+      } else {
+        validateString(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
+      }
 
       return parse(fallbackValue, { shouldFlatten: true });
     }
