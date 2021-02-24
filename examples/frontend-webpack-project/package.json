@@ -7,16 +7,13 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "clean": "rm -rf ./dist",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "test": "jest"
   },
   "dependencies": {
-    "@lcdev/app-config": "2",
-    "ajv": "7"
+    "@app-config/main": "2"
   },
   "devDependencies": {
-    "@lcdev/app-config-webpack-plugin": "2",
+    "@app-config/webpack": "2",
     "@lcdev/tsconfig": "0.2",
     "cross-env": "7",
     "cypress": "6",
@@ -27,5 +24,14 @@
     "webpack": "4",
     "webpack-cli": "3",
     "webpack-dev-server": "^3.2"
+  },
+  "jest": {
+    "preset": "@lcdev/jest",
+    "testPathIgnorePatterns": [
+      ".yarn-cache",
+      "node_modules",
+      "dist",
+      "cypress"
+    ]
   }
 }

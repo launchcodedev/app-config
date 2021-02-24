@@ -1,3 +1,32 @@
+## v2.1.5
+
+Adjusts inter-package dependencies to use caret version ranges, making upgrades easier.
+
+## v2.1.0
+
+Modularizes code entirely, separating parsing extensions, encryption, etc.
+
+Renames the main module to `@app-config/main`, aliased by `@lcdev/app-config`.
+
+Adds `tag` option for `$git` directive.
+
+Adds `$name` and `$fallback` options for `$substitute`.
+
+Removes v1 support from webpack plugin.
+
+## v2.0.6
+
+Returns an unsubscribe callback from `mockConfig`.
+
+## v2.0.5
+
+Adds support for meta file properties `environmentAliases` and `environmentSourceNames`.
+([PR](https://github.com/launchcodedev/app-config/pull/98)).
+
+## v2.0.4
+
+Support for Cypress through [@app-config/cypress](https://www.npmjs.com/package/@app-config/cypress).
+
 ## v2.0.3
 
 Adds `mockConfig` function that accepts an override for configuration internally.

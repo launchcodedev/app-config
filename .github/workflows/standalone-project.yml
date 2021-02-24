@@ -2,7 +2,7 @@ name: standalone-project
 
 on:
   push:
-    branches: '*'
+    branches: 'master'
 
 jobs:
   build:
@@ -24,9 +24,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - run: yarn install && yarn build
-      working-directory: ./app-config
+      working-directory: ./app-config-main
 
-    - run: rm -rf ./node_modules ./app-config/node_modules
+    - run: find . -name node_modules -exec rm -rf {} \; -prune
       working-directory: .
 
     - run: yarn install

@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CombinedSource loads using readContents correctly 1`] = `
+Array [
+  "{\\"baz\\":3,\\"bar\\":2,\\"foo\\":1}",
+  "JSON",
+]
+`;
+
+exports[`FallbackSource loads using readContents correctly 1`] = `
+Array [
+  "{\\"foo\\":1}",
+  "JSON",
+]
+`;
+
+exports[`Parsing loads using readContents correctly 1`] = `
+Array [
+  "{\\"foo\\":\\"bar\\"}",
+  "JSON",
+]
+`;
+
+exports[`stringify stringifies JSON 1`] = `
+"{
+  \\"foo\\": \\"bar\\"
+}"
+`;
+
+exports[`stringify stringifies JSON5 1`] = `
+"{
+  foo: 'bar',
+}"
+`;
+
+exports[`stringify stringifies RAW 1`] = `"11"`;
+
+exports[`stringify stringifies RAW 2`] = `"foobar"`;
+
+exports[`stringify stringifies RAW 3`] = `"true"`;
+
+exports[`stringify stringifies TOML 1`] = `
+"foo = \\"bar\\"
+"
+`;
+
+exports[`stringify stringifies YAML 1`] = `
+"foo: bar
+"
+`;

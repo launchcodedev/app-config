@@ -12,7 +12,7 @@ App Config has two ways to think about and deal with secrets. Secret files and [
 
 The simpler of the two is secret files. These are exactly the same as configuration
 files, they just get stored in a different file, `.app-config.secrets.{ext}`. The filepath is the
-only difference, from the perspective of App Config. The values are [treated different
+only difference, from the perspective of App Config. The values are [treated differently
 during validation though](./schema-validation.md#marking-secret-properties).
 
 The difference for you as a user is in version control. These files should always

@@ -58,6 +58,11 @@ module.exports = {
         children: ['/spec/', '/spec/golang', '/spec/rust'],
       },
       {
+        title: 'Testing',
+        path: '/guide/testing/jest',
+        children: ['/guide/testing/jest', '/guide/testing/cypress'],
+      },
+      {
         title: 'Releases',
         path: '/release-notes',
         children: [['/release-notes', 'Release Notes'], '/v2-announcement', '/v2-migration'],

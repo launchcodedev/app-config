@@ -10,13 +10,10 @@
     "dev": "ts-node-dev --files ./src/index.ts",
     "start": "node ./dist/index.js",
     "build": "tsc -b",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "fastify": "3"
   },
   "devDependencies": {

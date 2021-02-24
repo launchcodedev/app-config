@@ -1,0 +1,13 @@
+{
+  "packages": [
+    "app-config-*",
+    "lcdev-*",
+    "tests/parsing-extensions/*",
+    "tests/webpack-projects/*",
+    "examples/*",
+    "docs"
+  ],
+  "version": "independent",
+  "npmClient": "yarn",
+  "useWorkspaces": true
+}

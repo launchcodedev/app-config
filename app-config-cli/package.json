@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cli",
-  "description": "CLI for @lcdev/app-config",
-  "version": "2.0.3",
+  "description": "CLI for @app-config",
+  "version": "2.1.8",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -17,27 +17,48 @@
   "types": "dist/index.d.ts",
   "files": [
     "/dist",
-    "!*.tsbuildinfo",
-    "!*.test.*"
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
   ],
   "bin": {
-    "app-config": "dist/index.js"
+    "app-config": "dist/index.js",
+    "app-config-secret-agent": "dist/start-secret-agent.js"
   },
   "scripts": {
+    "start": "node ./dist/index.js",
     "build": "tsc -b",
     "build:es": "tsc -b tsconfig.es.json",
     "clean": "rm -rf dist *.tsbuildinfo",
     "lint": "eslint src",
     "fix": "eslint --fix src",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/config": "^2.1.8",
+    "@app-config/core": "^2.1.8",
+    "@app-config/encryption": "^2.1.8",
+    "@app-config/generate": "^2.1.8",
+    "@app-config/logging": "^2.1.8",
+    "@app-config/node": "^2.1.8",
+    "@app-config/schema": "^2.1.8",
+    "@app-config/utils": "^2.1.8",
+    "clipboardy": "2",
+    "common-tags": "1",
+    "execa": "5",
+    "fs-extra": "9",
+    "json-schema-ref-parser": "9",
+    "yargs": "16"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/common-tags": "1",
+    "@types/fs-extra": "9"
+  },
   "prettier": "@lcdev/prettier",
   "jest": {
-    "preset": "@lcdev/jest"
+    "preset": "@lcdev/jest",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test-setup.js"
+    ]
   }
 }

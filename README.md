@@ -6,8 +6,8 @@
   <a href="https://www.mozilla.org/en-US/MPL/2.0/">
     <img alt="Licensed under MPL 2.0" src="https://img.shields.io/badge/license-MPL_2.0-green.svg?style=flat-square"/>
   </a>
-  <a href="https://www.npmjs.com/package/@lcdev/app-config">
-    <img alt="npm" src="https://img.shields.io/npm/v/@lcdev/app-config.svg?style=flat-square"/>
+  <a href="https://www.npmjs.com/package/@app-config/main">
+    <img alt="npm" src="https://img.shields.io/npm/v/@app-config/main.svg?style=flat-square"/>
   </a>
   <a href="https://github.com/launchcodedev/app-config/actions">
     <img alt="Build Status" src="https://img.shields.io/github/workflow/status/launchcodedev/app-config/main?style=flat-square"/>
@@ -45,7 +45,7 @@ Read the [Introduction](https://app-config.dev/guide/intro/) or [Quick Start](ht
 Or, start by installing through your package manager:
 
 ```sh
-yarn add @lcdev/app-config@2
+yarn add @app-config/main@2
 ```
 
 ## Contributing

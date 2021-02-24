@@ -6,11 +6,5 @@
   "dependencies": {
     "seedrandom": "3"
   },
-  "scripts": {
-    "build": "echo",
-    "clean": "echo",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
-  }
+  "scripts": {}
 }

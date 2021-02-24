@@ -1,7 +1,8 @@
 import fetch from 'cross-fetch';
 import { api, buildPath, setGlobalFetch } from '@lcdev/fetch';
 import type { JsonObject } from '@lcdev/ts';
-import type { ParsingExtension, Json } from '@lcdev/app-config';
+import type { ParsingExtension, Json } from '@app-config/main';
+import { forKey, validateOptions } from '@app-config/extension-utils';
 
 setGlobalFetch(fetch);
 
@@ -30,24 +31,12 @@ function vaultParsingExtension(options: Options = {}): ParsingExtension {
     return call.expectStatus(200);
   });
 
-  return (value, [_, objectKey]) => {
-    if (objectKey === '$vault') {
-      return async (parse) => {
-        const parsed = await parse(value).then((v) => v.toJSON());
-
-        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-          throw new Error('$vault requires a an object with options');
-        }
-
-        const { secret, select } = parsed;
-
-        if (typeof secret !== 'string') {
-          throw new Error('$vault requires a "secret" option');
-        }
-
-        if (typeof select !== 'string') {
-          throw new Error('$vault requires a "select" option');
-        }
+  return forKey(
+    '$vault',
+    validateOptions(
+      (SchemaBuilder) => SchemaBuilder.emptySchema().addString('secret').addString('select'),
+      (value) => async (parse) => {
+        const { secret, select } = value;
 
         type VaultResponse<T> = {
           data: {
@@ -74,11 +63,9 @@ function vaultParsingExtension(options: Options = {}): ParsingExtension {
         }
 
         return parse(namedValue as Json, { shouldFlatten: true });
-      };
-    }
-
-    return false;
-  };
+      },
+    ),
+  );
 }
 
 export default vaultParsingExtension;

@@ -20,16 +20,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-    - id: yarn-cache
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-    - run: yarn install --prefer-offline
+    - uses: bahmutov/npm-install@v1
     - run: yarn build
     - run: yarn lint
     - run: yarn test --coverage
@@ -37,81 +28,27 @@ jobs:
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./app-config/coverage/coverage-final.json,./app-config-inject/coverage/coverage-final.json,./app-config-webpack-plugin/coverage/coverage-final.json
+        files: |
+          ./app-config-cli/coverage/coverage-final.json,
+          ./app-config-config/coverage/coverage-final.json,
+          ./app-config-core/coverage/coverage-final.json,
+          ./app-config-cypress/coverage/coverage-final.json,
+          ./app-config-default-extensions/coverage/coverage-final.json,
+          ./app-config-encryption/coverage/coverage-final.json,
+          ./app-config-extension-utils/coverage/coverage-final.json,
+          ./app-config-extensions/coverage/coverage-final.json,
+          ./app-config-generate/coverage/coverage-final.json,
+          ./app-config-git/coverage/coverage-final.json,
+          ./app-config-inject/coverage/coverage-final.json,
+          ./app-config-logging/coverage/coverage-final.json,
+          ./app-config-main/coverage/coverage-final.json,
+          ./app-config-meta/coverage/coverage-final.json,
+          ./app-config-node/coverage/coverage-final.json,
+          ./app-config-schema/coverage/coverage-final.json,
+          ./app-config-settings/coverage/coverage-final.json,
+          ./app-config-utils/coverage/coverage-final.json,
+          ./app-config-v1-compat/coverage/coverage-final.json,
+          ./app-config-vault/coverage/coverage-final.json,
+          ./app-config-webpack-plugin/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true
-
-  # for master, we test Linux & Windows & MacOS + Node LTS & Latest
-  # note that we don't do linting here, only on Linux + Node LTS (above)
-  all:
-    if: github.ref == 'refs/heads/master'
-
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-        node-version: [10.x, 12.x, 14.x, 15.x]
-
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-    - id: yarn-cache
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-    - run: yarn install --prefer-offline
-    - run: yarn build
-    - run: yarn test --testTimeout 20000
-      env: { CI: 1 }
-
-  cypress:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 14.x
-    - id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-    - id: yarn-cache
-      uses: actions/cache@v2
-      with:
-        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-
-    - run: yarn install --prefer-offline
-    - run: yarn build
-    - name: Cypress dependencies
-      uses: cypress-io/github-action@v2
-      with:
-        install: true
-        runTests: false
-    - uses: cypress-io/github-action@v2
-      with:
-        group: frontend-example-project-test
-        working-directory: examples/frontend-webpack-project
-        install: false
-        record: true
-        start: yarn serve -l 8080 ./dist
-      env:
-        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-    - uses: cypress-io/github-action@v2
-      with:
-        group: query-parameter-overrides-test
-        working-directory: tests/webpack-projects/query-parameter-overrides
-        install: false
-        record: true
-        start: yarn serve -l 8990 ./dist
-      env:
-        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}

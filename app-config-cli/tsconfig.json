@@ -4,6 +4,12 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../app-config-core" },
+    { "path": "../app-config-config" },
+    { "path": "../app-config-node" },
+    { "path": "../app-config-generate" }
+  ]
 }

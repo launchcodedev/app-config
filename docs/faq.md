@@ -53,4 +53,6 @@ File a GitHub issue on our repository, and we'll see if we can officially suppor
 ::: details Answer
 The App Config module exports an `mockConfig(override)` function. It allows you to
 internally set configuration without loading from files / the environment.
+
+It returns a function to un-mock.
 :::

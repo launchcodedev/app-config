@@ -12,6 +12,7 @@ dist-types/
 *.lcov
 coverage/
 .eslintcache
+*.mp4
 
 # logs and errors
 npm-debug.log*

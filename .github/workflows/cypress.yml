@@ -1,0 +1,61 @@
+name: cypress
+
+on:
+  push:
+    branches: '*'
+
+jobs:
+  all:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - uses: bahmutov/npm-install@v1
+
+    - run: yarn build
+
+    - name: Cypress dependencies
+      uses: cypress-io/github-action@v2
+      with:
+        install: true
+        runTests: false
+
+    - uses: cypress-io/github-action@v2
+      with:
+        group: frontend-example-project-test
+        working-directory: examples/frontend-webpack-project
+        install: false
+        record: true
+        start: yarn serve -l 8080 ./dist
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+    - uses: cypress-io/github-action@v2
+      with:
+        group: query-parameter-overrides-test
+        working-directory: tests/webpack-projects/query-parameter-overrides
+        install: false
+        record: true
+        start: yarn serve -l 8990 ./dist
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+    - uses: cypress-io/github-action@v2
+      with:
+        group: cypress-plugin-test
+        working-directory: tests/webpack-projects/cypress-plugin
+        install: false
+        record: true
+        start: yarn serve -l 8991 ./dist
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+    - uses: cypress-io/github-action@v2
+      with:
+        group: app-config-core-in-browser-test
+        working-directory: tests/webpack-projects/app-config-core-in-browser
+        install: false
+        record: true
+        start: yarn serve -l 8992 ./dist
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+

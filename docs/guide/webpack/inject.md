@@ -4,7 +4,7 @@ title: App Config Inject
 
 ### App Config Inject
 
-A separate package called `@lcdev/app-config-inject` exists to configure frontend
+A separate package called `@app-config/inject` exists to configure frontend
 applications at runtime.
 
 The `app-config-inject` binary parses HTML and injects app-config values at runtime.
@@ -20,7 +20,7 @@ FROM nginx:1.15-alpine
 
 RUN apk update && apk add nodejs npm
 
-RUN npm i -g @lcdev/app-config-inject@2
+RUN npm i -g @app-config/inject@2
 
 ADD .app-config.schema.yml /etc/my-app/.app-config.schema.yml
 

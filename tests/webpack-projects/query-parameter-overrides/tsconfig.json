@@ -8,5 +8,9 @@
     "lib": ["dom"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "references": [
+    { "path": "../../../app-config" },
+    { "path": "../../../app-config-webpack" }
+  ]
 }

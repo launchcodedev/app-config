@@ -9,29 +9,24 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "eject": "expo eject",
-    "build": "echo",
-    "clean": "echo",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "eject": "expo eject"
   },
   "dependencies": {
-    "@lcdev/app-config": "2",
+    "@app-config/main": "2",
     "expo": "39",
     "expo-status-bar": "1",
+    "expo-yarn-workspaces": "1",
     "react": "16",
     "react-native": "https://github.com/expo/react-native/archive/sdk-39.0.4.tar.gz",
     "react-native-web": "0.13"
   },
   "devDependencies": {
     "@babel/core": "7",
-    "@lcdev/app-config": "2",
-    "@lcdev/react-native-app-config-transformer": "2",
+    "@app-config/main": "2",
+    "@app-config/react-native": "2",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-native": "0.63",
-    "expo-yarn-workspaces": "1",
     "typescript": "3"
   }
 }

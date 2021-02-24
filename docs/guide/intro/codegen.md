@@ -13,13 +13,10 @@ generate:
   - { file: 'src/@types/lcdev__app-config/index.d.ts' }
 ```
 
-Currently, only TypeScript output is officially supported.
-Others may work out of the box because we use a library called [quicktype](https://quicktype.io/) internally.
-
 Run the CLI to write the type files.
 
 ```sh
-npx app-config generate
+npx @app-config/cli generate
 ```
 
 If you have `src/**/*` in your `include` of `tsconfig.json`, then TypeScript
@@ -34,7 +31,7 @@ An example of the file that's written is below:
 // AUTO GENERATED CODE
 // Run app-config with 'generate' command to regenerate this file
 
-import '@lcdev/app-config';
+import '@app-config/main';
 
 export interface Config {
   user?: User;
@@ -45,7 +42,7 @@ export interface User {
 }
 
 // augment the default export from app-config
-declare module '@lcdev/app-config' {
+declare module '@app-config/main' {
   export interface ExportedConfig extends Config {}
 }
 ```
@@ -58,3 +55,11 @@ Other options for the meta file:
 - `augmentModule`: if app-config main export should be typed
 - `leadingComments`: first couple lines to insert in file
 - `rendererOptions`: unstable options passed to quicktype
+
+## Go Support
+
+See [App Config in Golang](../../spec/golang.md) page for more.
+
+## Rust Support
+
+See [App Config in Rust](../../spec/rust.md) page for more.

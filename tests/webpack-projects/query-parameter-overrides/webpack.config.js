@@ -1,6 +1,6 @@
 const path = require('path');
 const HtmlPlugin = require('html-webpack-plugin');
-const { default: AppConfigPlugin } = require('@lcdev/app-config-webpack-plugin');
+const { default: AppConfigPlugin } = require('@app-config/webpack');
 
 // Important parts are in module->rules (the AppConfigPlugin.loader), and plugins
 // AppConfigPlugin relies on HtmlPlugin (html-webpack-plugin), when using headerInjection

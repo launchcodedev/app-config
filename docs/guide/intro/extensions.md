@@ -46,24 +46,34 @@ api:
 
 This will safely resolve to an object `{ url: string, timeout: number }` by merging sibling keys.
 
+Note that `$env` is aware of environment name aliases as well. See [meta file](./settings.md#parse-and-loading-configuration)
+for how to change the environmentSourceNames or environmentAliases.
+
 ## The `$extends` Directive
 
 Merges (deeply) values from another file. The current file has precedent when merging.
 
 ```yaml
+# Use it with a file path
 $extends: './other-file.yml'
 
+# Or use it with options
 nested:
   propertyA:
     $extends:
       path: ./other-file.yml
       optional: true
       select: 'foo.bar'
+
+# An array also works
+$extends:
+  - ./file1.yml
+  - ./file2.yml
 ```
 
-This option can be given a string (filepath), an object with options, or an array of objects.
+This option can be given a filepath, an object with options, or an array of objects.
 
-`select` allows extending a sub-object and `optional` allows missing files. These are optional.
+`select` allows extending a property from the other file, and `optional` allows missing files.
 
 ## The `$override` Directive
 
@@ -71,9 +81,11 @@ The override directive is exactly the same as `$extends`, except that the other 
 This is useful for the pattern:
 
 ```yaml
+# if present, the values in this file will override the ones here
 $override:
   path: /etc/my-app/config.yml
   optional: true
+
 # ... default values
 ```
 
@@ -92,6 +104,18 @@ username: { $substitute: '$USER' }
 
 Works essentially the same way as [bash variable substitution](https://tldp.org/LDP/abs/html/parameter-substitution.html)
 (including fallback syntax).
+
+The other form of substitution is via `$name`:
+
+```yaml
+username:
+  $substitute:
+    # Look for $USER, use 'no-user' as fallback value
+    $name: 'USER'
+    $fallback: 'no-user'
+```
+
+Use `$allowNull: true` if your fallback is allowed to be nullable.
 
 ## Decryption
 
@@ -149,7 +173,7 @@ Note that this directive _will not fail_ if git status is not clean.
 It's not all too difficult to make your own!
 
 ```typescript
-import { loadConfig, defaultExtensions, ParsingExtension } from '@lcdev/app-config';
+import { loadConfig, defaultExtensions, ParsingExtension } from '@app-config/main';
 
 const uppercaseExtension: ParsingExtension = (value, [_, key]) => {
   if (key === '$uppercase') {

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`logs config 1`] = `
+<body>
+  {"externalApiUrl":"http://localhost:3002"}
+</body>
+`;

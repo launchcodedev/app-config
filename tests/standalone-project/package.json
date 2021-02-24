@@ -7,13 +7,12 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "build": "tsc -b",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "echo",
-    "fix": "echo",
-    "test": "echo"
+    "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@lcdev/app-config": "file:../../app-config"
+    "@app-config/core": "file:../../app-config-core",
+    "@app-config/node": "file:../../app-config-node",
+    "@app-config/main": "file:../../app-config-main"
   },
   "devDependencies": {
     "typescript": "*"

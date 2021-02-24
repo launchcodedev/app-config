@@ -1,0 +1,33 @@
+{
+  "name": "@app-config/test-cypress-plugin",
+  "version": "0.0.0",
+  "license": "MPL-2.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development webpack-dev-server",
+    "build": "cross-env NODE_ENV=production webpack --mode production",
+    "clean": "rm -rf ./dist"
+  },
+  "dependencies": {
+    "@app-config/main": "2",
+    "@app-config/cypress": "2"
+  },
+  "devDependencies": {
+    "@app-config/webpack": "2",
+    "@babel/core": "7",
+    "@babel/preset-env": "7",
+    "@cypress/webpack-preprocessor": "5",
+    "@lcdev/tsconfig": "0.2",
+    "babel-loader": "8",
+    "cross-env": "7",
+    "cypress": "6",
+    "html-webpack-plugin": "4",
+    "serve": "11",
+    "ts-loader": "8",
+    "typescript": "4",
+    "webpack": "4",
+    "webpack-cli": "3",
+    "webpack-dev-server": "^3.2"
+  }
+}
