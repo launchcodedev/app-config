@@ -1,4 +1,4 @@
-import { defaultEnvExtensions, defaultExtensions, loadUnvalidatedConfig } from '@lcdev/app-config';
+import { defaultEnvExtensions, defaultExtensions, loadUnvalidatedConfig } from '@app-config/main';
 import execParsingExtension from '.';
 
 const defaultOptions = {

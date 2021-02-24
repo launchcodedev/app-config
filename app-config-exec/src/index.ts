@@ -1,5 +1,5 @@
-import { Json, parseRawString, ParsingExtension } from '@lcdev/app-config';
-import { guessFileType } from '@lcdev/app-config/dist/config-source';
+import { Json } from '@app-config/utils';
+import { ParsingExtension, parseRawString, guessFileType } from '@app-config/core';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 

@@ -29,12 +29,13 @@
     "test": "jest",
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
-  "dependencies": {},
-  "peerDependencies": {
-    "@lcdev/app-config": "2"
+  "dependencies": {
+    "@app-config/core": "^2.1.8",
+    "@app-config/extension-utils": "^2.1.8",
+    "@app-config/utils": "^2.1.8"
   },
   "devDependencies": {
-    "@lcdev/app-config": "2"
+    "@app-config/main": "^2.1.8"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
