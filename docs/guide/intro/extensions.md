@@ -115,6 +115,8 @@ username:
     $fallback: 'no-user'
 ```
 
+Use `$allowNull: true` if your fallback is allowed to be nullable.
+
 ## Decryption
 
 Values that are encrypted will automatically be decrypted.
