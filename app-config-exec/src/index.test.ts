@@ -9,7 +9,7 @@ const defaultOptions = {
 describe('execParsingExtension', () => {
   it('reads from command as root level string', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $exec: 'printf test123',
+      $exec: 'echo test123',
     });
 
     const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
@@ -19,7 +19,7 @@ describe('execParsingExtension', () => {
 
   it('reads from command within nested object options', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: 'printf test123' },
+      $exec: { command: 'echo test123' },
     });
 
     const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
@@ -29,7 +29,7 @@ describe('execParsingExtension', () => {
 
   it('reads JSON as string by default', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `printf '{"test": true}'` },
+      $exec: { command: `echo '{"test": true}'` },
     });
 
     const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
@@ -39,7 +39,7 @@ describe('execParsingExtension', () => {
 
   it('parses JSON if parseOutput true', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `printf '{"test": true}'`, parseOutput: true },
+      $exec: { command: `echo '{"test": true}'`, parseOutput: true },
     });
 
     const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
@@ -49,7 +49,7 @@ describe('execParsingExtension', () => {
 
   it('trims whitespace by default', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `printf '  test123\n'` },
+      $exec: { command: `echo '  test123\n'` },
     });
 
     const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
@@ -59,7 +59,7 @@ describe('execParsingExtension', () => {
 
   it('reads raw output if trimWhitespace false', async () => {
     process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `printf '  test123\n'`, trimWhitespace: false },
+      $exec: { command: `echo '  test123'`, trimWhitespace: false },
     });
 
     const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
