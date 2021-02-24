@@ -106,6 +106,14 @@ describe('execParsingExtension', () => {
     await expect(action()).rejects.toThrow();
   });
 
+  it('fails if options dont include command', async () => {
+    process.env.APP_CONFIG = JSON.stringify({
+      $exec: {},
+    });
+
+    await expect(loadUnvalidatedConfig(defaultOptions)).rejects.toThrow();
+  });
+
   it('invalid command fails', async () => {
     process.env.APP_CONFIG = JSON.stringify({
       $exec: { command: 'non-existing-command' },

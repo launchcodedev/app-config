@@ -1,5 +1,6 @@
 import { Json } from '@app-config/utils';
-import { ParsingExtension, parseRawString, guessFileType } from '@app-config/core';
+import { ParsingExtension, parseRawString, guessFileType, AppConfigError } from '@app-config/core';
+import { forKey, validateOptions } from '@app-config/extension-utils';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -12,83 +13,72 @@ export interface Options {
   trimWhitespace: boolean;
 }
 
-class ExecError extends Error {
+class ExecError extends AppConfigError {
   name = 'ExecError';
 }
 
-function parseOptions(parsed: Json): Options {
-  if (typeof parsed === 'string') {
-    return { command: parsed, failOnStderr: false, parseOutput: false, trimWhitespace: true };
-  }
-
-  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-    const { command, failOnStderr = false, parseOutput = false, trimWhitespace = true } = parsed;
-
-    if (typeof command !== 'string') {
-      throw new ExecError('$exec requires a "command" option');
-    }
-
-    if (typeof failOnStderr !== 'boolean') {
-      throw new ExecError('$exec "failOnStderr" option must be a boolean');
-    }
-
-    if (typeof parseOutput !== 'boolean') {
-      throw new ExecError('$exec "parseString" option must be a boolean');
-    }
-
-    if (typeof trimWhitespace !== 'boolean') {
-      throw new ExecError('$exec "trimWhitespace" option must be a boolean');
-    }
-
-    return { command, failOnStderr, parseOutput, trimWhitespace };
-  }
-
-  throw new ExecError('$exec must be a string, or object with options');
-}
-
 function execParsingExtension(): ParsingExtension {
-  return (value, [_, objectKey]) => {
-    if (objectKey !== '$exec') {
-      return false;
-    }
+  return forKey(
+    '$exec',
+    validateOptions(
+      (SchemaBuilder) =>
+        SchemaBuilder.oneOf(
+          SchemaBuilder.stringSchema(),
+          SchemaBuilder.emptySchema()
+            .addString('command')
+            .addBoolean('failOnStderr', {}, false)
+            .addBoolean('parseOutput', {}, false)
+            .addBoolean('trimWhitespace', {}, false),
+        ),
+      (value) => async (parse) => {
+        let options;
 
-    return async (parse) => {
-      const parsed = await parse(value).then((v) => v.toJSON());
-
-      const { command, failOnStderr, parseOutput, trimWhitespace } = parseOptions(parsed);
-
-      try {
-        const { stdout, stderr } = await execAsync(command);
-
-        if (failOnStderr && stderr) {
-          throw new ExecError(`$exec command "${command}" produced stderr: ${stderr}`);
+        if (typeof value === 'string') {
+          options = { command: value };
+        } else {
+          options = value;
         }
 
-        let result: Json = stdout;
+        const {
+          command,
+          failOnStderr = false,
+          parseOutput = false,
+          trimWhitespace = true,
+        } = options;
 
-        if (trimWhitespace) {
-          result = stdout.trim();
+        try {
+          const { stdout, stderr } = await execAsync(command);
+
+          if (failOnStderr && stderr) {
+            throw new ExecError(`$exec command "${command}" produced stderr: ${stderr}`);
+          }
+
+          let result: Json = stdout;
+
+          if (trimWhitespace) {
+            result = stdout.trim();
+          }
+
+          if (parseOutput) {
+            const fileType = await guessFileType(stdout);
+            result = await parseRawString(stdout, fileType);
+          }
+
+          return parse(result, { shouldFlatten: true });
+        } catch (err: unknown) {
+          if (!isError(err)) {
+            throw err;
+          }
+
+          if (err instanceof ExecError) {
+            throw err;
+          }
+
+          throw new ExecError(`$exec command "${command}" failed with error:\n${err.message}`);
         }
-
-        if (parseOutput) {
-          const fileType = await guessFileType(stdout);
-          result = await parseRawString(stdout, fileType);
-        }
-
-        return parse(result, { shouldFlatten: true });
-      } catch (err: unknown) {
-        if (!isError(err)) {
-          throw err;
-        }
-
-        if (err instanceof ExecError) {
-          throw err;
-        }
-
-        throw new ExecError(`$exec command "${command}" failed with error:\n${err.message}`);
-      }
-    };
-  };
+      },
+    ),
+  );
 }
 
 /**
