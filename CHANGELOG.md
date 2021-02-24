@@ -1,3 +1,11 @@
+## v2.2.0
+
+Adds `$try` and `$if` "macros" for rudimentary control flow.
+
+Adds `$parseInt`, `$parseFloat` and `$parseBool` options for `$substitute` to parse environment variables.
+
+Adds `@app-config/exec` parsing extension package for dynamically running shell commands.
+
 ## v2.1.5
 
 Adjusts inter-package dependencies to use caret version ranges, making upgrades easier.
