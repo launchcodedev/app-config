@@ -18,7 +18,7 @@
   "scripts": {
     "exec:all": "lerna exec",
     "run:all": "lerna run --stream",
-    "build": "yarn run:all build",
+    "build": "lerna run build",
     "clean": "yarn run:all clean",
     "test": "lerna run test -- --passWithNoTests",
     "lint": "yarn run:all lint",

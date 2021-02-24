@@ -10,10 +10,7 @@ jobs:
   all:
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        os: [macos-latest]
         node-version: [10.x, 12.x, 14.x, 15.x]
 
     runs-on: ${{ matrix.os }}
@@ -27,3 +24,4 @@ jobs:
     - run: yarn build
     - run: yarn test --testTimeout 20000
       env: { CI: 1 }
+

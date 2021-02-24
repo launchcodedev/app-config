@@ -1,0 +1,27 @@
+name: multi-platform
+
+on:
+  push:
+    branches: 'master'
+
+jobs:
+  # for master, we test Linux & Windows & MacOS + Node LTS & Latest
+  # note that we don't do linting here, only on Linux + Node LTS
+  all:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [10.x, 12.x, 14.x, 15.x]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - uses: bahmutov/npm-install@v1
+
+    - run: yarn build
+    - run: yarn test --testTimeout 20000
+      env: { CI: 1 }
+
