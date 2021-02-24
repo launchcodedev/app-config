@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cli",
   "description": "CLI for @app-config",
-  "version": "2.1.8",
+  "version": "2.2.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -35,14 +35,14 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^2.1.8",
-    "@app-config/core": "^2.1.8",
-    "@app-config/encryption": "^2.1.8",
-    "@app-config/generate": "^2.1.8",
-    "@app-config/logging": "^2.1.8",
-    "@app-config/node": "^2.1.8",
-    "@app-config/schema": "^2.1.8",
-    "@app-config/utils": "^2.1.8",
+    "@app-config/config": "^2.2.0",
+    "@app-config/core": "^2.2.0",
+    "@app-config/encryption": "^2.2.0",
+    "@app-config/generate": "^2.2.0",
+    "@app-config/logging": "^2.2.0",
+    "@app-config/node": "^2.2.0",
+    "@app-config/schema": "^2.2.0",
+    "@app-config/utils": "^2.2.0",
     "clipboardy": "2",
     "common-tags": "1",
     "execa": "5",

@@ -1,7 +1,7 @@
 {
   "name": "@app-config/test-utils",
   "description": "Internal test utilities",
-  "version": "2.1.8",
+  "version": "2.2.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/logging": "^2.1.8",
+    "@app-config/logging": "^2.2.0",
     "@types/fs-extra": "9",
     "@types/tmp": "0.2",
     "fs-extra": "9",
