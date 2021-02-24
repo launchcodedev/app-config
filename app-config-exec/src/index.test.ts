@@ -1,4 +1,5 @@
 import { defaultEnvExtensions, defaultExtensions, loadUnvalidatedConfig } from '@app-config/main';
+import { isWindows } from '@app-config/utils';
 import execParsingExtension from '.';
 
 const defaultOptions = {
@@ -27,57 +28,60 @@ describe('execParsingExtension', () => {
     expect(fullConfig).toEqual('test123');
   });
 
-  it('reads JSON as string by default', async () => {
-    process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `echo '{"test": true}'` },
+  // FIXME: tests don't work on windows
+  if (!isWindows) {
+    it('reads JSON as string by default', async () => {
+      process.env.APP_CONFIG = JSON.stringify({
+        $exec: { command: `echo '{"test": true}'` },
+      });
+
+      const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
+
+      expect(fullConfig).toBe('{"test": true}');
     });
 
-    const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
+    it('parses JSON if parseOutput true', async () => {
+      process.env.APP_CONFIG = JSON.stringify({
+        $exec: { command: `echo '{"test": true}'`, parseOutput: true },
+      });
 
-    expect(fullConfig).toBe('{"test": true}');
-  });
+      const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
 
-  it('parses JSON if parseOutput true', async () => {
-    process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `echo '{"test": true}'`, parseOutput: true },
+      expect(fullConfig).toMatchObject({ test: true });
     });
 
-    const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
+    it('trims whitespace by default', async () => {
+      process.env.APP_CONFIG = JSON.stringify({
+        $exec: { command: `echo '  test123\n'` },
+      });
 
-    expect(fullConfig).toMatchObject({ test: true });
-  });
+      const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
 
-  it('trims whitespace by default', async () => {
-    process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `echo '  test123\n'` },
+      expect(fullConfig).toBe('test123');
     });
 
-    const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
+    it('reads raw output if trimWhitespace false', async () => {
+      process.env.APP_CONFIG = JSON.stringify({
+        $exec: { command: `echo '  test123'`, trimWhitespace: false },
+      });
 
-    expect(fullConfig).toBe('test123');
-  });
+      const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
 
-  it('reads raw output if trimWhitespace false', async () => {
-    process.env.APP_CONFIG = JSON.stringify({
-      $exec: { command: `echo '  test123'`, trimWhitespace: false },
+      expect(fullConfig).toBe('  test123\n');
     });
 
-    const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
+    it('does not fail on stderr by default', async () => {
+      process.env.APP_CONFIG = JSON.stringify({
+        $exec: {
+          command: `node -e 'process.stdout.write("stdout"); process.stderr.write("stderr");'`,
+        },
+      });
 
-    expect(fullConfig).toBe('  test123\n');
-  });
+      const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
 
-  it('does not fail on stderr by default', async () => {
-    process.env.APP_CONFIG = JSON.stringify({
-      $exec: {
-        command: `node -e 'process.stdout.write("stdout"); process.stderr.write("stderr");'`,
-      },
+      expect(fullConfig).toEqual('stdout');
     });
-
-    const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
-
-    expect(fullConfig).toEqual('stdout');
-  });
+  }
 
   it('fails on stderr when failOnStderr true', async () => {
     process.env.APP_CONFIG = JSON.stringify({
