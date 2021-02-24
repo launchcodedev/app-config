@@ -1,4 +1,4 @@
-name: multi-platform
+name: linux
 
 on:
   push:
