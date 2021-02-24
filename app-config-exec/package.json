@@ -1,7 +1,7 @@
 {
   "name": "@app-config/exec",
   "description": "Generate config by running arbitrary programs",
-  "version": "2.0.3",
+  "version": "2.1.8",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
