@@ -1,0 +1,33 @@
+name: pkg
+
+on:
+  push:
+    tags: '*'
+    branches: 'master'
+
+jobs:
+  create-pkg:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - uses: bahmutov/npm-install@v1
+
+    - run: yarn build
+      working-directory: ./app-config-main
+
+    - run: npx pkg . --out-path ./pkg -t node14-linux-x64,node14-macos-x64
+      working-directory: ./app-config-main
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: release
+        path: app-config-main/pkg/*
