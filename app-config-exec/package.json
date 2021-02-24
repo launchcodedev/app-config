@@ -39,6 +39,9 @@
   },
   "prettier": "@lcdev/prettier",
   "jest": {
-    "preset": "@lcdev/jest"
+    "preset": "@lcdev/jest",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test-setup.js"
+    ]
   }
 }
