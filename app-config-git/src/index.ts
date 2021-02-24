@@ -1,6 +1,8 @@
 import simpleGit from 'simple-git';
-import { ParsingExtension, AppConfigError } from '@app-config/core';
+import { ParsingExtension, AppConfigError, Fallbackable } from '@app-config/core';
 import { forKey, validateOptions } from '@app-config/extension-utils';
+
+class GitError extends Fallbackable {}
 
 /** Access to the git branch and commit ref */
 export default function gitRefDirectives(
@@ -53,13 +55,18 @@ interface GitStatus {
 
 async function gitStatus(): Promise<GitStatus> {
   const git = simpleGit({});
-  const rev = await git.revparse(['HEAD']);
-  const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
-  const tag = await git.tag(['--points-at', 'HEAD']);
 
-  return {
-    commitRef: rev,
-    branchName: branch,
-    tag: (tag.trim() || undefined)?.split(' ')[0],
-  };
+  try {
+    const rev = await git.revparse(['HEAD']);
+    const branch = await git.revparse(['--abbrev-ref', 'HEAD']);
+    const tag = await git.tag(['--points-at', 'HEAD']);
+
+    return {
+      commitRef: rev,
+      branchName: branch,
+      tag: (tag.trim() || undefined)?.split(' ')[0],
+    };
+  } catch (error) {
+    throw new GitError(error.message);
+  }
 }

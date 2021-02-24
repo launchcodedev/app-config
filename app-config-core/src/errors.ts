@@ -1,8 +1,11 @@
 /** Any generic error that comes directly from this package */
 export class AppConfigError extends Error {}
 
+/** An error that can be recovered using $try */
+export class Fallbackable extends AppConfigError {}
+
 /** When a ConfigSource cannot be found */
-export class NotFoundError extends AppConfigError {}
+export class NotFoundError extends Fallbackable {}
 
 /** Could not parse a string from a config source */
 export class ParsingError extends AppConfigError {}

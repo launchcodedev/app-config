@@ -1,4 +1,5 @@
 import { join, dirname, resolve, isAbsolute } from 'path';
+import isEqual from 'lodash.isequal';
 import {
   forKey,
   validateOptions,
@@ -12,6 +13,7 @@ import {
   AppConfigError,
   NotFoundError,
   FailedToSelectSubObject,
+  Fallbackable,
   InObject,
 } from '@app-config/core';
 import {
@@ -38,6 +40,82 @@ export function unescape$Directives(): ParsingExtension {
 
     return false;
   };
+}
+
+/** Try an operation, with a fallback ($try, $value and $fallback) */
+export function tryDirective(): ParsingExtension {
+  return forKey(
+    '$try',
+    validateOptions(
+      (SchemaBuilder) =>
+        SchemaBuilder.emptySchema()
+          .addProperty('$value', SchemaBuilder.fromJsonSchema({}))
+          .addProperty('$fallback', SchemaBuilder.fromJsonSchema({}))
+          .addBoolean('$unsafe', {}, false),
+      (value) => async (parse) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { $value, $fallback, $unsafe } = value;
+
+        try {
+          return await parse($value, { shouldFlatten: true });
+        } catch (error) {
+          if (error instanceof Fallbackable || $unsafe) {
+            return parse($fallback, { shouldFlatten: true });
+          }
+
+          throw error;
+        }
+      },
+      { lazy: true },
+    ),
+  );
+}
+
+/** Checks a condition, uses then/else */
+export function ifDirective(): ParsingExtension {
+  return forKey(
+    '$if',
+    validateOptions(
+      (SchemaBuilder) =>
+        SchemaBuilder.emptySchema()
+          .addProperty('$check', SchemaBuilder.fromJsonSchema({}))
+          .addProperty('$then', SchemaBuilder.fromJsonSchema({}))
+          .addProperty('$else', SchemaBuilder.fromJsonSchema({})),
+      (value) => async (parse) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { $check, $then, $else } = value;
+        const condition = (await parse($check)).toJSON();
+
+        if (condition) {
+          return parse($then, { shouldFlatten: true });
+        }
+        return parse($else, { shouldFlatten: true });
+      },
+      { lazy: true },
+    ),
+  );
+}
+
+/** Checks if two values are equal */
+export function eqDirective(): ParsingExtension {
+  return forKey(
+    '$eq',
+    validateOptions(
+      (SchemaBuilder) => SchemaBuilder.arraySchema(SchemaBuilder.fromJsonSchema({})),
+      (values) => async (parse) => {
+        for (const a of values) {
+          for (const b of values) {
+            if (a === b) continue;
+            if (isEqual(a, b)) continue;
+
+            return parse(false, { shouldFlatten: true });
+          }
+        }
+
+        return parse(true, { shouldFlatten: true });
+      },
+    ),
+  );
 }
 
 /** Uses another file as overriding values, layering them on top of current file */

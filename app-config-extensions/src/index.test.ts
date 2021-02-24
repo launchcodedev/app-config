@@ -1,8 +1,11 @@
 import { withTempFiles } from '@app-config/test-utils';
-import { LiteralSource, NotFoundError } from '@app-config/core';
+import { LiteralSource, NotFoundError, Fallbackable } from '@app-config/core';
 import { FileSource } from '@app-config/node';
 import { forKey } from '@app-config/extension-utils';
 import {
+  tryDirective,
+  ifDirective,
+  eqDirective,
   envDirective,
   extendsDirective,
   extendsSelfDirective,
@@ -10,6 +13,220 @@ import {
   timestampDirective,
   environmentVariableSubstitution,
 } from './index';
+
+describe('$try directive', () => {
+  it('uses main value', async () => {
+    const source = new LiteralSource({
+      $try: {
+        $value: 'foobar',
+        $fallback: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective()])).toEqual('foobar');
+  });
+
+  it('uses fallback value', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Fallbackable();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $fail: true,
+        },
+        $fallback: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective(), failDirective])).toEqual('barfoo');
+  });
+
+  it('doesnt evaluate fallback if value works', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Fallbackable();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: 'barfoo',
+        $fallback: {
+          $fail: true,
+        },
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective(), failDirective])).toEqual('barfoo');
+  });
+
+  it('doesnt swallow plain errors', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Error();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $fail: true,
+        },
+        $fallback: 'barfoo',
+      },
+    });
+
+    await expect(source.readToJSON([tryDirective(), failDirective])).rejects.toThrow(Error);
+  });
+
+  it('swallows plain errors with "unsafe" option', async () => {
+    const failDirective = forKey('$fail', () => () => {
+      throw new Error();
+    });
+
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $fail: true,
+        },
+        $fallback: 'barfoo',
+        $unsafe: true,
+      },
+    });
+
+    expect(await source.readToJSON([tryDirective(), failDirective])).toEqual('barfoo');
+  });
+});
+
+describe('$if directive', () => {
+  it('uses main value', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: true,
+        $then: 'foobar',
+        $else: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([ifDirective()])).toEqual('foobar');
+  });
+
+  it('uses fallback value', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: false,
+        $then: 'foobar',
+        $else: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([ifDirective()])).toEqual('barfoo');
+  });
+
+  it('doesnt evaluate the else branch', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: true,
+        $then: 'barfoo',
+        $else: {
+          $fail: true,
+        },
+      },
+    });
+
+    expect(await source.readToJSON([ifDirective()])).toEqual('barfoo');
+  });
+
+  it('doesnt evaluate the other branch', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: false,
+        $then: {
+          $fail: true,
+        },
+        $else: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([ifDirective()])).toEqual('barfoo');
+  });
+
+  it('disallows missing property', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: false,
+        $else: 'barfoo',
+      },
+    });
+
+    await expect(source.readToJSON([ifDirective()])).rejects.toThrow();
+  });
+
+  it('parses $check', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: {
+          $env: {
+            default: true,
+          },
+        },
+        $then: 'foobar',
+        $else: 'barfoo',
+      },
+    });
+
+    expect(await source.readToJSON([ifDirective(), envDirective()])).toEqual('foobar');
+  });
+});
+
+describe('$eq directive', () => {
+  it('returns true for empty', async () => {
+    const source = new LiteralSource({
+      $eq: [],
+    });
+
+    expect(await source.readToJSON([eqDirective()])).toBe(true);
+  });
+
+  it('returns true for two numbers', async () => {
+    const source = new LiteralSource({
+      $eq: [42, 42],
+    });
+
+    expect(await source.readToJSON([eqDirective()])).toBe(true);
+  });
+
+  it('returns false for two numbers', async () => {
+    const source = new LiteralSource({
+      $eq: [42, 44],
+    });
+
+    expect(await source.readToJSON([eqDirective()])).toBe(false);
+  });
+
+  it('returns true for two objects', async () => {
+    const source = new LiteralSource({
+      $eq: [{ a: true }, { a: true }],
+    });
+
+    expect(await source.readToJSON([eqDirective()])).toBe(true);
+  });
+
+  it('returns false for two objects', async () => {
+    const source = new LiteralSource({
+      $eq: [{ a: true }, { b: true }],
+    });
+
+    expect(await source.readToJSON([eqDirective()])).toBe(false);
+  });
+
+  it('parses before checking equality', async () => {
+    process.env.APP_CONFIG_ENV = 'test';
+    const source = new LiteralSource({
+      $eq: [{ $env: { default: { a: true } } }, { $env: { test: { a: true } } }],
+    });
+
+    expect(await source.readToJSON([eqDirective(), envDirective()])).toBe(true);
+  });
+});
 
 describe('$extends directive', () => {
   it('fails if file is missing', async () => {
@@ -891,5 +1108,36 @@ describe('extension combinations', () => {
 
       expect(parsed.toJSON()).toEqual({ foo: 'bar' });
     });
+  });
+
+  it('combines $try and $extends', async () => {
+    const source = new LiteralSource({
+      $try: {
+        $value: {
+          $extends: './test-file.json',
+        },
+        $fallback: {
+          fellBack: true,
+        },
+      },
+    });
+
+    await expect(source.readToJSON([extendsDirective(), tryDirective()])).resolves.toEqual({
+      fellBack: true,
+    });
+  });
+
+  it('combines $if and $eq', async () => {
+    const source = new LiteralSource({
+      $if: {
+        $check: {
+          $eq: ['foo', 'foo'],
+        },
+        $then: 'foo',
+        $else: 'bar',
+      },
+    });
+
+    await expect(source.readToJSON([ifDirective(), eqDirective()])).resolves.toEqual('foo');
   });
 });
