@@ -264,17 +264,53 @@ export function environmentVariableSubstitution(
     validateObject(value, [...ctx, key]);
     if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
-    const { $name: variableName, $fallback: fallback, $allowNull: allowNull } = value;
-    validateString(variableName, [...ctx, key, [InObject, '$name']]);
+    const { $name, $fallback, $allowNull, $parseInt, $parseFloat, $parseBool } = value;
 
-    const resolvedValue = process.env[variableName];
+    const name = (await parse($name)).toJSON();
+
+    validateString(name, [...ctx, key, [InObject, '$name']]);
+
+    const resolvedValue = process.env[name];
 
     if (resolvedValue) {
+      const parseInt = (await parse($parseInt)).toJSON();
+
+      if (parseInt) {
+        const parsed = Number.parseInt(resolvedValue, 10);
+
+        if (Number.isNaN(parsed)) {
+          throw new AppConfigError(`Failed to parseInt(${resolvedValue})`);
+        }
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      const parseFloat = (await parse($parseFloat)).toJSON();
+
+      if (parseFloat) {
+        const parsed = Number.parseFloat(resolvedValue);
+
+        if (Number.isNaN(parsed)) {
+          throw new AppConfigError(`Failed to parseFloat(${resolvedValue})`);
+        }
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      const parseBool = (await parse($parseBool)).toJSON();
+
+      if (parseBool) {
+        const parsed = resolvedValue.toLowerCase() !== 'false' && resolvedValue !== '0';
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
       return parse(resolvedValue, { shouldFlatten: true });
     }
 
-    if (fallback !== undefined) {
-      const fallbackValue = (await parse(fallback)).toJSON();
+    if ($fallback !== undefined) {
+      const fallbackValue = (await parse($fallback)).toJSON();
+      const allowNull = (await parse($allowNull)).toJSON();
 
       if (allowNull) {
         validateStringOrNull(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
@@ -285,11 +321,7 @@ export function environmentVariableSubstitution(
       return parse(fallbackValue, { shouldFlatten: true });
     }
 
-    if (!resolvedValue) {
-      throw new AppConfigError(`$substitute could not find ${variableName} environment variable`);
-    }
-
-    return parse(resolvedValue, { shouldFlatten: true });
+    throw new AppConfigError(`$substitute could not find ${name} environment variable`);
   });
 }
 

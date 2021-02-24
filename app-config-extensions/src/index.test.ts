@@ -958,6 +958,86 @@ describe('$substitute directive', () => {
     await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
   });
 
+  it('parses ints', async () => {
+    process.env.FOO = '11';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseInt: true },
+    });
+
+    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(11);
+  });
+
+  it('fails when int is invalid', async () => {
+    process.env.FOO = 'not a number';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseInt: true },
+    });
+
+    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+  });
+
+  it('parses float', async () => {
+    process.env.FOO = '11.2';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseFloat: true },
+    });
+
+    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(11.2);
+  });
+
+  it('fails when float is invalid', async () => {
+    process.env.FOO = 'not a number';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseFloat: true },
+    });
+
+    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+  });
+
+  it('parses boolean = true', async () => {
+    process.env.FOO = 'true';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseBool: true },
+    });
+
+    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(true);
+  });
+
+  it('parses boolean = 1', async () => {
+    process.env.FOO = '1';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseBool: true },
+    });
+
+    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(true);
+  });
+
+  it('parses boolean = 0', async () => {
+    process.env.FOO = '0';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseBool: true },
+    });
+
+    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(false);
+  });
+
+  it('parses boolean = false', async () => {
+    process.env.FOO = 'false';
+
+    const source = new LiteralSource({
+      $substitute: { $name: 'FOO', $parseBool: true },
+    });
+
+    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(false);
+  });
+
   it('doesnt visit fallback if name is defined', async () => {
     const failDirective = forKey('$fail', () => () => {
       throw new Error();
