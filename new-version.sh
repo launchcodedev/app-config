@@ -49,6 +49,7 @@ new_version app-config-extensions
 new_version app-config-generate
 new_version app-config-git
 new_version app-config-inject
+new_version app-config-js
 new_version app-config-logging
 new_version app-config-main
 new_version app-config-meta
