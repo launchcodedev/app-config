@@ -9,6 +9,13 @@ parsingExtensions:
   - @app-config/js
 ```
 
+Use it:
+
+```yaml
+foo:
+  $jsModule: './another-file.js'
+```
+
 The API of this module is documented via TypeScript definitions.
 
 Read the [Introduction](https://app-config.dev/guide/intro/) or
