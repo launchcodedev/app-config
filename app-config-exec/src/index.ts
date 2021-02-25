@@ -3,7 +3,6 @@ import { ParsingExtension, parseRawString, guessFileType, AppConfigError } from 
 import { forKey, validateOptions } from '@app-config/extension-utils';
 import { resolveFilepath } from '@app-config/node';
 import { exec } from 'child_process';
-import { dirname } from 'path';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);

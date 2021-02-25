@@ -1,4 +1,3 @@
-import { join, dirname, resolve, isAbsolute } from 'path';
 import isEqual from 'lodash.isequal';
 import {
   forKey,
