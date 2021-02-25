@@ -67,6 +67,10 @@ async function gitStatus(): Promise<GitStatus> {
       tag: (tag.trim() || undefined)?.split(' ')[0],
     };
   } catch (error) {
-    throw new GitError(error.message);
+    if (error instanceof Error) {
+      throw new GitError(error.message);
+    }
+
+    throw new GitError('Unknown error');
   }
 }

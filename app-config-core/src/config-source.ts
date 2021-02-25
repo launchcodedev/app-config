@@ -207,7 +207,7 @@ export async function parseRawString(contents: string, fileType: FileType): Prom
     case FileType.TOML:
       return parseTOML(contents) as JsonObject;
     case FileType.JSON5:
-      return parseJSON5(contents) as JsonObject;
+      return parseJSON5(contents);
     default:
       throw new BadFileType(`Unsupported FileType '${fileType as string}'`);
   }
