@@ -1,3 +1,9 @@
+## v2.2.1
+
+Resolves relative files (runs relative to app-config file) in `@app-config/exec`.
+
+Adds `resolveFilepath` export from node package to help do this in extensions.
+
 ## v2.2.0
 
 Adds `$try` and `$if` "macros" for rudimentary control flow.
