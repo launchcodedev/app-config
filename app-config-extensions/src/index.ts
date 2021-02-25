@@ -226,7 +226,7 @@ export function timestampDirective(dateSource: () => Date = () => new Date()): P
         } else if (typeof value === 'object') {
           const { locale, ...options } = value;
 
-          formatted = date.toLocaleDateString(locale, options);
+          formatted = date.toLocaleDateString(locale, options as Intl.DateTimeFormatOptions);
         } else {
           throw new AppConfigError('$timestamp was provided an invalid option');
         }
