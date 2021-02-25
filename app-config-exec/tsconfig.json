@@ -11,6 +11,7 @@
     { "path": "../app-config-main" },
     { "path": "../app-config-utils" },
     { "path": "../app-config-core" },
+    { "path": "../app-config-node" },
     { "path": "../app-config-extension-utils" }
   ]
 }

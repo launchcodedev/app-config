@@ -1,7 +1,9 @@
 import { Json } from '@app-config/utils';
 import { ParsingExtension, parseRawString, guessFileType, AppConfigError } from '@app-config/core';
 import { forKey, validateOptions } from '@app-config/extension-utils';
+import { resolveFilepath } from '@app-config/node';
 import { exec } from 'child_process';
+import { dirname } from 'path';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
@@ -30,7 +32,7 @@ function execParsingExtension(): ParsingExtension {
             .addBoolean('parseOutput', {}, false)
             .addBoolean('trimWhitespace', {}, false),
         ),
-      (value) => async (parse) => {
+      (value) => async (parse, _, context) => {
         let options;
 
         if (typeof value === 'string') {
@@ -47,7 +49,8 @@ function execParsingExtension(): ParsingExtension {
         } = options;
 
         try {
-          const { stdout, stderr } = await execAsync(command);
+          const dir = resolveFilepath(context, '.');
+          const { stdout, stderr } = await execAsync(command, { cwd: dir });
 
           if (failOnStderr && stderr) {
             throw new ExecError(`$exec command "${command}" produced stderr: ${stderr}`);
