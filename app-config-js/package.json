@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@app-config/core": "^2.2.0",
-    "@app-config/extension-utils": "^2.2.0"
+    "@app-config/extension-utils": "^2.2.0",
+    "@app-config/node": "^2.2.0"
   },
   "devDependencies": {
     "@app-config/test-utils": "^2.2.0"

@@ -1,5 +1,6 @@
 import { ParsingExtension } from '@app-config/core';
 import { forKey, validateOptions } from '@app-config/extension-utils';
+import { resolveFilepath } from '@app-config/node';
 
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -10,8 +11,10 @@ export default function jsModuleDirective(): ParsingExtension {
     '$jsModule',
     validateOptions(
       (SchemaBuilder) => SchemaBuilder.stringSchema(),
-      (value) => async (parse) => {
-        let loaded: any = await import(value);
+      (value) => async (parse, _, context) => {
+        const resolvedPath = resolveFilepath(context, value);
+
+        let loaded: any = await import(resolvedPath);
 
         if (!loaded) {
           return parse(loaded, { shouldFlatten: true });
