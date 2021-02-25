@@ -50,6 +50,6 @@ jobs:
           ./app-config-utils/coverage/coverage-final.json,
           ./app-config-v1-compat/coverage/coverage-final.json,
           ./app-config-vault/coverage/coverage-final.json,
-          ./app-config-webpack-plugin/coverage/coverage-final.json,
+          ./app-config-webpack/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true
