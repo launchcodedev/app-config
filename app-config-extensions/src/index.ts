@@ -19,6 +19,7 @@ import {
 import {
   currentEnvironment,
   defaultAliases,
+  resolveFilepath,
   EnvironmentAliases,
   FileSource,
 } from '@app-config/node';
@@ -343,18 +344,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
       },
       (value) => async (_, __, context, extensions) => {
         const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
-          let resolvedPath = filepath;
-
-          // resolve filepaths that are relative to the current FileSource
-          if (!isAbsolute(filepath) && context instanceof FileSource) {
-            resolvedPath = join(dirname(context.filePath), filepath);
-
-            if (resolve(context.filePath) === resolvedPath) {
-              throw new AppConfigError(
-                `A ${keyName} directive resolved to it's own file (${resolvedPath}). Please use $extendsSelf instead.`,
-              );
-            }
-          }
+          const resolvedPath = resolveFilepath(context, filepath);
 
           logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
 

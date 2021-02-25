@@ -1,5 +1,7 @@
 import { defaultEnvExtensions, defaultExtensions, loadUnvalidatedConfig } from '@app-config/main';
 import { isWindows } from '@app-config/utils';
+import { withTempFiles } from '@app-config/test-utils';
+import { FileSource } from '@app-config/node';
 import execParsingExtension from '.';
 
 const defaultOptions = {
@@ -129,4 +131,31 @@ describe('execParsingExtension', () => {
 
     await expect(action()).rejects.toThrow();
   });
+
+  it('reads from command as root level string', async () => {
+    process.env.APP_CONFIG = JSON.stringify({
+      $exec: 'echo test123',
+    });
+
+    const { fullConfig } = await loadUnvalidatedConfig(defaultOptions);
+
+    expect(fullConfig).toEqual('test123');
+  });
+
+  it('loads file relative to app-config', () =>
+    withTempFiles(
+      {
+        'config.yml': `
+          $exec: node ./foo.js
+        `,
+        'foo.js': `
+          console.log("foo bar");
+        `,
+      },
+      async (inDir) => {
+        const source = new FileSource(inDir('config.yml'));
+
+        expect(await source.readToJSON([execParsingExtension()])).toEqual('foo bar');
+      },
+    ));
 });

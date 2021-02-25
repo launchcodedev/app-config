@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { isAbsolute, join, dirname, resolve } from 'path';
 import { readFile, pathExists } from 'fs-extra';
 import {
   filePathAssumedType,
@@ -6,6 +6,7 @@ import {
   FileType,
   ParsedValue,
   ParsingExtension,
+  AppConfigError,
   NotFoundError,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
@@ -94,4 +95,19 @@ export class FlexibleFileSource extends ConfigSource {
 
     return source.read(extensions);
   }
+}
+
+export function resolveFilepath(context: ConfigSource, filepath: string) {
+  let resolvedPath = filepath;
+
+  // resolve filepaths that are relative to the current FileSource
+  if (!isAbsolute(filepath) && context instanceof FileSource) {
+    resolvedPath = join(dirname(context.filePath), filepath);
+
+    if (resolve(context.filePath) === resolvedPath) {
+      throw new AppConfigError(`An extension tried to resolve to it's own file (${resolvedPath}).`);
+    }
+  }
+
+  return resolvedPath;
 }
