@@ -7,6 +7,9 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../app-config-main" }
+    { "path": "../app-config-config" },
+    { "path": "../app-config-logging" },
+    { "path": "../app-config-node" },
+    { "path": "../app-config-schema" }
   ]
 }

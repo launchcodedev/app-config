@@ -3,8 +3,8 @@ import {
   loadValidatedConfig,
   loadUnvalidatedConfig,
   ConfigLoadingOptions,
-  SchemaLoadingOptions,
-} from '@app-config/main';
+} from '@app-config/config';
+import { SchemaLoadingOptions } from '@app-config/schema';
 
 export { cli } from './cli';
 
