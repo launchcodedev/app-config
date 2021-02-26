@@ -43,7 +43,22 @@ jobs:
         release_name: Release ${{ steps.tagName.outputs.tag }}
         draft: false
         prerelease: false
-        body: 'See our [changelog](https://app-config.dev/release-notes.html)'
+        body: |
+          See our [changelog](https://app-config.dev/release-notes.html) for release notes.
+
+          Single-binary executables are available in the assets below.
+
+          The packages are also available via NPM.
+
+          ```
+          npm i @app-config/main@${{ steps.tagName.outputs.tag }}
+          ```
+
+          Or, if you prefer, via Docker.
+
+          ```
+          docker run --rm -it -v $(realpath .):/mnt ghcr.io/launchcodedev/app-config:${{ steps.tagName.outputs.tag }} -C /mnt v
+          ```
 
     - uses: actions/upload-release-asset@v1
       env:
