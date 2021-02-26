@@ -10,7 +10,7 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../../../app-config" },
+    { "path": "../../../app-config-main" },
     { "path": "../../../app-config-webpack" },
     { "path": "../../../app-config-cypress" }
   ]
