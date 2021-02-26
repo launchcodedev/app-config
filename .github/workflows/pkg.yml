@@ -1,0 +1,79 @@
+name: pkg
+
+on:
+  push:
+    tags: '*'
+
+jobs:
+  create-pkg:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - uses: bahmutov/npm-install@v1
+
+    - run: yarn build
+      working-directory: ./app-config-main
+
+    - run: npx pkg . --out-path ./pkg -t node14-linux-x64,node14-macos-x64
+      working-directory: ./app-config-main
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: release
+        path: app-config-main/pkg/*
+
+    - uses: olegtarasov/get-tag@v2.1
+      id: tagName
+
+    - id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ steps.tagName.outputs.tag }}
+        draft: false
+        prerelease: false
+        body: |
+          See our [changelog](https://app-config.dev/release-notes.html) for release notes.
+
+          Single-binary executables are available in the assets below.
+
+          The packages are also available via NPM.
+
+          ```
+          npm i @app-config/main@${{ steps.tagName.outputs.tag }}
+          ```
+
+          Or, if you prefer, via Docker.
+
+          ```
+          docker run --rm -it -v $(realpath .):/mnt ghcr.io/launchcodedev/app-config:${{ steps.tagName.outputs.tag }} -C /mnt v
+          ```
+
+    - uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./app-config-main/pkg/main-linux
+        asset_name: app-config-linux
+        asset_content_type: application/octet-stream
+
+    - uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./app-config-main/pkg/main-macos
+        asset_name: app-config-macos
+        asset_content_type: application/octet-stream
