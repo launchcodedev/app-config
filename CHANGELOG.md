@@ -1,3 +1,12 @@
+## v2.2.2
+
+Adds `noGlobal` option for webpack config, enabling "static" configuration.
+
+Also adds `intercept` option for webpack plugin, to enable non-standard "aliases" for configuration.
+Makes it easy to have a part of app config "static" and a part "dynamic".
+
+Adds binary releases through `pkg`.
+
 ## v2.2.1
 
 Resolves relative files (runs relative to app-config file) in `@app-config/exec`.
