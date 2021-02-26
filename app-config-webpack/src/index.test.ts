@@ -86,6 +86,30 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
+  it('doesnt use window._appConfig if using noGlobal', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
+
+    await new Promise<void>((done, reject) => {
+      webpack([createOptions({ noGlobal: true })], (err, stats) => {
+        if (err) reject(err);
+        if (stats.hasErrors()) reject(stats.toString());
+
+        const { children } = stats.toJson();
+        const [{ modules = [] }] = children || [];
+
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('const config = {"externalApiUrl":"https://localhost:3999"};'),
+          ),
+        ).toBe(true);
+
+        expect(modules.some(({ source }) => source?.includes('_appConfig'))).toBe(false);
+
+        done();
+      });
+    });
+  });
+
   it('throws validation errors', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'not a uri' });
 

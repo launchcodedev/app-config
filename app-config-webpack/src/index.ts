@@ -9,17 +9,20 @@ const loader = require.resolve('./loader');
 
 export interface Options {
   headerInjection?: boolean;
+  noGlobal?: boolean;
   loading?: ConfigLoadingOptions;
   schemaLoading?: SchemaLoadingOptions;
 }
 
 export default class AppConfigPlugin {
   headerInjection: boolean;
+  noGlobal: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
 
-  constructor({ headerInjection = false, loading, schemaLoading }: Options = {}) {
+  constructor({ headerInjection = false, noGlobal = false, loading, schemaLoading }: Options = {}) {
     this.headerInjection = headerInjection;
+    this.noGlobal = noGlobal;
     this.loadingOptions = loading;
     this.schemaLoadingOptions = schemaLoading;
   }

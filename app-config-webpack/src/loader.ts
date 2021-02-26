@@ -9,7 +9,8 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { headerInjection = false, loading, schemaLoading }: Options = getOptions(this) || {};
+  const { headerInjection = false, noGlobal = false, loading, schemaLoading }: Options =
+    getOptions(this) || {};
 
   loadValidatedConfig(loading, schemaLoading)
     .then(({ fullConfig, filePaths, validationFunctionCode }) => {
@@ -18,18 +19,29 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
       }
 
       const generateText = (config: string) => {
-        let generatedText = `
-          const configValue = ${config};
+        let generatedText: string;
 
-          const globalNamespace = window || globalThis || {};
+        if (noGlobal) {
+          generatedText = `
+            const config = ${config};
 
-          // if the global was already defined, use it (and define it if not)
-          const config = globalNamespace.${privateName} =
-            (globalNamespace.${privateName} || configValue);
+            export { config };
+            export default config;
+          `;
+        } else {
+          generatedText = `
+            const configValue = ${config};
 
-          export { config };
-          export default config;
-        `;
+            const globalNamespace = window || globalThis || {};
+
+            // if the global was already defined, use it (and define it if not)
+            const config = globalNamespace.${privateName} =
+              (globalNamespace.${privateName} || configValue);
+
+            export { config };
+            export default config;
+          `;
+        }
 
         if (validationFunctionCode) {
           generatedText = `${generatedText}
