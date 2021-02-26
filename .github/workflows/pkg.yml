@@ -31,15 +31,19 @@ jobs:
         name: release
         path: app-config-main/pkg/*
 
+    - uses: olegtarasov/get-tag@v2.1
+      id: tagName
+
     - id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ steps.tagName.outputs.tag }}
+        release_name: Release ${{ steps.tagName.outputs.tag }}
         draft: false
         prerelease: false
+        body: 'See our [changelog](https://app-config.dev/release-notes.html)'
 
     - uses: actions/upload-release-asset@v1
       env:
