@@ -45,11 +45,7 @@ export default class AppConfigPlugin {
         async (resolve?: { request: string }) => {
           if (!resolve) return;
 
-          if (
-            resolve.request === '@app-config/main' ||
-            resolve.request === '@lcdev/app-config' ||
-            resolve.request === 'app-config'
-          ) {
+          if (regex.test(resolve.request)) {
             const { filePaths } = await loadValidatedConfig(
               this.loadingOptions,
               this.schemaLoadingOptions,
