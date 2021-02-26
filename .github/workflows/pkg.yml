@@ -3,7 +3,6 @@ name: pkg
 on:
   push:
     tags: '*'
-    branches: 'master'
 
 jobs:
   create-pkg:
@@ -31,3 +30,29 @@ jobs:
       with:
         name: release
         path: app-config-main/pkg/*
+
+    - id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./app-config-main/pkg/main-linux
+        asset_name: app-config-linux
+
+    - uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./app-config-main/pkg/main-macos
+        asset_name: app-config-macos
