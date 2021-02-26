@@ -110,6 +110,28 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
+  it('uses custom app config regex', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
+
+    await new Promise<void>((done, reject) => {
+      webpack([createOptions({ intercept: /@app-config\/main/ })], (err, stats) => {
+        if (err) reject(err);
+        if (stats.hasErrors()) reject(stats.toString());
+
+        const { children } = stats.toJson();
+        const [{ modules = [] }] = children || [];
+
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('const configValue = {"externalApiUrl":"https://localhost:3999"};'),
+          ),
+        ).toBe(true);
+
+        done();
+      });
+    });
+  });
+
   it('throws validation errors', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'not a uri' });
 

@@ -12,6 +12,7 @@ export interface Options {
   noGlobal?: boolean;
   loading?: ConfigLoadingOptions;
   schemaLoading?: SchemaLoadingOptions;
+  intercept?: RegExp;
 }
 
 export default class AppConfigPlugin {
@@ -19,12 +20,20 @@ export default class AppConfigPlugin {
   noGlobal: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
+  intercept: RegExp;
 
-  constructor({ headerInjection = false, noGlobal = false, loading, schemaLoading }: Options = {}) {
+  constructor({
+    headerInjection = false,
+    noGlobal = false,
+    loading,
+    schemaLoading,
+    intercept,
+  }: Options = {}) {
     this.headerInjection = headerInjection;
     this.noGlobal = noGlobal;
     this.loadingOptions = loading;
     this.schemaLoadingOptions = schemaLoading;
+    this.intercept = intercept ?? AppConfigPlugin.regex;
   }
 
   static loader = loader;
@@ -45,7 +54,7 @@ export default class AppConfigPlugin {
         async (resolve?: { request: string }) => {
           if (!resolve) return;
 
-          if (regex.test(resolve.request)) {
+          if (this.intercept.test(resolve.request)) {
             const { filePaths } = await loadValidatedConfig(
               this.loadingOptions,
               this.schemaLoadingOptions,
