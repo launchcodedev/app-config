@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cypress",
   "description": "Cypress testing plugin for @app-config",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -31,11 +31,11 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@app-config/main": "^2.2.2",
+    "@app-config/main": "^2.3.0",
     "cypress": "6"
   },
   "devDependencies": {
-    "@app-config/main": "^2.2.2",
+    "@app-config/main": "^2.3.0",
     "cypress": "6"
   },
   "prettier": "@lcdev/prettier",
