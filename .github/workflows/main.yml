@@ -41,6 +41,7 @@ jobs:
           ./app-config-generate/coverage/coverage-final.json,
           ./app-config-git/coverage/coverage-final.json,
           ./app-config-inject/coverage/coverage-final.json,
+          ./app-config-js/coverage/coverage-final.json,
           ./app-config-logging/coverage/coverage-final.json,
           ./app-config-main/coverage/coverage-final.json,
           ./app-config-meta/coverage/coverage-final.json,

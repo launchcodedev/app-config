@@ -80,6 +80,11 @@ jobs:
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
+        package: ./app-config-js/package.json
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
         package: ./app-config-logging/package.json
     - uses: JS-DevTools/npm-publish@v1
       with:
