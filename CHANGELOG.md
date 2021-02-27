@@ -1,3 +1,7 @@
+## v2.3.0
+
+Adds `@app-config/js` package for evaluating JS modules.
+
 ## v2.2.2
 
 Adds `noGlobal` option for webpack config, enabling "static" configuration.
