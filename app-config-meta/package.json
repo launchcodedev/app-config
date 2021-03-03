@@ -38,8 +38,7 @@
     "fs-extra": "7"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.3.0",
-    "quicktype-core": "6"
+    "@app-config/test-utils": "^2.3.0"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
