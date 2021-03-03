@@ -1,7 +1,7 @@
 {
   "name": "@app-config/extensions",
   "description": "Common parsing extensions for @app-config",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,15 +30,15 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.3.0",
-    "@app-config/extension-utils": "^2.3.0",
-    "@app-config/logging": "^2.3.0",
-    "@app-config/node": "^2.3.0",
-    "@app-config/utils": "^2.3.0",
+    "@app-config/core": "^2.3.1",
+    "@app-config/extension-utils": "^2.3.1",
+    "@app-config/logging": "^2.3.1",
+    "@app-config/node": "^2.3.1",
+    "@app-config/utils": "^2.3.1",
     "lodash.isequal": "4"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.3.0",
+    "@app-config/test-utils": "^2.3.1",
     "@types/lodash.isequal": "4"
   },
   "prettier": "@lcdev/prettier",
