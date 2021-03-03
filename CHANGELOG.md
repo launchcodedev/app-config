@@ -1,3 +1,9 @@
+## v2.3.1
+
+Supports providing a module name as "augmentModule" option in TypeScript definition generation.
+
+Uses single quotes when generating enums in TypeScript, which is more common in prettier et al.
+
 ## v2.3.0
 
 Adds `@app-config/js` package for evaluating JS modules.
