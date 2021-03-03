@@ -58,7 +58,7 @@ export async function generateQuicktype(
   schema: JSONSchema,
   type: string,
   name: string,
-  augmentModule: boolean = true,
+  augmentModule: boolean | string = true,
   leadingCommentsOverride?: string[],
   rendererOptions: RendererOptions = {},
 ): Promise<string[]> {
@@ -108,11 +108,24 @@ export async function generateQuicktype(
       lines.push(`export interface ${name} {}\n`);
     }
 
-    if (augmentModule !== false) {
+    if (augmentModule === true) {
       lines.push(
         ...[
           '// augment the default export from app-config',
           "declare module '@app-config/main' {",
+          `  export interface ExportedConfig extends ${name} {}`,
+          '}',
+        ],
+      );
+    }
+
+    if (typeof augmentModule === 'string') {
+      lines.push(
+        ...[
+          '// augment the default export from app-config',
+          `declare module '${augmentModule}' {`,
+          `  export * from '@app-config/main';`,
+          `  export { default } from '@app-config/main';`,
           `  export interface ExportedConfig extends ${name} {}`,
           '}',
         ],

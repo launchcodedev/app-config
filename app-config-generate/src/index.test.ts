@@ -181,6 +181,25 @@ describe('TypeScript File Generation', () => {
       },
     );
   });
+
+  it('augements specific module name', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.yml': `
+          generate:
+            - file: generated.d.ts
+              augmentModule: foo-bar
+        `,
+        '.app-config.schema.yml': ``,
+      },
+      async (inDir) => {
+        await generateTypeFiles({ directory: inDir('.') });
+        const config = await readFile(inDir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatch(`declare module 'foo-bar'`);
+      },
+    );
+  });
 });
 
 describe('Flow File Generation', () => {
