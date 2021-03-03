@@ -16,144 +16,172 @@ jobs:
 
     - run: yarn install
 
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-cli
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-cli/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-config
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-config/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-core
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-core/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-cypress
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-cypress/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-default-extensions
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-default-extensions/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-encryption
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-encryption/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-exec
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-exec/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-extension-utils
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-extension-utils/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-extensions
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-extensions/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-generate
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-generate/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-git
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-git/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-inject
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-inject/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-js
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-js/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-logging
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-logging/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-meta
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-meta/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-node
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-node/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-react-native
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-react-native/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-schema
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-schema/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-settings
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-settings/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-utils
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-utils/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-v1-compat
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-v1-compat/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-vault
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-vault/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-webpack
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-webpack/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: lcdev-app-config-inject
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./lcdev-app-config-inject/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: lcdev-app-config-webpack-plugin
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./lcdev-app-config-webpack-plugin/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: lcdev-react-native-app-config-transformer
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./lcdev-react-native-app-config-transformer/package.json
 
     # Do these last, since they're most commonly used by consumers
-    - uses: JS-DevTools/npm-publish@v1
+    - name: app-config-main
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-main/package.json
-    - uses: JS-DevTools/npm-publish@v1
+    - name: lcdev-app-config
+      uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
