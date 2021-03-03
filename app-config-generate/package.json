@@ -37,7 +37,8 @@
     "@types/urijs": "1",
     "common-tags": "1",
     "fs-extra": "7",
-    "quicktype-core": "6.0.70"
+    "quicktype-core": "6.0.70",
+    "lodash": "4"
   },
   "devDependencies": {
     "@app-config/test-utils": "^2.3.1"
