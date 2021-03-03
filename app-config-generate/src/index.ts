@@ -137,6 +137,7 @@ export async function generateQuicktype(
         // this is a fix for quicktype, which adds an Object postfix, sometimes
         .map((line) => line.replace(`interface ${name}Object`, `interface ${name}`))
         .map((line) => line.replace(/: +Date/g, `: string`))
+        .map((line) => line.replace(/= "([\w-]+)"/g, `= '$1'`))
         .map((line) => line.replace(/: +(\w)/g, ': $1'))
     );
   }

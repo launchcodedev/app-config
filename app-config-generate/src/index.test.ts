@@ -161,6 +161,37 @@ describe('TypeScript File Generation', () => {
     );
   });
 
+  it('uses single quotes in enum values', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.json5': `{
+          generate: [{ file: "generated.d.ts" }]
+        }`,
+        '.app-config.schema.yaml': `
+          type: object
+          additionalProperties: false
+
+          properties:
+            commit:
+              type: string
+              enum:
+                - foo
+                - foo-bar
+        `,
+      },
+      async (dir) => {
+        const output = await generateTypeFiles({ directory: dir('.') });
+
+        expect(output.length).toBe(1);
+
+        const config = await readFile(dir('generated.d.ts')).then((v) => v.toString());
+
+        expect(config).toMatch(`Foo = 'foo'`);
+        expect(config).toMatch(`FooBar = 'foo-bar'`);
+      },
+    );
+  });
+
   it('creates an empty interface for config', async () => {
     await withTempFiles(
       {
