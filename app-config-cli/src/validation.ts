@@ -6,11 +6,13 @@ import { loadValidatedConfig } from '@app-config/config';
 export interface Options {
   directory?: string;
   environmentAliases?: EnvironmentAliases;
+  includeNoEnvironment?: boolean;
 }
 
 export async function validateAllConfigVariants({
   directory = '.',
   environmentAliases = defaultAliases,
+  includeNoEnvironment = false,
 }: Options = {}) {
   // first, we have to find any applicable app-config files
   // this is less trivial than config loading, because we can't "assume" the current environment (it could be anything)
@@ -65,6 +67,15 @@ export async function validateAllConfigVariants({
     await loadValidatedConfig({
       directory,
       environmentOverride: environment,
+      environmentVariableName: '', // do not load APP_CONFIG
+    });
+  }
+
+  if (includeNoEnvironment || appConfigEnvironments.size === 0) {
+    logger.info(`Validating configuration for no environment`);
+
+    await loadValidatedConfig({
+      directory,
       environmentVariableName: '', // do not load APP_CONFIG
     });
   }

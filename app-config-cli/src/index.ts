@@ -469,13 +469,18 @@ export const cli = yargs
             description: 'Validates only using one environment',
             group: OptionGroups.Options,
           },
+          includeNoEnvironment: {
+            type: 'boolean',
+            description: 'Validates config with no environment selected',
+            group: OptionGroups.Options,
+          },
         },
       },
-      async ({ environment }) => {
+      async ({ environment, includeNoEnvironment }) => {
         if (environment) {
           await loadValidatedConfig({ environmentOverride: environment });
         } else {
-          await validateAllConfigVariants();
+          await validateAllConfigVariants({ includeNoEnvironment });
         }
       },
     ),
