@@ -78,18 +78,13 @@ export default class AppConfigPlugin {
       HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
         'AppConfigPlugin',
         async ({ headTags, ...html }) => {
-          const { fullConfig } = await loadValidatedConfig(
-            this.loadingOptions,
-            this.schemaLoadingOptions,
-          );
-
           // remove placeholder <script id="app-config"></script> if it exists
           const newTags = headTags.filter(({ attributes }) => attributes.id !== 'app-config');
 
           newTags.push({
             tagName: 'script',
             attributes: { id: 'app-config', type: 'text/javascript' },
-            innerHTML: `window._appConfig = ${JSON.stringify(fullConfig)}`,
+            innerHTML: ``,
             voidTag: false,
           });
 
