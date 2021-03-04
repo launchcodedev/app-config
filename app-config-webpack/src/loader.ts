@@ -62,11 +62,6 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
         return generatedText;
       };
 
-      // NOTE: when using webpack-dev-server, we'll just ignore the headerInjection
-      if (headerInjection && !process.env.WEBPACK_DEV_SERVER) {
-        return callback(null, generateText('undefined'));
-      }
-
       return callback(null, generateText(JSON.stringify(fullConfig)));
     })
     .catch((err) => callback(err));
