@@ -1,3 +1,9 @@
+## v2.3.2
+
+Adds `--include-no-environment` for `app-config validate` CLI. Fails when no config is found.
+
+Fixes Webpack bug when using `$extends` to a file that's not a standard app-config filename.
+
 ## v2.3.1
 
 Supports providing a module name as "augmentModule" option in TypeScript definition generation.
