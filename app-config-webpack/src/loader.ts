@@ -1,5 +1,5 @@
 import * as wp from 'webpack';
-import { getOptions } from 'loader-utils';
+import { getOptions, parseQuery } from 'loader-utils';
 import { loadValidatedConfig } from '@app-config/main';
 import type { Options } from './index';
 
@@ -9,7 +9,10 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { noGlobal = false, loading, schemaLoading }: Options = getOptions(this) || {};
+  const { noGlobal = false, loading, schemaLoading }: Options = {
+    ...getOptions(this),
+    ...parseQuery(this.resourceQuery),
+  };
 
   loadValidatedConfig(loading, schemaLoading)
     .then(({ fullConfig, filePaths, validationFunctionCode }) => {

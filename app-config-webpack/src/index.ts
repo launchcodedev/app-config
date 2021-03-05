@@ -60,7 +60,14 @@ export default class AppConfigPlugin {
               this.schemaLoadingOptions,
             );
 
-            resolve.request = join(__dirname, '..', '.config-placeholder'); // eslint-disable-line no-param-reassign
+            const queryString = JSON.stringify({
+              loading: this.loadingOptions,
+              schemaLoading: this.schemaLoadingOptions,
+              noGlobal: this.noGlobal,
+            });
+
+            // eslint-disable-next-line no-param-reassign
+            resolve.request = join(__dirname, '..', '.config-placeholder') + `?${queryString}`;
           }
 
           return resolve;
