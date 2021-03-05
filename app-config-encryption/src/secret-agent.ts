@@ -112,9 +112,11 @@ export async function connectAgent(
     closeTimeout = global.setTimeout(() => {
       logger.verbose('Closing websocket');
 
-      client.close().finally(() => {
-        logger.verbose('Client was closed');
-      });
+      if (!isClosed) {
+        client.close().finally(() => {
+          logger.verbose('Client was closed');
+        });
+      }
     }, closeTimeoutMs);
   };
 
