@@ -46,24 +46,6 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
-  it('builds the project with header injection', async () => {
-    await new Promise<void>((done, reject) => {
-      webpack([createOptions({ headerInjection: true })], (err, stats) => {
-        if (err) reject(err);
-        if (stats.hasErrors()) reject(stats.toString());
-
-        const { children } = stats.toJson();
-        const [{ modules = [] }] = children || [];
-
-        expect(
-          modules.some(({ source }) => source?.includes('const configValue = undefined;')),
-        ).toBe(true);
-
-        done();
-      });
-    });
-  });
-
   it('reads environment variable for app-config', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
 
