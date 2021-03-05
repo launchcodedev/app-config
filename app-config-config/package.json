@@ -1,7 +1,7 @@
 {
   "name": "@app-config/config",
   "description": "The config in @app-config",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,17 +30,17 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.3.2",
-    "@app-config/default-extensions": "^2.3.2",
-    "@app-config/extensions": "^2.3.2",
-    "@app-config/logging": "^2.3.2",
-    "@app-config/meta": "^2.3.2",
-    "@app-config/node": "^2.3.2",
-    "@app-config/schema": "^2.3.2",
-    "@app-config/utils": "^2.3.2"
+    "@app-config/core": "^2.3.3",
+    "@app-config/default-extensions": "^2.3.3",
+    "@app-config/extensions": "^2.3.3",
+    "@app-config/logging": "^2.3.3",
+    "@app-config/meta": "^2.3.3",
+    "@app-config/node": "^2.3.3",
+    "@app-config/schema": "^2.3.3",
+    "@app-config/utils": "^2.3.3"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.3.2"
+    "@app-config/test-utils": "^2.3.3"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

@@ -1,7 +1,7 @@
 {
   "name": "@app-config/default-extensions",
   "description": "Default parsing extensions for @app-config",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -22,10 +22,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@app-config/core": "^2.3.2",
-    "@app-config/encryption": "^2.3.2",
-    "@app-config/extensions": "^2.3.2",
-    "@app-config/git": "^2.3.2",
+    "@app-config/core": "^2.3.3",
+    "@app-config/encryption": "^2.3.3",
+    "@app-config/extensions": "^2.3.3",
+    "@app-config/git": "^2.3.3",
     "@app-config/v1-compat": "^2.1.4"
   },
   "devDependencies": {},
