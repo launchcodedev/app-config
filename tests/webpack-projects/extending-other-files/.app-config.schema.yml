@@ -1,0 +1,9 @@
+type: object
+additionalProperties: false
+
+required:
+  - foo
+
+properties:
+  foo:
+    type: string

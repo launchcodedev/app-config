@@ -60,11 +60,7 @@ export default class AppConfigPlugin {
               this.schemaLoadingOptions,
             );
 
-            if (filePaths?.length) {
-              [resolve.request] = filePaths; // eslint-disable-line no-param-reassign
-            } else {
-              resolve.request = join(__dirname, '..', '.config-placeholder'); // eslint-disable-line no-param-reassign
-            }
+            resolve.request = join(__dirname, '..', '.config-placeholder'); // eslint-disable-line no-param-reassign
           }
 
           return resolve;

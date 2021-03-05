@@ -67,3 +67,12 @@ jobs:
         start: yarn serve -l 8993 ./dist
       env:
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+    - uses: cypress-io/github-action@v2
+      with:
+        group: app-config-extending-other-files
+        working-directory: tests/webpack-projects/extending-other-files
+        install: false
+        record: true
+        start: yarn serve -l 8994 ./dist
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
