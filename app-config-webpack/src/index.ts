@@ -55,11 +55,6 @@ export default class AppConfigPlugin {
           if (!resolve) return;
 
           if (this.intercept.test(resolve.request)) {
-            const { filePaths } = await loadValidatedConfig(
-              this.loadingOptions,
-              this.schemaLoadingOptions,
-            );
-
             const queryString = JSON.stringify({
               loading: this.loadingOptions,
               schemaLoading: this.schemaLoadingOptions,
