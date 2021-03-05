@@ -1,4 +1,4 @@
-## v2.3.2
+## v2.3.3
 
 Adds `--include-no-environment` for `app-config validate` CLI. Fails when no config is found.
 
