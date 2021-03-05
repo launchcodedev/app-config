@@ -10,9 +10,7 @@
     "clean": "rm -rf dist *.tsbuildinfo"
   },
   "dependencies": {
-    "@app-config/core": "file:../../app-config-core",
-    "@app-config/node": "file:../../app-config-node",
-    "@app-config/main": "file:../../app-config-main"
+    "@app-config/main": "2"
   },
   "devDependencies": {
     "typescript": "*"
