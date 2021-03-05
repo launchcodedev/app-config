@@ -1,5 +1,5 @@
 import * as wp from 'webpack';
-import { getOptions, stringifyRequest } from 'loader-utils';
+import { getOptions } from 'loader-utils';
 import { loadValidatedConfig } from '@app-config/main';
 import type { Options } from './index';
 
@@ -14,7 +14,7 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   loadValidatedConfig(loading, schemaLoading)
     .then(({ fullConfig, filePaths, validationFunctionCode }) => {
       if (filePaths) {
-        filePaths.forEach((filePath) => this.addDependency(stringifyRequest(this, filePath)));
+        filePaths.forEach((filePath) => this.addDependency(filePath));
       }
 
       const generateText = (config: string) => {
