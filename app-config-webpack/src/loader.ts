@@ -9,8 +9,7 @@ const loader: wp.loader.Loader = function AppConfigLoader() {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { headerInjection = false, noGlobal = false, loading, schemaLoading }: Options =
-    getOptions(this) || {};
+  const { noGlobal = false, loading, schemaLoading }: Options = getOptions(this) || {};
 
   loadValidatedConfig(loading, schemaLoading)
     .then(({ fullConfig, filePaths, validationFunctionCode }) => {
