@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { loadValidatedConfig, ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
+import { ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
 import { regex } from './loader';
 
 // loader is the filepath, not the export
@@ -62,7 +62,7 @@ export default class AppConfigPlugin {
             });
 
             // eslint-disable-next-line no-param-reassign
-            resolve.request = join(__dirname, '..', '.config-placeholder') + `?${queryString}`;
+            resolve.request = `${join(__dirname, '..', '.config-placeholder')}?${queryString}`;
           }
 
           return resolve;
