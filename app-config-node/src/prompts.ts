@@ -1,8 +1,7 @@
-import readline from 'readline';
-import prompts from 'prompts';
-import type { PromptObject } from 'prompts';
 import { AppConfigError } from '@app-config/core';
 import { logger } from '@app-config/logging';
+import type { PromptObject } from 'prompts';
+import prompts from 'prompts';
 
 export async function promptUser<T>(options: Omit<PromptObject, 'name'>): Promise<T> {
   const { named } = await prompts({ ...options, name: 'named' });
@@ -31,14 +30,9 @@ export async function promptUserWithRetry<T>(
 
 export async function consumeStdin(): Promise<string> {
   return new Promise((resolve, reject) => {
-    const rl = readline.createInterface({ input: process.stdin });
-
-    let buffer = '';
-    rl.on('line', (line) => {
-      buffer += line;
-    });
-
-    rl.on('error', reject);
-    rl.on('close', () => resolve(buffer));
+    const buffers: Buffer[] = [];
+    process.stdin.on('data', (data) => buffers.push(data));
+    process.stdin.on('error', reject);
+    process.stdin.on('end', () => resolve(Buffer.concat(buffers).toString('utf8')));
   });
 }
