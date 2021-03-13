@@ -68,7 +68,11 @@ const loader = function AppConfigLoader(this: Loader) {
 
       return callback(null, generateText(JSON.stringify(fullConfig)));
     })
-    .catch((err) => callback(err));
+    .catch((err) => {
+      this.emitWarning(new Error(`There was an error when trying to load @app-config`));
+
+      callback(err);
+    });
 };
 
 export default loader;
