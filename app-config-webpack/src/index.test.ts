@@ -33,7 +33,7 @@ describe('frontend-webpack-project example', () => {
         if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
-        const { children } = stats.toJson();
+        const { children } = stats.toJson({ source: true });
         const [{ modules = [] }] = children || [];
 
         expect(
@@ -56,7 +56,7 @@ describe('frontend-webpack-project example', () => {
         if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
-        const { children } = stats.toJson();
+        const { children } = stats.toJson({ source: true });
         const [{ modules = [] }] = children || [];
 
         expect(
@@ -79,7 +79,7 @@ describe('frontend-webpack-project example', () => {
         if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
-        const { children } = stats.toJson();
+        const { children } = stats.toJson({ source: true });
         const [{ modules = [] }] = children || [];
 
         expect(
@@ -104,7 +104,7 @@ describe('frontend-webpack-project example', () => {
         if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
-        const { children } = stats.toJson();
+        const { children } = stats.toJson({ source: true });
         const [{ modules = [] }] = children || [];
 
         expect(
@@ -145,7 +145,7 @@ describe('frontend-webpack-project example', () => {
           if (!stats) return reject(new Error('no stats'));
           if (stats.hasErrors()) reject(stats.toString());
 
-          const { children } = stats.toJson();
+          const { children } = stats.toJson({ source: true });
           const [{ modules = [] }] = children || [];
 
           expect(
@@ -169,9 +169,10 @@ describe('frontend-webpack-project example', () => {
         if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
-        const { children } = stats.toJson();
+        const { children } = stats.toJson({ source: true });
         const [{ modules = [] }] = children || [];
 
+        console.log(modules.map(m => m.source))
         expect(modules.some(({ source }) => source?.includes('validateConfig'))).toBe(false);
 
         done();
