@@ -172,7 +172,6 @@ describe('frontend-webpack-project example', () => {
         const { children } = stats.toJson({ source: true });
         const [{ modules = [] }] = children || [];
 
-        console.log(modules.map(m => m.source))
         expect(modules.some(({ source }) => source?.includes('validateConfig'))).toBe(false);
 
         done();
