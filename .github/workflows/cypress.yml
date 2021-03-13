@@ -2,7 +2,7 @@ name: cypress
 
 on:
   push:
-    branches: '*'
+    branches: '**'
 
 jobs:
   all:
