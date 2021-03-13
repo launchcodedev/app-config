@@ -37,8 +37,7 @@ describe('consumeStdin', () => {
         .then(() => end())
         .catch(() => {});
 
-      // we expect newlines to be eaten up, since this function is used for html and base64 data
-      expect(await consumeStdin()).toBe('foobarbaz');
+      expect(await consumeStdin()).toBe('foo\nbar\nbaz\n');
     });
   });
 });
