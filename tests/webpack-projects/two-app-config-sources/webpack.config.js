@@ -18,6 +18,7 @@ const appConfigStaticOptions = {
 };
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.ts',
   output: {
     publicPath: '/',

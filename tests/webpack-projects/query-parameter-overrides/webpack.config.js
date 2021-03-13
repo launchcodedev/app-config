@@ -5,6 +5,7 @@ const { default: AppConfigPlugin } = require('@app-config/webpack');
 const appConfigOptions = {};
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.ts',
   output: {
     publicPath: '/',

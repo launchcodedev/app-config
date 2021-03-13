@@ -10,6 +10,7 @@ const appConfigOptions = {
 };
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.ts',
   output: {
     publicPath: '/',
