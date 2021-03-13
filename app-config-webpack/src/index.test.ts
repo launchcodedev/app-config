@@ -160,7 +160,7 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
-  it('does not bundle the validateConfig function', async () => {
+  it.skip('does not bundle the validateConfig function', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
 
     await new Promise<void>((done, reject) => {
