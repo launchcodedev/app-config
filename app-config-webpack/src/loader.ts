@@ -1,11 +1,13 @@
-import * as wp from 'webpack';
 import { getOptions, parseQuery } from 'loader-utils';
 import { loadValidatedConfig } from '@app-config/main';
 import type { Options } from './index';
 
+type LoaderContext = Parameters<typeof getOptions>[0];
+interface Loader extends LoaderContext {}
+
 const privateName = '_appConfig';
 
-const loader: wp.loader.Loader = function AppConfigLoader() {
+const loader = function AppConfigLoader(this: Loader) {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;

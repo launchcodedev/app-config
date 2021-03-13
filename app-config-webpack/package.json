@@ -35,14 +35,15 @@
   },
   "peerDependencies": {
     "@app-config/main": "^2.3.4",
-    "html-webpack-plugin": "4",
-    "webpack": "4"
+    "html-webpack-plugin": "4 || 5",
+    "webpack": "4 || 5"
   },
   "devDependencies": {
     "@app-config/main": "^2.3.4",
     "@types/loader-utils": "1",
-    "html-webpack-plugin": "4",
-    "webpack": "4"
+    "@webpack-cli/serve": "1",
+    "html-webpack-plugin": "5",
+    "webpack": "5"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

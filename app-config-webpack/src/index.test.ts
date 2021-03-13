@@ -29,7 +29,8 @@ describe('frontend-webpack-project example', () => {
   it('builds the project without header injection', async () => {
     await new Promise<void>((done, reject) => {
       webpack([createOptions({})], (err, stats) => {
-        if (err) reject(err);
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
         const { children } = stats.toJson();
@@ -51,7 +52,8 @@ describe('frontend-webpack-project example', () => {
 
     await new Promise<void>((done, reject) => {
       webpack([createOptions({})], (err, stats) => {
-        if (err) reject(err);
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
         const { children } = stats.toJson();
@@ -73,7 +75,8 @@ describe('frontend-webpack-project example', () => {
 
     await new Promise<void>((done, reject) => {
       webpack([createOptions({ noGlobal: true })], (err, stats) => {
-        if (err) reject(err);
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
         const { children } = stats.toJson();
@@ -97,7 +100,8 @@ describe('frontend-webpack-project example', () => {
 
     await new Promise<void>((done, reject) => {
       webpack([createOptions({ intercept: /@app-config\/main/ })], (err, stats) => {
-        if (err) reject(err);
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
         const { children } = stats.toJson();
@@ -121,7 +125,8 @@ describe('frontend-webpack-project example', () => {
       new Promise<void>((done, reject) => {
         webpack([createOptions({})], (err, stats) => {
           if (err) return reject(err);
-          if (stats.hasErrors()) return reject(stats.toString());
+          if (!stats) return reject(new Error('no stats'));
+          if (stats.hasErrors()) reject(stats.toString());
 
           done();
         });
@@ -136,7 +141,8 @@ describe('frontend-webpack-project example', () => {
       webpack(
         [createOptions({ loading: { environmentVariableName: 'MY_CONFIG' } })],
         (err, stats) => {
-          if (err) reject(err);
+          if (err) return reject(err);
+          if (!stats) return reject(new Error('no stats'));
           if (stats.hasErrors()) reject(stats.toString());
 
           const { children } = stats.toJson();
@@ -159,7 +165,8 @@ describe('frontend-webpack-project example', () => {
 
     await new Promise<void>((done, reject) => {
       webpack([createOptions({}, true)], (err, stats) => {
-        if (err) reject(err);
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());
 
         const { children } = stats.toJson();
