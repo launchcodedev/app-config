@@ -1,3 +1,7 @@
+## v2.3.4
+
+Doesn't strip newlines in @app-config/inject and @app-config/cli when reading from stdin.
+
 ## v2.3.3
 
 Adds `--include-no-environment` for `app-config validate` CLI. Fails when no config is found.
