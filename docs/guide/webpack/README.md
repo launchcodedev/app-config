@@ -12,6 +12,8 @@ The webpack plugin is a separate package, which you'll need to install:
 yarn add @app-config/webpack@2
 ```
 
+Note that this plugin is compatible with both **Webpack v4** and **Webpack v5**, from `2.4` onwards.
+
 In your webpack.config.js file, add the following:
 
 ```javascript
