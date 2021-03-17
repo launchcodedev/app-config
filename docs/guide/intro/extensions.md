@@ -89,9 +89,25 @@ $override:
 # ... default values
 ```
 
+## The `$envVar` Directive
+
+Pulls in an environment variable.
+
+```yaml
+username:
+  $envVar: USER
+
+hostname:
+  $envVar:
+    name: HOSTNAME
+    allowNull: true
+```
+
+Use `parseInt`, `parseFloat` or `parseBool` option alongside the name to parse values from the env string.
+
 ## The `$substitute` Directive
 
-Allows environment variables to be used in strings.
+Allows environment variables to be used in strings. Very similar to `$envVar`, but allows embedding variables in strings.
 
 ```yaml
 apiUrl:
