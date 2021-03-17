@@ -264,16 +264,14 @@ export function environmentVariableSubstitution(
     validateObject(value, [...ctx, key]);
     if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
-    const { $name, $fallback, $allowNull, $parseInt, $parseFloat, $parseBool } = value;
+    const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
 
-    const name = (await parse($name)).toJSON();
-
-    validateString(name, [...ctx, key, [InObject, '$name']]);
+    validateString(name, [...ctx, key, [InObject, 'name']]);
 
     const resolvedValue = process.env[name];
 
     if (resolvedValue) {
-      const parseInt = (await parse($parseInt)).toJSON();
+      const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
 
       if (parseInt) {
         const parsed = Number.parseInt(resolvedValue, 10);
@@ -285,7 +283,7 @@ export function environmentVariableSubstitution(
         return parse(parsed, { shouldFlatten: true });
       }
 
-      const parseFloat = (await parse($parseFloat)).toJSON();
+      const parseFloat = (await parse(selectDefined(value.parseFloat, value.$parseFloat))).toJSON();
 
       if (parseFloat) {
         const parsed = Number.parseFloat(resolvedValue);
@@ -297,7 +295,7 @@ export function environmentVariableSubstitution(
         return parse(parsed, { shouldFlatten: true });
       }
 
-      const parseBool = (await parse($parseBool)).toJSON();
+      const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
 
       if (parseBool) {
         const parsed = resolvedValue.toLowerCase() !== 'false' && resolvedValue !== '0';
@@ -308,17 +306,17 @@ export function environmentVariableSubstitution(
       return parse(resolvedValue, { shouldFlatten: true });
     }
 
-    if ($fallback !== undefined) {
-      const fallbackValue = (await parse($fallback)).toJSON();
-      const allowNull = (await parse($allowNull)).toJSON();
+    if (value.fallback !== undefined || value.$fallback !== undefined) {
+      const fallback = (await parse(selectDefined(value.fallback, value.$fallback))).toJSON();
+      const allowNull = (await parse(selectDefined(value.allowNull, value.$allowNull))).toJSON();
 
       if (allowNull) {
-        validateStringOrNull(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
+        validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
       } else {
-        validateString(fallbackValue, [...ctx, key, [InObject, '$fallback']]);
+        validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
       }
 
-      return parse(fallbackValue, { shouldFlatten: true });
+      return parse(fallback, { shouldFlatten: true });
     }
 
     throw new AppConfigError(`$substitute could not find ${name} environment variable`);
@@ -446,4 +444,12 @@ function performAllSubstitutions(text: string, envType?: string): string {
   logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
 
   return output;
+}
+
+function selectDefined<T>(...args: (T | null | undefined)[]): T | null {
+  for (const a of args) {
+    if (a !== undefined) return a;
+  }
+
+  return undefined as any;
 }
