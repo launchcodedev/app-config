@@ -1,3 +1,7 @@
+## v2.4.0
+
+Adds support for Webpack 5, remaining compatible with Webpack 4.
+
 ## v2.3.4
 
 Doesn't strip newlines in @app-config/inject and @app-config/cli when reading from stdin.
