@@ -527,7 +527,7 @@ function selectDefined<T>(...args: (T | null | undefined)[]): T | null {
     if (a !== undefined) return a;
   }
 
-  return undefined as any;
+  return (undefined as any) as T;
 }
 
 const validateObject: ValidationFunction<
