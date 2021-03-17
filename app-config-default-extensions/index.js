@@ -23,7 +23,7 @@ module.exports = {
       extendsSelfDirective,
       overrideDirective,
       timestampDirective,
-      environmentVariableSubstitution,
+      substituteDirective,
     } = require('@app-config/extensions');
 
     const { default: encryptedDirective } = require('@app-config/encryption');
@@ -42,7 +42,7 @@ module.exports = {
       overrideDirective(),
       encryptedDirective(symmetricKey),
       timestampDirective(),
-      environmentVariableSubstitution(aliases, environmentOverride, environmentSourceNames),
+      substituteDirective(aliases, environmentOverride, environmentSourceNames),
       gitRefDirectives(),
     ];
   },

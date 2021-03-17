@@ -11,7 +11,7 @@ import {
   extendsSelfDirective,
   overrideDirective,
   timestampDirective,
-  environmentVariableSubstitution,
+  substituteDirective,
 } from './index';
 
 describe('$try directive', () => {
@@ -764,7 +764,7 @@ describe('$env directive', () => {
 describe('$substitute directive', () => {
   it('fails with non-string values', async () => {
     const source = new LiteralSource({ $substitute: {} });
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('does simple environment variable substitution', async () => {
@@ -776,7 +776,7 @@ describe('$substitute directive', () => {
       bar: { $substitute: '$BAR' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo', bar: 'bar' });
   });
@@ -788,7 +788,7 @@ describe('$substitute directive', () => {
       foo: { $subs: '$FOO' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
@@ -798,7 +798,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: '${FOO:-baz}' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'baz' });
   });
@@ -810,7 +810,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: '${FOO}' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: '' });
   });
@@ -820,7 +820,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: '${FOO:-}' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: '' });
   });
@@ -832,7 +832,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: '${FOO:-${BAR}}' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'qux' });
   });
@@ -844,7 +844,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: 'bar ${FOO} bar' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'bar foo bar' });
   });
@@ -857,7 +857,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: '${FOO} $BAR' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo bar' });
   });
@@ -869,7 +869,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: '${FOO} ${BAR:-bar}' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo bar' });
   });
@@ -881,7 +881,7 @@ describe('$substitute directive', () => {
       foo: [{ $substitute: '${FOO}' }, 'bar'],
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: ['foo', 'bar'] });
   });
@@ -893,7 +893,7 @@ describe('$substitute directive', () => {
       foo: { $subs: '${APP_CONFIG_ENV}' },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'qa' });
   });
@@ -905,7 +905,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO' } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
@@ -915,7 +915,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO' } },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('uses $name when $fallback is defined', async () => {
@@ -925,7 +925,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO', $fallback: 'bar' } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
@@ -935,7 +935,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO', $fallback: 'bar' } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
@@ -945,7 +945,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO', $fallback: null, $allowNull: true } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: null });
   });
@@ -955,7 +955,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO', $fallback: 42, $allowNull: true } },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('parses ints', async () => {
@@ -965,7 +965,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseInt: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(11);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(11);
   });
 
   it('fails when int is invalid', async () => {
@@ -975,7 +975,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseInt: true },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('parses float', async () => {
@@ -985,7 +985,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseFloat: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(11.2);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(11.2);
   });
 
   it('fails when float is invalid', async () => {
@@ -995,7 +995,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseFloat: true },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('parses boolean = true', async () => {
@@ -1005,7 +1005,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(true);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(true);
   });
 
   it('parses boolean = 1', async () => {
@@ -1015,7 +1015,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(true);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(true);
   });
 
   it('parses boolean = 0', async () => {
@@ -1025,7 +1025,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(false);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(false);
   });
 
   it('parses boolean = false', async () => {
@@ -1035,7 +1035,7 @@ describe('$substitute directive', () => {
       $substitute: { $name: 'FOO', $parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(false);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(false);
   });
 
   it('doesnt visit fallback if name is defined', async () => {
@@ -1049,7 +1049,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { $name: 'FOO', $fallback: { $fail: true } } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution(), failDirective]);
+    const parsed = await source.read([substituteDirective(), failDirective]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
@@ -1061,7 +1061,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO' } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
@@ -1071,7 +1071,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO' } },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('uses name when fallback is defined', async () => {
@@ -1081,7 +1081,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO', fallback: 'bar' } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
@@ -1091,7 +1091,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO', fallback: 'bar' } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
@@ -1101,7 +1101,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO', fallback: null, allowNull: true } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution()]);
+    const parsed = await source.read([substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: null });
   });
@@ -1111,7 +1111,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO', fallback: 42, allowNull: true } },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('parses ints', async () => {
@@ -1121,7 +1121,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseInt: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(11);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(11);
   });
 
   it('fails when int is invalid', async () => {
@@ -1131,7 +1131,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseInt: true },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('parses float', async () => {
@@ -1141,7 +1141,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseFloat: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(11.2);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(11.2);
   });
 
   it('fails when float is invalid', async () => {
@@ -1151,7 +1151,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseFloat: true },
     });
 
-    await expect(source.read([environmentVariableSubstitution()])).rejects.toThrow();
+    await expect(source.read([substituteDirective()])).rejects.toThrow();
   });
 
   it('parses boolean = true', async () => {
@@ -1161,7 +1161,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(true);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(true);
   });
 
   it('parses boolean = 1', async () => {
@@ -1171,7 +1171,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(true);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(true);
   });
 
   it('parses boolean = 0', async () => {
@@ -1181,7 +1181,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(false);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(false);
   });
 
   it('parses boolean = false', async () => {
@@ -1191,7 +1191,7 @@ describe('$substitute directive', () => {
       $substitute: { name: 'FOO', parseBool: true },
     });
 
-    expect(await source.readToJSON([environmentVariableSubstitution()])).toEqual(false);
+    expect(await source.readToJSON([substituteDirective()])).toEqual(false);
   });
 
   it('doesnt visit fallback if name is defined', async () => {
@@ -1205,7 +1205,7 @@ describe('$substitute directive', () => {
       foo: { $substitute: { name: 'FOO', fallback: { $fail: true } } },
     });
 
-    const parsed = await source.read([environmentVariableSubstitution(), failDirective]);
+    const parsed = await source.read([substituteDirective(), failDirective]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
@@ -1325,7 +1325,7 @@ describe('extension combinations', () => {
       },
     });
 
-    const parsed = await source.read([envDirective(), environmentVariableSubstitution()]);
+    const parsed = await source.read([envDirective(), substituteDirective()]);
 
     expect(parsed.toJSON()).toEqual({ apiUrl: 'http://localhost:3000' });
   });
@@ -1340,7 +1340,7 @@ describe('extension combinations', () => {
         },
       });
 
-      const parsed = await source.read([extendsDirective(), environmentVariableSubstitution()]);
+      const parsed = await source.read([extendsDirective(), substituteDirective()]);
 
       expect(parsed.toJSON()).toEqual({ foo: 'bar' });
     });

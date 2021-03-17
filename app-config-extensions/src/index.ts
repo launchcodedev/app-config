@@ -237,7 +237,7 @@ export function timestampDirective(dateSource: () => Date = () => new Date()): P
 }
 
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
-export function environmentVariableSubstitution(
+export function substituteDirective(
   aliases: EnvironmentAliases = defaultAliases,
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
@@ -322,6 +322,8 @@ export function environmentVariableSubstitution(
     throw new AppConfigError(`$substitute could not find ${name} environment variable`);
   });
 }
+
+export const environmentVariableSubstitution = substituteDirective;
 
 // common logic for $extends and $override
 function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): ParsingExtension {
