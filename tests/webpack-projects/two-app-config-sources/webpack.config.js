@@ -2,10 +2,23 @@ const path = require('path');
 const HtmlPlugin = require('html-webpack-plugin');
 const { default: AppConfigPlugin } = require('@app-config/webpack');
 
-// Important parts are in module->rules (the AppConfigPlugin.loader), and plugins
-// AppConfigPlugin relies on HtmlPlugin (html-webpack-plugin), when using headerInjection
+const appConfigOptions = {
+  headerInjection: true,
+};
+
+const appConfigStaticOptions = {
+  noGlobal: true,
+  intercept: /app-config-static/,
+  loading: {
+    fileNameBase: 'app-config-static',
+  },
+  schemaLoading: {
+    fileNameBase: 'app-config-static.schema',
+  },
+};
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.ts',
   output: {
     publicPath: '/',
@@ -23,33 +36,19 @@ module.exports = {
         test: /app-config-static/,
         use: {
           loader: AppConfigPlugin.loader,
-          options: {
-            noGlobal: true,
-            loading: {
-              fileNameBase: 'app-config-static',
-            },
-          },
+          options: appConfigStaticOptions,
         },
       },
       {
         test: AppConfigPlugin.regex,
-        use: { loader: AppConfigPlugin.loader, options: { headerInjection: true } },
+        use: { loader: AppConfigPlugin.loader, options: appConfigOptions },
       },
     ],
   },
   plugins: [
     new HtmlPlugin(),
-    new AppConfigPlugin({ headerInjection: true }),
-    new AppConfigPlugin({
-      noGlobal: true,
-      intercept: /app-config-static/,
-      loading: {
-        fileNameBase: 'app-config-static',
-      },
-      schemaLoading: {
-        fileNameBase: 'app-config-static.schema',
-      },
-    }),
+    new AppConfigPlugin(appConfigOptions),
+    new AppConfigPlugin(appConfigStaticOptions),
   ],
   devServer: {
     host: '0.0.0.0',

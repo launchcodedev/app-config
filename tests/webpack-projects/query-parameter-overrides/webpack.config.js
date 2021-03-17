@@ -2,10 +2,10 @@ const path = require('path');
 const HtmlPlugin = require('html-webpack-plugin');
 const { default: AppConfigPlugin } = require('@app-config/webpack');
 
-// Important parts are in module->rules (the AppConfigPlugin.loader), and plugins
-// AppConfigPlugin relies on HtmlPlugin (html-webpack-plugin), when using headerInjection
+const appConfigOptions = {};
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.ts',
   output: {
     publicPath: '/',
@@ -21,11 +21,11 @@ module.exports = {
       },
       {
         test: AppConfigPlugin.regex,
-        use: { loader: AppConfigPlugin.loader, options: { headerInjection: true } },
+        use: { loader: AppConfigPlugin.loader, options: appConfigOptions },
       },
     ],
   },
-  plugins: [new HtmlPlugin(), new AppConfigPlugin({ headerInjection: true })],
+  plugins: [new HtmlPlugin(), new AppConfigPlugin(appConfigOptions)],
   devServer: {
     host: '0.0.0.0',
     port: 8990,

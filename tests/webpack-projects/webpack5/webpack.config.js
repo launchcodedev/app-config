@@ -1,5 +1,10 @@
 const path = require('path');
 const HtmlPlugin = require('html-webpack-plugin');
+const { default: AppConfigPlugin } = require('@app-config/webpack');
+
+const appConfigOptions = {
+  headerInjection: true,
+};
 
 module.exports = {
   mode: 'development',
@@ -16,12 +21,16 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: AppConfigPlugin.regex,
+        use: { loader: AppConfigPlugin.loader, options: appConfigOptions },
+      },
     ],
   },
-  plugins: [new HtmlPlugin()],
+  plugins: [new HtmlPlugin(), new AppConfigPlugin(appConfigOptions)],
   devServer: {
     host: '0.0.0.0',
-    port: 8992,
+    port: 8995,
     disableHostCheck: true,
     historyApiFallback: true,
   },

@@ -12,6 +12,8 @@ The webpack plugin is a separate package, which you'll need to install:
 yarn add @app-config/webpack@2
 ```
 
+Note that this plugin is compatible with both **Webpack v4** and **Webpack v5**, from `2.4` onwards.
+
 In your webpack.config.js file, add the following:
 
 ```javascript
@@ -55,7 +57,7 @@ plugins: [
 ]
 ```
 
-This change tells webpack to add a `<script id="app-config">` tag, which contains
+This change tells webpack to add a `<script id="app-config">` tag, which can contain
 some JavaScript code that sets `window._appConfig`. The loader cooperates with this
 by reading from that global variable instead of inserting the config directly.
 
@@ -63,8 +65,8 @@ Why go through this trouble? As stated above, [app-config-inject](./inject.md)
 uses this fact. When you're deploying your frontend application, you can add a
 short injection script that mutates the `index.html` with a new `<script id="app-config">`.
 By doing that, the web app will have different configuration, without changing
-the JavaScript bundle at all. If you really wanted to, you could even change the
-HTML by hand.
+the JavaScript bundle at all (allowing it to be cached). If you really wanted to,
+you could even change the HTML by hand.
 
 ### Loading Options
 
@@ -95,6 +97,21 @@ plugins: [
   new AppConfigPlugin({ loading: { /* this should be the same as the loader */ } }),
 ]
 ```
+
+The same goes for schema options. Use the `schemaLoading` property to define custom schema loading options.
+
+### Static App Config
+
+Use the `noGlobal: true` option and don't enable `headerInjection` - this will result in a statically
+analyzable config object, allowing it to be used like a constant variable (helpful for tree shaking).
+
+Note of course, that this has downsides - you can't inject configuration this way. We recommend using
+**multiple app configs** for that reason. You can get the best of both worlds, "feature flags" in one
+configuration file (for tree shaking), and more dynamic/environment configuration in another.
+
+### Multiple App Configs
+
+This section needs more written about it - you can find an example [here](https://github.com/launchcodedev/app-config/tree/master/tests/webpack-projects/two-app-config-sources).
 
 ### Validation
 

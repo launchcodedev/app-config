@@ -64,8 +64,6 @@ export default class AppConfigPlugin {
             // eslint-disable-next-line no-param-reassign
             resolve.request = `${join(__dirname, '..', '.config-placeholder')}?${queryString}`;
           }
-
-          return resolve;
         },
       );
     });
@@ -84,6 +82,7 @@ export default class AppConfigPlugin {
             attributes: { id: 'app-config', type: 'text/javascript' },
             innerHTML: ``,
             voidTag: false,
+            meta: {},
           });
 
           return {
