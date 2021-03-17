@@ -2,6 +2,8 @@
 
 Adds option aliases for `$substitute` that aren't prefixed with `$`.
 
+Adds `$envVar` parsing directive, similar to `$substitute` but more ergonomic.
+
 ## v2.4.0
 
 Adds support for Webpack 5, remaining compatible with Webpack 4.
