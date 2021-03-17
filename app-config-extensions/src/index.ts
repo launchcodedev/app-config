@@ -236,6 +236,88 @@ export function timestampDirective(dateSource: () => Date = () => new Date()): P
   );
 }
 
+/** Substitues environment variables */
+export function envVarDirective(
+  aliases: EnvironmentAliases = defaultAliases,
+  environmentOverride?: string,
+  environmentSourceNames?: string[] | string,
+): ParsingExtension {
+  const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
+
+  return forKey('$envVar', (value, key, ctx) => async (parse) => {
+    let name: string;
+    let parseInt = false;
+    let parseFloat = false;
+    let parseBool = false;
+
+    if (typeof value === 'string') {
+      name = value;
+    } else {
+      validateObject(value, [...ctx, key]);
+      if (Array.isArray(value)) throw new AppConfigError('$envVar was given an array');
+
+      const resolved = (await parse(value.name)).toJSON();
+      validateString(resolved, [...ctx, key, [InObject, 'name']]);
+
+      parseInt = !!(await parse(value.parseInt)).toJSON();
+      parseFloat = !!(await parse(value.parseFloat)).toJSON();
+      parseBool = !!(await parse(value.parseBool)).toJSON();
+      name = resolved;
+    }
+
+    let resolvedValue = process.env[name];
+
+    if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+      resolvedValue = envType;
+    }
+
+    if (resolvedValue) {
+      if (parseInt) {
+        const parsed = Number.parseInt(resolvedValue, 10);
+
+        if (Number.isNaN(parsed)) {
+          throw new AppConfigError(`Failed to parseInt(${resolvedValue})`);
+        }
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      if (parseFloat) {
+        const parsed = Number.parseFloat(resolvedValue);
+
+        if (Number.isNaN(parsed)) {
+          throw new AppConfigError(`Failed to parseFloat(${resolvedValue})`);
+        }
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      if (parseBool) {
+        const parsed = resolvedValue.toLowerCase() !== 'false' && resolvedValue !== '0';
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      return parse(resolvedValue, { shouldFlatten: true });
+    }
+
+    if (typeof value === 'object' && value.fallback !== undefined) {
+      const fallback = (await parse(value.fallback)).toJSON();
+      const allowNull = (await parse(value.allowNull)).toJSON();
+
+      if (allowNull) {
+        validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+      } else {
+        validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+      }
+
+      return parse(fallback, { shouldFlatten: true });
+    }
+
+    throw new AppConfigError(`$envVar could not find ${name} environment variable`);
+  });
+}
+
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
 export function substituteDirective(
   aliases: EnvironmentAliases = defaultAliases,
@@ -243,18 +325,6 @@ export function substituteDirective(
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
   const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
-
-  const validateObject: ValidationFunction<
-    Record<string, any>
-  > = validationFunction(({ emptySchema }) => emptySchema().addAdditionalProperties());
-
-  const validateString: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
-    stringSchema(),
-  );
-
-  const validateStringOrNull: ValidationFunction<string> = validationFunction(
-    ({ fromJsonSchema }) => fromJsonSchema({ type: ['null', 'string'] } as const),
-  );
 
   return forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
     if (typeof value === 'string') {
@@ -268,7 +338,11 @@ export function substituteDirective(
 
     validateString(name, [...ctx, key, [InObject, 'name']]);
 
-    const resolvedValue = process.env[name];
+    let resolvedValue = process.env[name];
+
+    if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+      resolvedValue = envType;
+    }
 
     if (resolvedValue) {
       const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
@@ -455,3 +529,15 @@ function selectDefined<T>(...args: (T | null | undefined)[]): T | null {
 
   return undefined as any;
 }
+
+const validateObject: ValidationFunction<
+  Record<string, any>
+> = validationFunction(({ emptySchema }) => emptySchema().addAdditionalProperties());
+
+const validateString: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
+  stringSchema(),
+);
+
+const validateStringOrNull: ValidationFunction<string> = validationFunction(({ fromJsonSchema }) =>
+  fromJsonSchema({ type: ['null', 'string'] } as const),
+);
