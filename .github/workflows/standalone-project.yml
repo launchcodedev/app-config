@@ -27,3 +27,4 @@ jobs:
     - run: yarn build
     - run: node ./dist/index.js
     - run: yarn app-config -v
+    - run: yarn app-config c

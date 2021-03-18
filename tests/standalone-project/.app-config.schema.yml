@@ -1,0 +1,8 @@
+type: object
+additionalProperties: false
+required: [propA]
+
+properties:
+  propA:
+    type: string
+    format: uri

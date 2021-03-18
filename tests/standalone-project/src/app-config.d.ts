@@ -4,7 +4,7 @@
 import '@app-config/main';
 
 export interface Config {
-  propA?: number;
+  propA: string;
 }
 
 // augment the default export from app-config

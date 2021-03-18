@@ -1,8 +1,11 @@
-import { config, loadConfig } from "@app-config/main";
+import { config, loadConfig } from '@app-config/main';
 
 async function main() {
   await loadConfig();
   console.log(config);
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
