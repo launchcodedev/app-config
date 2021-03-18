@@ -1,3 +1,8 @@
+## v2.4.2
+
+Adds `none` option for the `$env` directive, that acts like "default", but is used
+only when no environment is defined.
+
 ## v2.4.1
 
 Adds option aliases for `$substitute` that aren't prefixed with `$`.
