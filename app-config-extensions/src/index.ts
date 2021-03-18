@@ -168,6 +168,10 @@ export function envDirective(
       (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
       (value) => (parse) => {
         if (!environment) {
+          if ('none' in value) {
+            return parse(value.none, metadata);
+          }
+
           if ('default' in value) {
             return parse(value.default, metadata);
           }

@@ -727,6 +727,26 @@ describe('$env directive', () => {
     expect(parsed.toJSON()).toEqual(null);
   });
 
+  it('uses the none option', async () => {
+    delete process.env.NODE_ENV;
+    const source = new LiteralSource({
+      $env: { default: 1, none: 2 },
+    });
+
+    const parsed = await source.read([envDirective()]);
+    expect(parsed.toJSON()).toEqual(2);
+  });
+
+  it('uses the default over the none option when env is defined', async () => {
+    process.env.NODE_ENV = 'test';
+    const source = new LiteralSource({
+      $env: { default: 1, none: 2 },
+    });
+
+    const parsed = await source.read([envDirective()]);
+    expect(parsed.toJSON()).toEqual(1);
+  });
+
   it('doesnt evaluate non-current environment', async () => {
     const failDirective = forKey('$fail', () => () => {
       throw new Error();
