@@ -1,47 +1,82 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`create can select a nested property 1`] = `"{\\"b\\":{\\"c\\":true}}"`;
+exports[`create can select a nested property 1`] = `
+"{\\"b\\":{\\"c\\":true}}
+"
+`;
 
-exports[`create can select a nested property 2`] = `"{\\"c\\":true}"`;
+exports[`create can select a nested property 2`] = `
+"{\\"c\\":true}
+"
+`;
 
-exports[`create can select a nested property 3`] = `"true"`;
+exports[`create can select a nested property 3`] = `
+"true
+"
+`;
 
-exports[`create prints JSON format 1`] = `"{\\"foo\\":true}"`;
+exports[`create prints JSON format 1`] = `
+"{\\"foo\\":true}
+"
+`;
 
-exports[`create prints JSON5 format 1`] = `"{foo:true}"`;
+exports[`create prints JSON5 format 1`] = `
+"{foo:true}
+"
+`;
 
 exports[`create prints TOML format 1`] = `
 "foo = true
+
 "
 `;
 
 exports[`create prints YAML format 1`] = `
 "foo: true
+
 "
 `;
 
-exports[`create prints raw format 1`] = `"true"`;
+exports[`create prints raw format 1`] = `
+"true
+"
+`;
 
-exports[`create prints raw format 2`] = `"83.2"`;
+exports[`create prints raw format 2`] = `
+"83.2
+"
+`;
 
-exports[`create prints raw format 3`] = `"foo"`;
+exports[`create prints raw format 3`] = `
+"foo
+"
+`;
 
 exports[`create prints simple app-config file 1`] = `
 "foo: true
+
 "
 `;
 
-exports[`create uses environmentOverride option 1`] = `"APP_CONFIG_VAL=42"`;
+exports[`create uses environmentOverride option 1`] = `
+"APP_CONFIG_VAL=42
+"
+`;
 
-exports[`create uses environmentOverride option 2`] = `"APP_CONFIG_VAL=88"`;
+exports[`create uses environmentOverride option 2`] = `
+"APP_CONFIG_VAL=88
+"
+`;
 
 exports[`create uses environmentVariableName option 1`] = `
 "foo: true
+
 "
 `;
 
 exports[`create uses fileNameBase option 1`] = `
 "foo: bar
+
 "
 `;
 
@@ -50,6 +85,7 @@ exports[`create-schema can select a nested property 1`] = `
 properties:
   foo:
     type: boolean
+
 "
 `;
 
@@ -58,12 +94,19 @@ exports[`create-schema can select a nested property 2`] = `
 properties:
   bar:
     type: boolean
+
 "
 `;
 
-exports[`create-schema prints JSON format 1`] = `"{\\"type\\":\\"object\\",\\"properties\\":{\\"foo\\":{\\"type\\":\\"boolean\\"}},\\"$schema\\":\\"http://json-schema.org/draft-07/schema#\\"}"`;
+exports[`create-schema prints JSON format 1`] = `
+"{\\"type\\":\\"object\\",\\"properties\\":{\\"foo\\":{\\"type\\":\\"boolean\\"}},\\"$schema\\":\\"http://json-schema.org/draft-07/schema#\\"}
+"
+`;
 
-exports[`create-schema prints JSON5 format 1`] = `"{type:'object',properties:{foo:{type:'boolean'}},$schema:'http://json-schema.org/draft-07/schema#'}"`;
+exports[`create-schema prints JSON5 format 1`] = `
+"{type:'object',properties:{foo:{type:'boolean'}},$schema:'http://json-schema.org/draft-07/schema#'}
+"
+`;
 
 exports[`create-schema prints TOML format 1`] = `
 "type = \\"object\\"
@@ -71,6 +114,7 @@ exports[`create-schema prints TOML format 1`] = `
 
 [properties.foo]
 type = \\"boolean\\"
+
 "
 `;
 
@@ -80,6 +124,7 @@ properties:
   foo:
     type: boolean
 $schema: 'http://json-schema.org/draft-07/schema#'
+
 "
 `;
 
@@ -89,25 +134,43 @@ properties:
   foo:
     type: boolean
 $schema: 'http://json-schema.org/draft-07/schema#'
+
 "
 `;
 
 exports[`vars aliases a variable 1`] = `
 "APP_CONFIG_FOO=true
-BAR=true"
+BAR=true
+"
 `;
 
-exports[`vars filters list of variables with --only 1`] = `"FOO=true"`;
+exports[`vars filters list of variables with --only 1`] = `
+"FOO=true
+"
+`;
 
-exports[`vars prints only nonSecrets without --secrets option 1`] = `"APP_CONFIG_NON_SECRET=true"`;
+exports[`vars prints only nonSecrets without --secrets option 1`] = `
+"APP_CONFIG_NON_SECRET=true
+"
+`;
 
 exports[`vars prints only nonSecrets without --secrets option 2`] = `
 "APP_CONFIG_SECRET=true
-APP_CONFIG_NON_SECRET=true"
+APP_CONFIG_NON_SECRET=true
+"
 `;
 
-exports[`vars prints simple app-config file 1`] = `"APP_CONFIG_FOO=true"`;
+exports[`vars prints simple app-config file 1`] = `
+"APP_CONFIG_FOO=true
+"
+`;
 
-exports[`vars renames a variable 1`] = `"BAR=true"`;
+exports[`vars renames a variable 1`] = `
+"BAR=true
+"
+`;
 
-exports[`vars uses provided environment variable prefix 1`] = `"MY_CONFIG_FOO=true"`;
+exports[`vars uses provided environment variable prefix 1`] = `
+"MY_CONFIG_FOO=true
+"
+`;

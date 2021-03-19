@@ -105,10 +105,18 @@ function subcommand<
       if (args.quiet) logger.setLevel(LogLevel.Error);
       if (args.silent) logger.setLevel(LogLevel.None);
 
-      await run(args as { _: string[] } & yargs.InferredOptionTypes<Options & PositionalOptions>);
+      const running = Promise.resolve()
+        .then(() =>
+          run(args as { _: string[] } & yargs.InferredOptionTypes<Options & PositionalOptions>),
+        )
+        .then(() =>
+          // cleanup any secret agent clients right away, so it's safe to exit
+          disconnectAgents(),
+        );
 
-      // cleanup any secret agent clients right away, so it's safe to exit
-      await disconnectAgents();
+      Object.assign(args, { running });
+
+      return running;
     },
   };
 }
@@ -909,10 +917,9 @@ export const cli = yargs
           }
         }
 
-        await execa(command, args, {
-          stdio: 'inherit',
-          env,
-        }).catch((err) => {
+        const stdio = process.env.JEST_WORKER_ID ? 'pipe' : 'inherit';
+
+        const { stdout, stderr } = await execa(command, args, { stdio, env }).catch((err) => {
           logger.error(err.message);
 
           if (err.exitCode) {
@@ -921,6 +928,12 @@ export const cli = yargs
 
           return Promise.reject(err);
         });
+
+        // basically only for unit tests
+        if (stdio === 'pipe') {
+          process.stdout.write(stdout);
+          process.stderr.write(stderr);
+        }
       },
     ),
   );

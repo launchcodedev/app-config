@@ -1,38 +1,67 @@
-import execa from 'execa';
-import { join } from 'path';
 import { isWindows } from '@app-config/utils';
 import { withTempFiles } from '@app-config/test-utils';
+import { cli } from './index';
 
-const run = async (argv: string[], options?: execa.Options) =>
-  execa('node', [join(__dirname, '..', './dist/index.js'), ...argv], {
-    stdout: 'pipe',
-    stderr: 'ignore',
-    stdin: 'ignore',
-    ...options,
+interface Output {
+  stdout: string;
+  stdoutWrite: jest.Mock;
+  processExit: jest.SpyInstance;
+}
+
+const runCLI = (argv: string[], { env }: { env?: Record<string, string> } = {}) =>
+  new Promise<Output>((resolve, reject) => {
+    let stdout = '';
+
+    const stdoutWrite = jest.fn((line: string) => {
+      stdout += line;
+      return true;
+    });
+
+    process.stdout.write = stdoutWrite;
+
+    jest.spyOn(console, 'log').mockImplementation((line: string) => stdoutWrite(`${line}\n`));
+
+    const processExit = jest.spyOn(process, 'exit');
+    const originalEnv = { ...process.env };
+    process.env = { ...originalEnv, ...env };
+
+    const { running } = cli.fail((msg, err) => reject(err ?? msg)).parse(argv);
+
+    (running as Promise<void>).then(() => {
+      resolve({
+        stdout,
+        stdoutWrite,
+        processExit,
+      });
+
+      process.env = { ...originalEnv };
+    }, reject);
   });
 
 describe('vars', () => {
   it('fails with no app-config', async () => {
-    await expect(run(['vars', '-q'])).rejects.toThrow();
+    await expect(runCLI(['vars', '-q'])).rejects.toThrow();
   });
 
   it('prints simple app-config file', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars', '-q'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['vars', '-q'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('uses provided environment variable prefix', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars', '-q', '--prefix', 'MY_CONFIG'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['vars', '-q', '--prefix', 'MY_CONFIG'], {
+      env: { APP_CONFIG },
+    });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('renames a variable', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars', '-q', '--rename', 'APP_CONFIG_FOO=BAR'], {
+    const { stdout } = await runCLI(['vars', '-q', '--rename', 'APP_CONFIG_FOO=BAR'], {
       env: { APP_CONFIG },
     });
 
@@ -41,7 +70,7 @@ describe('vars', () => {
 
   it('aliases a variable', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['vars', '-q', '--alias', 'APP_CONFIG_FOO=BAR'], {
+    const { stdout } = await runCLI(['vars', '-q', '--alias', 'APP_CONFIG_FOO=BAR'], {
       env: { APP_CONFIG },
     });
 
@@ -50,7 +79,7 @@ describe('vars', () => {
 
   it('filters list of variables with --only', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true, bar: true });
-    const { stdout } = await run(['vars', '-q', '--prefix=""', '--only', 'FOO'], {
+    const { stdout } = await runCLI(['vars', '-q', '--prefix=""', '--only', 'FOO'], {
       env: { APP_CONFIG },
     });
 
@@ -68,10 +97,10 @@ describe('vars', () => {
         `,
       },
       async (inDir) => {
-        const { stdout: withoutSecrets } = await run(['vars', '-q', '-C', inDir('.')]);
+        const { stdout: withoutSecrets } = await runCLI(['vars', '-q', '-C', inDir('.')]);
         expect(withoutSecrets).toMatchSnapshot();
 
-        const { stdout: withSecrets } = await run(['vars', '-q', '--secrets', '-C', inDir('.')]);
+        const { stdout: withSecrets } = await runCLI(['vars', '-q', '--secrets', '-C', inDir('.')]);
         expect(withSecrets).toMatchSnapshot();
       },
     );
@@ -80,40 +109,40 @@ describe('vars', () => {
 
 describe('create', () => {
   it('fails with no app-config', async () => {
-    await expect(run(['create'])).rejects.toThrow();
+    await expect(runCLI(['create'])).rejects.toThrow();
   });
 
   it('prints simple app-config file', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '-q'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['create', '-q'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints YAML format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '-q', '--format', 'yaml'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['create', '-q', '--format', 'yaml'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints JSON format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '-q', '--format', 'json'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['create', '-q', '--format', 'json'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints JSON5 format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '-q', '--format', 'json5'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['create', '-q', '--format', 'json5'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
 
   it('prints TOML format', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['create', '-q', '--format', 'toml'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['create', '-q', '--format', 'toml'], { env: { APP_CONFIG } });
 
     expect(stdout).toMatchSnapshot();
   });
@@ -126,38 +155,43 @@ describe('create', () => {
       aString: 'foo',
     });
 
-    const { stdout: out1 } = await run(
+    const { stdout: out1 } = await runCLI(
       ['create', '-q', '--format', 'raw', '--select', '#/aBoolean'],
       { env: { APP_CONFIG } },
     );
     expect(out1).toMatchSnapshot();
 
-    const { stdout: out2 } = await run(
+    const { stdout: out2 } = await runCLI(
       ['create', '-q', '--format', 'raw', '--select', '#/aNumber'],
       { env: { APP_CONFIG } },
     );
     expect(out2).toMatchSnapshot();
 
-    const { stdout: out3 } = await run(
+    const { stdout: out3 } = await runCLI(
       ['create', '-q', '--format', 'raw', '--select', '#/aString'],
       { env: { APP_CONFIG } },
     );
     expect(out3).toMatchSnapshot();
 
     await expect(
-      run(['create', '-q', '--format', 'raw', '--select', '#/anObject'], { env: { APP_CONFIG } }),
+      runCLI(['create', '-q', '--format', 'raw', '--select', '#/anObject'], {
+        env: { APP_CONFIG },
+      }),
     ).rejects.toThrow();
   });
 
   it('can select a nested property', async () => {
     const APP_CONFIG = JSON.stringify({ a: { b: { c: true } } });
-    const { stdout: nested1 } = await run(['create', '-q', '--format', 'json', '--select', '#/a'], {
-      env: { APP_CONFIG },
-    });
+    const { stdout: nested1 } = await runCLI(
+      ['create', '-q', '--format', 'json', '--select', '#/a'],
+      {
+        env: { APP_CONFIG },
+      },
+    );
 
     expect(nested1).toMatchSnapshot();
 
-    const { stdout: nested2 } = await run(
+    const { stdout: nested2 } = await runCLI(
       ['create', '-q', '--format', 'json', '--select', '#/a/b'],
       {
         env: { APP_CONFIG },
@@ -166,7 +200,7 @@ describe('create', () => {
 
     expect(nested2).toMatchSnapshot();
 
-    const { stdout: nested3 } = await run(
+    const { stdout: nested3 } = await runCLI(
       ['create', '-q', '--format', 'json', '--select', '#/a/b/c'],
       {
         env: { APP_CONFIG },
@@ -180,7 +214,7 @@ describe('create', () => {
     const APP_CONFIG = JSON.stringify({ a: true });
 
     await expect(
-      run(['create', '-q', '--format', 'json', '--select', '#/b'], {
+      runCLI(['create', '-q', '--format', 'json', '--select', '#/b'], {
         env: { APP_CONFIG },
       }),
     ).rejects.toThrow();
@@ -200,12 +234,12 @@ describe('create', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['create', '--fileNameBase=my-app', '-C', inDir('.')]);
+        const { stdout } = await runCLI(['create', '--fileNameBase=my-app', '-C', inDir('.')]);
         expect(stdout).toMatchSnapshot();
 
         const APP_CONFIG = JSON.stringify({ foo: true });
         await expect(
-          run(['create', '--fileNameBase=my-app', '-C', inDir('.')], { env: { APP_CONFIG } }),
+          runCLI(['create', '--fileNameBase=my-app', '-C', inDir('.')], { env: { APP_CONFIG } }),
         ).rejects.toThrow();
       },
     );
@@ -222,10 +256,10 @@ describe('create', () => {
         `,
       },
       async (inDir) => {
-        const { stdout: defaultValue } = await run(['vars', '-q', '-C', inDir('.')]);
+        const { stdout: defaultValue } = await runCLI(['vars', '-q', '-C', inDir('.')]);
         expect(defaultValue).toMatchSnapshot();
 
-        const { stdout: production } = await run([
+        const { stdout: production } = await runCLI([
           'vars',
           '-q',
           '-C',
@@ -241,21 +275,23 @@ describe('create', () => {
   it('uses environmentVariableName option', async () => {
     const MY_CONF = JSON.stringify({ foo: true });
 
-    const { stdout } = await run(['create', '-q', '--environmentVariableName=MY_CONF'], {
+    const { stdout } = await runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
       env: { MY_CONF },
     });
 
     expect(stdout).toMatchSnapshot();
 
     await expect(
-      run(['create', '-q', '--environmentVariableName=MY_CONF'], { env: { APP_CONFIG: MY_CONF } }),
+      runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
+        env: { APP_CONFIG: MY_CONF },
+      }),
     ).rejects.toThrow();
   });
 });
 
 describe('create-schema', () => {
   it('fails with no app-config schema', async () => {
-    await expect(run(['create-schema'])).rejects.toThrow();
+    await expect(runCLI(['create-schema'])).rejects.toThrow();
   });
 
   it('prints simple app-config schema', async () => {
@@ -268,7 +304,7 @@ describe('create-schema', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['create-schema', '-C', inDir('.')]);
+        const { stdout } = await runCLI(['create-schema', '-C', inDir('.')]);
 
         expect(stdout).toMatchSnapshot();
       },
@@ -285,7 +321,7 @@ describe('create-schema', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['create-schema', '-C', inDir('.'), '--format', 'yaml']);
+        const { stdout } = await runCLI(['create-schema', '-C', inDir('.'), '--format', 'yaml']);
 
         expect(stdout).toMatchSnapshot();
       },
@@ -302,7 +338,7 @@ describe('create-schema', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['create-schema', '-C', inDir('.'), '--format', 'json']);
+        const { stdout } = await runCLI(['create-schema', '-C', inDir('.'), '--format', 'json']);
 
         expect(stdout).toMatchSnapshot();
       },
@@ -319,7 +355,7 @@ describe('create-schema', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['create-schema', '-C', inDir('.'), '--format', 'json5']);
+        const { stdout } = await runCLI(['create-schema', '-C', inDir('.'), '--format', 'json5']);
 
         expect(stdout).toMatchSnapshot();
       },
@@ -336,7 +372,7 @@ describe('create-schema', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run(['create-schema', '-C', inDir('.'), '--format', 'toml']);
+        const { stdout } = await runCLI(['create-schema', '-C', inDir('.'), '--format', 'toml']);
 
         expect(stdout).toMatchSnapshot();
       },
@@ -359,7 +395,7 @@ describe('create-schema', () => {
         `,
       },
       async (inDir) => {
-        const { stdout: nested1 } = await run([
+        const { stdout: nested1 } = await runCLI([
           'create-schema',
           '-C',
           inDir('.'),
@@ -368,7 +404,7 @@ describe('create-schema', () => {
         ]);
         expect(nested1).toMatchSnapshot();
 
-        const { stdout: nested2 } = await run([
+        const { stdout: nested2 } = await runCLI([
           'create-schema',
           '-C',
           inDir('.'),
@@ -389,7 +425,7 @@ describe('create-schema', () => {
       },
       async (inDir) => {
         await expect(
-          run(['create-schema', '-C', inDir('.'), '--select', '#/prop']),
+          runCLI(['create-schema', '-C', inDir('.'), '--select', '#/prop']),
         ).rejects.toThrow();
       },
     );
@@ -398,19 +434,21 @@ describe('create-schema', () => {
 
 describe('nested commands', () => {
   it('fails with no app-config', async () => {
-    await expect(run(['-q', '--', isWindows ? 'SET' : 'env'])).rejects.toThrow();
+    await expect(runCLI(['-q', '--', isWindows ? 'SET' : 'env'])).rejects.toThrow();
   });
 
   it('passes environment variables down', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-q', '--', isWindows ? 'SET' : 'env'], { env: { APP_CONFIG } });
+    const { stdout } = await runCLI(['-q', '--', isWindows ? 'SET' : 'env'], {
+      env: { APP_CONFIG },
+    });
 
     expect(stdout.includes('APP_CONFIG_FOO=true')).toBe(true);
   });
 
   it('uses prefix in environment variables', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-q', '-p', 'MY_CONFIG', '--', isWindows ? 'SET' : 'env'], {
+    const { stdout } = await runCLI(['-q', '-p', 'MY_CONFIG', '--', isWindows ? 'SET' : 'env'], {
       env: { APP_CONFIG },
     });
 
@@ -419,7 +457,7 @@ describe('nested commands', () => {
 
   it('uses file format in main environment variable', async () => {
     const APP_CONFIG = JSON.stringify({ foo: true });
-    const { stdout } = await run(['-q', '--format', 'json', '--', isWindows ? 'SET' : 'env'], {
+    const { stdout } = await runCLI(['-q', '--format', 'json', '--', isWindows ? 'SET' : 'env'], {
       env: { APP_CONFIG },
     });
 
@@ -440,7 +478,7 @@ describe('nested commands', () => {
         `,
       },
       async (inDir) => {
-        const { stdout } = await run([
+        const { stdout } = await runCLI([
           '--format',
           'json',
           '-C',
