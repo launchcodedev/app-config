@@ -21,6 +21,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - uses: bahmutov/npm-install@v1
-    - run: yarn --cwd ./app-config-cli build
-    - run: yarn --cwd ./app-config-cli test
+    - run: yarn --cwd ./app-config-encryption build
+    - run: yarn --cwd ./app-config-encryption test
       env: { CI: 1 }
