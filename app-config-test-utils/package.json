@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@app-config/logging": "^2.4.2",
+    "@app-config/utils": "^2.4.2",
     "@types/fs-extra": "9",
     "@types/tmp": "0.2",
     "fs-extra": "9",

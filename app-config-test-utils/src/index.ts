@@ -3,6 +3,7 @@ import { dir } from 'tmp-promise';
 import { outputFile, remove } from 'fs-extra';
 import { stdin } from 'mock-stdin';
 import { isTestEnvAndShouldNotPrompt } from '@app-config/logging';
+import { isWindows } from '@app-config/utils';
 
 // function that joins the temp dir to a filename
 type JoinDir = (filename: string) => string;
@@ -32,7 +33,14 @@ export async function withTempFiles(
 
     await callback((filename) => join(folder, filename), folder);
   } finally {
-    await remove(folder);
+    await remove(folder).catch((error) => {
+      console.warn(error);
+
+      // we'll just ignore this, it's spurious in CI
+      if (isWindows && error.code !== 'EBUSY') {
+        throw error;
+      }
+    });
   }
 }
 
