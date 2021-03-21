@@ -86,7 +86,7 @@ describe('vars', () => {
     expect(stdout).toMatchSnapshot();
   });
 
-  it('prints only nonSecrets without --secrets option', async () => {
+  it.only('prints only nonSecrets without --secrets option', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
