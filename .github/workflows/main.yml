@@ -23,7 +23,7 @@ jobs:
     - uses: bahmutov/npm-install@v1
     - run: yarn build
     - run: yarn lint
-    - run: yarn test --coverage
+    - run: yarn test --coverage --testTimeout 20000
       env: { CI: 1 }
     - uses: codecov/codecov-action@v1
       if: matrix.os == 'ubuntu-latest'
