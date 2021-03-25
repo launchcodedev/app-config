@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest]
         node-version: [14.x]
 
     steps:
@@ -21,37 +21,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - uses: bahmutov/npm-install@v1
-    - run: yarn build
-    - run: yarn lint
-    - run: yarn test --coverage --testTimeout 20000
+    - run: yarn --cwd ./app-config-cli build
+    - run: yarn --cwd ./app-config-cli test --testTimeout 20000
       env: { CI: 1 }
-    - uses: codecov/codecov-action@v1
-      if: matrix.os == 'ubuntu-latest'
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: |
-          ./app-config-cli/coverage/coverage-final.json,
-          ./app-config-config/coverage/coverage-final.json,
-          ./app-config-core/coverage/coverage-final.json,
-          ./app-config-cypress/coverage/coverage-final.json,
-          ./app-config-default-extensions/coverage/coverage-final.json,
-          ./app-config-encryption/coverage/coverage-final.json,
-          ./app-config-exec/coverage/coverage-final.json,
-          ./app-config-extension-utils/coverage/coverage-final.json,
-          ./app-config-extensions/coverage/coverage-final.json,
-          ./app-config-generate/coverage/coverage-final.json,
-          ./app-config-git/coverage/coverage-final.json,
-          ./app-config-inject/coverage/coverage-final.json,
-          ./app-config-js/coverage/coverage-final.json,
-          ./app-config-logging/coverage/coverage-final.json,
-          ./app-config-main/coverage/coverage-final.json,
-          ./app-config-meta/coverage/coverage-final.json,
-          ./app-config-node/coverage/coverage-final.json,
-          ./app-config-schema/coverage/coverage-final.json,
-          ./app-config-settings/coverage/coverage-final.json,
-          ./app-config-utils/coverage/coverage-final.json,
-          ./app-config-v1-compat/coverage/coverage-final.json,
-          ./app-config-vault/coverage/coverage-final.json,
-          ./app-config-webpack/coverage/coverage-final.json,
-        fail_ci_if_error: true
-        verbose: true

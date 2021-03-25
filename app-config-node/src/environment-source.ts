@@ -10,6 +10,8 @@ export class EnvironmentSource extends ConfigSource {
   async readContents(): Promise<[string, FileType]> {
     const value = process.env[this.variableName];
 
+    console.log(`variable ${this.variableName} = ${value}`)
+
     if (!value) {
       throw new NotFoundError(`Could not read the environment variable '${this.variableName}'`);
     }

@@ -245,7 +245,7 @@ describe('create', () => {
     );
   });
 
-  it('uses environmentOverride option', async () => {
+  it.only('uses environmentOverride option', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
@@ -272,7 +272,7 @@ describe('create', () => {
     );
   });
 
-  it('uses environmentVariableName option', async () => {
+  it.only('uses environmentVariableName option', async () => {
     const MY_CONF = JSON.stringify({ foo: true });
 
     const { stdout } = await runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
@@ -280,8 +280,6 @@ describe('create', () => {
     });
 
     expect(stdout).toMatchSnapshot();
-
-    delete process.env.APP_CONFIG;
 
     await expect(
       runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
