@@ -1,0 +1,24 @@
+name: specification
+
+on:
+  push:
+    branches: '**'
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./tests/specification/rust
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - run: npx @app-config/cli -- cargo test

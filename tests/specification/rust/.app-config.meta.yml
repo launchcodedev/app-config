@@ -1,0 +1,2 @@
+generate:
+  - file: ./src/app_config.rs
