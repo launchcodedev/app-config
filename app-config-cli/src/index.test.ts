@@ -17,6 +17,7 @@ const runCLI = (argv: string[], { env }: { env?: Record<string, string> } = {}) 
       return true;
     });
 
+    process.chdir(__dirname);
     process.stdout.write = stdoutWrite;
 
     jest.spyOn(console, 'log').mockImplementation((line: string) => stdoutWrite(`${line}\n`));
