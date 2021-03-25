@@ -281,6 +281,8 @@ describe('create', () => {
 
     expect(stdout).toMatchSnapshot();
 
+    delete process.env.APP_CONFIG;
+
     await expect(
       runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
         env: { APP_CONFIG: MY_CONF },
