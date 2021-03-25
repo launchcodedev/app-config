@@ -17,6 +17,7 @@ const runCLI = (argv: string[], { env }: { env?: Record<string, string> } = {}) 
       return true;
     });
 
+    process.chdir(__dirname);
     process.stdout.write = stdoutWrite;
 
     jest.spyOn(console, 'log').mockImplementation((line: string) => stdoutWrite(`${line}\n`));
@@ -280,8 +281,6 @@ describe('create', () => {
     });
 
     expect(stdout).toMatchSnapshot();
-
-    delete process.env.APP_CONFIG;
 
     await expect(
       runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
