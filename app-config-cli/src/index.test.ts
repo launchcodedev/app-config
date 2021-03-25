@@ -246,7 +246,7 @@ describe('create', () => {
     );
   });
 
-  it.only('uses environmentOverride option', async () => {
+  it('uses environmentOverride option', async () => {
     await withTempFiles(
       {
         '.app-config.yml': `
@@ -273,7 +273,7 @@ describe('create', () => {
     );
   });
 
-  it.only('uses environmentVariableName option', async () => {
+  it('uses environmentVariableName option', async () => {
     const MY_CONF = JSON.stringify({ foo: true });
 
     const { stdout } = await runCLI(['create', '-q', '--environmentVariableName=MY_CONF'], {
