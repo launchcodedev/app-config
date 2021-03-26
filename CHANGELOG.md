@@ -1,3 +1,7 @@
+## v2.4.3
+
+Adds bash completions support with `app-config completions`.
+
 ## v2.4.2
 
 Adds `none` option for the `$env` directive, that acts like "default", but is used
