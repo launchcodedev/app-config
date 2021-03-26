@@ -357,6 +357,31 @@ export const cli = yargs
   .command(
     subcommand(
       {
+        name: ['completion [shell]', 'completions [shell]'],
+        description: 'Prints bash completions',
+        examples: [
+          ['<(source $0 completion bash)', 'Adds bash completions, put this in your bashrc'],
+        ],
+        positional: {
+          shell: {
+            type: 'string',
+            demandOption: false,
+            default: 'bash',
+          },
+        },
+      },
+      async ({ shell }) => {
+        if (shell !== 'bash') {
+          throw new AppConfigError('Only bash autocompletions are available');
+        }
+
+        yargs.showCompletionScript();
+      },
+    ),
+  )
+  .command(
+    subcommand(
+      {
         name: ['vars', 'variables', 'v'],
         description: 'Prints out the generated environment variables',
         examples: [
