@@ -360,7 +360,7 @@ export const cli = yargs
         name: ['completion [shell]', 'completions [shell]'],
         description: 'Prints bash completions',
         examples: [
-          ['<(source $0 completion bash)', 'Adds bash completions, put this in your bashrc'],
+          ['source <($0 completion bash)', 'Adds bash completions, put this in your bashrc'],
         ],
         positional: {
           shell: {
