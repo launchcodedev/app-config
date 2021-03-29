@@ -1,7 +1,7 @@
 {
   "name": "@app-config/logging",
   "description": "Logging for @app-config",
-  "version": "2.4.3",
+  "version": "2.4.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/utils": "^2.4.3"
+    "@app-config/utils": "^2.4.4"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
