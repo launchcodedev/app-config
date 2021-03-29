@@ -23,6 +23,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    # run cli without installing once, as a sanity check for fresh install
+    - run: npx @app-config/cli
+
     - run: yarn install
     - run: yarn build
     - run: node ./dist/index.js
