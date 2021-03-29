@@ -26,7 +26,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     # run cli without installing once, as a sanity check for fresh install
-    - run: npx @app-config/cli -v
+    - uses: "mikeal/npx@master"
+      args: @app-config/cli -v
 
     - run: yarn install
     - run: yarn build
