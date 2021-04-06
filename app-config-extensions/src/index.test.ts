@@ -258,7 +258,7 @@ describe('$hidden directive', () => {
       },
     });
 
-    expect(await source.readToJSON([hiddenDirective(), extendsSelfDirective()])).toEqual({
+    expect(await source.readToJSON([extendsSelfDirective(), hiddenDirective()])).toEqual({
       foo: 42,
     });
   });

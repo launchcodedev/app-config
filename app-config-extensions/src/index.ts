@@ -120,7 +120,7 @@ export function eqDirective(): ParsingExtension {
 
 /** Prpoerties that are removed, used by references */
 export function hiddenDirective(): ParsingExtension {
-  return forKey('$hidden', (value) => async (parse) => {
+  return forKey('$hidden', () => async (parse) => {
     return parse({}, { shouldMerge: true });
   });
 }
