@@ -6,6 +6,7 @@ import {
   tryDirective,
   ifDirective,
   eqDirective,
+  hiddenDirective,
   envDirective,
   envVarDirective,
   extendsDirective,
@@ -226,6 +227,40 @@ describe('$eq directive', () => {
     });
 
     expect(await source.readToJSON([eqDirective(), envDirective()])).toBe(true);
+  });
+});
+
+describe('$hidden directive', () => {
+  it('doesnt include hidden', async () => {
+    const source = new LiteralSource({
+      $hidden: {},
+    });
+
+    expect(await source.readToJSON([hiddenDirective()])).toEqual({});
+  });
+
+  it('merges hidden', async () => {
+    const source = new LiteralSource({
+      $hidden: {},
+      foo: true,
+    });
+
+    expect(await source.readToJSON([hiddenDirective()])).toEqual({ foo: true });
+  });
+
+  it('references hidden property', async () => {
+    const source = new LiteralSource({
+      $hidden: {
+        foo: 42,
+      },
+      foo: {
+        $extendsSelf: '$hidden.foo',
+      },
+    });
+
+    expect(await source.readToJSON([hiddenDirective(), extendsSelfDirective()])).toEqual({
+      foo: 42,
+    });
   });
 });
 

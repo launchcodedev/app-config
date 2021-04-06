@@ -118,6 +118,13 @@ export function eqDirective(): ParsingExtension {
   );
 }
 
+/** Prpoerties that are removed, used by references */
+export function hiddenDirective(): ParsingExtension {
+  return forKey('$hidden', (value) => async (parse) => {
+    return parse({}, { shouldMerge: true });
+  });
+}
+
 /** Uses another file as overriding values, layering them on top of current file */
 export function overrideDirective(): ParsingExtension {
   return fileReferenceDirective('$override', { shouldOverride: true });
