@@ -181,6 +181,25 @@ $if:
   $else: bar
 ```
 
+## The `$hidden` Directive
+
+You can use `$hidden` anywhere - the values underneath it are not processed directly.
+This is useful for shared values.
+
+```yaml
+$hidden:
+  foo: 42
+
+bar:
+  baz:
+    $extendsSelf: '$hidden.foo'
+
+qux:
+  $extendsSelf: '$hidden.foo'
+```
+
+This results in `{ bar: { baz: 42 }, qux: 42 }`.
+
 ## The `$timestamp` Directive
 
 Allows injecting the current date and time into configuration. While this option is useful,
