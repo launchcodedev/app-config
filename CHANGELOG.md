@@ -1,3 +1,7 @@
+## v2.4.5
+
+Adds `$hidden` directive mainly for shared properties.
+
 ## v2.4.3
 
 Adds bash completions support with `app-config completions`.
