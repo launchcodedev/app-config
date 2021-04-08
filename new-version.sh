@@ -62,6 +62,7 @@ new_version app-config-utils
 new_version app-config-v1-compat
 new_version app-config-vault
 new_version app-config-webpack
+new_version app-config-yargs
 new_version lcdev-app-config
 new_version lcdev-app-config-inject
 new_version lcdev-app-config-webpack-plugin
