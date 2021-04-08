@@ -1,7 +1,7 @@
 {
   "name": "@app-config/git",
   "description": "$git directive parsing extension for @app-config",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,12 +30,12 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.4.4",
-    "@app-config/extension-utils": "^2.4.4",
+    "@app-config/core": "^2.4.5",
+    "@app-config/extension-utils": "^2.4.5",
     "simple-git": "2"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.4.4"
+    "@app-config/test-utils": "^2.4.5"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
