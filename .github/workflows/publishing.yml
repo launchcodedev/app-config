@@ -16,12 +16,6 @@ jobs:
 
     - run: yarn install
 
-    - name: app-config-cli
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-cli/package.json
     - name: app-config-config
       uses: JS-DevTools/npm-publish@v1
       with:
@@ -174,6 +168,12 @@ jobs:
         package: ./lcdev-react-native-app-config-transformer/package.json
 
     # Do these last, since they're most commonly used by consumers
+    - name: app-config-cli
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-cli/package.json
     - name: app-config-main
       uses: JS-DevTools/npm-publish@v1
       with:
