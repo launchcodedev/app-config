@@ -6,6 +6,9 @@
 // This avoids circular dependency chains.
 const { defaultAliases } = require('@app-config/node');
 
+// TODO: make a Root *only* directive that adds 'environmentOverride', 'environmentSourceNames' and 'aliases' as metadata
+// these can be read from metadata in parsing extensions
+
 module.exports = {
   defaultExtensions(
     aliases = defaultAliases,

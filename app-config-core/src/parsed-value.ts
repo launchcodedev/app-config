@@ -34,6 +34,7 @@ export type ParsingExtensionTransform = (
   source: ConfigSource,
   extensions: ParsingExtension[],
   root: Json,
+  metadata?: ParsedValueMetadata,
 ) => Promise<ParsedValue> | ParsedValue;
 
 export interface ParsedValueMetadata {
@@ -396,7 +397,7 @@ async function parseValueInner(
       );
 
     // note that we don't traverse the object is an extension applied, that's up to them (with `parse`)
-    return applicableExtension(parse, parent, source, extensions, root);
+    return applicableExtension(parse, parent, source, extensions, root, metadata);
   }
 
   if (Array.isArray(value)) {
