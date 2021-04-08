@@ -253,13 +253,42 @@ describe('$hidden directive', () => {
       $hidden: {
         foo: 42,
       },
+      baz: {
+        $hidden: 44,
+      },
+      foo: {
+        $extendsSelf: '$hidden.foo',
+      },
+      bar: {
+        $extendsSelf: 'baz.$hidden',
+      },
+    });
+
+    expect(await source.readToJSON([extendsSelfDirective(), hiddenDirective()])).toEqual({
+      baz: {},
+      foo: 42,
+      bar: 44,
+    });
+  });
+
+  it('references hidden property and processes it', async () => {
+    process.env.FOO = 'bar';
+
+    const source = new LiteralSource({
+      $hidden: {
+        foo: {
+          $envVar: 'FOO',
+        },
+      },
       foo: {
         $extendsSelf: '$hidden.foo',
       },
     });
 
-    expect(await source.readToJSON([extendsSelfDirective(), hiddenDirective()])).toEqual({
-      foo: 42,
+    expect(
+      await source.readToJSON([extendsSelfDirective(), hiddenDirective(), envVarDirective()]),
+    ).toEqual({
+      foo: 'bar',
     });
   });
 });
