@@ -190,6 +190,7 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./lcdev-react-native-app-config-transformer/package.json
+        tag: next
 
     # Do these last, since they're most commonly used by consumers
     - name: app-config-cli
@@ -212,3 +213,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./lcdev-app-config/package.json
+        tag: next
