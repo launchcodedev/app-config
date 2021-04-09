@@ -38,8 +38,6 @@
     "@app-config/config": "^3.0.0-alpha.1",
     "@app-config/core": "^3.0.0-alpha.1",
     "@app-config/default-extensions": "^3.0.0-alpha.1",
-    "@app-config/encryption": "^3.0.0-alpha.1",
-    "@app-config/extensions": "^3.0.0-alpha.1",
     "@app-config/logging": "^3.0.0-alpha.1",
     "@app-config/meta": "^3.0.0-alpha.1",
     "@app-config/node": "^3.0.0-alpha.1",
