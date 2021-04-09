@@ -17,7 +17,7 @@ export type ParsingExtensionKey =
   | [typeof InArray, number]
   | [typeof Root];
 
-export type ParsingContext = Record<string, string>;
+export type ParsingContext = Record<string, string | Record<string, string>>;
 
 export type ParsingExtension<T extends Json = Json> = (
   value: T,

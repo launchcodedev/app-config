@@ -14,13 +14,14 @@ import {
   FailedToSelectSubObject,
   Fallbackable,
   InObject,
+  ParsingContext,
 } from '@app-config/core';
 import {
   currentEnvironment,
-  defaultAliases,
   resolveFilepath,
-  EnvironmentAliases,
   FileSource,
+  defaultAliases,
+  EnvironmentAliases,
 } from '@app-config/node';
 import { logger } from '@app-config/logging';
 
@@ -161,19 +162,16 @@ export function extendsSelfDirective(): ParsingExtension {
 }
 
 /** Looks up an environment-specific value ($env) */
-export function envDirective(
-  aliases: EnvironmentAliases = defaultAliases,
-  environmentOverride?: string,
-  environmentSourceNames?: string[] | string,
-): ParsingExtension {
-  const environment = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
+export function envDirective(): ParsingExtension {
   const metadata = { shouldOverride: true };
 
   return forKey(
     '$env',
     validateOptions(
       (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
-      (value) => (parse) => {
+      (value, _, context) => (parse) => {
+        const environment = getEnv(context);
+
         if (!environment) {
           if ('none' in value) {
             return parse(value.none, metadata);
@@ -187,6 +185,8 @@ export function envDirective(
             `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
           );
         }
+
+        const aliases = getAliases(context);
 
         for (const [envName, envValue] of Object.entries(value)) {
           if (envName === environment || aliases[envName] === environment) {
@@ -248,14 +248,8 @@ export function timestampDirective(dateSource: () => Date = () => new Date()): P
 }
 
 /** Substitues environment variables */
-export function envVarDirective(
-  aliases: EnvironmentAliases = defaultAliases,
-  environmentOverride?: string,
-  environmentSourceNames?: string[] | string,
-): ParsingExtension {
-  const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
-
-  return forKey('$envVar', (value, parentKeys) => async (parse) => {
+export function envVarDirective(): ParsingExtension {
+  return forKey('$envVar', (value, parentKeys, context) => async (parse) => {
     let name: string;
     let parseInt = false;
     let parseFloat = false;
@@ -279,7 +273,7 @@ export function envVarDirective(
     let resolvedValue = process.env[name];
 
     if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-      resolvedValue = envType;
+      resolvedValue = getEnv(context);
     }
 
     if (resolvedValue) {
@@ -330,16 +324,12 @@ export function envVarDirective(
 }
 
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
-export function substituteDirective(
-  aliases: EnvironmentAliases = defaultAliases,
-  environmentOverride?: string,
-  environmentSourceNames?: string[] | string,
-): ParsingExtension {
-  const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
+export function substituteDirective(): ParsingExtension {
+  return forKey(['$substitute', '$subs'], (value, parentKeys, context) => async (parse) => {
+    const environment = getEnv(context);
 
-  return forKey(['$substitute', '$subs'], (value, parentKeys) => async (parse) => {
     if (typeof value === 'string') {
-      return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
+      return parse(performAllSubstitutions(value, environment), { shouldFlatten: true });
     }
 
     validateObject(value, parentKeys);
@@ -352,7 +342,7 @@ export function substituteDirective(
     let resolvedValue = process.env[name];
 
     if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-      resolvedValue = envType;
+      resolvedValue = environment;
     }
 
     if (resolvedValue) {
@@ -531,6 +521,21 @@ function performAllSubstitutions(text: string, envType?: string): string {
   logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
 
   return output;
+}
+
+function getAliases(context: ParsingContext) {
+  const { environmentAliases } = context;
+
+  return (environmentAliases as EnvironmentAliases) ?? defaultAliases;
+}
+
+function getEnv(context: ParsingContext) {
+  const { environmentOverride, environmentSourceNames } = context;
+
+  return (
+    (environmentOverride as string) ??
+    currentEnvironment(getAliases(context), environmentSourceNames as string)
+  );
 }
 
 const validateObject: ValidationFunction<

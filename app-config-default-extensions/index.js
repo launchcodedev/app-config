@@ -7,12 +7,7 @@
 const { defaultAliases } = require('@app-config/node');
 
 module.exports = {
-  defaultExtensions(
-    aliases = defaultAliases,
-    environmentOverride,
-    symmetricKey,
-    environmentSourceNames,
-  ) {
+  defaultExtensions() {
     const {
       unescape$Directives,
       tryDirective,
@@ -34,13 +29,13 @@ module.exports = {
       ifDirective(),
       eqDirective(),
       hiddenDirective(),
-      envDirective(aliases, environmentOverride, environmentSourceNames),
-      envVarDirective(aliases, environmentOverride, environmentSourceNames),
+      envDirective(),
+      envVarDirective(),
       extendsDirective(),
       extendsSelfDirective(),
       overrideDirective(),
       timestampDirective(),
-      substituteDirective(aliases, environmentOverride, environmentSourceNames),
+      substituteDirective(),
     ];
   },
   defaultEnvExtensions() {
