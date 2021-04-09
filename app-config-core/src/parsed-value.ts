@@ -17,16 +17,19 @@ export type ParsingExtensionKey =
   | [typeof InArray, number]
   | [typeof Root];
 
-export type ParsingExtension = (
-  value: Json,
-  key: ParsingExtensionKey,
-  context: ParsingExtensionKey[],
-) => false | ParsingExtensionTransform;
+export type ParsingContext = Record<string, string>;
+
+export type ParsingExtension<T extends Json = Json> = (
+  value: T,
+  parentKeys: ParsingExtensionKey[],
+  context: ParsingContext,
+) => ParsingExtensionTransform | false;
 
 export type ParsingExtensionTransform = (
   parse: (
     value: Json,
     metadata?: ParsedValueMetadata,
+    context?: ParsingContext,
     source?: ConfigSource,
     extensions?: ParsingExtension[],
   ) => Promise<ParsedValue>,
@@ -339,8 +342,9 @@ export async function parseValue(
   source: ConfigSource,
   extensions: ParsingExtension[] = [],
   metadata: ParsedValueMetadata = {},
+  context: ParsingContext = {},
 ): Promise<ParsedValue> {
-  return parseValueInner(value, source, extensions, metadata, [[Root]], value);
+  return parseValueInner(value, source, extensions, metadata, context, [[Root]], value);
 }
 
 async function parseValueInner(
@@ -348,14 +352,12 @@ async function parseValueInner(
   source: ConfigSource,
   extensions: ParsingExtension[],
   metadata: ParsedValueMetadata = {},
-  context: ParsingExtensionKey[],
+  context: ParsingContext = {},
+  parentKeys: ParsingExtensionKey[],
   root: Json,
   parent?: JsonObject | Json[],
   visitedExtensions: ParsingExtension[] = [],
 ): Promise<ParsedValue> {
-  const [currentKey] = context.slice(-1);
-  const contextualKeys = context.slice(0, context.length - 1);
-
   let applicableExtension: ParsingExtensionTransform | undefined;
 
   // before anything else, we check for parsing extensions that should be applied
@@ -369,7 +371,7 @@ async function parseValueInner(
     // we track visitedExtensions so that calling `parse` in an extension doesn't hit that same extension with the same value
     if (visitedExtensions.includes(extension)) continue;
 
-    const applicable = extension(value, currentKey, contextualKeys);
+    const applicable = extension(value, parentKeys, context);
 
     if (applicable && !applicableExtension) {
       applicableExtension = applicable;
@@ -378,18 +380,20 @@ async function parseValueInner(
   }
 
   if (applicableExtension) {
-    const parse = (
-      inner: Json,
-      metadataOverride?: ParsedValueMetadata,
-      sourceOverride?: ConfigSource,
-      extensionsOverride?: ParsingExtension[],
+    const parse: Parameters<ParsingExtensionTransform>[0] = (
+      inner,
+      metadataOverride,
+      contextOverride,
+      sourceOverride,
+      extensionsOverride,
     ) =>
       parseValueInner(
         inner,
         sourceOverride ?? source,
         extensionsOverride ?? extensions,
         { ...metadata, ...metadataOverride },
-        context,
+        { ...context, ...contextOverride },
+        parentKeys,
         root,
         parent,
         visitedExtensions,
@@ -407,7 +411,8 @@ async function parseValueInner(
           source,
           extensions,
           undefined,
-          context.concat([[InArray, index]]),
+          context,
+          [[InArray, index], ...parentKeys],
           root,
           value,
         );
@@ -432,7 +437,8 @@ async function parseValueInner(
           source,
           extensions,
           undefined,
-          context.concat([[InObject, key]]),
+          context,
+          [[InObject, key], ...parentKeys],
           root,
           value,
         );

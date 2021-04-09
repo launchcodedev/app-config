@@ -1,13 +1,10 @@
-import type {
-  ParsingExtension,
-  ParsingExtensionKey,
-  ParsingExtensionTransform,
-} from '@app-config/core';
+import type { ParsingExtension, ParsingExtensionKey } from '@app-config/core';
 import { parseValue, Root, AppConfigError } from '@app-config/core';
+import { Json } from '@app-config/utils';
 import { SchemaBuilder } from '@serafin/schema-builder';
 
 export function composeExtensions(extensions: ParsingExtension[]): ParsingExtension {
-  return (value, [k]) => {
+  return (value, [[k]]) => {
     if (k !== Root) return false;
 
     return (_, __, source) => parseValue(value, source, extensions, { shouldFlatten: true });
@@ -28,9 +25,9 @@ export function forKey(
     return key === k;
   };
 
-  return (value, ctxKey, ctx) => {
-    if (shouldApply(ctxKey)) {
-      return parsingExtension(value, ctxKey, ctx);
+  return (value, parentKeys, context) => {
+    if (shouldApply(parentKeys[0])) {
+      return parsingExtension(value, parentKeys, context);
     }
 
     return false;
@@ -39,18 +36,14 @@ export function forKey(
 
 export class ParsingExtensionInvalidOptions extends AppConfigError {}
 
-export function validateOptions<T>(
+export function validateOptions<T extends Json>(
   builder: (builder: typeof SchemaBuilder) => SchemaBuilder<T>,
-  extension: (
-    value: T,
-    key: ParsingExtensionKey,
-    context: ParsingExtensionKey[],
-  ) => ParsingExtensionTransform | false,
+  extension: ParsingExtension<T>,
   { lazy = false }: { lazy?: boolean } = {},
 ): ParsingExtension {
   const validate: ValidationFunction<T> = validationFunction(builder);
 
-  return (value, ctxKey, ctx) => {
+  return (value, parentKeys, context) => {
     return async (parse, ...args) => {
       let valid: unknown;
 
@@ -60,9 +53,9 @@ export function validateOptions<T>(
         valid = (await parse(value)).toJSON();
       }
 
-      validate(valid, [...ctx, ctxKey]);
+      validate(valid, parentKeys);
 
-      const call = extension(valid, ctxKey, ctx);
+      const call = extension(valid, parentKeys, context);
 
       if (call) {
         return call(parse, ...args);
@@ -91,7 +84,8 @@ export function validationFunction<T>(
       const message = error instanceof Error ? error.message : 'unknown';
 
       const parents =
-        ctx
+        [...ctx]
+          .reverse()
           .map(([, k]) => k)
           .filter((v) => !!v)
           .join('.') || 'root';

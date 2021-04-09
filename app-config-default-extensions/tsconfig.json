@@ -6,8 +6,6 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
-    { "path": "../app-config-core" },
-    { "path": "../app-config-v1-compat" },
-    { "path": "../app-config-git" }
+    { "path": "../app-config-core" }
   ]
 }

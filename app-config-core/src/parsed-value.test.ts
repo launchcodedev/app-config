@@ -42,7 +42,7 @@ describe('parseValue', () => {
     return (parse) => parse(value, { marked: true });
   };
 
-  const markKeyExtension: ParsingExtension = (value, [keyType, key]) => {
+  const markKeyExtension: ParsingExtension = (value, [[keyType, key]]) => {
     if (keyType === InObject && key === '$mark') {
       return (parse) => parse(value, { shouldFlatten: true, marked: true });
     }
@@ -60,7 +60,7 @@ describe('parseValue', () => {
     return false;
   };
 
-  const secretExtension: ParsingExtension = (_, [keyType, key]) => {
+  const secretExtension: ParsingExtension = (_, [[keyType, key]]) => {
     if (keyType === InObject && key === '$secret') {
       return (parse) => parse('revealed!', { shouldFlatten: true });
     }
@@ -68,7 +68,7 @@ describe('parseValue', () => {
     return false;
   };
 
-  const mergeExtension: ParsingExtension = (value, [keyType, key]) => {
+  const mergeExtension: ParsingExtension = (value, [[keyType, key]]) => {
     if (keyType === InObject && key === '$merge') {
       return (parse) => parse(value, { shouldMerge: true });
     }
@@ -76,7 +76,7 @@ describe('parseValue', () => {
     return false;
   };
 
-  const overrideExtension: ParsingExtension = (value, [keyType, key]) => {
+  const overrideExtension: ParsingExtension = (value, [[keyType, key]]) => {
     if (keyType === InObject && key === '$override') {
       return (parse) => parse(value, { shouldOverride: true });
     }

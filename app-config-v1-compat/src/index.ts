@@ -7,7 +7,7 @@ import { logger } from '@app-config/logging';
 
 /** V1 app-config compatibility */
 export default function v1Compat(): ParsingExtension {
-  return (value, [_, key], context) => {
+  return (value, [[_, key], ...context]) => {
     // only apply in top-level app-config property
     if (context[context.length - 1]?.[0] !== Root) {
       return false;

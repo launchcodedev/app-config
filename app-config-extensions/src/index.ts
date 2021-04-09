@@ -31,7 +31,7 @@ export function markAllValuesAsSecret(): ParsingExtension {
 
 /** When a key $$foo is seen, change it to be $foo and mark with meta property fromEscapedDirective */
 export function unescape$Directives(): ParsingExtension {
-  return (value, [_, key]) => {
+  return (value, [[_, key]]) => {
     if (typeof key === 'string' && key.startsWith('$$')) {
       return async (parse) => {
         return parse(value, { rewriteKey: key.slice(1), fromEscapedDirective: true });
@@ -141,9 +141,9 @@ export function extendsSelfDirective(): ParsingExtension {
     stringSchema(),
   );
 
-  return forKey('$extendsSelf', (input, key, ctx) => async (parse, _, __, ___, root) => {
+  return forKey('$extendsSelf', (input, parentKeys) => async (parse, _, __, ___, root) => {
     const value = (await parse(input)).toJSON();
-    validate(value, [...ctx, key]);
+    validate(value, parentKeys);
 
     // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
     const selected = ParsedValue.literal(root).property(value.split('.'));
@@ -255,7 +255,7 @@ export function envVarDirective(
 ): ParsingExtension {
   const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
-  return forKey('$envVar', (value, key, ctx) => async (parse) => {
+  return forKey('$envVar', (value, parentKeys) => async (parse) => {
     let name: string;
     let parseInt = false;
     let parseFloat = false;
@@ -264,11 +264,11 @@ export function envVarDirective(
     if (typeof value === 'string') {
       name = value;
     } else {
-      validateObject(value, [...ctx, key]);
+      validateObject(value, parentKeys);
       if (Array.isArray(value)) throw new AppConfigError('$envVar was given an array');
 
       const resolved = (await parse(value.name)).toJSON();
-      validateString(resolved, [...ctx, key, [InObject, 'name']]);
+      validateString(resolved, [[InObject, 'name'], ...parentKeys]);
 
       parseInt = !!(await parse(value.parseInt)).toJSON();
       parseFloat = !!(await parse(value.parseFloat)).toJSON();
@@ -317,9 +317,9 @@ export function envVarDirective(
       const allowNull = (await parse(value.allowNull)).toJSON();
 
       if (allowNull) {
-        validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+        validateStringOrNull(fallback, [[InObject, 'fallback'], ...parentKeys]);
       } else {
-        validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+        validateString(fallback, [[InObject, 'fallback'], ...parentKeys]);
       }
 
       return parse(fallback, { shouldFlatten: true });
@@ -337,17 +337,17 @@ export function substituteDirective(
 ): ParsingExtension {
   const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
-  return forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
+  return forKey(['$substitute', '$subs'], (value, parentKeys) => async (parse) => {
     if (typeof value === 'string') {
       return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
     }
 
-    validateObject(value, [...ctx, key]);
+    validateObject(value, parentKeys);
     if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
     const name = (await parse(value.name)).toJSON();
 
-    validateString(name, [...ctx, key, [InObject, 'name']]);
+    validateString(name, [[InObject, 'name'], ...parentKeys]);
 
     let resolvedValue = process.env[name];
 
@@ -396,9 +396,9 @@ export function substituteDirective(
       const allowNull = (await parse(value.allowNull)).toJSON();
 
       if (allowNull) {
-        validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+        validateStringOrNull(fallback, [[InObject, 'fallback'], ...parentKeys]);
       } else {
-        validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+        validateString(fallback, [[InObject, 'fallback'], ...parentKeys]);
       }
 
       return parse(fallback, { shouldFlatten: true });
