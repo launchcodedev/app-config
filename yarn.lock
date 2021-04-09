@@ -11,6 +11,237 @@
     call-me-maybe "^1.0.1"
     js-yaml "^3.13.1"
 
+"@app-config/cli@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/cli/-/cli-2.4.5.tgz#9ac2bcb0dfe40854462029d0e25a4ee751fa31fa"
+  integrity sha512-SQ5yPQ6oM7TE/aM9vZMMx3NU2co5pRPigt48aUXRuovVO0epcTVVftcbFl1BiBWKcXNLbFEUsGP8WpYah2UL9Q==
+  dependencies:
+    "@app-config/config" "^2.4.5"
+    "@app-config/core" "^2.4.5"
+    "@app-config/encryption" "^2.4.5"
+    "@app-config/generate" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/schema" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    ajv "7"
+    clipboardy "2"
+    common-tags "1"
+    execa "5"
+    fs-extra "9"
+    json-schema-ref-parser "9"
+    yargs "16"
+
+"@app-config/config@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/config/-/config-2.4.5.tgz#e056b4df22e6e4707a5c7435474c4382b26ca36e"
+  integrity sha512-u/dULMqnIcvSAzc/3xhMo8grJCoY8sLnkO/C3xRjRJMpW3J6J8IYb0JhomxpxnT0ep9uYhR6MscMVQ+lIhYWcw==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/default-extensions" "^2.4.5"
+    "@app-config/extensions" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/meta" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/schema" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+
+"@app-config/core@2", "@app-config/core@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/core/-/core-2.4.5.tgz#cb9155c3c78fb362f946b6965270e21056caa113"
+  integrity sha512-5/8jwEt8suXl3RBBUM1OZSN/alPdxxsYxJ9kqhsLgq6WqpkB99faD/sEVDvdXLywPX8V2212zKV/Pg0CcVTNhA==
+  dependencies:
+    "@app-config/logging" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    "@iarna/toml" "3"
+    js-yaml "^3.13.1"
+    json5 "2"
+    lodash.merge "^4.6.2"
+
+"@app-config/cypress@2":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/cypress/-/cypress-2.4.5.tgz#d9f2f63bee94249b7797eae40bba1c2f16ea0725"
+  integrity sha512-qsrEhw21we+qVvTnRLR1ShTEt1UGAnqoTpQChb4xCyLbNduzJu6nVxnEZVlV9oM3b0EolQFcSQPaWYC+L4cY4w==
+
+"@app-config/default-extensions@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/default-extensions/-/default-extensions-2.4.5.tgz#2d1992a352efbe81ff54f8b8dde2c93c2f15c177"
+  integrity sha512-2vENo7U7TtF8/i1OW3dpCUtjwk4wv8op3X/2TeGT0zw08rOJwhycB6Bd4hnQjFuTszmldHCyMgyEQGmsVMaL1A==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/encryption" "^2.4.5"
+    "@app-config/extensions" "^2.4.5"
+    "@app-config/git" "^2.4.5"
+    "@app-config/v1-compat" "^2.1.4"
+
+"@app-config/encryption@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/encryption/-/encryption-2.4.5.tgz#fafa45af41dba143661ae1d1fa7adc8c325de4c8"
+  integrity sha512-+XqoV3qrpv89qy7icikOGqWFB1hXJ+eEPp3k1/ntgSfs+EBqQa2lBvOH1rvt7oVW9dBqVRbHT/1jDJ1JxFhx1w==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/meta" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/settings" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    "@lcdev/ws-rpc" "0.4"
+    "@types/openpgp" "4"
+    common-tags "1"
+    fs-extra "7"
+    openpgp "^4.3.0"
+    selfsigned "1"
+    text-encoding-utf-8 "1"
+    ws "7"
+
+"@app-config/extension-utils@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/extension-utils/-/extension-utils-2.4.5.tgz#42d3e464e61b9959e913c4bd19b86e8fc51f4745"
+  integrity sha512-KiL5arB7sDEFAwpvgIVeJGRluoX97rKqd6bsv0BH3jounf+adhQUKB+imWSZUx1boiOHIjgNIfZ62R78qnd79A==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@serafin/schema-builder" "0.14"
+
+"@app-config/extensions@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/extensions/-/extensions-2.4.5.tgz#7cbb172c04312b4384f717853117a15d36a5cefe"
+  integrity sha512-w1BxaiI912NUkjhIh1ECVcdVkJSdP7eYq/tLxey1VRrLwsouVItAI+Dh4312aBumxmlr0/iYaxBdA8ziNbSKwA==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/extension-utils" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    lodash.isequal "4"
+
+"@app-config/generate@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/generate/-/generate-2.4.5.tgz#563e3122a4764b1c3e1b993df6a3f5469167000f"
+  integrity sha512-dfBJ5NXNrz+pvviwvo4TK/OpPubbsWWgoUAy1x+dysZTPmd2cXA8deztAMeviXdzlPfYzHnG6uOvjrKO7a74gw==
+  dependencies:
+    "@app-config/logging" "^2.4.5"
+    "@app-config/meta" "^2.4.5"
+    "@app-config/schema" "^2.4.5"
+    "@types/readable-stream" "2"
+    "@types/urijs" "1"
+    common-tags "1"
+    fs-extra "7"
+    lodash "4"
+    quicktype-core "6.0.70"
+
+"@app-config/git@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/git/-/git-2.4.5.tgz#0535999fab7dfca39a4ea002f5208760dfaab903"
+  integrity sha512-ZiwCfV6gv6/9kHgoPlmwS/jvRzTmtKuJgwdMS3BX6HnoskQ9VlWDMKWTjLGS2kitTmCk/YvYJK1OBk5LpHgjGQ==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/extension-utils" "^2.4.5"
+    simple-git "2"
+
+"@app-config/logging@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/logging/-/logging-2.4.5.tgz#4a1ce9044bd3d38dc9aa228c55d252e1f6482c2f"
+  integrity sha512-nPI9dVfzfgvzIO/rLSS8rBl0BaNs4GA9Pmf55rdoVVyPKBGVjpIjWrtgvP2l9ZbbV7YrRJK2sFWZddUSzJA2Sw==
+  dependencies:
+    "@app-config/utils" "^2.4.5"
+
+"@app-config/main@2":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/main/-/main-2.4.5.tgz#bc1aa43ef387e68770431412bb550bce0414e29b"
+  integrity sha512-6IOVVEWi6+u4Mb8bVxDpvyIg7IfUlTRKUgbhoSyLldUFhAlcWaVYcb+Hdr6eRIJlG6O5Xu+lW28ROk1xaT8I3Q==
+  dependencies:
+    "@app-config/cli" "^2.4.5"
+    "@app-config/config" "^2.4.5"
+    "@app-config/core" "^2.4.5"
+    "@app-config/default-extensions" "^2.4.5"
+    "@app-config/encryption" "^2.4.5"
+    "@app-config/extensions" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/meta" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/schema" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    ajv "7"
+
+"@app-config/meta@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/meta/-/meta-2.4.5.tgz#ef8fa050c6d8d11034acd80012022b6c3098b208"
+  integrity sha512-bnEIbIEk3xn0e4CEbO3PaHYVIw7eB0QJfZLxz8cBsftf867so5FNKsh6qLwU1Rs/bvveLBg2trr42DP58+zqQw==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/default-extensions" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    fs-extra "7"
+
+"@app-config/node@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/node/-/node-2.4.5.tgz#0657c0112d6c70d0d66d6e04c790647571745b9a"
+  integrity sha512-cglyAjmiKo5rRcN0lwLCfqmGRH21VGabAGt6Q2l33qixNcQDA+OSPzOWIvBPi7t5BzaJAUAqEn9wwreV7Q53Kw==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@types/prompts" "2"
+    fs-extra "9"
+    prompts "2"
+
+"@app-config/react-native@2":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/react-native/-/react-native-2.4.5.tgz#0888d53705eceb6cec4b13423befa42a0653c168"
+  integrity sha512-7WRkUuj80C7XaeCkA1wpH2guDL3uVcboiU6AqSkfIb4u34bin8VwL+rBLgNabC382k5hP+6uX7V4sdQR+N2Gyg==
+  dependencies:
+    semver "7"
+
+"@app-config/schema@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/schema/-/schema-2.4.5.tgz#b6d1eb03062de06e56eb3bf95286ebcc267d0fe8"
+  integrity sha512-JmFsdK0NhZhl9FixFj1BzLB3h1WpZtJJL3YfTSCxZFy/1Jq2fGBUE03gTwjq+xCyTlCyYOf2h9quKcJR/EmK+Q==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    "@types/json-schema" "7"
+    ajv "7"
+    ajv-formats "1"
+    json-schema-ref-parser "9"
+
+"@app-config/settings@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/settings/-/settings-2.4.5.tgz#4f28c9bacdfda78cc2672c6edf90c1a3e336df66"
+  integrity sha512-AwNlOPW8/fhPHKRB/vcu55K9mchY1hmAbgmZKrVCX4i/zDKHK5s/OURHFVCHaaeSE0fL+7tDWjj2XKJX4ApQMQ==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    env-paths "2"
+    fs-extra "7"
+
+"@app-config/utils@2", "@app-config/utils@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/utils/-/utils-2.4.5.tgz#38ec91b4a942f419d0aec81d580dbd994681630d"
+  integrity sha512-GqiMzMoz+EDOLcZzzkZQSaX/wcU+ivFcFssRxUoL8byk+MH2OlZDp6ho0bbwwD4Ntk5jC0Lr95G7FxYVoo/Szw==
+
+"@app-config/v1-compat@^2.1.4":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/v1-compat/-/v1-compat-2.4.5.tgz#d5ad54c1c8bb658bb98ad49bbb2fc912ec94748f"
+  integrity sha512-+iVoRwmBDm0OxZNJxfQ5cBg8DoOOtCGVZEvUELmD7MTMI8izkawtdGFE/i8G87Lu673GE9Fny27XUIWfzaTQ7g==
+  dependencies:
+    "@app-config/core" "^2.4.5"
+    "@app-config/logging" "^2.4.5"
+    "@app-config/node" "^2.4.5"
+    "@app-config/utils" "^2.4.5"
+    fs-extra "7"
+
+"@app-config/webpack@2":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@app-config/webpack/-/webpack-2.4.5.tgz#6746e84dbc79f3ab87cbab5c1d39aef0a0de6125"
+  integrity sha512-XEAOecnHmvN71+XBtE7Yklrsyb+XqjTyll1Ag8oRlJIzlIrTETQqsSR7oxqEV4bwITDaxHIbWajmO+1ZaA7kMA==
+  dependencies:
+    loader-utils "2"
+
 "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.12.11.tgz#f4ad435aa263db935b8f10f2c552d23fb716a63f"
