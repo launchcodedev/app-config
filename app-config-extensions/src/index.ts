@@ -345,7 +345,7 @@ export function substituteDirective(
     validateObject(value, [...ctx, key]);
     if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
-    const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
+    const name = (await parse(value.name)).toJSON();
 
     validateString(name, [...ctx, key, [InObject, 'name']]);
 
@@ -356,7 +356,7 @@ export function substituteDirective(
     }
 
     if (resolvedValue) {
-      const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
+      const parseInt = (await parse(value.parseInt)).toJSON();
 
       if (parseInt) {
         const parsed = Number.parseInt(resolvedValue, 10);
@@ -368,7 +368,7 @@ export function substituteDirective(
         return parse(parsed, { shouldFlatten: true });
       }
 
-      const parseFloat = (await parse(selectDefined(value.parseFloat, value.$parseFloat))).toJSON();
+      const parseFloat = (await parse(value.parseFloat)).toJSON();
 
       if (parseFloat) {
         const parsed = Number.parseFloat(resolvedValue);
@@ -380,7 +380,7 @@ export function substituteDirective(
         return parse(parsed, { shouldFlatten: true });
       }
 
-      const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
+      const parseBool = (await parse(value.parseBool)).toJSON();
 
       if (parseBool) {
         const parsed = resolvedValue.toLowerCase() !== 'false' && resolvedValue !== '0';
@@ -392,8 +392,8 @@ export function substituteDirective(
     }
 
     if (value.fallback !== undefined || value.$fallback !== undefined) {
-      const fallback = (await parse(selectDefined(value.fallback, value.$fallback))).toJSON();
-      const allowNull = (await parse(selectDefined(value.allowNull, value.$allowNull))).toJSON();
+      const fallback = (await parse(value.fallback)).toJSON();
+      const allowNull = (await parse(value.allowNull)).toJSON();
 
       if (allowNull) {
         validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
@@ -531,14 +531,6 @@ function performAllSubstitutions(text: string, envType?: string): string {
   logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
 
   return output;
-}
-
-function selectDefined<T>(...args: (T | null | undefined)[]): T | null {
-  for (const a of args) {
-    if (a !== undefined) return a;
-  }
-
-  return (undefined as any) as T;
 }
 
 const validateObject: ValidationFunction<
