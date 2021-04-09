@@ -28,26 +28,19 @@ module.exports = {
       substituteDirective,
     } = require('@app-config/extensions');
 
-    const { default: encryptedDirective } = require('@app-config/encryption');
-    const { default: v1Compat } = require('@app-config/v1-compat');
-    const { default: gitRefDirectives } = require('@app-config/git');
-
     return [
       unescape$Directives(),
       tryDirective(),
       ifDirective(),
       eqDirective(),
       hiddenDirective(),
-      v1Compat(),
       envDirective(aliases, environmentOverride, environmentSourceNames),
       envVarDirective(aliases, environmentOverride, environmentSourceNames),
       extendsDirective(),
       extendsSelfDirective(),
       overrideDirective(),
-      encryptedDirective(symmetricKey),
       timestampDirective(),
       substituteDirective(aliases, environmentOverride, environmentSourceNames),
-      gitRefDirectives(),
     ];
   },
   defaultEnvExtensions() {
