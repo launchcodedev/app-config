@@ -1,7 +1,7 @@
 {
   "name": "@app-config/default-extensions",
   "description": "Default parsing extensions for @app-config",
-  "version": "3.0.0-alpha.2",
+  "version": "3.0.0-alpha.3",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -22,8 +22,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@app-config/core": "^3.0.0-alpha.2",
-    "@app-config/extensions": "^3.0.0-alpha.2"
+    "@app-config/core": "^3.0.0-alpha.3",
+    "@app-config/extensions": "^3.0.0-alpha.3"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
