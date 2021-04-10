@@ -411,26 +411,37 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
           SchemaBuilder.emptySchema()
             .addString('path')
             .addBoolean('optional', {}, false)
-            .addString('select', {}, false),
+            .addString('select', {}, false)
+            .addString('env', {}, false),
         );
 
         return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
       },
-      (value) => async (_, __, context, extensions) => {
-        const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
-          const resolvedPath = resolveFilepath(context, filepath);
+      (value, _, context) => async (_, __, originalSource, extensions) => {
+        const retrieveFile = async (
+          filepath: string,
+          subselector?: string,
+          isOptional = false,
+          env?: string,
+        ) => {
+          const resolvedPath = resolveFilepath(originalSource, filepath);
 
           logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
 
           const source = new FileSource(resolvedPath);
 
-          const parsed = await source.read(extensions).catch((error) => {
-            if (error instanceof NotFoundError && isOptional) {
-              return ParsedValue.literal({});
-            }
+          const parsed = await source
+            .read(extensions, {
+              ...context,
+              environmentOverride: env ?? context.environmentOverride,
+            })
+            .catch((error) => {
+              if (error instanceof NotFoundError && isOptional) {
+                return ParsedValue.literal({});
+              }
 
-            throw error;
-          });
+              throw error;
+            });
 
           if (subselector) {
             const found = parsed.property(subselector.split('.'));
@@ -458,15 +469,15 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
             if (typeof ext === 'string') {
               parsed = ParsedValue.merge(parsed, await retrieveFile(ext));
             } else {
-              const { path, optional, select } = ext;
+              const { path, optional, select, env } = ext;
 
-              parsed = ParsedValue.merge(parsed, await retrieveFile(path, select, optional));
+              parsed = ParsedValue.merge(parsed, await retrieveFile(path, select, optional, env));
             }
           }
         } else {
-          const { path, optional, select } = value;
+          const { path, optional, select, env } = value;
 
-          parsed = await retrieveFile(path, select, optional);
+          parsed = await retrieveFile(path, select, optional, env);
         }
 
         return parsed.assignMeta(meta);

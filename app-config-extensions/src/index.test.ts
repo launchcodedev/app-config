@@ -843,6 +843,31 @@ describe('$env directive', () => {
     const parsed2 = await source.read([envDirective()]);
     expect(parsed2.toJSON()).toEqual({ sibling: true, testing: false });
   });
+
+  it('overrides env', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          foo:
+            $env:
+              default: 44
+              dev: 88
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 88 });
+      },
+    );
+  });
 });
 
 /* eslint-disable no-template-curly-in-string */
