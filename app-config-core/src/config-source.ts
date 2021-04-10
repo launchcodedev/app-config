@@ -4,7 +4,7 @@ import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
 import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
 import { Json, JsonObject } from '@app-config/utils';
 import { logger } from '@app-config/logging';
-import { ParsedValue, ParsingExtension } from './parsed-value';
+import { ParsedValue, ParsingContext, ParsingExtension } from './parsed-value';
 import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
 
 export enum FileType {
@@ -30,15 +30,15 @@ export abstract class ConfigSource {
   }
 
   /** Reads the contents of the source into a full ParsedValue (not the raw JSON, like readValue) */
-  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
     const rawValue = await this.readValue();
 
-    return ParsedValue.parse(rawValue, this, extensions);
+    return ParsedValue.parse(rawValue, this, extensions, undefined, context);
   }
 
   /** Ergonomic helper for chaining `source.read(extensions).then(v => v.toJSON())` */
-  async readToJSON(extensions?: ParsingExtension[]): Promise<Json> {
-    const parsed = await this.read(extensions);
+  async readToJSON(extensions?: ParsingExtension[], context?: ParsingContext): Promise<Json> {
+    const parsed = await this.read(extensions, context);
 
     return parsed.toJSON();
   }
@@ -82,8 +82,10 @@ export class CombinedSource extends ConfigSource {
   }
 
   // override so that ParsedValue is directly from the originating ConfigSource
-  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
-    const values = await Promise.all(this.sources.map((source) => source.read(extensions)));
+  async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
+    const values = await Promise.all(
+      this.sources.map((source) => source.read(extensions, context)),
+    );
 
     const merged = values.reduce<ParsedValue | undefined>((acc, parsed) => {
       if (!acc) return parsed;
@@ -137,11 +139,11 @@ export class FallbackSource extends ConfigSource {
   }
 
   // override so that ParsedValue is directly from the originating ConfigSource
-  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
     // take the first value that comes back without an error
     for (const source of this.sources) {
       try {
-        const value = await source.read(extensions);
+        const value = await source.read(extensions, context);
         logger.verbose(`FallbackSource found successful source`);
 
         return value;

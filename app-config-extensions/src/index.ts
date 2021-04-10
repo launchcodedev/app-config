@@ -534,7 +534,7 @@ function getEnv(context: ParsingContext) {
 
   return (
     (environmentOverride as string) ??
-    currentEnvironment(getAliases(context), environmentSourceNames as string)
+    currentEnvironment(getAliases(context), environmentSourceNames as string | string[])
   );
 }
 

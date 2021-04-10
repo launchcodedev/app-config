@@ -4,7 +4,6 @@
 
 // NOTE: Also, we don't require modules up-front - lazy load them instead.
 // This avoids circular dependency chains.
-const { defaultAliases } = require('@app-config/node');
 
 module.exports = {
   defaultExtensions() {

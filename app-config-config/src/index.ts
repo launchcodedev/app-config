@@ -90,9 +90,7 @@ export async function loadUnvalidatedConfig({
   const environmentAliases =
     environmentAliasesArg ?? meta.value.environmentAliases ?? defaultAliases;
 
-  const parsingExtensions =
-    parsingExtensionsArg ??
-    defaultExtensions(environmentAliases, environmentOverride, undefined, environmentSourceNames);
+  const parsingExtensions = parsingExtensionsArg ?? defaultExtensions();
 
   const secretsFileExtensions =
     secretsFileExtensionsArg ?? parsingExtensions.concat(markAllValuesAsSecret());
@@ -112,7 +110,6 @@ export async function loadUnvalidatedConfig({
       join(directory, fileNameBase),
       environmentOverride,
       environmentAliases,
-      undefined,
       environmentSourceNames,
     ).read(parsingExtensions),
 
@@ -120,7 +117,6 @@ export async function loadUnvalidatedConfig({
       join(directory, secretsFileNameBase),
       environmentOverride,
       environmentAliases,
-      undefined,
       environmentSourceNames,
     )
       .read(secretsFileExtensions)
@@ -210,6 +206,7 @@ export async function loadValidatedConfig(
         : undefined,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
+      environmentSourceNames: options?.environmentSourceNames,
       ...schemaOptions,
     }),
     loadUnvalidatedConfig(options),

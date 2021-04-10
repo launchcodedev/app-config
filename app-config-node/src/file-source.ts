@@ -8,6 +8,7 @@ import {
   ParsingExtension,
   AppConfigError,
   NotFoundError,
+  ParsingContext,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
 import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
@@ -46,8 +47,8 @@ export class FlexibleFileSource extends ConfigSource {
     private readonly filePath: string,
     private readonly environmentOverride?: string,
     private readonly environmentAliases: EnvironmentAliases = defaultAliases,
-    private readonly fileExtensions: string[] = ['yml', 'yaml', 'toml', 'json', 'json5'],
     private readonly environmentSourceNames?: string[] | string,
+    private readonly fileExtensions: string[] = ['yml', 'yaml', 'toml', 'json', 'json5'],
   ) {
     super();
   }
@@ -90,10 +91,15 @@ export class FlexibleFileSource extends ConfigSource {
     return this.resolveSource().then((source) => source.readContents());
   }
 
-  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
+  async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
     const source = await this.resolveSource();
 
-    return source.read(extensions);
+    return source.read(extensions, {
+      environmentOverride: this.environmentOverride,
+      environmentAliases: this.environmentAliases,
+      environmentSourceNames: this.environmentSourceNames,
+      ...context,
+    });
   }
 }
 

@@ -15,7 +15,6 @@ import {
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
 import {
-  defaultAliases,
   EnvironmentAliases,
   EnvironmentSource,
   FileSource,
@@ -30,6 +29,7 @@ export interface SchemaLoadingOptions {
   environmentVariableName?: string;
   environmentOverride?: string;
   environmentAliases?: EnvironmentAliases;
+  environmentSourceNames?: string[] | string;
   parsingExtensions?: ParsingExtension[];
 }
 
@@ -48,7 +48,8 @@ export async function loadSchema({
   fileNameBase = '.app-config.schema',
   environmentVariableName = 'APP_CONFIG_SCHEMA',
   environmentOverride,
-  environmentAliases = defaultAliases,
+  environmentAliases,
+  environmentSourceNames,
   parsingExtensions = [],
 }: SchemaLoadingOptions = {}): Promise<Schema> {
   const env = new EnvironmentSource(environmentVariableName);
@@ -72,6 +73,7 @@ export async function loadSchema({
       join(directory, fileNameBase),
       environmentOverride,
       environmentAliases,
+      environmentSourceNames,
     );
 
     parsed = await source.read(parsingExtensions);

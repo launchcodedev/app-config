@@ -17,7 +17,9 @@ export type ParsingExtensionKey =
   | [typeof InArray, number]
   | [typeof Root];
 
-export type ParsingContext = Record<string, string | Record<string, string>>;
+export interface ParsingContext {
+  [k: string]: string | Record<string, string> | string[] | undefined;
+}
 
 export type ParsingExtension<T extends Json = Json> = (
   value: T,
@@ -69,8 +71,9 @@ export class ParsedValue {
     source: ConfigSource,
     extensions?: ParsingExtension[],
     metadata?: ParsedValueMetadata,
+    context?: ParsingContext,
   ): Promise<ParsedValue> {
-    return parseValue(raw, source, extensions, metadata);
+    return parseValue(raw, source, extensions, metadata, context);
   }
 
   /** Parses (with extensions) from a plain JSON object */
