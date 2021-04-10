@@ -3,9 +3,9 @@
 exports[`Code Generation validates using the generated code 1`] = `
 Array [
   Object {
-    "dataPath": "",
+    "instancePath": "",
     "keyword": "required",
-    "message": "should have required property 'foo'",
+    "message": "must have required property 'foo'",
     "params": Object {
       "missingProperty": "foo",
     },

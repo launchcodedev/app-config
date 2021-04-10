@@ -43,7 +43,7 @@
     "@app-config/node": "^3.0.0-alpha.2",
     "@app-config/schema": "^3.0.0-alpha.2",
     "@app-config/utils": "^3.0.0-alpha.2",
-    "ajv": "7"
+    "ajv": "8"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
