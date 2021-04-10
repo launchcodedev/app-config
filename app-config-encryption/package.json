@@ -1,7 +1,7 @@
 {
   "name": "@app-config/encryption",
   "description": "Secret value encryption for @app-config",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,12 +30,12 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^3.0.0-alpha.1",
-    "@app-config/logging": "^3.0.0-alpha.1",
-    "@app-config/meta": "^3.0.0-alpha.1",
-    "@app-config/node": "^3.0.0-alpha.1",
-    "@app-config/settings": "^3.0.0-alpha.1",
-    "@app-config/utils": "^3.0.0-alpha.1",
+    "@app-config/core": "^3.0.0-alpha.2",
+    "@app-config/logging": "^3.0.0-alpha.2",
+    "@app-config/meta": "^3.0.0-alpha.2",
+    "@app-config/node": "^3.0.0-alpha.2",
+    "@app-config/settings": "^3.0.0-alpha.2",
+    "@app-config/utils": "^3.0.0-alpha.2",
     "@lcdev/ws-rpc": "0.4",
     "@types/openpgp": "4",
     "common-tags": "1",
@@ -46,7 +46,7 @@
     "ws": "7"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^3.0.0-alpha.1",
+    "@app-config/test-utils": "^3.0.0-alpha.2",
     "get-port": "5"
   },
   "prettier": "@lcdev/prettier",
