@@ -32,7 +32,7 @@ describe('Config Loading', () => {
 
     cy.visit('/');
 
-    cy.get('body').should('contain', `Config Error: should NOT have fewer than 10 characters`);
+    cy.get('body').should('contain', `Config Error: must NOT have fewer than 10 characters`);
   });
 
   it('uses config from webpack preprocessor', () => {
