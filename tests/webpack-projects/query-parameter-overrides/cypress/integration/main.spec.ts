@@ -22,12 +22,12 @@ describe('Config Loading', () => {
   it('should not accept invalid query parameter override', () => {
     cy.visit(`/?config=${JSON.stringify({ urlProperty: 'not a url' })}`);
 
-    cy.get('body').should('contain', `Config Error: should match format "uri"`);
+    cy.get('body').should('contain', `Config Error: must match format "uri"`);
   });
 
   it('should not accept invalid longStringProperty', () => {
     cy.visit(`/?config=${JSON.stringify({ longStringProperty: 'short' })}`);
 
-    cy.get('body').should('contain', `Config Error: should NOT have fewer than 10 characters`);
+    cy.get('body').should('contain', `Config Error: must NOT have fewer than 10 characters`);
   });
 });
