@@ -37,6 +37,17 @@ export function forKey(
   };
 }
 
+export function keysToPath(keys: ParsingExtensionKey[]): string {
+  if (keys.length === 0) return 'root';
+
+  return (
+    keys
+      .map(([, k]) => k)
+      .filter((v) => v)
+      .join('.') || 'root'
+  );
+}
+
 export class ParsingExtensionInvalidOptions extends AppConfigError {}
 
 export function validateOptions<T>(
@@ -90,13 +101,9 @@ export function validationFunction<T>(
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown';
 
-      const parents =
-        ctx
-          .map(([, k]) => k)
-          .filter((v) => !!v)
-          .join('.') || 'root';
-
-      throw new ParsingExtensionInvalidOptions(`Validation failed in "${parents}": ${message}`);
+      throw new ParsingExtensionInvalidOptions(
+        `Validation failed in "${keysToPath(ctx)}": ${message}`,
+      );
     }
   };
 }

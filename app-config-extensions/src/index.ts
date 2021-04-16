@@ -1,6 +1,7 @@
 import isEqual from 'lodash.isequal';
 import {
   forKey,
+  keysToPath,
   validateOptions,
   validationFunction,
   ValidationFunction,
@@ -173,7 +174,7 @@ export function envDirective(
     '$env',
     validateOptions(
       (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
-      (value) => (parse) => {
+      (value, _, ctx) => (parse) => {
         if (!environment) {
           if ('none' in value) {
             return parse(value.none, metadata);
@@ -184,7 +185,9 @@ export function envDirective(
           }
 
           throw new AppConfigError(
-            `An $env directive was used, but current environment (eg. NODE_ENV) is undefined`,
+            `An $env directive was used (in ${keysToPath(
+              ctx,
+            )}), but current environment (eg. NODE_ENV) is undefined`,
           );
         }
 
@@ -201,7 +204,9 @@ export function envDirective(
         const found = Object.keys(value).join(', ');
 
         throw new AppConfigError(
-          `An $env directive was used, but none matched the current environment (wanted ${environment}, saw [${found}])`,
+          `An $env directive was used (in ${keysToPath(
+            ctx,
+          )}), but none matched the current environment (wanted ${environment}, saw [${found}])`,
         );
       },
       // $env is lazy so that non-applicable envs don't get evaluated
