@@ -32,6 +32,7 @@
   "dependencies": {
     "@app-config/core": "^2.4.6",
     "@app-config/extension-utils": "^2.4.6",
+    "@app-config/logging": "^2.4.6",
     "simple-git": "2"
   },
   "devDependencies": {
