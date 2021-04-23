@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config-webpack-plugin",
   "description": "Alias for @app-config/webpack",
-  "version": "2.4.5",
+  "version": "2.4.6",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/webpack": "^2.4.5"
+    "@app-config/webpack": "^2.4.6"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
