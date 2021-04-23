@@ -1495,6 +1495,14 @@ describe('$envVar directive', () => {
 
     expect(parsed.toJSON()).toEqual({ foo: 'qa' });
   });
+
+  it('parses boolean from fallback', async () => {
+    const source = new LiteralSource({
+      $envVar: { name: 'FOO', parseBool: true, fallback: 'true' },
+    });
+
+    expect(await source.readToJSON([envVarDirective()])).toEqual(true);
+  });
 });
 
 describe('$timestamp directive', () => {

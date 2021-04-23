@@ -281,6 +281,36 @@ export function envVarDirective(
       name = resolved;
     }
 
+    const parseValue = (value: string) => {
+      if (parseInt) {
+        const parsed = Number.parseInt(value, 10);
+
+        if (Number.isNaN(parsed)) {
+          throw new AppConfigError(`Failed to parseInt(${value})`);
+        }
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      if (parseFloat) {
+        const parsed = Number.parseFloat(value);
+
+        if (Number.isNaN(parsed)) {
+          throw new AppConfigError(`Failed to parseFloat(${value})`);
+        }
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      if (parseBool) {
+        const parsed = value.toLowerCase() !== 'false' && value !== '0';
+
+        return parse(parsed, { shouldFlatten: true });
+      }
+
+      return parse(value, { shouldFlatten: true });
+    };
+
     let resolvedValue = process.env[name];
 
     if (!resolvedValue && name === 'APP_CONFIG_ENV') {
@@ -288,33 +318,7 @@ export function envVarDirective(
     }
 
     if (resolvedValue) {
-      if (parseInt) {
-        const parsed = Number.parseInt(resolvedValue, 10);
-
-        if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseInt(${resolvedValue})`);
-        }
-
-        return parse(parsed, { shouldFlatten: true });
-      }
-
-      if (parseFloat) {
-        const parsed = Number.parseFloat(resolvedValue);
-
-        if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseFloat(${resolvedValue})`);
-        }
-
-        return parse(parsed, { shouldFlatten: true });
-      }
-
-      if (parseBool) {
-        const parsed = resolvedValue.toLowerCase() !== 'false' && resolvedValue !== '0';
-
-        return parse(parsed, { shouldFlatten: true });
-      }
-
-      return parse(resolvedValue, { shouldFlatten: true });
+      return parseValue(resolvedValue);
     }
 
     if (typeof value === 'object' && value.fallback !== undefined) {
@@ -327,7 +331,7 @@ export function envVarDirective(
         validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
       }
 
-      return parse(fallback, { shouldFlatten: true });
+      return parseValue(fallback);
     }
 
     throw new AppConfigError(`$envVar could not find ${name} environment variable`);
