@@ -281,34 +281,34 @@ export function envVarDirective(
       name = resolved;
     }
 
-    const parseValue = (value: string) => {
+    const parseValue = (strValue: string) => {
       if (parseInt) {
-        const parsed = Number.parseInt(value, 10);
+        const parsed = Number.parseInt(strValue, 10);
 
         if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseInt(${value})`);
+          throw new AppConfigError(`Failed to parseInt(${strValue})`);
         }
 
         return parse(parsed, { shouldFlatten: true });
       }
 
       if (parseFloat) {
-        const parsed = Number.parseFloat(value);
+        const parsed = Number.parseFloat(strValue);
 
         if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseFloat(${value})`);
+          throw new AppConfigError(`Failed to parseFloat(${strValue})`);
         }
 
         return parse(parsed, { shouldFlatten: true });
       }
 
       if (parseBool) {
-        const parsed = value.toLowerCase() !== 'false' && value !== '0';
+        const parsed = strValue.toLowerCase() !== 'false' && strValue !== '0';
 
         return parse(parsed, { shouldFlatten: true });
       }
 
-      return parse(value, { shouldFlatten: true });
+      return parse(strValue, { shouldFlatten: true });
     };
 
     let resolvedValue = process.env[name];
@@ -358,20 +358,14 @@ export function substituteDirective(
 
     validateString(name, [...ctx, key, [InObject, 'name']]);
 
-    let resolvedValue = process.env[name];
-
-    if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-      resolvedValue = envType;
-    }
-
-    if (resolvedValue) {
+    const parseValue = async (strValue: string) => {
       const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
 
       if (parseInt) {
-        const parsed = Number.parseInt(resolvedValue, 10);
+        const parsed = Number.parseInt(strValue, 10);
 
         if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseInt(${resolvedValue})`);
+          throw new AppConfigError(`Failed to parseInt(${strValue})`);
         }
 
         return parse(parsed, { shouldFlatten: true });
@@ -380,10 +374,10 @@ export function substituteDirective(
       const parseFloat = (await parse(selectDefined(value.parseFloat, value.$parseFloat))).toJSON();
 
       if (parseFloat) {
-        const parsed = Number.parseFloat(resolvedValue);
+        const parsed = Number.parseFloat(strValue);
 
         if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseFloat(${resolvedValue})`);
+          throw new AppConfigError(`Failed to parseFloat(${strValue})`);
         }
 
         return parse(parsed, { shouldFlatten: true });
@@ -392,12 +386,22 @@ export function substituteDirective(
       const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
 
       if (parseBool) {
-        const parsed = resolvedValue.toLowerCase() !== 'false' && resolvedValue !== '0';
+        const parsed = strValue.toLowerCase() !== 'false' && strValue !== '0';
 
         return parse(parsed, { shouldFlatten: true });
       }
 
-      return parse(resolvedValue, { shouldFlatten: true });
+      return parse(strValue, { shouldFlatten: true });
+    };
+
+    let resolvedValue = process.env[name];
+
+    if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+      resolvedValue = envType;
+    }
+
+    if (resolvedValue) {
+      return parseValue(resolvedValue);
     }
 
     if (value.fallback !== undefined || value.$fallback !== undefined) {
@@ -410,7 +414,7 @@ export function substituteDirective(
         validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
       }
 
-      return parse(fallback, { shouldFlatten: true });
+      return parseValue(fallback);
     }
 
     throw new AppConfigError(`$substitute could not find ${name} environment variable`);
