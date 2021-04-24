@@ -1,13 +1,14 @@
 import { join, dirname, extname } from 'path';
 import { pathExists } from 'fs-extra';
 import { isObject } from '@app-config/utils';
+import { named } from '@app-config/extension-utils';
 import { ParsingExtension, Root } from '@app-config/core';
 import { FileSource } from '@app-config/node';
 import { logger } from '@app-config/logging';
 
 /** V1 app-config compatibility */
 export default function v1Compat(): ParsingExtension {
-  return (value, [_, key], context) => {
+  return named('v1-compat', (value, [_, key], context) => {
     // only apply in top-level app-config property
     if (context[context.length - 1]?.[0] !== Root) {
       return false;
@@ -97,5 +98,5 @@ export default function v1Compat(): ParsingExtension {
     }
 
     return false;
-  };
+  });
 }

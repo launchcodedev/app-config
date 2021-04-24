@@ -1,6 +1,6 @@
 import simpleGit from 'simple-git';
 import { ParsingExtension, AppConfigError, Fallbackable } from '@app-config/core';
-import { forKey, validateOptions } from '@app-config/extension-utils';
+import { named, forKey, validateOptions } from '@app-config/extension-utils';
 
 class GitError extends Fallbackable {}
 
@@ -8,41 +8,44 @@ class GitError extends Fallbackable {}
 export default function gitRefDirectives(
   getStatus: typeof gitStatus = gitStatus,
 ): ParsingExtension {
-  return forKey(
+  return named(
     '$git',
-    validateOptions(
-      (SchemaBuilder) => SchemaBuilder.stringSchema(),
-      (value) => async (parse) => {
-        switch (value) {
-          case 'commit':
-            return getStatus().then(({ commitRef }) => parse(commitRef, { shouldFlatten: true }));
+    forKey(
+      '$git',
+      validateOptions(
+        (SchemaBuilder) => SchemaBuilder.stringSchema(),
+        (value) => async (parse) => {
+          switch (value) {
+            case 'commit':
+              return getStatus().then(({ commitRef }) => parse(commitRef, { shouldFlatten: true }));
 
-          case 'commitShort':
-            return getStatus().then(({ commitRef }) =>
-              parse(commitRef.slice(0, 7), { shouldFlatten: true }),
-            );
+            case 'commitShort':
+              return getStatus().then(({ commitRef }) =>
+                parse(commitRef.slice(0, 7), { shouldFlatten: true }),
+              );
 
-          case 'branch':
-          case 'branchName':
-            return getStatus().then(({ branchName }) => {
-              if (!branchName) {
-                throw new AppConfigError(
-                  'The $git directive tried to retrieve branchname, but it appears no branch is checked out',
-                );
-              }
+            case 'branch':
+            case 'branchName':
+              return getStatus().then(({ branchName }) => {
+                if (!branchName) {
+                  throw new AppConfigError(
+                    'The $git directive tried to retrieve branchname, but it appears no branch is checked out',
+                  );
+                }
 
-              return parse(branchName, { shouldFlatten: true });
-            });
+                return parse(branchName, { shouldFlatten: true });
+              });
 
-          case 'tag':
-            return getStatus().then(({ tag }) => {
-              return parse(tag ?? null, { shouldFlatten: true });
-            });
+            case 'tag':
+              return getStatus().then(({ tag }) => {
+                return parse(tag ?? null, { shouldFlatten: true });
+              });
 
-          default:
-            throw new AppConfigError('$git directive was not passed a valid option');
-        }
-      },
+            default:
+              throw new AppConfigError('$git directive was not passed a valid option');
+          }
+        },
+      ),
     ),
   );
 }
