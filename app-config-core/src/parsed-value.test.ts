@@ -60,6 +60,22 @@ describe('parseValue', () => {
     return false;
   };
 
+  const appendExtension = (suffix: string): ParsingExtension => (value) => {
+    if (typeof value === 'string') {
+      return (parse) => parse(value + suffix);
+    }
+
+    return false;
+  };
+
+  const namedAppendExtension = (suffix: string): ParsingExtension => {
+    const extension = appendExtension(suffix);
+
+    return Object.assign(extension, {
+      extensionName: 'namedAppendExtension',
+    });
+  };
+
   const secretExtension: ParsingExtension = (_, [keyType, key]) => {
     if (keyType === InObject && key === '$secret') {
       return (parse) => parse('revealed!', { shouldFlatten: true });
@@ -175,11 +191,21 @@ describe('parseValue', () => {
   it('allows the same extension to be applied twice', async () => {
     const source = new LiteralSource('string');
     const parsed = await parseValue(await source.readValue(), source, [
-      uppercaseExtension,
-      uppercaseExtension,
+      appendExtension('-appended'),
+      appendExtension('-appended2'),
     ]);
 
-    expect(parsed.toJSON()).toEqual('STRING');
+    expect(parsed.toJSON()).toEqual('string-appended-appended2');
+  });
+
+  it('respects extensionName', async () => {
+    const source = new LiteralSource('string');
+    const parsed = await parseValue(await source.readValue(), source, [
+      namedAppendExtension('-appended'),
+      namedAppendExtension('-appended2'),
+    ]);
+
+    expect(parsed.toJSON()).toEqual('string-appended');
   });
 
   it('allows the same extension apply at different levels of a tree', async () => {

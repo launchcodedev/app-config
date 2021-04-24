@@ -14,6 +14,12 @@ export function composeExtensions(extensions: ParsingExtension[]): ParsingExtens
   };
 }
 
+export function named(name: string, parsingExtension: ParsingExtension): ParsingExtension {
+  Object.defineProperty(parsingExtension, '_extensionName', { value: name });
+
+  return parsingExtension;
+}
+
 export function forKey(
   key: string | string[],
   parsingExtension: ParsingExtension,

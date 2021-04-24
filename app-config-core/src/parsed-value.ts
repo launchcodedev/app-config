@@ -17,11 +17,18 @@ export type ParsingExtensionKey =
   | [typeof InArray, number]
   | [typeof Root];
 
-export type ParsingExtension = (
-  value: Json,
-  key: ParsingExtensionKey,
-  context: ParsingExtensionKey[],
-) => false | ParsingExtensionTransform;
+export interface ParsingExtension {
+  (value: Json, key: ParsingExtensionKey, context: ParsingExtensionKey[]):
+    | ParsingExtensionTransform
+    | false;
+
+  /**
+   * A globally unique string that identifies what parsing extension this is.
+   *
+   * Used to avoid running the same extension twice when included twice.
+   */
+  extensionName?: string;
+}
 
 export type ParsingExtensionTransform = (
   parse: (
@@ -351,7 +358,7 @@ async function parseValueInner(
   context: ParsingExtensionKey[],
   root: Json,
   parent?: JsonObject | Json[],
-  visitedExtensions: ParsingExtension[] = [],
+  visitedExtensions: Set<ParsingExtension | string> = new Set(),
 ): Promise<ParsedValue> {
   const [currentKey] = context.slice(-1);
   const contextualKeys = context.slice(0, context.length - 1);
@@ -367,13 +374,20 @@ async function parseValueInner(
   // for this reason, we pass "parse" as a function to extensions, so they can recurse as needed
   for (const extension of extensions) {
     // we track visitedExtensions so that calling `parse` in an extension doesn't hit that same extension with the same value
-    if (visitedExtensions.includes(extension)) continue;
+    if (visitedExtensions.has(extension)) continue;
+    if (extension.extensionName && visitedExtensions.has(extension.extensionName)) continue;
 
     const applicable = extension(value, currentKey, contextualKeys);
 
-    if (applicable && !applicableExtension) {
+    if (applicable) {
       applicableExtension = applicable;
-      visitedExtensions.push(extension);
+      visitedExtensions.add(extension);
+
+      if (extension.extensionName) {
+        visitedExtensions.add(extension.extensionName);
+      }
+
+      break;
     }
   }
 
