@@ -1,5 +1,6 @@
 import isEqual from 'lodash.isequal';
 import {
+  named,
   forKey,
   keysToPath,
   validateOptions,
@@ -27,12 +28,12 @@ import { logger } from '@app-config/logging';
 
 /** Marks all values recursively as fromSecrets, so they do not trigger schema errors */
 export function markAllValuesAsSecret(): ParsingExtension {
-  return (value) => (parse) => parse(value, { fromSecrets: true });
+  return named('markAllValuesAsSecret', (value) => (parse) => parse(value, { fromSecrets: true }));
 }
 
 /** When a key $$foo is seen, change it to be $foo and mark with meta property fromEscapedDirective */
 export function unescape$Directives(): ParsingExtension {
-  return (value, [_, key]) => {
+  return named('unescape$', (value, [_, key]) => {
     if (typeof key === 'string' && key.startsWith('$$')) {
       return async (parse) => {
         return parse(value, { rewriteKey: key.slice(1), fromEscapedDirective: true });
@@ -40,100 +41,112 @@ export function unescape$Directives(): ParsingExtension {
     }
 
     return false;
-  };
+  });
 }
 
 /** Try an operation, with a fallback ($try, $value and $fallback) */
 export function tryDirective(): ParsingExtension {
-  return forKey(
+  return named(
     '$try',
-    validateOptions(
-      (SchemaBuilder) =>
-        SchemaBuilder.emptySchema()
-          .addProperty('$value', SchemaBuilder.fromJsonSchema({}))
-          .addProperty('$fallback', SchemaBuilder.fromJsonSchema({}))
-          .addBoolean('$unsafe', {}, false),
-      (value) => async (parse) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const { $value, $fallback, $unsafe } = value;
+    forKey(
+      '$try',
+      validateOptions(
+        (SchemaBuilder) =>
+          SchemaBuilder.emptySchema()
+            .addProperty('$value', SchemaBuilder.fromJsonSchema({}))
+            .addProperty('$fallback', SchemaBuilder.fromJsonSchema({}))
+            .addBoolean('$unsafe', {}, false),
+        (value) => async (parse) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const { $value, $fallback, $unsafe } = value;
 
-        try {
-          return await parse($value, { shouldFlatten: true });
-        } catch (error) {
-          if (error instanceof Fallbackable || $unsafe) {
-            return parse($fallback, { shouldFlatten: true });
+          try {
+            return await parse($value, { shouldFlatten: true });
+          } catch (error) {
+            if (error instanceof Fallbackable || $unsafe) {
+              return parse($fallback, { shouldFlatten: true });
+            }
+
+            throw error;
           }
-
-          throw error;
-        }
-      },
-      { lazy: true },
+        },
+        { lazy: true },
+      ),
     ),
   );
 }
 
 /** Checks a condition, uses then/else */
 export function ifDirective(): ParsingExtension {
-  return forKey(
+  return named(
     '$if',
-    validateOptions(
-      (SchemaBuilder) =>
-        SchemaBuilder.emptySchema()
-          .addProperty('$check', SchemaBuilder.fromJsonSchema({}))
-          .addProperty('$then', SchemaBuilder.fromJsonSchema({}))
-          .addProperty('$else', SchemaBuilder.fromJsonSchema({})),
-      (value) => async (parse) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const { $check, $then, $else } = value;
-        const condition = (await parse($check)).toJSON();
+    forKey(
+      '$if',
+      validateOptions(
+        (SchemaBuilder) =>
+          SchemaBuilder.emptySchema()
+            .addProperty('$check', SchemaBuilder.fromJsonSchema({}))
+            .addProperty('$then', SchemaBuilder.fromJsonSchema({}))
+            .addProperty('$else', SchemaBuilder.fromJsonSchema({})),
+        (value) => async (parse) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const { $check, $then, $else } = value;
+          const condition = (await parse($check)).toJSON();
 
-        if (condition) {
-          return parse($then, { shouldFlatten: true });
-        }
-        return parse($else, { shouldFlatten: true });
-      },
-      { lazy: true },
+          if (condition) {
+            return parse($then, { shouldFlatten: true });
+          }
+          return parse($else, { shouldFlatten: true });
+        },
+        { lazy: true },
+      ),
     ),
   );
 }
 
 /** Checks if two values are equal */
 export function eqDirective(): ParsingExtension {
-  return forKey(
+  return named(
     '$eq',
-    validateOptions(
-      (SchemaBuilder) => SchemaBuilder.arraySchema(SchemaBuilder.fromJsonSchema({})),
-      (values) => async (parse) => {
-        for (const a of values) {
-          for (const b of values) {
-            if (a === b) continue;
-            if (isEqual(a, b)) continue;
+    forKey(
+      '$eq',
+      validateOptions(
+        (SchemaBuilder) => SchemaBuilder.arraySchema(SchemaBuilder.fromJsonSchema({})),
+        (values) => async (parse) => {
+          for (const a of values) {
+            for (const b of values) {
+              if (a === b) continue;
+              if (isEqual(a, b)) continue;
 
-            return parse(false, { shouldFlatten: true });
+              return parse(false, { shouldFlatten: true });
+            }
           }
-        }
 
-        return parse(true, { shouldFlatten: true });
-      },
+          return parse(true, { shouldFlatten: true });
+        },
+      ),
     ),
   );
 }
 
 /** Prpoerties that are removed, used by references */
 export function hiddenDirective(): ParsingExtension {
-  return forKey('$hidden', () => async (parse) => {
-    return parse({}, { shouldMerge: true });
-  });
+  return named(
+    '$hidden',
+    forKey('$hidden', () => async (parse) => {
+      return parse({}, { shouldMerge: true });
+    }),
+  );
 }
 
 /** Uses another file as overriding values, layering them on top of current file */
 export function overrideDirective(): ParsingExtension {
-  return fileReferenceDirective('$override', { shouldOverride: true });
+  return named('$override', fileReferenceDirective('$override', { shouldOverride: true }));
 }
 
 /** Uses another file as a "base", and extends on top of it */
 export function extendsDirective(): ParsingExtension {
-  return fileReferenceDirective('$extends', { shouldMerge: true });
+  return named('$extends', fileReferenceDirective('$extends', { shouldMerge: true }));
 }
 
 /** Lookup a property in the same file, and "copy" it */
@@ -142,23 +155,26 @@ export function extendsSelfDirective(): ParsingExtension {
     stringSchema(),
   );
 
-  return forKey('$extendsSelf', (input, key, ctx) => async (parse, _, __, ___, root) => {
-    const value = (await parse(input)).toJSON();
-    validate(value, [...ctx, key]);
+  return named(
+    '$extendsSelf',
+    forKey('$extendsSelf', (input, key, ctx) => async (parse, _, __, ___, root) => {
+      const value = (await parse(input)).toJSON();
+      validate(value, [...ctx, key]);
 
-    // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
-    const selected = ParsedValue.literal(root).property(value.split('.'));
+      // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
+      const selected = ParsedValue.literal(root).property(value.split('.'));
 
-    if (selected === undefined) {
-      throw new AppConfigError(`$extendsSelf selector was not found (${value})`);
-    }
+      if (selected === undefined) {
+        throw new AppConfigError(`$extendsSelf selector was not found (${value})`);
+      }
 
-    if (selected.asObject() !== undefined) {
-      return parse(selected.toJSON(), { shouldMerge: true });
-    }
+      if (selected.asObject() !== undefined) {
+        return parse(selected.toJSON(), { shouldMerge: true });
+      }
 
-    return parse(selected.toJSON(), { shouldFlatten: true });
-  });
+      return parse(selected.toJSON(), { shouldFlatten: true });
+    }),
+  );
 }
 
 /** Looks up an environment-specific value ($env) */
@@ -170,84 +186,90 @@ export function envDirective(
   const environment = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
   const metadata = { shouldOverride: true };
 
-  return forKey(
+  return named(
     '$env',
-    validateOptions(
-      (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
-      (value, _, ctx) => (parse) => {
-        if (!environment) {
-          if ('none' in value) {
-            return parse(value.none, metadata);
+    forKey(
+      '$env',
+      validateOptions(
+        (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
+        (value, _, ctx) => (parse) => {
+          if (!environment) {
+            if ('none' in value) {
+              return parse(value.none, metadata);
+            }
+
+            if ('default' in value) {
+              return parse(value.default, metadata);
+            }
+
+            throw new AppConfigError(
+              `An $env directive was used (in ${keysToPath(
+                ctx,
+              )}), but current environment (eg. NODE_ENV) is undefined`,
+            );
+          }
+
+          for (const [envName, envValue] of Object.entries(value)) {
+            if (envName === environment || aliases[envName] === environment) {
+              return parse(envValue, metadata);
+            }
           }
 
           if ('default' in value) {
             return parse(value.default, metadata);
           }
 
+          const found = Object.keys(value).join(', ');
+
           throw new AppConfigError(
             `An $env directive was used (in ${keysToPath(
               ctx,
-            )}), but current environment (eg. NODE_ENV) is undefined`,
+            )}), but none matched the current environment (wanted ${environment}, saw [${found}])`,
           );
-        }
-
-        for (const [envName, envValue] of Object.entries(value)) {
-          if (envName === environment || aliases[envName] === environment) {
-            return parse(envValue, metadata);
-          }
-        }
-
-        if ('default' in value) {
-          return parse(value.default, metadata);
-        }
-
-        const found = Object.keys(value).join(', ');
-
-        throw new AppConfigError(
-          `An $env directive was used (in ${keysToPath(
-            ctx,
-          )}), but none matched the current environment (wanted ${environment}, saw [${found}])`,
-        );
-      },
-      // $env is lazy so that non-applicable envs don't get evaluated
-      { lazy: true },
+        },
+        // $env is lazy so that non-applicable envs don't get evaluated
+        { lazy: true },
+      ),
     ),
   );
 }
 
 /** Provides the current timestamp using { $timestamp: true } */
 export function timestampDirective(dateSource: () => Date = () => new Date()): ParsingExtension {
-  return forKey(
+  return named(
     '$timestamp',
-    validateOptions(
-      (SchemaBuilder) =>
-        SchemaBuilder.oneOf(
-          SchemaBuilder.booleanSchema(),
-          SchemaBuilder.emptySchema()
-            .addString('day', {}, false)
-            .addString('month', {}, false)
-            .addString('year', {}, false)
-            .addString('weekday', {}, false)
-            .addString('locale', {}, false)
-            .addString('timeZone', {}, false)
-            .addString('timeZoneName', {}, false),
-        ),
-      (value) => (parse) => {
-        let formatted: string;
-        const date = dateSource();
+    forKey(
+      '$timestamp',
+      validateOptions(
+        (SchemaBuilder) =>
+          SchemaBuilder.oneOf(
+            SchemaBuilder.booleanSchema(),
+            SchemaBuilder.emptySchema()
+              .addString('day', {}, false)
+              .addString('month', {}, false)
+              .addString('year', {}, false)
+              .addString('weekday', {}, false)
+              .addString('locale', {}, false)
+              .addString('timeZone', {}, false)
+              .addString('timeZoneName', {}, false),
+          ),
+        (value) => (parse) => {
+          let formatted: string;
+          const date = dateSource();
 
-        if (value === true) {
-          formatted = date.toISOString();
-        } else if (typeof value === 'object') {
-          const { locale, ...options } = value;
+          if (value === true) {
+            formatted = date.toISOString();
+          } else if (typeof value === 'object') {
+            const { locale, ...options } = value;
 
-          formatted = date.toLocaleDateString(locale, options as Intl.DateTimeFormatOptions);
-        } else {
-          throw new AppConfigError('$timestamp was provided an invalid option');
-        }
+            formatted = date.toLocaleDateString(locale, options as Intl.DateTimeFormatOptions);
+          } else {
+            throw new AppConfigError('$timestamp was provided an invalid option');
+          }
 
-        return parse(formatted, { shouldFlatten: true });
-      },
+          return parse(formatted, { shouldFlatten: true });
+        },
+      ),
     ),
   );
 }
@@ -260,82 +282,85 @@ export function envVarDirective(
 ): ParsingExtension {
   const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
-  return forKey('$envVar', (value, key, ctx) => async (parse) => {
-    let name: string;
-    let parseInt = false;
-    let parseFloat = false;
-    let parseBool = false;
+  return named(
+    '$envVar',
+    forKey('$envVar', (value, key, ctx) => async (parse) => {
+      let name: string;
+      let parseInt = false;
+      let parseFloat = false;
+      let parseBool = false;
 
-    if (typeof value === 'string') {
-      name = value;
-    } else {
-      validateObject(value, [...ctx, key]);
-      if (Array.isArray(value)) throw new AppConfigError('$envVar was given an array');
-
-      const resolved = (await parse(value.name)).toJSON();
-      validateString(resolved, [...ctx, key, [InObject, 'name']]);
-
-      parseInt = !!(await parse(value.parseInt)).toJSON();
-      parseFloat = !!(await parse(value.parseFloat)).toJSON();
-      parseBool = !!(await parse(value.parseBool)).toJSON();
-      name = resolved;
-    }
-
-    const parseValue = (strValue: string) => {
-      if (parseInt) {
-        const parsed = Number.parseInt(strValue, 10);
-
-        if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseInt(${strValue})`);
-        }
-
-        return parse(parsed, { shouldFlatten: true });
-      }
-
-      if (parseFloat) {
-        const parsed = Number.parseFloat(strValue);
-
-        if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseFloat(${strValue})`);
-        }
-
-        return parse(parsed, { shouldFlatten: true });
-      }
-
-      if (parseBool) {
-        const parsed = strValue.toLowerCase() !== 'false' && strValue !== '0';
-
-        return parse(parsed, { shouldFlatten: true });
-      }
-
-      return parse(strValue, { shouldFlatten: true });
-    };
-
-    let resolvedValue = process.env[name];
-
-    if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-      resolvedValue = envType;
-    }
-
-    if (resolvedValue) {
-      return parseValue(resolvedValue);
-    }
-
-    if (typeof value === 'object' && value.fallback !== undefined) {
-      const fallback = (await parse(value.fallback)).toJSON();
-      const allowNull = (await parse(value.allowNull)).toJSON();
-
-      if (allowNull) {
-        validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+      if (typeof value === 'string') {
+        name = value;
       } else {
-        validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+        validateObject(value, [...ctx, key]);
+        if (Array.isArray(value)) throw new AppConfigError('$envVar was given an array');
+
+        const resolved = (await parse(value.name)).toJSON();
+        validateString(resolved, [...ctx, key, [InObject, 'name']]);
+
+        parseInt = !!(await parse(value.parseInt)).toJSON();
+        parseFloat = !!(await parse(value.parseFloat)).toJSON();
+        parseBool = !!(await parse(value.parseBool)).toJSON();
+        name = resolved;
       }
 
-      return parseValue(fallback);
-    }
+      const parseValue = (strValue: string) => {
+        if (parseInt) {
+          const parsed = Number.parseInt(strValue, 10);
 
-    throw new AppConfigError(`$envVar could not find ${name} environment variable`);
-  });
+          if (Number.isNaN(parsed)) {
+            throw new AppConfigError(`Failed to parseInt(${strValue})`);
+          }
+
+          return parse(parsed, { shouldFlatten: true });
+        }
+
+        if (parseFloat) {
+          const parsed = Number.parseFloat(strValue);
+
+          if (Number.isNaN(parsed)) {
+            throw new AppConfigError(`Failed to parseFloat(${strValue})`);
+          }
+
+          return parse(parsed, { shouldFlatten: true });
+        }
+
+        if (parseBool) {
+          const parsed = strValue.toLowerCase() !== 'false' && strValue !== '0';
+
+          return parse(parsed, { shouldFlatten: true });
+        }
+
+        return parse(strValue, { shouldFlatten: true });
+      };
+
+      let resolvedValue = process.env[name];
+
+      if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+        resolvedValue = envType;
+      }
+
+      if (resolvedValue) {
+        return parseValue(resolvedValue);
+      }
+
+      if (typeof value === 'object' && value.fallback !== undefined) {
+        const fallback = (await parse(value.fallback)).toJSON();
+        const allowNull = (await parse(value.allowNull)).toJSON();
+
+        if (allowNull) {
+          validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+        } else {
+          validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+        }
+
+        return parseValue(fallback);
+      }
+
+      throw new AppConfigError(`$envVar could not find ${name} environment variable`);
+    }),
+  );
 }
 
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
@@ -346,79 +371,84 @@ export function substituteDirective(
 ): ParsingExtension {
   const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
 
-  return forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
-    if (typeof value === 'string') {
-      return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
-    }
+  return named(
+    '$substitute',
+    forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
+      if (typeof value === 'string') {
+        return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
+      }
 
-    validateObject(value, [...ctx, key]);
-    if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
+      validateObject(value, [...ctx, key]);
+      if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
-    const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
+      const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
 
-    validateString(name, [...ctx, key, [InObject, 'name']]);
+      validateString(name, [...ctx, key, [InObject, 'name']]);
 
-    const parseValue = async (strValue: string) => {
-      const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
+      const parseValue = async (strValue: string) => {
+        const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
 
-      if (parseInt) {
-        const parsed = Number.parseInt(strValue, 10);
+        if (parseInt) {
+          const parsed = Number.parseInt(strValue, 10);
 
-        if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseInt(${strValue})`);
+          if (Number.isNaN(parsed)) {
+            throw new AppConfigError(`Failed to parseInt(${strValue})`);
+          }
+
+          return parse(parsed, { shouldFlatten: true });
         }
 
-        return parse(parsed, { shouldFlatten: true });
-      }
+        const parseFloat = (
+          await parse(selectDefined(value.parseFloat, value.$parseFloat))
+        ).toJSON();
 
-      const parseFloat = (await parse(selectDefined(value.parseFloat, value.$parseFloat))).toJSON();
+        if (parseFloat) {
+          const parsed = Number.parseFloat(strValue);
 
-      if (parseFloat) {
-        const parsed = Number.parseFloat(strValue);
+          if (Number.isNaN(parsed)) {
+            throw new AppConfigError(`Failed to parseFloat(${strValue})`);
+          }
 
-        if (Number.isNaN(parsed)) {
-          throw new AppConfigError(`Failed to parseFloat(${strValue})`);
+          return parse(parsed, { shouldFlatten: true });
         }
 
-        return parse(parsed, { shouldFlatten: true });
+        const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
+
+        if (parseBool) {
+          const parsed = strValue.toLowerCase() !== 'false' && strValue !== '0';
+
+          return parse(parsed, { shouldFlatten: true });
+        }
+
+        return parse(strValue, { shouldFlatten: true });
+      };
+
+      let resolvedValue = process.env[name];
+
+      if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+        resolvedValue = envType;
       }
 
-      const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
-
-      if (parseBool) {
-        const parsed = strValue.toLowerCase() !== 'false' && strValue !== '0';
-
-        return parse(parsed, { shouldFlatten: true });
+      if (resolvedValue) {
+        return parseValue(resolvedValue);
       }
 
-      return parse(strValue, { shouldFlatten: true });
-    };
+      if (value.fallback !== undefined || value.$fallback !== undefined) {
+        const fallback = (await parse(selectDefined(value.fallback, value.$fallback))).toJSON();
+        const allowNull = (await parse(selectDefined(value.allowNull, value.$allowNull))).toJSON();
 
-    let resolvedValue = process.env[name];
+        if (allowNull) {
+          validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+        } else {
+          validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+        }
 
-    if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-      resolvedValue = envType;
-    }
-
-    if (resolvedValue) {
-      return parseValue(resolvedValue);
-    }
-
-    if (value.fallback !== undefined || value.$fallback !== undefined) {
-      const fallback = (await parse(selectDefined(value.fallback, value.$fallback))).toJSON();
-      const allowNull = (await parse(selectDefined(value.allowNull, value.$allowNull))).toJSON();
-
-      if (allowNull) {
-        validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
-      } else {
-        validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+        return parseValue(fallback);
       }
 
-      return parseValue(fallback);
-    }
-
-    throw new AppConfigError(`$substitute could not find ${name} environment variable`);
-  });
+      throw new AppConfigError(`$substitute could not find ${name} environment variable`);
+    }),
+  );
 }
 
 export const environmentVariableSubstitution = substituteDirective;
