@@ -15,7 +15,7 @@ export function composeExtensions(extensions: ParsingExtension[]): ParsingExtens
 }
 
 export function named(name: string, parsingExtension: ParsingExtension): ParsingExtension {
-  Object.defineProperty(parsingExtension, '_extensionName', { value: name });
+  Object.defineProperty(parsingExtension, 'extensionName', { value: name });
 
   return parsingExtension;
 }
