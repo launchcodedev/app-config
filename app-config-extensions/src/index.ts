@@ -12,6 +12,7 @@ export { timestampDirective } from './timestamp-directive';
 export { envVarDirective } from './env-var-directive';
 export { substituteDirective } from './substitute-directive';
 export { substituteDirective as environmentVariableSubstitution } from './substitute-directive';
+export { parseDirective } from './parse-directive';
 
 /** Marks all values recursively as fromSecrets, so they do not trigger schema errors */
 export function markAllValuesAsSecret(): ParsingExtension {
