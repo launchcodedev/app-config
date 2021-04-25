@@ -7,11 +7,22 @@ import { parseValue, Root, AppConfigError } from '@app-config/core';
 import { SchemaBuilder } from '@serafin/schema-builder';
 
 export function composeExtensions(extensions: ParsingExtension[]): ParsingExtension {
-  return (value, [k]) => {
+  const composed: ParsingExtension = (value, [k]) => {
+    // only applies to the root - override the parsing extensions
     if (k !== Root) return false;
 
-    return (_, __, source) => parseValue(value, source, extensions, { shouldFlatten: true });
+    return (_, __, source, baseExtensions) =>
+      // restart the parse tree, but with additional extensions included
+      parseValue(
+        value,
+        source,
+        // ensures that a recursion doesn't happen
+        baseExtensions.concat(extensions).filter((v) => v !== composed),
+        { shouldFlatten: true },
+      );
   };
+
+  return composed;
 }
 
 export function named(name: string, parsingExtension: ParsingExtension): ParsingExtension {

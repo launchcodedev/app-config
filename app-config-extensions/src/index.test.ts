@@ -7,6 +7,8 @@ import {
   envDirective,
   extendsDirective,
   substituteDirective,
+  envVarDirective,
+  parseDirective,
 } from './index';
 
 /* eslint-disable no-template-curly-in-string */
@@ -120,5 +122,35 @@ describe('extension combinations', () => {
     });
 
     await expect(source.readToJSON([ifDirective(), eqDirective()])).resolves.toEqual('foo');
+  });
+
+  it('combines $envVar and $parseBool directives', async () => {
+    process.env.FOO = '1';
+
+    const source = new LiteralSource({
+      featureEnabled: {
+        $parseBool: {
+          $envVar: 'FOO',
+        },
+      },
+    });
+
+    const parsed = await source.read([envVarDirective(), parseDirective()]);
+
+    expect(parsed.toJSON()).toEqual({ featureEnabled: true });
+  });
+
+  it('combines $envVar and $parseBool directives 2', async () => {
+    const source = new LiteralSource({
+      featureEnabled: {
+        $parseBool: {
+          $envVar: { name: 'FOO', allowNull: true, fallback: null },
+        },
+      },
+    });
+
+    const parsed = await source.read([parseDirective(), envVarDirective()]);
+
+    expect(parsed.toJSON()).toEqual({ featureEnabled: false });
   });
 });
