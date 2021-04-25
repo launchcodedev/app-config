@@ -41,13 +41,13 @@ describe('$parseBool', () => {
   });
 
   it('should parse numbers', async () => {
-    await expect(
-      new LiteralSource({ $parseBool: 1 }).readToJSON([parseDirective()]),
-    ).resolves.toBe(true);
+    await expect(new LiteralSource({ $parseBool: 1 }).readToJSON([parseDirective()])).resolves.toBe(
+      true,
+    );
 
-    await expect(
-      new LiteralSource({ $parseBool: 0 }).readToJSON([parseDirective()]),
-    ).resolves.toBe(false);
+    await expect(new LiteralSource({ $parseBool: 0 }).readToJSON([parseDirective()])).resolves.toBe(
+      false,
+    );
   });
 });
 
@@ -93,9 +93,9 @@ describe('$parseInt', () => {
       new LiteralSource({ $parseInt: 12.12 }).readToJSON([parseDirective()]),
     ).resolves.toBe(12);
 
-    await expect(
-      new LiteralSource({ $parseInt: 0 }).readToJSON([parseDirective()]),
-    ).resolves.toBe(0);
+    await expect(new LiteralSource({ $parseInt: 0 }).readToJSON([parseDirective()])).resolves.toBe(
+      0,
+    );
   });
 
   it('should parse string values', async () => {
