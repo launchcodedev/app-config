@@ -82,17 +82,14 @@ export function currentEnvironment(...args: any[]): string | undefined {
     if (args[0]) {
       environmentAliases = args[0] as EnvironmentAliases;
       logger.warn('Detected deprecated usage of currentEnvironment');
-      throw new Error(JSON.stringify(args[0]));
     }
 
     if (Array.isArray(args[1])) {
       environmentSourceNames = args[1] as string[];
       logger.warn('Detected deprecated usage of currentEnvironment');
-      throw new Error(JSON.stringify(args[0]));
     } else if (typeof args[1] === 'string') {
       environmentSourceNames = [args[1]];
       logger.warn('Detected deprecated usage of currentEnvironment');
-      throw new Error(JSON.stringify(args[0]));
     }
   }
 
