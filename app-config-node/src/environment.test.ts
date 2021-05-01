@@ -30,15 +30,17 @@ describe('currentEnvironment', () => {
     process.env.NODE_ENV = 'foo';
     process.env.FOO = 'bar';
 
-    expect(currentEnvironment({ envVarNames: ['FOO', 'BAR'] })).toBe('bar');
-    expect(currentEnvironment({ envVarNames: ['BAR'] })).toBe(undefined);
+    expect(currentEnvironment({ envVarNames: ['FOO', 'BAR'], aliases: defaultAliases })).toBe(
+      'bar',
+    );
+    expect(currentEnvironment({ envVarNames: ['BAR'], aliases: defaultAliases })).toBe(undefined);
   });
 
   it('uses aliases', () => {
     process.env.FOO = 'bar';
     process.env.NODE_ENV = 'bar';
 
-    expect(currentEnvironment({ envVarNames: ['FOO'] })).toBe('bar');
+    expect(currentEnvironment({ envVarNames: ['FOO'], aliases: defaultAliases })).toBe('bar');
     expect(currentEnvironment({ aliases: { bar: 'foo' }, envVarNames: defaultEnvVarNames })).toBe(
       'foo',
     );
