@@ -1,4 +1,10 @@
-import { currentEnvironment } from './environment';
+import {
+  currentEnvironment,
+  aliasesFor,
+  asEnvOptions,
+  defaultAliases,
+  defaultEnvVarNames,
+} from './environment';
 
 describe('currentEnvironment', () => {
   describe('deprecated currentEnvironment', () => {
@@ -33,7 +39,9 @@ describe('currentEnvironment', () => {
     process.env.NODE_ENV = 'bar';
 
     expect(currentEnvironment({ envVarNames: ['FOO'] })).toBe('bar');
-    expect(currentEnvironment({ aliases: { bar: 'foo' } })).toBe('foo');
+    expect(currentEnvironment({ aliases: { bar: 'foo' }, envVarNames: defaultEnvVarNames })).toBe(
+      'foo',
+    );
     expect(currentEnvironment({ aliases: { bar: 'foo' }, envVarNames: ['FOO'] })).toBe('foo');
   });
 
@@ -41,5 +49,28 @@ describe('currentEnvironment', () => {
     process.env.NODE_ENV = 'foo';
     expect(currentEnvironment({})).toBe('foo');
     expect(currentEnvironment({ override: 'bar' })).toBe('bar');
+  });
+});
+
+describe('aliasesFor', () => {
+  it('reverse lookups', () => {
+    expect(aliasesFor('foo', { bar: 'foo', baz: 'qux' })).toEqual(['bar']);
+    expect(aliasesFor('foo', { bar: 'foo', baz: 'foo' })).toEqual(['bar', 'baz']);
+  });
+});
+
+describe('asEnvOptions', () => {
+  it('reads environmentSourceNames string', () => {
+    expect(asEnvOptions(undefined, undefined, 'foo')).toEqual({
+      envVarNames: ['foo'],
+      aliases: defaultAliases,
+    });
+  });
+
+  it('reads environmentSourceNames strings', () => {
+    expect(asEnvOptions(undefined, undefined, ['foo'])).toEqual({
+      envVarNames: ['foo'],
+      aliases: defaultAliases,
+    });
   });
 });
