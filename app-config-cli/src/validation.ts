@@ -4,11 +4,19 @@ import { FileSource, EnvironmentAliases, defaultAliases } from '@app-config/node
 import { loadValidatedConfig } from '@app-config/config';
 
 export interface Options {
+  /** Where app-config files are */
   directory?: string;
+  /** Override for aliasing of environments */
   environmentAliases?: EnvironmentAliases;
+  /** If app-config should be validating in a "no current environment" state */
   includeNoEnvironment?: boolean;
 }
 
+/**
+ * Loads and validations app-config values in every environment detectable.
+ *
+ * Uses a hueristic to find which environments are available, because these are arbitrary.
+ */
 export async function validateAllConfigVariants({
   directory = '.',
   environmentAliases = defaultAliases,
@@ -24,9 +32,9 @@ export async function validateAllConfigVariants({
   const appConfigEnvironments = new Set<string>();
 
   for (const filename of appConfigFiles) {
-    const environment = /^\.app-config\.(?:secrets\.)?(.*)\.(?:yml|yaml|json|json5|toml)$/.exec(
-      filename,
-    )?.[1];
+    // extract the environment out, which is the first capture group
+    const regex = /^\.app-config\.(?:secrets\.)?(.*)\.(?:yml|yaml|json|json5|toml)$/;
+    const environment = regex.exec(filename)?.[1];
 
     if (environment && environment !== 'meta' && environment !== 'schema') {
       appConfigEnvironments.add(environmentAliases[environment] ?? environment);

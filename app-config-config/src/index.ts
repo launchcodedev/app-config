@@ -15,6 +15,7 @@ import {
   defaultAliases,
   EnvironmentAliases,
   EnvironmentSource,
+  asEnvOptions,
 } from '@app-config/node';
 import { markAllValuesAsSecret } from '@app-config/extensions';
 import { defaultExtensions, defaultEnvExtensions } from '@app-config/default-extensions';
@@ -90,6 +91,12 @@ export async function loadUnvalidatedConfig({
   const environmentAliases =
     environmentAliasesArg ?? meta.value.environmentAliases ?? defaultAliases;
 
+  const environmentOptions = asEnvOptions(
+    environmentOverride,
+    environmentAliases,
+    environmentSourceNames,
+  );
+
   const parsingExtensions =
     parsingExtensionsArg ??
     defaultExtensions(environmentAliases, environmentOverride, undefined, environmentSourceNames);
@@ -108,21 +115,11 @@ export async function loadUnvalidatedConfig({
   logger.verbose(`Trying to read files for configuration`);
 
   const [mainConfig, secrets] = await Promise.all([
-    new FlexibleFileSource(
-      join(directory, fileNameBase),
-      environmentOverride,
-      environmentAliases,
-      undefined,
-      environmentSourceNames,
-    ).read(parsingExtensions),
+    new FlexibleFileSource(join(directory, fileNameBase), undefined, environmentOptions).read(
+      parsingExtensions,
+    ),
 
-    new FlexibleFileSource(
-      join(directory, secretsFileNameBase),
-      environmentOverride,
-      environmentAliases,
-      undefined,
-      environmentSourceNames,
-    )
+    new FlexibleFileSource(join(directory, secretsFileNameBase), undefined, environmentOptions)
       .read(secretsFileExtensions)
       .catch((error) => {
         // NOTE: secrets are optional, so not finding them is normal

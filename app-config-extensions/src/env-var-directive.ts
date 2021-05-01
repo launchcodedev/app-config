@@ -1,7 +1,12 @@
 import type { ParsingExtension } from '@app-config/core';
 import { named, forKey, validationFunction, ValidationFunction } from '@app-config/extension-utils';
 import { AppConfigError, InObject } from '@app-config/core';
-import { currentEnvironment, defaultAliases, EnvironmentAliases } from '@app-config/node';
+import {
+  asEnvOptions,
+  currentEnvironment,
+  defaultAliases,
+  EnvironmentAliases,
+} from '@app-config/node';
 
 /** Substitutes environment variables */
 export function envVarDirective(
@@ -9,7 +14,9 @@ export function envVarDirective(
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
+  const environment = currentEnvironment(
+    asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+  );
 
   return named(
     '$envVar',
@@ -72,7 +79,7 @@ export function envVarDirective(
       let resolvedValue = process.env[name];
 
       if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-        resolvedValue = envType;
+        resolvedValue = environment;
       }
 
       if (resolvedValue) {

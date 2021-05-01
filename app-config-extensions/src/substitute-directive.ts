@@ -1,6 +1,11 @@
 import { named, forKey, validationFunction, ValidationFunction } from '@app-config/extension-utils';
 import { ParsingExtension, AppConfigError, InObject } from '@app-config/core';
-import { currentEnvironment, defaultAliases, EnvironmentAliases } from '@app-config/node';
+import {
+  asEnvOptions,
+  currentEnvironment,
+  defaultAliases,
+  EnvironmentAliases,
+} from '@app-config/node';
 import { logger } from '@app-config/logging';
 
 /** Substitues environment variables found in strings (similar to bash variable substitution) */
@@ -9,13 +14,15 @@ export function substituteDirective(
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const envType = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
+  const environment = currentEnvironment(
+    asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+  );
 
   return named(
     '$substitute',
     forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
       if (typeof value === 'string') {
-        return parse(performAllSubstitutions(value, envType), { shouldFlatten: true });
+        return parse(performAllSubstitutions(value, environment), { shouldFlatten: true });
       }
 
       validateObject(value, [...ctx, key]);
@@ -71,7 +78,7 @@ export function substituteDirective(
       let resolvedValue = process.env[name];
 
       if (!resolvedValue && name === 'APP_CONFIG_ENV') {
-        resolvedValue = envType;
+        resolvedValue = environment;
       }
 
       if (resolvedValue) {

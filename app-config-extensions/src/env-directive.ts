@@ -1,7 +1,12 @@
 import type { ParsingExtension } from '@app-config/core';
 import { AppConfigError } from '@app-config/core';
 import { named, forKey, keysToPath, validateOptions } from '@app-config/extension-utils';
-import { currentEnvironment, defaultAliases, EnvironmentAliases } from '@app-config/node';
+import {
+  currentEnvironment,
+  defaultAliases,
+  asEnvOptions,
+  EnvironmentAliases,
+} from '@app-config/node';
 
 /** Looks up an environment-specific value ($env) */
 export function envDirective(
@@ -9,8 +14,10 @@ export function envDirective(
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const environment = environmentOverride ?? currentEnvironment(aliases, environmentSourceNames);
   const metadata = { shouldOverride: true };
+  const environment = currentEnvironment(
+    asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+  );
 
   return named(
     '$env',

@@ -10,7 +10,14 @@ import {
   NotFoundError,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
-import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
+import {
+  aliasesFor,
+  asEnvOptions,
+  currentEnvironment,
+  defaultEnvOptions,
+  EnvironmentAliases,
+  EnvironmentOptions,
+} from './environment';
 
 /** Read configuration from a single file */
 export class FileSource extends ConfigSource {
@@ -42,28 +49,75 @@ export class FileSource extends ConfigSource {
 
 /** Read configuration from a file, found via "glob-like" search (any file format, with support for environment specific files) */
 export class FlexibleFileSource extends ConfigSource {
+  private readonly filePath: string;
+  private readonly fileExtensions: string[];
+  private readonly environmentOptions: EnvironmentOptions;
+
+  /** @deprecated use constructor with environmentOptions instead */
   constructor(
-    private readonly filePath: string,
-    private readonly environmentOverride?: string,
-    private readonly environmentAliases: EnvironmentAliases = defaultAliases,
-    private readonly fileExtensions: string[] = ['yml', 'yaml', 'toml', 'json', 'json5'],
-    private readonly environmentSourceNames?: string[] | string,
+    filePath: string,
+    environmentOverride?: string,
+    environmentAliases?: EnvironmentAliases,
+    fileExtensions?: string[],
+    environmentSourceNames?: string[] | string,
+  );
+
+  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
+
+  constructor(
+    filePath: string,
+    environmentOverrideOrFileExtensions?: string | string[],
+    environmentAliasesOrEnvironmentOptions?: EnvironmentAliases | EnvironmentOptions,
+    fileExtensions?: string[],
+    environmentSourceNames?: string[] | string,
   ) {
     super();
+
+    this.filePath = filePath;
+    const defaultFileExtensions = ['yml', 'yaml', 'toml', 'json', 'json5'];
+
+    if (
+      (Array.isArray(environmentOverrideOrFileExtensions) ||
+        environmentOverrideOrFileExtensions === undefined) &&
+      (environmentAliasesOrEnvironmentOptions
+        ? 'aliases' in environmentAliasesOrEnvironmentOptions ||
+          'envVarNames' in environmentAliasesOrEnvironmentOptions
+        : true) &&
+      fileExtensions === undefined &&
+      environmentSourceNames === undefined
+    ) {
+      this.fileExtensions = environmentOverrideOrFileExtensions ?? defaultFileExtensions;
+      this.environmentOptions =
+        (environmentAliasesOrEnvironmentOptions as EnvironmentOptions) ?? defaultEnvOptions;
+    } else {
+      logger.warn(
+        `Detected deprecated usage of FlexibleFileSource constructor loading ${filePath}`,
+      );
+
+      this.fileExtensions = fileExtensions ?? defaultFileExtensions;
+      this.environmentOptions = asEnvOptions(
+        environmentOverrideOrFileExtensions as string,
+        environmentAliasesOrEnvironmentOptions as EnvironmentAliases,
+        environmentSourceNames,
+      );
+    }
   }
 
   // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource
   private async resolveSource(): Promise<FileSource> {
-    const aliases = this.environmentAliases;
-    const environment =
-      this.environmentOverride ?? currentEnvironment(aliases, this.environmentSourceNames);
-    const environmentAlias = Object.entries(aliases).find(([, v]) => v === environment)?.[0];
+    const environment = currentEnvironment(this.environmentOptions);
+    const aliasesForCurrentEnv = environment
+      ? aliasesFor(environment, this.environmentOptions.aliases)
+      : [];
 
     const filesToTry = [];
 
     for (const ext of this.fileExtensions) {
       if (environment) filesToTry.push(`${this.filePath}.${environment}.${ext}`);
-      if (environmentAlias) filesToTry.push(`${this.filePath}.${environmentAlias}.${ext}`);
+
+      for (const alias of aliasesForCurrentEnv) {
+        filesToTry.push(`${this.filePath}.${alias}.${ext}`);
+      }
     }
 
     // try these after trying environments, which take precedent
