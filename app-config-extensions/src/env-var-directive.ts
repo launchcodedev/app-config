@@ -7,6 +7,7 @@ import {
   defaultAliases,
   EnvironmentAliases,
 } from '@app-config/node';
+import { logger } from '@app-config/logging';
 
 /** Substitutes environment variables */
 export function envVarDirective(
@@ -39,6 +40,24 @@ export function envVarDirective(
         parseFloat = !!(await parse(value.parseFloat)).toJSON();
         parseBool = !!(await parse(value.parseBool)).toJSON();
         name = resolved;
+
+        if (parseInt) {
+          logger.warn(
+            `Detected use of deprecated of 'parseInt' option in $envVar - use $parseInt directive instead`,
+          );
+        }
+
+        if (parseFloat) {
+          logger.warn(
+            `Detected use of deprecated of 'parseFloat' option in $envVar - use $parseFloat directive instead`,
+          );
+        }
+
+        if (parseBool) {
+          logger.warn(
+            `Detected use of deprecated of 'parseBool' option in $envVar - use $parseBool directive instead`,
+          );
+        }
       }
 
       const parseValue = (strValue: string | null) => {
