@@ -43,7 +43,7 @@ export function substituteDirective(
 
         if (value.$parseBool) {
           logger.warn(
-            `Detected deprecated use of $parseBool in a $substitute directive. Use 'parseBool' instead.`,
+            `Detected deprecated use of $parseBool in a $substitute directive - use $parseBool directive instead`,
           );
         }
 
@@ -62,7 +62,7 @@ export function substituteDirective(
 
         if (value.$parseInt) {
           logger.warn(
-            `Detected deprecated use of $parseInt in a $substitute directive. Use 'parseInt' instead.`,
+            `Detected deprecated use of $parseInt in a $substitute directive - use $parseInt directive instead`,
           );
         }
 
@@ -78,7 +78,7 @@ export function substituteDirective(
 
         if (value.$parseFloat) {
           logger.warn(
-            `Detected deprecated use of $parseFloat in a $substitute directive. Use 'parseFloat' instead.`,
+            `Detected deprecated use of $parseFloat in a $substitute directive - use $parseFloat directive instead`,
           );
         }
 
