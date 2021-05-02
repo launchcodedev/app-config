@@ -28,12 +28,24 @@ export function substituteDirective(
       validateObject(value, [...ctx, key]);
       if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
+      if (value.$name) {
+        logger.warn(
+          `Detected deprecated use of $name in a $substitute directive. Use 'name' instead.`,
+        );
+      }
+
       const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
 
       validateString(name, [...ctx, key, [InObject, 'name']]);
 
       const parseValue = async (strValue: string | null) => {
         const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
+
+        if (value.$parseBool) {
+          logger.warn(
+            `Detected deprecated use of $parseBool in a $substitute directive. Use 'parseBool' instead.`,
+          );
+        }
 
         if (parseBool) {
           const parsed =
@@ -48,6 +60,12 @@ export function substituteDirective(
 
         const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
 
+        if (value.$parseInt) {
+          logger.warn(
+            `Detected deprecated use of $parseInt in a $substitute directive. Use 'parseInt' instead.`,
+          );
+        }
+
         if (parseInt) {
           const parsed = Number.parseInt(strValue, 10);
 
@@ -56,6 +74,12 @@ export function substituteDirective(
           }
 
           return parse(parsed, { shouldFlatten: true });
+        }
+
+        if (value.$parseFloat) {
+          logger.warn(
+            `Detected deprecated use of $parseFloat in a $substitute directive. Use 'parseFloat' instead.`,
+          );
         }
 
         const parseFloat = (
@@ -88,6 +112,18 @@ export function substituteDirective(
       if (value.fallback !== undefined || value.$fallback !== undefined) {
         const fallback = (await parse(selectDefined(value.fallback, value.$fallback))).toJSON();
         const allowNull = (await parse(selectDefined(value.allowNull, value.$allowNull))).toJSON();
+
+        if (value.$fallback) {
+          logger.warn(
+            `Detected deprecated use of $fallback in a $substitute directive. Use 'fallback' instead.`,
+          );
+        }
+
+        if (value.$allowNull) {
+          logger.warn(
+            `Detected deprecated use of $allowNull in a $substitute directive. Use 'allowNull' instead.`,
+          );
+        }
 
         if (allowNull) {
           validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);

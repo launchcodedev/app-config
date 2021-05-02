@@ -40,16 +40,18 @@ module.exports = {
       eqDirective(),
       parseDirective(),
       hiddenDirective(),
-      v1Compat(),
       envDirective(aliases, environmentOverride, environmentSourceNames),
       envVarDirective(aliases, environmentOverride, environmentSourceNames),
       extendsDirective(),
       extendsSelfDirective(),
       overrideDirective(),
-      encryptedDirective(symmetricKey),
       timestampDirective(),
       substituteDirective(aliases, environmentOverride, environmentSourceNames),
-      gitRefDirectives(),
+
+      // these will be removed in v3
+      v1Compat(true),
+      gitRefDirectives(undefined, true),
+      encryptedDirective(symmetricKey, true),
     ];
   },
   defaultEnvExtensions() {

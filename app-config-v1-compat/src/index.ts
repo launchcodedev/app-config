@@ -7,7 +7,7 @@ import { FileSource } from '@app-config/node';
 import { logger } from '@app-config/logging';
 
 /** V1 app-config compatibility */
-export default function v1Compat(): ParsingExtension {
+export default function v1Compat(shouldShowDeprecationNotice?: true): ParsingExtension {
   return named('v1-compat', (value, [_, key], context) => {
     // only apply in top-level app-config property
     if (context[context.length - 1]?.[0] !== Root) {
@@ -16,16 +16,6 @@ export default function v1Compat(): ParsingExtension {
 
     if (key === 'app-config' && isObject(value)) {
       return async (parse, _, ctx) => {
-        if (ctx instanceof FileSource) {
-          logger.warn(
-            `Using V1 compatibility layer for special 'app-config' property in ${ctx.filePath}! This functionality is deprecated and may be removed in the future.`,
-          );
-        } else {
-          logger.warn(
-            `Using V1 compatibility layer for special 'app-config' property! This functionality is deprecated and may be removed in the future.`,
-          );
-        }
-
         const resolveAmbiguousFilename = async (filepath: string) => {
           let resolvedPath = filepath;
 
@@ -56,6 +46,12 @@ export default function v1Compat(): ParsingExtension {
         // TODO: multiple properties defined
 
         if ('extends' in value) {
+          if (shouldShowDeprecationNotice) {
+            logger.warn(
+              'Detected deprecated use of @app-config/v1-compat parsing extension. Please install @app-config/v1-compat and add it to your meta file "parsingExtensions".',
+            );
+          }
+
           return parse(
             { $extends: await resolveAmbiguousFilename(value.extends as string) },
             { shouldMerge: true },
@@ -63,6 +59,12 @@ export default function v1Compat(): ParsingExtension {
         }
 
         if ('extendsOptional' in value) {
+          if (shouldShowDeprecationNotice) {
+            logger.warn(
+              'Detected deprecated use of @app-config/v1-compat parsing extension. Please install @app-config/v1-compat and add it to your meta file "parsingExtensions".',
+            );
+          }
+
           return parse(
             {
               $extends: {
@@ -75,6 +77,12 @@ export default function v1Compat(): ParsingExtension {
         }
 
         if ('override' in value) {
+          if (shouldShowDeprecationNotice) {
+            logger.warn(
+              'Detected deprecated use of @app-config/v1-compat parsing extension. Please install @app-config/v1-compat and add it to your meta file "parsingExtensions".',
+            );
+          }
+
           return parse(
             { $override: await resolveAmbiguousFilename(value.override as string) },
             { shouldOverride: true },
@@ -82,6 +90,12 @@ export default function v1Compat(): ParsingExtension {
         }
 
         if ('overrideOptional' in value) {
+          if (shouldShowDeprecationNotice) {
+            logger.warn(
+              'Detected deprecated use of @app-config/v1-compat parsing extension. Please install @app-config/v1-compat and add it to your meta file "parsingExtensions".',
+            );
+          }
+
           return parse(
             {
               $override: {
