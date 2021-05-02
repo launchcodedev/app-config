@@ -2,6 +2,7 @@ import { withTempFiles } from '@app-config/test-utils';
 import { LiteralSource, NotFoundError } from '@app-config/core';
 import { FileSource } from '@app-config/node';
 import { extendsDirective, extendsSelfDirective, overrideDirective } from './extends-directive';
+import { envDirective } from './env-directive';
 
 describe('$extends directive', () => {
   it('fails if file is missing', async () => {
@@ -408,6 +409,31 @@ describe('$override directive', () => {
         const parsed = await source.read([overrideDirective()]);
 
         expect(parsed.toJSON()).toEqual({ foo: true, bar: true, baz: true, qux: true });
+      },
+    );
+  });
+
+  it.only('overrides env', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          foo:
+            $env:
+              default: 44
+              dev: 88
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 88 });
       },
     );
   });

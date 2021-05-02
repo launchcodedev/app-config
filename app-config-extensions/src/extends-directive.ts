@@ -13,7 +13,7 @@ import {
   NotFoundError,
   FailedToSelectSubObject,
 } from '@app-config/core';
-import { resolveFilepath, FileSource } from '@app-config/node';
+import { resolveFilepath, FileSource, environmentOptionsFromContext } from '@app-config/node';
 import { logger } from '@app-config/logging';
 
 // common logic for $extends and $override
@@ -27,26 +27,42 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
           SchemaBuilder.emptySchema()
             .addString('path')
             .addBoolean('optional', {}, false)
-            .addString('select', {}, false),
+            .addString('select', {}, false)
+            .addString('env', {}, false),
         );
 
         return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
       },
-      (value) => async (_, __, source, extensions) => {
-        const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
+      (value, _, __, context) => async (_, __, source, extensions) => {
+        const retrieveFile = async (
+          filepath: string,
+          subselector?: string,
+          isOptional = false,
+          env?: string,
+        ) => {
           const resolvedPath = resolveFilepath(source, filepath);
 
           logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
 
           const resolvedSource = new FileSource(resolvedPath);
 
-          const parsed = await resolvedSource.read(extensions).catch((error) => {
-            if (error instanceof NotFoundError && isOptional) {
-              return ParsedValue.literal({});
-            }
+          const environmentOptions = {
+            ...environmentOptionsFromContext(context),
+            override: env,
+          };
 
-            throw error;
-          });
+          const parsed = await resolvedSource
+            .read(extensions, {
+              ...context,
+              environmentOptions,
+            })
+            .catch((error) => {
+              if (error instanceof NotFoundError && isOptional) {
+                return ParsedValue.literal({});
+              }
+
+              throw error;
+            });
 
           if (subselector) {
             const found = parsed.property(subselector.split('.'));
@@ -74,15 +90,15 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
             if (typeof ext === 'string') {
               parsed = ParsedValue.merge(parsed, await retrieveFile(ext));
             } else {
-              const { path, optional, select } = ext;
+              const { path, optional, select, env } = ext;
 
-              parsed = ParsedValue.merge(parsed, await retrieveFile(path, select, optional));
+              parsed = ParsedValue.merge(parsed, await retrieveFile(path, select, optional, env));
             }
           }
         } else {
-          const { path, optional, select } = value;
+          const { path, optional, select, env } = value;
 
-          parsed = await retrieveFile(path, select, optional);
+          parsed = await retrieveFile(path, select, optional, env);
         }
 
         return parsed.assignMeta(meta);

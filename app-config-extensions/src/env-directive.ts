@@ -2,7 +2,7 @@ import type { ParsingExtension } from '@app-config/core';
 import { AppConfigError } from '@app-config/core';
 import { named, forKey, keysToPath, validateOptions } from '@app-config/extension-utils';
 import {
-  currentEnvironment,
+  currentEnvFromContext,
   defaultAliases,
   asEnvOptions,
   EnvironmentAliases,
@@ -15,9 +15,6 @@ export function envDirective(
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
   const metadata = { shouldOverride: true };
-  const environment = currentEnvironment(
-    asEnvOptions(environmentOverride, aliases, environmentSourceNames),
-  );
 
   return named(
     '$env',
@@ -25,7 +22,12 @@ export function envDirective(
       '$env',
       validateOptions(
         (SchemaBuilder) => SchemaBuilder.emptySchema().addAdditionalProperties(),
-        (value, _, ctx) => (parse) => {
+        (value, _, parentKeys, context) => (parse) => {
+          const environment = currentEnvFromContext(
+            context,
+            asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+          );
+
           if (!environment) {
             if ('none' in value) {
               return parse(value.none, metadata);
@@ -35,10 +37,10 @@ export function envDirective(
               return parse(value.default, metadata);
             }
 
+            const path = keysToPath(parentKeys);
+
             throw new AppConfigError(
-              `An $env directive was used (in ${keysToPath(
-                ctx,
-              )}), but current environment (eg. NODE_ENV) is undefined`,
+              `An $env directive was used (in ${path}), but current environment (eg. NODE_ENV) is undefined`,
             );
           }
 
@@ -53,11 +55,10 @@ export function envDirective(
           }
 
           const found = Object.keys(value).join(', ');
+          const path = keysToPath(parentKeys);
 
           throw new AppConfigError(
-            `An $env directive was used (in ${keysToPath(
-              ctx,
-            )}), but none matched the current environment (wanted ${environment}, saw [${found}])`,
+            `An $env directive was used (in ${path}), but none matched the current environment (wanted ${environment}, saw [${found}])`,
           );
         },
         // $env is lazy so that non-applicable envs don't get evaluated

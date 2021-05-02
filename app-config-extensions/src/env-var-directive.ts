@@ -3,7 +3,7 @@ import { named, forKey, validationFunction, ValidationFunction } from '@app-conf
 import { AppConfigError, InObject } from '@app-config/core';
 import {
   asEnvOptions,
-  currentEnvironment,
+  currentEnvFromContext,
   defaultAliases,
   EnvironmentAliases,
 } from '@app-config/node';
@@ -15,13 +15,14 @@ export function envVarDirective(
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const environment = currentEnvironment(
-    asEnvOptions(environmentOverride, aliases, environmentSourceNames),
-  );
-
   return named(
     '$envVar',
-    forKey('$envVar', (value, key, ctx) => async (parse) => {
+    forKey('$envVar', (value, key, parentKeys, context) => async (parse) => {
+      const environment = currentEnvFromContext(
+        context,
+        asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+      );
+
       let name: string;
       let parseInt = false;
       let parseFloat = false;
@@ -30,11 +31,11 @@ export function envVarDirective(
       if (typeof value === 'string') {
         name = value;
       } else {
-        validateObject(value, [...ctx, key]);
+        validateObject(value, [...parentKeys, key]);
         if (Array.isArray(value)) throw new AppConfigError('$envVar was given an array');
 
         const resolved = (await parse(value.name)).toJSON();
-        validateString(resolved, [...ctx, key, [InObject, 'name']]);
+        validateString(resolved, [...parentKeys, key, [InObject, 'name']]);
 
         parseInt = !!(await parse(value.parseInt)).toJSON();
         parseFloat = !!(await parse(value.parseFloat)).toJSON();
@@ -111,9 +112,9 @@ export function envVarDirective(
           const allowNull = (await parse(value.allowNull)).toJSON();
 
           if (allowNull) {
-            validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+            validateStringOrNull(fallback, [...parentKeys, key, [InObject, 'fallback']]);
           } else {
-            validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+            validateString(fallback, [...parentKeys, key, [InObject, 'fallback']]);
           }
 
           return parseValue(fallback);

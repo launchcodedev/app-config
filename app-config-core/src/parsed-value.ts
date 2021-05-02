@@ -17,10 +17,17 @@ export type ParsingExtensionKey =
   | [typeof InArray, number]
   | [typeof Root];
 
+export interface ParsingContext {
+  [k: string]: string | string[] | undefined | ParsingContext;
+}
+
 export interface ParsingExtension {
-  (value: Json, key: ParsingExtensionKey, parentKeys: ParsingExtensionKey[]):
-    | ParsingExtensionTransform
-    | false;
+  (
+    value: Json,
+    key: ParsingExtensionKey,
+    parentKeys: ParsingExtensionKey[],
+    context: ParsingContext,
+  ): ParsingExtensionTransform | false;
 
   /**
    * A globally unique string that identifies what parsing extension this is.
@@ -36,6 +43,7 @@ export type ParsingExtensionTransform = (
     metadata?: ParsedValueMetadata,
     source?: ConfigSource,
     extensions?: ParsingExtension[],
+    context?: ParsingContext,
   ) => Promise<ParsedValue>,
   parent: JsonObject | Json[] | undefined,
   source: ConfigSource,
@@ -73,8 +81,9 @@ export class ParsedValue {
     source: ConfigSource,
     extensions?: ParsingExtension[],
     metadata?: ParsedValueMetadata,
+    context?: ParsingContext,
   ): Promise<ParsedValue> {
-    return parseValue(raw, source, extensions, metadata);
+    return parseValue(raw, source, extensions, metadata, context);
   }
 
   /** Parses (with extensions) from a plain JSON object */
@@ -346,8 +355,9 @@ export async function parseValue(
   source: ConfigSource,
   extensions: ParsingExtension[] = [],
   metadata: ParsedValueMetadata = {},
+  context: ParsingContext = {},
 ): Promise<ParsedValue> {
-  return parseValueInner(value, source, extensions, metadata, [[Root]], value);
+  return parseValueInner(value, source, extensions, metadata, context, [[Root]], value);
 }
 
 async function parseValueInner(
@@ -355,6 +365,7 @@ async function parseValueInner(
   source: ConfigSource,
   extensions: ParsingExtension[],
   metadata: ParsedValueMetadata = {},
+  context: ParsingContext = {},
   parentKeys: ParsingExtensionKey[],
   root: Json,
   parent?: JsonObject | Json[],
@@ -377,7 +388,7 @@ async function parseValueInner(
     if (visitedExtensions.has(extension)) continue;
     if (extension.extensionName && visitedExtensions.has(extension.extensionName)) continue;
 
-    const applicable = extension(value, currentKey, parentKeysNext);
+    const applicable = extension(value, currentKey, parentKeysNext, context);
 
     if (applicable) {
       applicableExtension = applicable;
@@ -397,12 +408,14 @@ async function parseValueInner(
       metadataOverride?: ParsedValueMetadata,
       sourceOverride?: ConfigSource,
       extensionsOverride?: ParsingExtension[],
+      contextOverride?: ParsingContext,
     ) =>
       parseValueInner(
         inner,
         sourceOverride ?? source,
         extensionsOverride ?? extensions,
         { ...metadata, ...metadataOverride },
+        { ...context, ...contextOverride },
         parentKeys,
         root,
         parent,
@@ -421,6 +434,7 @@ async function parseValueInner(
           source,
           extensions,
           undefined,
+          context,
           parentKeys.concat([[InArray, index]]),
           root,
           value,
@@ -446,6 +460,7 @@ async function parseValueInner(
           source,
           extensions,
           undefined,
+          context,
           parentKeys.concat([[InObject, key]]),
           root,
           value,

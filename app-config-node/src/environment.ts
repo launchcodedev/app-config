@@ -1,3 +1,4 @@
+import { ParsingContext } from '@app-config/core';
 import { logger } from '@app-config/logging';
 
 /** A mapping for "alias" names of environments, like "dev" => "development" */
@@ -6,14 +7,14 @@ export interface EnvironmentAliases {
 }
 
 /** Options required for calling {@link currentEnvironment} */
-export interface EnvironmentOptions {
+export type EnvironmentOptions = {
   /** Absolute override for what the current environment is, still abiding by aliases */
   override?: string;
   /** A mapping for "alias" names of environments, like "dev" => "development" */
   aliases: EnvironmentAliases;
   /** What environment variable(s) define the current environment, if override is not defined */
   envVarNames: string[];
-}
+};
 
 /** Default aliases that app-config will resolve for you */
 export const defaultAliases: EnvironmentAliases = {
@@ -124,4 +125,24 @@ export function aliasesFor(env: string, aliases: EnvironmentAliases): string[] {
   return Object.entries(aliases)
     .filter(([, value]) => value === env)
     .map(([key]) => key);
+}
+
+export function environmentOptionsFromContext(
+  context: ParsingContext,
+): EnvironmentOptions | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return (context.environmentOptions as unknown) as EnvironmentOptions;
+}
+
+export function currentEnvFromContext(
+  context: ParsingContext,
+  options?: EnvironmentOptions,
+): string | undefined {
+  const environmentOptions = environmentOptionsFromContext(context);
+
+  if (environmentOptions) {
+    return currentEnvironment(environmentOptions);
+  }
+
+  return currentEnvironment(options);
 }

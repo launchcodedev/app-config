@@ -8,12 +8,13 @@ import {
   ParsingExtension,
   AppConfigError,
   NotFoundError,
+  ParsingContext,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
 import {
   aliasesFor,
   asEnvOptions,
-  currentEnvironment,
+  currentEnvFromContext,
   defaultEnvOptions,
   EnvironmentAliases,
   EnvironmentOptions,
@@ -104,8 +105,8 @@ export class FlexibleFileSource extends ConfigSource {
   }
 
   // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource
-  private async resolveSource(): Promise<FileSource> {
-    const environment = currentEnvironment(this.environmentOptions);
+  private async resolveSource(context?: ParsingContext): Promise<FileSource> {
+    const environment = currentEnvFromContext(context ?? {}, this.environmentOptions);
     const aliasesForCurrentEnv = environment
       ? aliasesFor(environment, this.environmentOptions.aliases)
       : [];
@@ -144,10 +145,13 @@ export class FlexibleFileSource extends ConfigSource {
     return this.resolveSource().then((source) => source.readContents());
   }
 
-  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
-    const source = await this.resolveSource();
+  async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
+    const source = await this.resolveSource(context);
 
-    return source.read(extensions);
+    return source.read(extensions, {
+      ...context,
+      environmentOptions: this.environmentOptions,
+    });
   }
 }
 

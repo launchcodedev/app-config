@@ -1,4 +1,5 @@
 import type {
+  ParsingContext,
   ParsingExtension,
   ParsingExtensionKey,
   ParsingExtensionTransform,
@@ -7,7 +8,7 @@ import { parseValue, Root, AppConfigError } from '@app-config/core';
 import { SchemaBuilder } from '@serafin/schema-builder';
 
 export function composeExtensions(extensions: ParsingExtension[]): ParsingExtension {
-  const composed: ParsingExtension = (value, [k]) => {
+  const composed: ParsingExtension = (value, [k], _, context) => {
     // only applies to the root - override the parsing extensions
     if (k !== Root) return false;
 
@@ -19,6 +20,7 @@ export function composeExtensions(extensions: ParsingExtension[]): ParsingExtens
         // ensures that a recursion doesn't happen
         baseExtensions.concat(extensions).filter((v) => v !== composed),
         { shouldFlatten: true },
+        context,
       );
   };
 
@@ -45,9 +47,9 @@ export function forKey(
     return key === k;
   };
 
-  return (value, ctxKey, ctx) => {
-    if (shouldApply(ctxKey)) {
-      return parsingExtension(value, ctxKey, ctx);
+  return (value, currentKey, parentKeys, context) => {
+    if (shouldApply(currentKey)) {
+      return parsingExtension(value, currentKey, parentKeys, context);
     }
 
     return false;
@@ -73,12 +75,13 @@ export function validateOptions<T>(
     value: T,
     key: ParsingExtensionKey,
     parentKeys: ParsingExtensionKey[],
+    context: ParsingContext,
   ) => ParsingExtensionTransform | false,
   { lazy = false }: { lazy?: boolean } = {},
 ): ParsingExtension {
   const validate: ValidationFunction<T> = validationFunction(builder);
 
-  return (value, ctxKey, ctx) => {
+  return (value, key, parentKeys, context) => {
     return async (parse, ...args) => {
       let valid: unknown;
 
@@ -88,9 +91,9 @@ export function validateOptions<T>(
         valid = (await parse(value)).toJSON();
       }
 
-      validate(valid, [...ctx, ctxKey]);
+      validate(valid, [...parentKeys, key]);
 
-      const call = extension(valid, ctxKey, ctx);
+      const call = extension(valid, key, parentKeys, context);
 
       if (call) {
         return call(parse, ...args);
@@ -103,7 +106,10 @@ export function validateOptions<T>(
   };
 }
 
-export type ValidationFunction<T> = (value: any, ctx: ParsingExtensionKey[]) => asserts value is T;
+export type ValidationFunction<T> = (
+  value: any,
+  parentKeys: ParsingExtensionKey[],
+) => asserts value is T;
 
 export function validationFunction<T>(
   builder: (builder: typeof SchemaBuilder) => SchemaBuilder<T>,
@@ -112,14 +118,14 @@ export function validationFunction<T>(
 
   schema.cacheValidationFunction();
 
-  return (value, ctx): asserts value is T => {
+  return (value, parentKeys): asserts value is T => {
     try {
       schema.validate(value);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown';
 
       throw new ParsingExtensionInvalidOptions(
-        `Validation failed in "${keysToPath(ctx)}": ${message}`,
+        `Validation failed in "${keysToPath(parentKeys)}": ${message}`,
       );
     }
   };
