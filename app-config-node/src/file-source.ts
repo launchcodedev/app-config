@@ -53,6 +53,8 @@ export class FlexibleFileSource extends ConfigSource {
   private readonly fileExtensions: string[];
   private readonly environmentOptions: EnvironmentOptions;
 
+  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
+
   /** @deprecated use constructor with environmentOptions instead */
   constructor(
     filePath: string,
@@ -61,8 +63,6 @@ export class FlexibleFileSource extends ConfigSource {
     fileExtensions?: string[],
     environmentSourceNames?: string[] | string,
   );
-
-  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
 
   constructor(
     filePath: string,
