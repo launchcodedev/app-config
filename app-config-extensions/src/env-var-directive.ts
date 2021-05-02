@@ -86,17 +86,24 @@ export function envVarDirective(
         return parseValue(resolvedValue);
       }
 
-      if (typeof value === 'object' && value.fallback !== undefined) {
-        const fallback = (await parse(value.fallback)).toJSON();
-        const allowNull = (await parse(value.allowNull)).toJSON();
+      if (typeof value === 'object') {
+        if (value.fallback !== undefined) {
+          const fallback = (await parse(value.fallback)).toJSON();
+          const allowNull = (await parse(value.allowNull)).toJSON();
 
-        if (allowNull) {
-          validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
-        } else {
-          validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+          if (allowNull) {
+            validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+          } else {
+            validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+          }
+
+          return parseValue(fallback);
         }
+        const allowMissing = (await parse(value.allowMissing)).toJSON();
 
-        return parseValue(fallback);
+        if (allowMissing) {
+          return parseValue(null);
+        }
       }
 
       throw new AppConfigError(`$envVar could not find ${name} environment variable`);

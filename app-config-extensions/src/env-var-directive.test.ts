@@ -22,7 +22,7 @@ describe('$envVar directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'foo', bar: 'bar' });
   });
 
-  it('reads object with $name', async () => {
+  it('reads object with name', async () => {
     process.env.FOO = 'foo';
 
     const source = new LiteralSource({
@@ -34,7 +34,7 @@ describe('$envVar directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
 
-  it('fails with $name when not defined', async () => {
+  it('fails with name when not defined', async () => {
     const source = new LiteralSource({
       foo: { $envVar: { name: 'FOO' } },
     });
@@ -42,7 +42,7 @@ describe('$envVar directive', () => {
     await expect(source.read([envVarDirective()])).rejects.toThrow();
   });
 
-  it('uses $name when $fallback is defined', async () => {
+  it('uses name when fallback is defined', async () => {
     process.env.FOO = 'foo';
 
     const source = new LiteralSource({
@@ -54,7 +54,7 @@ describe('$envVar directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'foo' });
   });
 
-  it('uses $fallback when $name was not found', async () => {
+  it('uses fallback when name was not found', async () => {
     const source = new LiteralSource({
       foo: { $envVar: { name: 'FOO', fallback: 'bar' } },
     });
@@ -64,7 +64,7 @@ describe('$envVar directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: 'bar' });
   });
 
-  it('allows null value when $allowNull', async () => {
+  it('allows null value when allowNull', async () => {
     const source = new LiteralSource({
       foo: { $envVar: { name: 'FOO', fallback: null, allowNull: true } },
     });
@@ -74,12 +74,25 @@ describe('$envVar directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: null });
   });
 
-  it('does not allow number even when $allowNull', async () => {
+  it('does not allow number even when allowNull', async () => {
     const source = new LiteralSource({
       foo: { $envVar: { name: 'FOO', fallback: 42, allowNull: true } },
     });
 
     await expect(source.read([envVarDirective()])).rejects.toThrow();
+  });
+
+  it('returns null when allowMissing', async () => {
+    process.env.BAR = 'foo';
+
+    const source = new LiteralSource({
+      foo: { $envVar: { name: 'FOO', allowMissing: true } },
+      bar: { $envVar: { name: 'BAR', allowMissing: true } },
+    });
+
+    const parsed = await source.read([envVarDirective()]);
+
+    expect(parsed.toJSON()).toEqual({ foo: null, bar: 'foo' });
   });
 
   it('parses ints', async () => {
