@@ -99,6 +99,7 @@ export function envVarDirective(
 
           return parseValue(fallback);
         }
+
         const allowMissing = (await parse(value.allowMissing)).toJSON();
 
         if (allowMissing) {
