@@ -1,3 +1,15 @@
+## v2.5.0
+
+Adds some early deprecation warnings in preparation for version 3. See [here](https://github.com/launchcodedev/app-config/issues/130).
+
+Allows default extensions to be used twice without conflicts.
+
+Adds `$parseBool`, `$parseFloat` and `$parseInt` directives.
+
+Adds `allowMissing` option on `$envVar` that's a shorthand for `allowNull` + `fallback: null`.
+
+Creates new calling interface for `currentEnvironment` and `FlexibleFileSource`.
+
 ## v2.4.5
 
 Adds `$hidden` directive mainly for shared properties.
