@@ -413,7 +413,7 @@ describe('$override directive', () => {
     );
   });
 
-  it.only('overrides env', async () => {
+  it('overrides env', async () => {
     await withTempFiles(
       {
         'test-file.yml': `
