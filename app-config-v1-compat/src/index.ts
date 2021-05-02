@@ -8,9 +8,9 @@ import { logger } from '@app-config/logging';
 
 /** V1 app-config compatibility */
 export default function v1Compat(shouldShowDeprecationNotice?: true): ParsingExtension {
-  return named('v1-compat', (value, [_, key], context) => {
+  return named('v1-compat', (value, [_, key], parentKeys) => {
     // only apply in top-level app-config property
-    if (context[context.length - 1]?.[0] !== Root) {
+    if (parentKeys[parentKeys.length - 1]?.[0] !== Root) {
       return false;
     }
 

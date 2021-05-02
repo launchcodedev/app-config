@@ -32,15 +32,15 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
         return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
       },
-      (value) => async (_, __, context, extensions) => {
+      (value) => async (_, __, source, extensions) => {
         const retrieveFile = async (filepath: string, subselector?: string, isOptional = false) => {
-          const resolvedPath = resolveFilepath(context, filepath);
+          const resolvedPath = resolveFilepath(source, filepath);
 
           logger.verbose(`Loading file for ${keyName}: ${resolvedPath}`);
 
-          const source = new FileSource(resolvedPath);
+          const resolvedSource = new FileSource(resolvedPath);
 
-          const parsed = await source.read(extensions).catch((error) => {
+          const parsed = await resolvedSource.read(extensions).catch((error) => {
             if (error instanceof NotFoundError && isOptional) {
               return ParsedValue.literal({});
             }

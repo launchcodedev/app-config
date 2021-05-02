@@ -33,7 +33,7 @@ function execParsingExtension(): ParsingExtension {
               .addBoolean('parseOutput', {}, false)
               .addBoolean('trimWhitespace', {}, false),
           ),
-        (value) => async (parse, _, context) => {
+        (value) => async (parse, _, source) => {
           let options;
 
           if (typeof value === 'string') {
@@ -50,7 +50,7 @@ function execParsingExtension(): ParsingExtension {
           } = options;
 
           try {
-            const dir = resolveFilepath(context, '.');
+            const dir = resolveFilepath(source, '.');
             const { stdout, stderr } = await execAsync(command, { cwd: dir });
 
             if (failOnStderr && stderr) {

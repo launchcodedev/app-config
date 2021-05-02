@@ -72,7 +72,7 @@ export function validateOptions<T>(
   extension: (
     value: T,
     key: ParsingExtensionKey,
-    context: ParsingExtensionKey[],
+    parentKeys: ParsingExtensionKey[],
   ) => ParsingExtensionTransform | false,
   { lazy = false }: { lazy?: boolean } = {},
 ): ParsingExtension {

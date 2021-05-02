@@ -151,14 +151,14 @@ export class FlexibleFileSource extends ConfigSource {
   }
 }
 
-export function resolveFilepath(context: ConfigSource, filepath: string) {
+export function resolveFilepath(source: ConfigSource, filepath: string) {
   let resolvedPath = filepath;
 
   // resolve filepaths that are relative to the current FileSource
-  if (!isAbsolute(filepath) && context instanceof FileSource) {
-    resolvedPath = join(dirname(context.filePath), filepath);
+  if (!isAbsolute(filepath) && source instanceof FileSource) {
+    resolvedPath = join(dirname(source.filePath), filepath);
 
-    if (resolve(context.filePath) === resolvedPath) {
+    if (resolve(source.filePath) === resolvedPath) {
       throw new AppConfigError(`An extension tried to resolve to it's own file (${resolvedPath}).`);
     }
   }

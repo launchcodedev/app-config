@@ -18,7 +18,7 @@ export type ParsingExtensionKey =
   | [typeof Root];
 
 export interface ParsingExtension {
-  (value: Json, key: ParsingExtensionKey, context: ParsingExtensionKey[]):
+  (value: Json, key: ParsingExtensionKey, parentKeys: ParsingExtensionKey[]):
     | ParsingExtensionTransform
     | false;
 
@@ -355,13 +355,13 @@ async function parseValueInner(
   source: ConfigSource,
   extensions: ParsingExtension[],
   metadata: ParsedValueMetadata = {},
-  context: ParsingExtensionKey[],
+  parentKeys: ParsingExtensionKey[],
   root: Json,
   parent?: JsonObject | Json[],
   visitedExtensions: Set<ParsingExtension | string> = new Set(),
 ): Promise<ParsedValue> {
-  const [currentKey] = context.slice(-1);
-  const contextualKeys = context.slice(0, context.length - 1);
+  const [currentKey] = parentKeys.slice(-1);
+  const parentKeysNext = parentKeys.slice(0, parentKeys.length - 1);
 
   let applicableExtension: ParsingExtensionTransform | undefined;
 
@@ -377,7 +377,7 @@ async function parseValueInner(
     if (visitedExtensions.has(extension)) continue;
     if (extension.extensionName && visitedExtensions.has(extension.extensionName)) continue;
 
-    const applicable = extension(value, currentKey, contextualKeys);
+    const applicable = extension(value, currentKey, parentKeysNext);
 
     if (applicable) {
       applicableExtension = applicable;
@@ -403,7 +403,7 @@ async function parseValueInner(
         sourceOverride ?? source,
         extensionsOverride ?? extensions,
         { ...metadata, ...metadataOverride },
-        context,
+        parentKeys,
         root,
         parent,
         visitedExtensions,
@@ -421,7 +421,7 @@ async function parseValueInner(
           source,
           extensions,
           undefined,
-          context.concat([[InArray, index]]),
+          parentKeys.concat([[InArray, index]]),
           root,
           value,
         );
@@ -446,7 +446,7 @@ async function parseValueInner(
           source,
           extensions,
           undefined,
-          context.concat([[InObject, key]]),
+          parentKeys.concat([[InObject, key]]),
           root,
           value,
         );
