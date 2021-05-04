@@ -102,7 +102,7 @@ export function substituteDirective(
 
       let resolvedValue = process.env[name];
 
-      if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+      if (name === 'APP_CONFIG_ENV') {
         resolvedValue = environment;
       }
 
@@ -165,18 +165,18 @@ function performAllSubstitutions(text: string, envType?: string): string {
     if (varName) {
       const env = process.env[varName];
 
-      if (env !== undefined) {
-        output = output.replace(fullMatch, env);
-      } else if (fallback !== undefined) {
-        // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-        output = performAllSubstitutions(output.replace(fullMatch, fallback), envType);
-      } else if (varName === 'APP_CONFIG_ENV') {
+      if (varName === 'APP_CONFIG_ENV') {
         if (!envType) {
           throw new AppConfigError(`Could not find environment variable ${varName}`);
         }
 
         // there's a special case for APP_CONFIG_ENV, which is always the envType
         output = output.replace(fullMatch, envType);
+      } else if (env !== undefined) {
+        output = output.replace(fullMatch, env);
+      } else if (fallback !== undefined) {
+        // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+        output = performAllSubstitutions(output.replace(fullMatch, fallback), envType);
       } else {
         throw new AppConfigError(`Could not find environment variable ${varName}`);
       }

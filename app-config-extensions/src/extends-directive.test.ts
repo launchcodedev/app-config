@@ -2,7 +2,7 @@ import { withTempFiles } from '@app-config/test-utils';
 import { LiteralSource, NotFoundError } from '@app-config/core';
 import { FileSource } from '@app-config/node';
 import { extendsDirective, extendsSelfDirective, overrideDirective } from './extends-directive';
-import { envDirective } from './env-directive';
+import { envDirective, envVarDirective, substituteDirective } from './index';
 
 describe('$extends directive', () => {
   it('fails if file is missing', async () => {
@@ -417,7 +417,7 @@ describe('$override directive', () => {
     await withTempFiles(
       {
         'test-file.yml': `
-          foo:
+          bar:
             $env:
               default: 44
               dev: 88
@@ -425,6 +425,12 @@ describe('$override directive', () => {
       },
       async (inDir) => {
         const source = new LiteralSource({
+          foo: {
+            $env: {
+              default: 44,
+              dev: 88,
+            },
+          },
           $extends: {
             path: inDir('test-file.yml'),
             env: 'development',
@@ -433,7 +439,61 @@ describe('$override directive', () => {
 
         const parsed = await source.read([envDirective(), extendsDirective()]);
 
-        expect(parsed.toJSON()).toEqual({ foo: 88 });
+        expect(parsed.toJSON()).toEqual({ foo: 44, bar: 88 });
+      },
+    );
+  });
+
+  it('overrides env and $envVar', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          bar:
+            $envVar: APP_CONFIG_ENV
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_ENV = 'test';
+        const source = new LiteralSource({
+          foo: {
+            $envVar: 'APP_CONFIG_ENV',
+          },
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([extendsDirective(), envVarDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 'test', bar: 'development' });
+      },
+    );
+  });
+
+  it('overrides env and $substitute', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          bar:
+            $substitute: '$APP_CONFIG_ENV'
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_ENV = 'test';
+        const source = new LiteralSource({
+          foo: {
+            $substitute: '$APP_CONFIG_ENV',
+          },
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([extendsDirective(), substituteDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 'test', bar: 'development' });
       },
     );
   });

@@ -18,11 +18,6 @@ export function envVarDirective(
   return named(
     '$envVar',
     forKey('$envVar', (value, key, parentKeys, context) => async (parse) => {
-      const environment = currentEnvFromContext(
-        context,
-        asEnvOptions(environmentOverride, aliases, environmentSourceNames),
-      );
-
       let name: string;
       let parseInt = false;
       let parseFloat = false;
@@ -98,7 +93,12 @@ export function envVarDirective(
 
       let resolvedValue = process.env[name];
 
-      if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+      if (name === 'APP_CONFIG_ENV') {
+        const environment = currentEnvFromContext(
+          context,
+          asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+        );
+
         resolvedValue = environment;
       }
 
