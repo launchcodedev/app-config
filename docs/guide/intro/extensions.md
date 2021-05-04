@@ -75,6 +75,16 @@ This option can be given a filepath, an object with options, or an array of obje
 
 `select` allows extending a property from the other file, and `optional` allows missing files.
 
+To read another file with a different environment, simply use the `env` option:
+
+```yaml
+$extends:
+  path: ./other-file.yml
+  env: staging
+```
+
+This will load the file as if you were in `staging`, even though the current environment might be something else.
+
 ## The `$override` Directive
 
 The override directive is exactly the same as `$extends`, except that the other file takes precedent when merging.

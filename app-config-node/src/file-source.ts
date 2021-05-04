@@ -8,12 +8,13 @@ import {
   ParsingExtension,
   AppConfigError,
   NotFoundError,
+  ParsingContext,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
 import {
   aliasesFor,
   asEnvOptions,
-  currentEnvironment,
+  currentEnvFromContext,
   defaultEnvOptions,
   EnvironmentAliases,
   EnvironmentOptions,
@@ -53,6 +54,8 @@ export class FlexibleFileSource extends ConfigSource {
   private readonly fileExtensions: string[];
   private readonly environmentOptions: EnvironmentOptions;
 
+  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
+
   /** @deprecated use constructor with environmentOptions instead */
   constructor(
     filePath: string,
@@ -61,8 +64,6 @@ export class FlexibleFileSource extends ConfigSource {
     fileExtensions?: string[],
     environmentSourceNames?: string[] | string,
   );
-
-  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
 
   constructor(
     filePath: string,
@@ -104,8 +105,8 @@ export class FlexibleFileSource extends ConfigSource {
   }
 
   // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource
-  private async resolveSource(): Promise<FileSource> {
-    const environment = currentEnvironment(this.environmentOptions);
+  private async resolveSource(context?: ParsingContext): Promise<FileSource> {
+    const environment = currentEnvFromContext(context ?? {}, this.environmentOptions);
     const aliasesForCurrentEnv = environment
       ? aliasesFor(environment, this.environmentOptions.aliases)
       : [];
@@ -144,21 +145,24 @@ export class FlexibleFileSource extends ConfigSource {
     return this.resolveSource().then((source) => source.readContents());
   }
 
-  async read(extensions?: ParsingExtension[]): Promise<ParsedValue> {
-    const source = await this.resolveSource();
+  async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
+    const source = await this.resolveSource(context);
 
-    return source.read(extensions);
+    return source.read(extensions, {
+      ...context,
+      environmentOptions: this.environmentOptions,
+    });
   }
 }
 
-export function resolveFilepath(context: ConfigSource, filepath: string) {
+export function resolveFilepath(source: ConfigSource, filepath: string) {
   let resolvedPath = filepath;
 
   // resolve filepaths that are relative to the current FileSource
-  if (!isAbsolute(filepath) && context instanceof FileSource) {
-    resolvedPath = join(dirname(context.filePath), filepath);
+  if (!isAbsolute(filepath) && source instanceof FileSource) {
+    resolvedPath = join(dirname(source.filePath), filepath);
 
-    if (resolve(context.filePath) === resolvedPath) {
+    if (resolve(source.filePath) === resolvedPath) {
       throw new AppConfigError(`An extension tried to resolve to it's own file (${resolvedPath}).`);
     }
   }

@@ -219,6 +219,35 @@ describe('Configuration Loading', () => {
       },
     );
   });
+
+  it('extends from another file with different environment', async () => {
+    await withTempFiles(
+      {
+        '.app-config.yml': `
+          $extends:
+            path: ./other-file.yml
+            env: production
+          bar:
+            $envVar: APP_CONFIG_ENV
+        `,
+        'other-file.yml': `
+          foo:
+            $env:
+              default: default
+              prod: production
+        `,
+      },
+      async (inDir) => {
+        expect(
+          (await loadUnvalidatedConfig({ directory: inDir('.'), environmentOverride: 'test' }))
+            .fullConfig,
+        ).toEqual({
+          foo: 'production',
+          bar: 'test',
+        });
+      },
+    );
+  });
 });
 
 describe('Configuration Loading Options', () => {

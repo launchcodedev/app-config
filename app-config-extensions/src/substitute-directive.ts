@@ -2,7 +2,7 @@ import { named, forKey, validationFunction, ValidationFunction } from '@app-conf
 import { ParsingExtension, AppConfigError, InObject } from '@app-config/core';
 import {
   asEnvOptions,
-  currentEnvironment,
+  currentEnvFromContext,
   defaultAliases,
   EnvironmentAliases,
 } from '@app-config/node';
@@ -14,18 +14,19 @@ export function substituteDirective(
   environmentOverride?: string,
   environmentSourceNames?: string[] | string,
 ): ParsingExtension {
-  const environment = currentEnvironment(
-    asEnvOptions(environmentOverride, aliases, environmentSourceNames),
-  );
-
   return named(
     '$substitute',
-    forKey(['$substitute', '$subs'], (value, key, ctx) => async (parse) => {
+    forKey(['$substitute', '$subs'], (value, key, parentKeys, context) => async (parse) => {
+      const environment = currentEnvFromContext(
+        context,
+        asEnvOptions(environmentOverride, aliases, environmentSourceNames),
+      );
+
       if (typeof value === 'string') {
         return parse(performAllSubstitutions(value, environment), { shouldFlatten: true });
       }
 
-      validateObject(value, [...ctx, key]);
+      validateObject(value, [...parentKeys, key]);
       if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
       if (value.$name) {
@@ -36,7 +37,7 @@ export function substituteDirective(
 
       const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
 
-      validateString(name, [...ctx, key, [InObject, 'name']]);
+      validateString(name, [...parentKeys, key, [InObject, 'name']]);
 
       const parseValue = async (strValue: string | null) => {
         const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
@@ -101,7 +102,7 @@ export function substituteDirective(
 
       let resolvedValue = process.env[name];
 
-      if (!resolvedValue && name === 'APP_CONFIG_ENV') {
+      if (name === 'APP_CONFIG_ENV') {
         resolvedValue = environment;
       }
 
@@ -126,9 +127,9 @@ export function substituteDirective(
         }
 
         if (allowNull) {
-          validateStringOrNull(fallback, [...ctx, key, [InObject, 'fallback']]);
+          validateStringOrNull(fallback, [...parentKeys, key, [InObject, 'fallback']]);
         } else {
-          validateString(fallback, [...ctx, key, [InObject, 'fallback']]);
+          validateString(fallback, [...parentKeys, key, [InObject, 'fallback']]);
         }
 
         return parseValue(fallback);
@@ -164,18 +165,18 @@ function performAllSubstitutions(text: string, envType?: string): string {
     if (varName) {
       const env = process.env[varName];
 
-      if (env !== undefined) {
-        output = output.replace(fullMatch, env);
-      } else if (fallback !== undefined) {
-        // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
-        output = performAllSubstitutions(output.replace(fullMatch, fallback), envType);
-      } else if (varName === 'APP_CONFIG_ENV') {
+      if (varName === 'APP_CONFIG_ENV') {
         if (!envType) {
           throw new AppConfigError(`Could not find environment variable ${varName}`);
         }
 
         // there's a special case for APP_CONFIG_ENV, which is always the envType
         output = output.replace(fullMatch, envType);
+      } else if (env !== undefined) {
+        output = output.replace(fullMatch, env);
+      } else if (fallback !== undefined) {
+        // we'll recurse again, so that ${FOO:-${FALLBACK}} -> ${FALLBACK} -> value
+        output = performAllSubstitutions(output.replace(fullMatch, fallback), envType);
       } else {
         throw new AppConfigError(`Could not find environment variable ${varName}`);
       }

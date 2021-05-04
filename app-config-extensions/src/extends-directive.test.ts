@@ -2,6 +2,7 @@ import { withTempFiles } from '@app-config/test-utils';
 import { LiteralSource, NotFoundError } from '@app-config/core';
 import { FileSource } from '@app-config/node';
 import { extendsDirective, extendsSelfDirective, overrideDirective } from './extends-directive';
+import { envDirective, envVarDirective, substituteDirective } from './index';
 
 describe('$extends directive', () => {
   it('fails if file is missing', async () => {
@@ -408,6 +409,198 @@ describe('$override directive', () => {
         const parsed = await source.read([overrideDirective()]);
 
         expect(parsed.toJSON()).toEqual({ foo: true, bar: true, baz: true, qux: true });
+      },
+    );
+  });
+
+  it('extends env', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          bar:
+            $env:
+              default: 44
+              dev: 88
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          foo: {
+            $env: {
+              default: 44,
+              dev: 88,
+            },
+          },
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 44, bar: 88 });
+      },
+    );
+  });
+
+  it('extends env and $envVar', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          bar:
+            $envVar: APP_CONFIG_ENV
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_ENV = 'test';
+        const source = new LiteralSource({
+          foo: {
+            $envVar: 'APP_CONFIG_ENV',
+          },
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([extendsDirective(), envVarDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 'test', bar: 'development' });
+      },
+    );
+  });
+
+  it('extends env and $substitute', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          bar:
+            $substitute: '$APP_CONFIG_ENV'
+        `,
+      },
+      async (inDir) => {
+        process.env.APP_CONFIG_ENV = 'test';
+        const source = new LiteralSource({
+          foo: {
+            $substitute: '$APP_CONFIG_ENV',
+          },
+          $extends: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([extendsDirective(), substituteDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 'test', bar: 'development' });
+      },
+    );
+  });
+
+  it('extends env multiple files', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          foo:
+            $env:
+              default: 44
+              dev: 88
+        `,
+        'test-file-2.yml': `
+          bar:
+            $env:
+              default: 44
+              dev: 88
+              prod: 142
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: [
+            {
+              path: inDir('test-file.yml'),
+              env: 'development',
+            },
+            {
+              path: inDir('test-file-2.yml'),
+              env: 'production',
+            },
+          ],
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 88, bar: 142 });
+      },
+    );
+  });
+
+  it('override env', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          bar:
+            $env:
+              default: 44
+              dev: 88
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          foo: {
+            $env: {
+              default: 44,
+              dev: 88,
+            },
+          },
+          $override: {
+            path: inDir('test-file.yml'),
+            env: 'development',
+          },
+        });
+
+        const parsed = await source.read([envDirective(), overrideDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 44, bar: 88 });
+      },
+    );
+  });
+
+  it('override env multiple files', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          foo:
+            $env:
+              default: 44
+              dev: 88
+        `,
+        'test-file-2.yml': `
+          bar:
+            $env:
+              default: 44
+              dev: 88
+              prod: 142
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $override: [
+            {
+              path: inDir('test-file.yml'),
+              env: 'development',
+            },
+            {
+              path: inDir('test-file-2.yml'),
+              env: 'production',
+            },
+          ],
+        });
+
+        const parsed = await source.read([envDirective(), overrideDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 88, bar: 142 });
       },
     );
   });

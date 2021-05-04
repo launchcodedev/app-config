@@ -13,8 +13,8 @@ export default function jsModuleDirective(): ParsingExtension {
       '$jsModule',
       validateOptions(
         (SchemaBuilder) => SchemaBuilder.stringSchema(),
-        (value) => async (parse, _, context) => {
-          const resolvedPath = resolveFilepath(context, value);
+        (value) => async (parse, _, source) => {
+          const resolvedPath = resolveFilepath(source, value);
 
           let loaded: any = await import(resolvedPath);
 

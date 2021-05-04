@@ -1,10 +1,12 @@
 export { FileSource, FlexibleFileSource, resolveFilepath } from './file-source';
 export {
+  asEnvOptions,
+  environmentOptionsFromContext,
   currentEnvironment,
+  currentEnvFromContext,
   defaultAliases,
   defaultEnvOptions,
   defaultEnvVarNames,
-  asEnvOptions,
   EnvironmentAliases,
   EnvironmentOptions,
 } from './environment';
