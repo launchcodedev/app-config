@@ -238,7 +238,10 @@ describe('Configuration Loading', () => {
         `,
       },
       async (inDir) => {
-        expect((await loadUnvalidatedConfig({ directory: inDir('.'), environmentOverride: 'test' })).fullConfig).toEqual({
+        expect(
+          (await loadUnvalidatedConfig({ directory: inDir('.'), environmentOverride: 'test' }))
+            .fullConfig,
+        ).toEqual({
           foo: 'production',
           bar: 'test',
         });
