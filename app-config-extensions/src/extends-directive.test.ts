@@ -497,4 +497,42 @@ describe('$override directive', () => {
       },
     );
   });
+
+  it('overrides env multiple files', async () => {
+    await withTempFiles(
+      {
+        'test-file.yml': `
+          foo:
+            $env:
+              default: 44
+              dev: 88
+        `,
+        'test-file-2.yml': `
+          bar:
+            $env:
+              default: 44
+              dev: 88
+              prod: 142
+        `,
+      },
+      async (inDir) => {
+        const source = new LiteralSource({
+          $extends: [
+            {
+              path: inDir('test-file.yml'),
+              env: 'development',
+            },
+            {
+              path: inDir('test-file-2.yml'),
+              env: 'production',
+            },
+          ],
+        });
+
+        const parsed = await source.read([envDirective(), extendsDirective()]);
+
+        expect(parsed.toJSON()).toEqual({ foo: 88, bar: 142 });
+      },
+    );
+  });
 });
