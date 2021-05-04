@@ -1,3 +1,7 @@
+## v2.5.1
+
+Adds `env` option on `$extends` and `$override` directives.
+
 ## v2.5.0
 
 Adds some early deprecation warnings in preparation for version 3. See [here](https://github.com/launchcodedev/app-config/issues/130).
