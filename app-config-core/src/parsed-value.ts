@@ -107,6 +107,7 @@ export class ParsedValue {
     return parseValue(raw, new LiteralSource(raw), extensions);
   }
 
+  /** Deep merge two ParsedValue objects */
   static merge(a: ParsedValue, b: ParsedValue) {
     const meta = merge(a.meta, b.meta);
 
@@ -161,6 +162,7 @@ export class ParsedValue {
     return new ParsedValue([...a.sources, ...b.sources], newRawValue, newValue).assignMeta(meta);
   }
 
+  /** Returns the first ConfigSource that is of some instance type */
   getSource<CS extends ConfigSource>(clazz: new (...args: any[]) => CS): CS | undefined {
     for (const source of this.sources) {
       if (source instanceof clazz) {
@@ -169,6 +171,7 @@ export class ParsedValue {
     }
   }
 
+  /** Returns the first ConfigSource that is of some instance type */
   assertSource<CS extends ConfigSource>(clazz: new (...args: any[]) => CS): CS {
     const source = this.getSource(clazz);
 
@@ -179,6 +182,7 @@ export class ParsedValue {
     throw new AppConfigError(`Failed to find ConfigSource ${clazz.name}`);
   }
 
+  /** Returns all ConfigSource objects that contributed to this value (including nested) */
   allSources(): Set<ConfigSource> {
     const sources = new Set(this.sources);
 
@@ -201,11 +205,13 @@ export class ParsedValue {
     return sources;
   }
 
+  /** Adds metadata to the ParsedValue */
   assignMeta(metadata: ParsedValueMetadata) {
     Object.assign(this.meta, metadata);
     return this;
   }
 
+  /** Removes metadata by key */
   removeMeta(key: string) {
     delete this.meta[key];
     return this;
@@ -226,38 +232,46 @@ export class ParsedValue {
     return this.value[key]?.property(rest);
   }
 
+  /** Returns JSON object if the value is one */
   asObject(): { [key: string]: ParsedValue } | undefined {
     if (typeof this.value === 'object' && this.value !== null && !Array.isArray(this.value)) {
       return this.value;
     }
   }
 
+  /** Returns JSON array if the value is one */
   asArray(): ParsedValue[] | undefined {
     if (Array.isArray(this.value)) return this.value;
   }
 
+  /** Returns JSON primitive value if the value is one */
   asPrimitive(): JsonPrimitive | undefined {
     if ((typeof this.value !== 'object' || this.value === null) && !Array.isArray(this.value)) {
       return this.value;
     }
   }
 
+  /** Returns if the underlying value is an object */
   isObject(): boolean {
     return this.asObject() !== undefined;
   }
 
+  /** Returns if the underlying value is an array */
   isArray(): boolean {
     return this.asArray() !== undefined;
   }
 
+  /** Returns if the underlying value is a primitive */
   isPrimitive(): boolean {
     return this.asPrimitive() !== undefined;
   }
 
+  /** Deep clones underlying value */
   clone(): ParsedValue {
     return this.cloneWhere(() => true);
   }
 
+  /** Deep clones underlying value, depending on a predicate function */
   cloneWhere(filter: (value: ParsedValue) => boolean): ParsedValue {
     if (Array.isArray(this.value)) {
       const filtered = this.value.filter(filter);
@@ -293,6 +307,7 @@ export class ParsedValue {
     return new ParsedValue(this.sources, this.raw, this.value);
   }
 
+  /** Calls the function, with every nested ParsedValue */
   visitAll(callback: (value: ParsedValue) => void) {
     callback(this);
 
@@ -307,6 +322,7 @@ export class ParsedValue {
     }
   }
 
+  /** Extracts underlying JSON value from the wrapper */
   toJSON(): Json {
     if (Array.isArray(this.value)) {
       return this.value.map((v) => v.toJSON());
