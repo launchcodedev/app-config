@@ -1,6 +1,5 @@
 import type { ParsingExtension } from '@app-config/core';
 import { named } from '@app-config/extension-utils';
-import { logger } from '@app-config/logging';
 import { DecryptedSymmetricKey, decryptValue } from './encryption';
 
 export * from './encryption';

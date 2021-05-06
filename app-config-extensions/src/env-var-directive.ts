@@ -7,7 +7,6 @@ import {
   defaultAliases,
   EnvironmentAliases,
 } from '@app-config/node';
-import { logger } from '@app-config/logging';
 
 /** Substitutes environment variables */
 export function envVarDirective(

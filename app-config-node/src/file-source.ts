@@ -13,10 +13,8 @@ import {
 import { logger } from '@app-config/logging';
 import {
   aliasesFor,
-  asEnvOptions,
   currentEnvFromContext,
   defaultEnvOptions,
-  EnvironmentAliases,
   EnvironmentOptions,
 } from './environment';
 

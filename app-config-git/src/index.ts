@@ -1,7 +1,6 @@
 import simpleGit from 'simple-git';
 import { ParsingExtension, AppConfigError, Fallbackable } from '@app-config/core';
 import { named, forKey, validateOptions } from '@app-config/extension-utils';
-import { logger } from '@app-config/logging';
 
 class GitError extends Fallbackable {}
 

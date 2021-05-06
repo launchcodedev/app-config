@@ -1,5 +1,4 @@
 import { ParsingContext } from '@app-config/core';
-import { logger } from '@app-config/logging';
 
 /** A mapping for "alias" names of environments, like "dev" => "development" */
 export interface EnvironmentAliases {

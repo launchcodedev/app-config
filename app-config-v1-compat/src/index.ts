@@ -4,7 +4,6 @@ import { isObject } from '@app-config/utils';
 import { named } from '@app-config/extension-utils';
 import { ParsingExtension, Root } from '@app-config/core';
 import { FileSource } from '@app-config/node';
-import { logger } from '@app-config/logging';
 
 /** V1 app-config compatibility */
 export default function v1Compat(): ParsingExtension {
