@@ -118,7 +118,7 @@ export {
   defaultExtensions,
   defaultEnvExtensions,
   defaultMetaExtensions,
-} from '@app-config/default-extensions';
+} from '@app-config/extensions';
 
 /** @hidden Please don't rely on this. */
 export function resetConfigInternal() {

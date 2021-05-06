@@ -37,7 +37,7 @@
     "@app-config/cli": "^3.0.0-alpha.3",
     "@app-config/config": "^3.0.0-alpha.3",
     "@app-config/core": "^3.0.0-alpha.3",
-    "@app-config/default-extensions": "^3.0.0-alpha.3",
+    "@app-config/extensions": "^3.0.0-alpha.3",
     "@app-config/logging": "^3.0.0-alpha.3",
     "@app-config/meta": "^3.0.0-alpha.3",
     "@app-config/node": "^3.0.0-alpha.3",

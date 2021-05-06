@@ -9,6 +9,6 @@
   "references": [
     { "path": "../app-config-test-utils" },
     { "path": "../app-config-node" },
-    { "path": "../app-config-default-extensions" }
+    { "path": "../app-config-extensions" }
   ]
 }

@@ -17,8 +17,11 @@ import {
   EnvironmentSource,
   asEnvOptions,
 } from '@app-config/node';
-import { markAllValuesAsSecret } from '@app-config/extensions';
-import { defaultExtensions, defaultEnvExtensions } from '@app-config/default-extensions';
+import {
+  defaultExtensions,
+  defaultEnvExtensions,
+  markAllValuesAsSecret,
+} from '@app-config/extensions';
 import { loadSchema, JSONSchema, SchemaLoadingOptions } from '@app-config/schema';
 import { loadMetaConfig, loadExtraParsingExtensions } from '@app-config/meta';
 

@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "@app-config/core": "^3.0.0-alpha.3",
-    "@app-config/default-extensions": "^3.0.0-alpha.3",
     "@app-config/extensions": "^3.0.0-alpha.3",
     "@app-config/logging": "^3.0.0-alpha.3",
     "@app-config/meta": "^3.0.0-alpha.3",

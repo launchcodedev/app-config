@@ -12,7 +12,7 @@ import {
 import { logger } from '@app-config/logging';
 
 import { FlexibleFileSource, FileSource } from '@app-config/node';
-import { defaultMetaExtensions } from '@app-config/default-extensions';
+import { defaultMetaExtensions } from '@app-config/extensions';
 
 export interface MetaLoadingOptions {
   directory?: string;
