@@ -12,15 +12,27 @@ export const InArray = Symbol('InArray');
 /** The property being visited is the root object */
 export const Root = Symbol('Root');
 
+/** Descriptor for what "key" that a value was defined under within JSON */
 export type ParsingExtensionKey =
   | [typeof InObject, string]
   | [typeof InArray, number]
   | [typeof Root];
 
+/**
+ * Arbitrary context that's passed through the hierachy during parsing, only downwards.
+ *
+ * This is used for environment overrides and other options, so that parsing below some
+ * level in an object tree can override what the current environment is.
+ */
 export interface ParsingContext {
   [k: string]: string | string[] | undefined | ParsingContext;
 }
 
+/**
+ * Performs transformations on raw values that were read.
+ *
+ * See https://app-config.dev/guide/intro/extensions.html
+ */
 export interface ParsingExtension {
   (
     value: Json,
@@ -37,6 +49,9 @@ export interface ParsingExtension {
   extensionName?: string;
 }
 
+/**
+ * Callback that will process and potentially transform a value.
+ */
 export type ParsingExtensionTransform = (
   parse: (
     value: Json,
@@ -51,6 +66,7 @@ export type ParsingExtensionTransform = (
   root: Json,
 ) => Promise<ParsedValue> | ParsedValue;
 
+/** Values associated with a ParsedValue */
 export interface ParsedValueMetadata {
   [key: string]: any;
 }
@@ -195,7 +211,7 @@ export class ParsedValue {
     return this;
   }
 
-  /** Lookup property by nested key */
+  /** Lookup property by nested key name(s) */
   property([key, ...rest]: string[]): ParsedValue | undefined {
     if (key === '') return this.property(rest);
 
@@ -350,6 +366,7 @@ function literalParsedValue(raw: Json, source: ConfigSource): ParsedValue {
   return new ParsedValue(source, raw, transformed);
 }
 
+/** Same as ParsedValue.parse */
 export async function parseValue(
   value: Json,
   source: ConfigSource,

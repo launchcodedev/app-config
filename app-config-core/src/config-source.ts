@@ -7,6 +7,9 @@ import { logger } from '@app-config/logging';
 import { ParsedValue, ParsingContext, ParsingExtension } from './parsed-value';
 import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
 
+/**
+ * File formats that app-config supports.
+ */
 export enum FileType {
   YAML = 'YAML',
   TOML = 'TOML',
@@ -160,6 +163,9 @@ export class FallbackSource extends ConfigSource {
   }
 }
 
+/**
+ * Converts a JSON object to a string, using specified file type.
+ */
 export function stringify(config: Json, fileType: FileType, minimal: boolean = false): string {
   switch (fileType) {
     case FileType.JSON:
@@ -182,6 +188,9 @@ export function stringify(config: Json, fileType: FileType, minimal: boolean = f
   }
 }
 
+/**
+ * Returns which file type to use, based on the file extension.
+ */
 export function filePathAssumedType(filePath: string): FileType {
   switch (extname(filePath).toLowerCase().slice(1)) {
     case 'yml':
@@ -200,6 +209,9 @@ export function filePathAssumedType(filePath: string): FileType {
   }
 }
 
+/**
+ * Parses string based on a file format.
+ */
 export async function parseRawString(contents: string, fileType: FileType): Promise<Json> {
   switch (fileType) {
     case FileType.JSON:
@@ -215,6 +227,9 @@ export async function parseRawString(contents: string, fileType: FileType): Prom
   }
 }
 
+/**
+ * Try to parse string as different file formats, returning the first that worked.
+ */
 export async function guessFileType(contents: string): Promise<FileType> {
   for (const tryType of [FileType.JSON, FileType.TOML, FileType.JSON5, FileType.YAML]) {
     try {
