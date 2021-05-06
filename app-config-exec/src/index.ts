@@ -1,6 +1,6 @@
 import { Json } from '@app-config/utils';
 import { ParsingExtension, parseRawString, guessFileType, AppConfigError } from '@app-config/core';
-import { forKey, validateOptions } from '@app-config/extension-utils';
+import { named, forKey, validateOptions } from '@app-config/extension-utils';
 import { resolveFilepath } from '@app-config/node';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -19,66 +19,69 @@ class ExecError extends AppConfigError {
 }
 
 function execParsingExtension(): ParsingExtension {
-  return forKey(
+  return named(
     '$exec',
-    validateOptions(
-      (SchemaBuilder) =>
-        SchemaBuilder.oneOf(
-          SchemaBuilder.stringSchema(),
-          SchemaBuilder.emptySchema()
-            .addString('command')
-            .addBoolean('failOnStderr', {}, false)
-            .addBoolean('parseOutput', {}, false)
-            .addBoolean('trimWhitespace', {}, false),
-        ),
-      (value) => async (parse, _, context) => {
-        let options;
+    forKey(
+      '$exec',
+      validateOptions(
+        (SchemaBuilder) =>
+          SchemaBuilder.oneOf(
+            SchemaBuilder.stringSchema(),
+            SchemaBuilder.emptySchema()
+              .addString('command')
+              .addBoolean('failOnStderr', {}, false)
+              .addBoolean('parseOutput', {}, false)
+              .addBoolean('trimWhitespace', {}, false),
+          ),
+        (value) => async (parse, _, source) => {
+          let options;
 
-        if (typeof value === 'string') {
-          options = { command: value };
-        } else {
-          options = value;
-        }
-
-        const {
-          command,
-          failOnStderr = false,
-          parseOutput = false,
-          trimWhitespace = true,
-        } = options;
-
-        try {
-          const dir = resolveFilepath(context, '.');
-          const { stdout, stderr } = await execAsync(command, { cwd: dir });
-
-          if (failOnStderr && stderr) {
-            throw new ExecError(`$exec command "${command}" produced stderr: ${stderr}`);
+          if (typeof value === 'string') {
+            options = { command: value };
+          } else {
+            options = value;
           }
 
-          let result: Json = stdout;
+          const {
+            command,
+            failOnStderr = false,
+            parseOutput = false,
+            trimWhitespace = true,
+          } = options;
 
-          if (trimWhitespace) {
-            result = stdout.trim();
+          try {
+            const dir = resolveFilepath(source, '.');
+            const { stdout, stderr } = await execAsync(command, { cwd: dir });
+
+            if (failOnStderr && stderr) {
+              throw new ExecError(`$exec command "${command}" produced stderr: ${stderr}`);
+            }
+
+            let result: Json = stdout;
+
+            if (trimWhitespace) {
+              result = stdout.trim();
+            }
+
+            if (parseOutput) {
+              const fileType = await guessFileType(stdout);
+              result = await parseRawString(stdout, fileType);
+            }
+
+            return parse(result, { shouldFlatten: true });
+          } catch (err: unknown) {
+            if (!isError(err)) {
+              throw err;
+            }
+
+            if (err instanceof ExecError) {
+              throw err;
+            }
+
+            throw new ExecError(`$exec command "${command}" failed with error:\n${err.message}`);
           }
-
-          if (parseOutput) {
-            const fileType = await guessFileType(stdout);
-            result = await parseRawString(stdout, fileType);
-          }
-
-          return parse(result, { shouldFlatten: true });
-        } catch (err: unknown) {
-          if (!isError(err)) {
-            throw err;
-          }
-
-          if (err instanceof ExecError) {
-            throw err;
-          }
-
-          throw new ExecError(`$exec command "${command}" failed with error:\n${err.message}`);
-        }
-      },
+        },
+      ),
     ),
   );
 }

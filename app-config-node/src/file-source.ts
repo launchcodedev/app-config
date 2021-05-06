@@ -11,7 +11,14 @@ import {
   ParsingContext,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
-import { currentEnvironment, defaultAliases, EnvironmentAliases } from './environment';
+import {
+  aliasesFor,
+  asEnvOptions,
+  currentEnvFromContext,
+  defaultEnvOptions,
+  EnvironmentAliases,
+  EnvironmentOptions,
+} from './environment';
 
 /** Read configuration from a single file */
 export class FileSource extends ConfigSource {
@@ -43,28 +50,75 @@ export class FileSource extends ConfigSource {
 
 /** Read configuration from a file, found via "glob-like" search (any file format, with support for environment specific files) */
 export class FlexibleFileSource extends ConfigSource {
+  private readonly filePath: string;
+  private readonly fileExtensions: string[];
+  private readonly environmentOptions: EnvironmentOptions;
+
+  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
+
+  /** @deprecated use constructor with environmentOptions instead */
   constructor(
-    private readonly filePath: string,
-    private readonly environmentOverride?: string,
-    private readonly environmentAliases: EnvironmentAliases = defaultAliases,
-    private readonly environmentSourceNames?: string[] | string,
-    private readonly fileExtensions: string[] = ['yml', 'yaml', 'toml', 'json', 'json5'],
+    filePath: string,
+    environmentOverride?: string,
+    environmentAliases?: EnvironmentAliases,
+    fileExtensions?: string[],
+    environmentSourceNames?: string[] | string,
+  );
+
+  constructor(
+    filePath: string,
+    environmentOverrideOrFileExtensions?: string | string[],
+    environmentAliasesOrEnvironmentOptions?: EnvironmentAliases | EnvironmentOptions,
+    fileExtensions?: string[],
+    environmentSourceNames?: string[] | string,
   ) {
     super();
+
+    this.filePath = filePath;
+    const defaultFileExtensions = ['yml', 'yaml', 'toml', 'json', 'json5'];
+
+    if (
+      (Array.isArray(environmentOverrideOrFileExtensions) ||
+        environmentOverrideOrFileExtensions === undefined) &&
+      (environmentAliasesOrEnvironmentOptions
+        ? 'aliases' in environmentAliasesOrEnvironmentOptions ||
+          'envVarNames' in environmentAliasesOrEnvironmentOptions
+        : true) &&
+      fileExtensions === undefined &&
+      environmentSourceNames === undefined
+    ) {
+      this.fileExtensions = environmentOverrideOrFileExtensions ?? defaultFileExtensions;
+      this.environmentOptions =
+        (environmentAliasesOrEnvironmentOptions as EnvironmentOptions) ?? defaultEnvOptions;
+    } else {
+      logger.warn(
+        `Detected deprecated usage of FlexibleFileSource constructor loading ${filePath}`,
+      );
+
+      this.fileExtensions = fileExtensions ?? defaultFileExtensions;
+      this.environmentOptions = asEnvOptions(
+        environmentOverrideOrFileExtensions as string,
+        environmentAliasesOrEnvironmentOptions as EnvironmentAliases,
+        environmentSourceNames,
+      );
+    }
   }
 
   // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource
-  private async resolveSource(): Promise<FileSource> {
-    const aliases = this.environmentAliases;
-    const environment =
-      this.environmentOverride ?? currentEnvironment(aliases, this.environmentSourceNames);
-    const environmentAlias = Object.entries(aliases).find(([, v]) => v === environment)?.[0];
+  private async resolveSource(context?: ParsingContext): Promise<FileSource> {
+    const environment = currentEnvFromContext(context ?? {}, this.environmentOptions);
+    const aliasesForCurrentEnv = environment
+      ? aliasesFor(environment, this.environmentOptions.aliases)
+      : [];
 
     const filesToTry = [];
 
     for (const ext of this.fileExtensions) {
       if (environment) filesToTry.push(`${this.filePath}.${environment}.${ext}`);
-      if (environmentAlias) filesToTry.push(`${this.filePath}.${environmentAlias}.${ext}`);
+
+      for (const alias of aliasesForCurrentEnv) {
+        filesToTry.push(`${this.filePath}.${alias}.${ext}`);
+      }
     }
 
     // try these after trying environments, which take precedent
@@ -92,25 +146,23 @@ export class FlexibleFileSource extends ConfigSource {
   }
 
   async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
-    const source = await this.resolveSource();
+    const source = await this.resolveSource(context);
 
     return source.read(extensions, {
-      environmentOverride: this.environmentOverride,
-      environmentAliases: this.environmentAliases,
-      environmentSourceNames: this.environmentSourceNames,
       ...context,
+      environmentOptions: this.environmentOptions,
     });
   }
 }
 
-export function resolveFilepath(context: ConfigSource, filepath: string) {
+export function resolveFilepath(source: ConfigSource, filepath: string) {
   let resolvedPath = filepath;
 
   // resolve filepaths that are relative to the current FileSource
-  if (!isAbsolute(filepath) && context instanceof FileSource) {
-    resolvedPath = join(dirname(context.filePath), filepath);
+  if (!isAbsolute(filepath) && source instanceof FileSource) {
+    resolvedPath = join(dirname(source.filePath), filepath);
 
-    if (resolve(context.filePath) === resolvedPath) {
+    if (resolve(source.filePath) === resolvedPath) {
       throw new AppConfigError(`An extension tried to resolve to it's own file (${resolvedPath}).`);
     }
   }

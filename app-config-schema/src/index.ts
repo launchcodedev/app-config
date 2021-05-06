@@ -15,6 +15,7 @@ import {
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
 import {
+  asEnvOptions,
   EnvironmentAliases,
   EnvironmentSource,
   FileSource,
@@ -69,11 +70,16 @@ export async function loadSchema({
   if (!parsed) {
     logger.verbose(`Searching for ${fileNameBase} file`);
 
-    const source = new FlexibleFileSource(
-      join(directory, fileNameBase),
+    const environmentOptions = asEnvOptions(
       environmentOverride,
       environmentAliases,
       environmentSourceNames,
+    );
+
+    const source = new FlexibleFileSource(
+      join(directory, fileNameBase),
+      undefined,
+      environmentOptions,
     );
 
     parsed = await source.read(parsingExtensions);

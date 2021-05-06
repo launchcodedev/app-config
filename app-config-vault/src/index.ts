@@ -3,7 +3,7 @@ import { api, buildPath, setGlobalFetch } from '@lcdev/fetch';
 import type { JsonObject } from '@lcdev/ts';
 import type { Json } from '@app-config/utils';
 import type { ParsingExtension } from '@app-config/core';
-import { forKey, validateOptions } from '@app-config/extension-utils';
+import { named, forKey, validateOptions } from '@app-config/extension-utils';
 
 setGlobalFetch(fetch);
 
@@ -32,39 +32,44 @@ function vaultParsingExtension(options: Options = {}): ParsingExtension {
     return call.expectStatus(200);
   });
 
-  return forKey(
+  return named(
     '$vault',
-    validateOptions(
-      (SchemaBuilder) => SchemaBuilder.emptySchema().addString('secret').addString('select'),
-      (value) => async (parse) => {
-        const { secret, select } = value;
+    forKey(
+      '$vault',
+      validateOptions(
+        (SchemaBuilder) => SchemaBuilder.emptySchema().addString('secret').addString('select'),
+        (value) => async (parse) => {
+          const { secret, select } = value;
 
-        type VaultResponse<T> = {
-          data: {
-            data: T;
+          type VaultResponse<T> = {
+            data: {
+              data: T;
+            };
+            metadata: {
+              destroyed: boolean;
+            };
           };
-          metadata: {
-            destroyed: boolean;
-          };
-        };
 
-        const path = secret.includes('/') ? secret : `secret/data/${secret}`;
+          const path = secret.includes('/') ? secret : `secret/data/${secret}`;
 
-        const {
-          data: { data },
-        } = await vaultApi
-          .get(buildPath('v1', path))
-          .withQuery({ version: '2' })
-          .json<VaultResponse<JsonObject>>();
+          const {
+            data: { data },
+          } = await vaultApi
+            .get(buildPath('v1', path))
+            .withQuery({ version: '2' })
+            .json<VaultResponse<JsonObject>>();
 
-        const namedValue = data[select];
+          const namedValue = data[select];
 
-        if (typeof namedValue === 'undefined') {
-          throw new Error(`The named value "${select}" was not found in the KV secret "${secret}"`);
-        }
+          if (typeof namedValue === 'undefined') {
+            throw new Error(
+              `The named value "${select}" was not found in the KV secret "${secret}"`,
+            );
+          }
 
-        return parse(namedValue as Json, { shouldFlatten: true });
-      },
+          return parse(namedValue as Json, { shouldFlatten: true });
+        },
+      ),
     ),
   );
 }

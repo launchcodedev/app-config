@@ -23,6 +23,10 @@ const assertLoaded = () => {
   return loadedConfig;
 };
 
+/**
+ * Reads and validates app-config, using the default loading strategy.
+ * Same as `loadValidatedConfig` but stores loaded config in the `config` export.
+ */
 export async function loadConfig(
   options?: ConfigLoadingOptions,
   schemaOptions?: SchemaLoadingOptions,
@@ -42,6 +46,11 @@ export async function loadConfig(
   return config;
 }
 
+/**
+ * Singleton for loaded configuration, when `loadConfig` has completed successfully.
+ *
+ * Reading properties on this object before `loadConfig` completes will throw errors.
+ */
 export const config: ExportedConfig = new Proxy(
   {
     APP_CONFIG_WAS_NOT_LOADED_YET_LOOK_AT_THE_DOCS: true,
@@ -81,7 +90,7 @@ export const config: ExportedConfig = new Proxy(
 export default config;
 
 /**
- * Only available when using @app-config/webpack. Validates configuration using AJV.
+ * ONLY available when using @app-config/webpack. Validates configuration using AJV.
  */
 export const validateConfig: ValidateFunction<ExportedConfig> = null as any; // eslint-disable-line
 
@@ -111,7 +120,7 @@ export {
   defaultMetaExtensions,
 } from '@app-config/default-extensions';
 
-/** @hidden */
+/** @hidden Please don't rely on this. */
 export function resetConfigInternal() {
   loadedConfig = undefined;
 }

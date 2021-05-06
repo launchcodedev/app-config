@@ -1,48 +1,59 @@
 import simpleGit from 'simple-git';
 import { ParsingExtension, AppConfigError, Fallbackable } from '@app-config/core';
-import { forKey, validateOptions } from '@app-config/extension-utils';
+import { named, forKey, validateOptions } from '@app-config/extension-utils';
+import { logger } from '@app-config/logging';
 
 class GitError extends Fallbackable {}
 
 /** Access to the git branch and commit ref */
 export default function gitRefDirectives(
   getStatus: typeof gitStatus = gitStatus,
+  shouldShowDeprecationNotice?: true,
 ): ParsingExtension {
-  return forKey(
+  return named(
     '$git',
-    validateOptions(
-      (SchemaBuilder) => SchemaBuilder.stringSchema(),
-      (value) => async (parse) => {
-        switch (value) {
-          case 'commit':
-            return getStatus().then(({ commitRef }) => parse(commitRef, { shouldFlatten: true }));
-
-          case 'commitShort':
-            return getStatus().then(({ commitRef }) =>
-              parse(commitRef.slice(0, 7), { shouldFlatten: true }),
+    forKey(
+      '$git',
+      validateOptions(
+        (SchemaBuilder) => SchemaBuilder.stringSchema(),
+        (value) => async (parse) => {
+          if (shouldShowDeprecationNotice) {
+            logger.warn(
+              'Detected deprecated use of @app-config/git parsing extension. Please install @app-config/git and add it to your meta file "parsingExtensions".',
             );
+          }
 
-          case 'branch':
-          case 'branchName':
-            return getStatus().then(({ branchName }) => {
-              if (!branchName) {
-                throw new AppConfigError(
-                  'The $git directive tried to retrieve branchname, but it appears no branch is checked out',
-                );
-              }
+          switch (value) {
+            case 'commit':
+              return getStatus().then(({ commitRef }) => parse(commitRef, { shouldFlatten: true }));
 
-              return parse(branchName, { shouldFlatten: true });
-            });
+            case 'commitShort':
+              return getStatus().then(({ commitRef }) =>
+                parse(commitRef.slice(0, 7), { shouldFlatten: true }),
+              );
 
-          case 'tag':
-            return getStatus().then(({ tag }) => {
-              return parse(tag ?? null, { shouldFlatten: true });
-            });
+            case 'branch':
+            case 'branchName':
+              return getStatus().then(({ branchName }) => {
+                if (!branchName) {
+                  throw new AppConfigError(
+                    'The $git directive tried to retrieve branchname, but it appears no branch is checked out',
+                  );
+                }
 
-          default:
-            throw new AppConfigError('$git directive was not passed a valid option');
-        }
-      },
+                return parse(branchName, { shouldFlatten: true });
+              });
+
+            case 'tag':
+              return getStatus().then(({ tag }) => {
+                return parse(tag ?? null, { shouldFlatten: true });
+              });
+
+            default:
+              throw new AppConfigError('$git directive was not passed a valid option');
+          }
+        },
+      ),
     ),
   );
 }

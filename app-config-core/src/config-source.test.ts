@@ -15,7 +15,7 @@ class FailingSource extends ConfigSource {
   }
 }
 
-const flattenExtension: ParsingExtension = (value, [[_, key]]) => {
+const flattenExtension: ParsingExtension = (value, [_, key]) => {
   if (key === '$flatten') {
     return (parse) => parse(value, { shouldFlatten: true });
   }

@@ -3,6 +3,7 @@ import { logger } from '@app-config/logging';
 
 export type KeyFormatter = (key: string, separator: string) => string;
 
+/** Strategy used in 'app-config vars' for variable names */
 export function camelToScreamingCase(key: string, separator: string = '_'): string {
   return key
     .replace(/([^A-Z]+)([A-Z][a-z])/g, `$1${separator}$2`)
@@ -11,6 +12,7 @@ export function camelToScreamingCase(key: string, separator: string = '_'): stri
     .toUpperCase();
 }
 
+/** Strategy used in 'app-config vars' to extract variable names from hierachy */
 export function flattenObjectTree(
   obj: JsonObject,
   prefix: string = '',
@@ -40,6 +42,7 @@ export function flattenObjectTree(
   }, {});
 }
 
+/** Strategy for renaming keys, used for 'app-config vars' */
 export function renameInFlattenedTree(
   flattened: { [key: string]: string },
   renames: string[] = [],
