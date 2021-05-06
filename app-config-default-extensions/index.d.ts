@@ -4,21 +4,6 @@
 
 import type { ParsingExtension } from '@app-config/core';
 
-interface EnvironmentAliases {
-  [alias: string]: string;
-}
-
-interface DecryptedSymmetricKey {
-  revision: number;
-  key: Uint8Array;
-}
-
-export function defaultExtensions(
-  aliases?: EnvironmentAliases,
-  environmentOverride?: string,
-  symmetricKey?: DecryptedSymmetricKey,
-  environmentSourceNames?: string[] | string,
-): ParsingExtension[];
-
+export function defaultExtensions(): ParsingExtension[];
 export function defaultEnvExtensions(): ParsingExtension[];
 export function defaultMetaExtensions(): ParsingExtension[];
