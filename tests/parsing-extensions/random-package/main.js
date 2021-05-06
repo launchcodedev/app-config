@@ -1,4 +1,4 @@
-module.exports = (options) => (value, [[, key]]) => {
+module.exports = (options) => (value, [, key]) => {
   const rng = require('seedrandom')(options.seed);
 
   if (key === '$random') {
