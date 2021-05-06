@@ -207,6 +207,7 @@ export async function loadValidatedConfig(
         : undefined,
       environmentOverride: options?.environmentOverride,
       environmentAliases: options?.environmentAliases,
+      environmentSourceNames: options?.environmentSourceNames,
       ...schemaOptions,
     }),
     loadUnvalidatedConfig(options),
