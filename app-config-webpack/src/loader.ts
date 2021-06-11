@@ -68,11 +68,13 @@ const loader = function AppConfigLoader(this: Loader) {
 
         generatedText = `${generatedText}
           export function currentEnvironment() {
-            return ${JSON.stringify(
-              currentEnvironment(
-                asEnvOptions(environmentOverride, environmentAliases, environmentSourceNames),
-              ),
-            )};
+            return ${
+              JSON.stringify(
+                currentEnvironment(
+                  asEnvOptions(environmentOverride, environmentAliases, environmentSourceNames),
+                ),
+              ) ?? 'undefined'
+            };
           }
         `;
 

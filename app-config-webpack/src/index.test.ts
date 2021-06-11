@@ -231,6 +231,29 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
+  it('fills in undefined for currentEnvironment', async () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
+    process.env.APP_CONFIG_ENV = '';
+
+    await new Promise<void>((done, reject) => {
+      webpack([createOptions({}, true)], (err, stats) => {
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
+        if (stats.hasErrors()) reject(stats.toString());
+
+        const { children } = stats.toJson({ source: true });
+        const [{ modules = [] }] = children || [];
+
+        expect(
+          modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
+        ).toBe(true);
+        expect(modules.some(({ source }) => source?.includes('return undefined;'))).toBe(true);
+
+        done();
+      });
+    });
+  });
+
   it.skip('does not bundle the validateConfig function', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
 
