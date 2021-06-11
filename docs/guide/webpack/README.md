@@ -156,3 +156,9 @@ if (validateConfig.errors) {
   document.body.innerHTML = `<pre>${JSON.stringify(fullConfig, null, 2)}</pre>`;
 }
 ```
+
+### Environments
+
+The webpack loader will give you access to the `currentEnvironment` function,
+returning the environment as it was detected when your web bundle was built.
+Note that function arguments are ignored.
