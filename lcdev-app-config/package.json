@@ -1,7 +1,7 @@
 {
   "name": "@lcdev/app-config",
   "description": "Alias for @app-config/main",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -33,8 +33,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/cli": "^2.5.1",
-    "@app-config/main": "^2.5.1"
+    "@app-config/cli": "^2.5.2",
+    "@app-config/main": "^2.5.2"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
