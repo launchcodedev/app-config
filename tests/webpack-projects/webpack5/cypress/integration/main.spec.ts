@@ -45,4 +45,10 @@ describe('Config Loading', () => {
       `"longStringProperty": "some long string with a \\" char and '\\\\n"`,
     );
   });
+
+  it('renders currentEnvironment', () => {
+    cy.visit('/');
+
+    cy.get('body').should('contain', `Environment: production`);
+  });
 });
