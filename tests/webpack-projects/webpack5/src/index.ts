@@ -1,4 +1,4 @@
-import { config, validateConfig } from '@app-config/main';
+import { config, validateConfig, currentEnvironment } from '@app-config/main';
 
 validateConfig(config);
 
@@ -7,5 +7,8 @@ if (validateConfig.errors) {
     .map((err) => err.message)
     .join(', ')}`;
 } else {
-  document.body.innerHTML = `<pre>${JSON.stringify(config, null, 2)}</pre>`;
+  document.body.innerHTML = `
+    <pre>${JSON.stringify(config, null, 2)}</pre>
+    <pre>Environment: ${currentEnvironment()}</pre>
+  `;
 }

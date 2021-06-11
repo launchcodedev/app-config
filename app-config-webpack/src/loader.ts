@@ -1,5 +1,6 @@
 import { getOptions, parseQuery } from 'loader-utils';
 import { loadValidatedConfig } from '@app-config/main';
+import { currentEnvironment, asEnvOptions } from '@app-config/node';
 import type { Options } from './index';
 
 type LoaderContext = Parameters<typeof getOptions>[0];
@@ -11,7 +12,7 @@ const loader = function AppConfigLoader(this: Loader) {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { noGlobal = false, loading, schemaLoading }: Options = {
+  const { noGlobal = false, loading = {}, schemaLoading }: Options = {
     ...getOptions(this),
     ...parseQuery(this.resourceQuery),
   };
@@ -62,6 +63,20 @@ const loader = function AppConfigLoader(this: Loader) {
             export const validateConfig = /*#__PURE__*/ genValidateConfig();
           `;
         }
+
+        const { environmentOverride, environmentAliases, environmentSourceNames } = loading;
+
+        generatedText = `${generatedText}
+          export function currentEnvironment() {
+            return ${
+              JSON.stringify(
+                currentEnvironment(
+                  asEnvOptions(environmentOverride, environmentAliases, environmentSourceNames),
+                ),
+              ) ?? 'undefined'
+            };
+          }
+        `;
 
         return generatedText;
       };
