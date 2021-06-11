@@ -1,3 +1,7 @@
+## v2.5.2
+
+Adds support for calling `currentEnvironment` when using the Webpack plugin.
+
 ## v2.5.1
 
 Adds `env` option on `$extends` and `$override` directives.
