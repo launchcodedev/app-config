@@ -756,7 +756,7 @@ function addForEnvironment<T>(
   };
 
   if (Array.isArray(values)) {
-    return values.concat(add);
+    return addOrReplace(values);
   }
 
   const environment = currentEnvironment(environmentOptions);
