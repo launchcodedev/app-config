@@ -16,6 +16,7 @@ import {
 import { Json } from '@app-config/utils';
 import { checkTTY, logger } from '@app-config/logging';
 import {
+  aliasesFor,
   currentEnvironment,
   EnvironmentOptions,
   promptUser,
@@ -289,11 +290,10 @@ export async function saveNewSymmetricKey(
   environmentOptions?: EnvironmentOptions,
 ) {
   const encrypted = await encryptSymmetricKey(symmetricKey, teamMembers);
-  const environment = currentEnvironment(environmentOptions);
 
   await saveNewMetaFile(({ encryptionKeys = [], ...meta }) => ({
     ...meta,
-    encryptionKeys: addForEnvironment(encrypted, encryptionKeys, environment),
+    encryptionKeys: addForEnvironment(encrypted, encryptionKeys, environmentOptions),
   }));
 }
 
@@ -309,7 +309,13 @@ export async function loadSymmetricKeys(
     value: { encryptionKeys = [] },
   } = await loadMeta();
 
-  return selectForEnvironment(encryptionKeys, environment);
+  const selected = selectForEnvironment(encryptionKeys, environmentOptions);
+
+  logger.verbose(
+    `Found ${selected.length} symmetric keys for environment: ${environment ?? 'none'}`,
+  );
+
+  return selected;
 }
 
 export async function loadSymmetricKey(
@@ -470,8 +476,14 @@ export async function loadTeamMembers(environmentOptions?: EnvironmentOptions): 
     value: { teamMembers = [] },
   } = await loadMetaConfig();
 
+  const currentTeamMembers = selectForEnvironment(teamMembers, environmentOptions);
+
+  logger.verbose(
+    `Found ${currentTeamMembers.length} team members for environment: ${environment ?? 'none'}`,
+  );
+
   return Promise.all(
-    selectForEnvironment(teamMembers, environment).map(({ keyName, publicKey }) =>
+    currentTeamMembers.map(({ keyName, publicKey }) =>
       loadKey(publicKey).then((key) => Object.assign(key, { keyName })),
     ),
   );
@@ -492,7 +504,6 @@ export async function trustTeamMember(
   privateKey: Key,
   environmentOptions?: EnvironmentOptions,
 ) {
-  const environment = currentEnvironment(environmentOptions);
   const teamMembers = await loadTeamMembers(environmentOptions);
 
   if (newTeamMember.isPrivate()) {
@@ -528,7 +539,7 @@ export async function trustTeamMember(
     encryptionKeys: addForEnvironment(
       newEncryptionKeys,
       meta.encryptionKeys ?? [],
-      environment,
+      environmentOptions,
       true,
     ),
   }));
@@ -539,7 +550,6 @@ export async function untrustTeamMember(
   privateKey: Key,
   environmentOptions?: EnvironmentOptions,
 ) {
-  const environment = currentEnvironment(environmentOptions);
   const teamMembers = await loadTeamMembers(environmentOptions);
 
   const removalCandidates = new Set<Key>();
@@ -613,7 +623,7 @@ export async function untrustTeamMember(
     encryptionKeys: addForEnvironment(
       newEncryptionKeys,
       meta.encryptionKeys ?? [],
-      environment,
+      environmentOptions,
       true,
     ),
   }));
@@ -689,11 +699,13 @@ async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties
 
 function selectForEnvironment<T>(
   values: T[] | Record<string, T[]>,
-  environment: string | undefined,
+  environmentOptions: EnvironmentOptions | undefined,
 ): T[] {
   if (Array.isArray(values)) {
     return values;
   }
+
+  const environment = currentEnvironment(environmentOptions);
 
   if (environment === undefined) {
     if ('none' in values) {
@@ -713,15 +725,25 @@ function selectForEnvironment<T>(
     return values[environment];
   }
 
+  if (environmentOptions?.aliases) {
+    for (const alias of aliasesFor(environment, environmentOptions.aliases)) {
+      if (alias in values) {
+        return values[alias];
+      }
+    }
+  }
+
   const environments = Array.from(Object.keys(values).values()).join(', ');
 
-  throw new AppConfigError(`Current environment was ${environment}, only found [${environments}]`);
+  throw new AppConfigError(
+    `Current environment was ${environment}, only found [${environments}] when selecting environment-specific encryption options from meta file`,
+  );
 }
 
 function addForEnvironment<T>(
   add: T | T[],
   values: T[] | Record<string, T[]>,
-  environment: string | undefined,
+  environmentOptions: EnvironmentOptions | undefined,
   overwrite = false,
 ): T[] | Record<string, T[]> {
   const addArray = Array.isArray(add) ? add : [add];
@@ -736,6 +758,8 @@ function addForEnvironment<T>(
   if (Array.isArray(values)) {
     return values.concat(add);
   }
+
+  const environment = currentEnvironment(environmentOptions);
 
   if (environment === undefined) {
     if ('none' in values) {
@@ -754,7 +778,9 @@ function addForEnvironment<T>(
 
     const environments = Array.from(Object.keys(values).values()).join(', ');
 
-    throw new AppConfigError(`No current environment selected, found [${environments}}`);
+    throw new AppConfigError(
+      `No current environment selected, found [${environments}] when adding environment-specific encryption options to meta file`,
+    );
   }
 
   if (environment in values) {
@@ -762,6 +788,17 @@ function addForEnvironment<T>(
       ...values,
       [environment]: addOrReplace(values[environment]),
     };
+  }
+
+  if (environmentOptions?.aliases) {
+    for (const alias of aliasesFor(environment, environmentOptions.aliases)) {
+      if (alias in values) {
+        return {
+          ...values,
+          [alias]: addOrReplace(values[alias]),
+        };
+      }
+    }
   }
 
   return {
