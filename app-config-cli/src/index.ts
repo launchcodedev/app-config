@@ -16,7 +16,7 @@ import {
   FailedToSelectSubObject,
   EmptyStdinOrPromptResponse,
 } from '@app-config/core';
-import { promptUser, consumeStdin } from '@app-config/node';
+import { promptUser, consumeStdin, asEnvOptions } from '@app-config/node';
 import { checkTTY, LogLevel, logger } from '@app-config/logging';
 import {
   LoadedConfiguration,
@@ -577,13 +577,23 @@ export const cli = yargs
                   'Creates properties in meta file, making you the first trusted user',
                 ],
               ],
+              options: {
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
+              },
             },
-            async () => {
+            async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
               const myKey = await loadPublicKeyLazy();
               const privateKey = await loadPrivateKeyLazy();
 
               // we trust ourselves, essentially
-              await trustTeamMember(myKey, privateKey);
+              await trustTeamMember(myKey, privateKey, environmentOptions);
               logger.info('Initialized team members and a symmetric key');
             },
           ),
@@ -599,10 +609,20 @@ export const cli = yargs
                   'Sets up a new symmetric key with the latest revision number',
                 ],
               ],
+              options: {
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
+              },
             },
-            async () => {
-              const keys = await loadSymmetricKeys();
-              const teamMembers = await loadTeamMembersLazy();
+            async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
+              const keys = await loadSymmetricKeys(undefined, environmentOptions);
+              const teamMembers = await loadTeamMembersLazy(environmentOptions);
 
               let revision: number;
 
@@ -612,7 +632,12 @@ export const cli = yargs
                 revision = 1;
               }
 
-              await saveNewSymmetricKey(await generateSymmetricKey(revision), teamMembers);
+              await saveNewSymmetricKey(
+                await generateSymmetricKey(revision),
+                teamMembers,
+                environmentOptions,
+              );
+
               logger.info(`Saved a new symmetric key, revision ${revision}`);
             },
           ),
@@ -670,12 +695,27 @@ export const cli = yargs
               name: 'ci',
               description:
                 'Creates an encryption key that can be used without a passphrase (useful for CI)',
+              options: {
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
+              },
             },
-            async () => {
+            async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
               logger.info('Creating a new trusted CI encryption key');
 
               const { privateKeyArmored, publicKeyArmored } = await initializeKeys(false);
-              await trustTeamMember(await loadKey(publicKeyArmored), await loadPrivateKeyLazy());
+
+              await trustTeamMember(
+                await loadKey(publicKeyArmored),
+                await loadPrivateKeyLazy(),
+                environmentOptions,
+              );
 
               process.stdout.write(`\n${publicKeyArmored}\n\n${privateKeyArmored}\n\n`);
 
@@ -708,11 +748,21 @@ export const cli = yargs
                   description: 'Filepath of public key',
                 },
               },
+              options: {
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
+              },
             },
             async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
               const key = await loadKey(await readFile(opts.keyPath));
               const privateKey = await loadPrivateKeyLazy();
-              await trustTeamMember(key, privateKey);
+              await trustTeamMember(key, privateKey, environmentOptions);
 
               logger.info(`Trusted ${key.getUserIds().join(', ')}`);
             },
@@ -736,10 +786,22 @@ export const cli = yargs
                   description: 'User ID email address',
                 },
               },
+              options: {
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
+              },
             },
             async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
               const privateKey = await loadPrivateKeyLazy();
-              await untrustTeamMember(opts.email, privateKey);
+
+              // TODO: by default, untrust for all envs?
+              await untrustTeamMember(opts.email, privateKey, environmentOptions);
             },
           ),
         )
@@ -761,9 +823,17 @@ export const cli = yargs
               options: {
                 clipboard: clipboardOption,
                 agent: secretAgentOption,
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
               shouldUseSecretAgent(opts.agent);
 
               // load these right away, so user unlocks asap
@@ -797,7 +867,7 @@ export const cli = yargs
                 }
               }
 
-              const encrypted = await encryptValue(secretValue);
+              const encrypted = await encryptValue(secretValue, undefined, environmentOptions);
 
               if (opts.clipboard) {
                 await clipboardy.write(encrypted);
@@ -825,9 +895,17 @@ export const cli = yargs
               options: {
                 clipboard: clipboardOption,
                 agent: secretAgentOption,
+                environmentOverride: environmentOverrideOption,
+                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
+              const environmentOptions = asEnvOptions(
+                opts.environmentOverride,
+                undefined,
+                opts.environmentVariableName,
+              );
+
               shouldUseSecretAgent(opts.agent);
 
               // load these right away, so user unlocks asap
@@ -855,7 +933,9 @@ export const cli = yargs
                 throw new EmptyStdinOrPromptResponse('Failed to read from stdin or prompt');
               }
 
-              process.stdout.write(JSON.stringify(await decryptValue(encryptedText)));
+              const decrypted = await decryptValue(encryptedText, undefined, environmentOptions);
+
+              process.stdout.write(JSON.stringify(decrypted));
               process.stdout.write('\n');
             },
           ),
