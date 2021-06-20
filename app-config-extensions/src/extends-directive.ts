@@ -119,28 +119,48 @@ export function extendsDirective(): ParsingExtension {
 
 /** Lookup a property in the same file, and "copy" it */
 export function extendsSelfDirective(): ParsingExtension {
-  const validate: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
-    stringSchema(),
+  const validate: ValidationFunction<string> = validationFunction(
+    ({ oneOf, stringSchema, emptySchema }) =>
+      oneOf(stringSchema(), emptySchema().addString('select').addString('env', {}, false)),
   );
 
   return named(
     '$extendsSelf',
-    forKey('$extendsSelf', (input, key, ctx) => async (parse, _, __, ___, root) => {
+    forKey('$extendsSelf', (input, key, parentKeys, ctx) => async (parse, _, __, ___, root) => {
+      let select: string;
+      let env: string | undefined;
+
       const value = (await parse(input)).toJSON();
-      validate(value, [...ctx, key]);
+
+      validate(value, [...parentKeys, key]);
+
+      if (typeof value === 'string') {
+        select = value;
+      } else {
+        ({ select, env } = value);
+      }
+
+      const environmentOptions = {
+        ...environmentOptionsFromContext(ctx),
+        override: env,
+      };
 
       // we temporarily use a ParsedValue literal so that we get the same property lookup semantics
-      const selected = ParsedValue.literal(root).property(value.split('.'));
+      const selected = ParsedValue.literal(root).property(select.split('.'));
 
       if (selected === undefined) {
-        throw new AppConfigError(`$extendsSelf selector was not found (${value})`);
+        throw new AppConfigError(`$extendsSelf selector was not found (${select})`);
       }
 
       if (selected.asObject() !== undefined) {
-        return parse(selected.toJSON(), { shouldMerge: true });
+        return parse(selected.toJSON(), { shouldMerge: true }, undefined, undefined, {
+          environmentOptions,
+        });
       }
 
-      return parse(selected.toJSON(), { shouldFlatten: true });
+      return parse(selected.toJSON(), { shouldFlatten: true }, undefined, undefined, {
+        environmentOptions,
+      });
     }),
   );
 }
