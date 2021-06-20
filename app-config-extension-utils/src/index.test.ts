@@ -8,8 +8,9 @@ import {
 
 const foo = forKey('$foo', () => (parse) => parse('foo!'));
 const bar = forKey('$bar', () => (parse) => parse('bar!'));
-const plusOne = forKey(['+1', '$plusOne'], (value) => (parse) =>
-  parse((value as number) + 1, { shouldFlatten: true }),
+const plusOne = forKey(
+  ['+1', '$plusOne'],
+  (value) => (parse) => parse((value as number) + 1, { shouldFlatten: true }),
 );
 
 describe('forKey', () => {

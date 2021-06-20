@@ -63,7 +63,8 @@ if (reactNativeMinorVersion >= 59) {
   transformer = require('metro-bundler/build/transformer') as Transformer;
 } else {
   // handle RN <= 0.45
-  const legacyUpstreamTransformer = require('react-native/packager/transformer') as LegacyTransformer;
+  const legacyUpstreamTransformer =
+    require('react-native/packager/transformer') as LegacyTransformer;
   transformer = {
     transform({ src, filename, options }: TransformOptions) {
       return legacyUpstreamTransformer.transform(src, filename, options);

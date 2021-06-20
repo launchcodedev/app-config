@@ -67,7 +67,7 @@ describe('flattenObjectTree', () => {
     },
     stegosaurus: null,
     // cast because undefined isn't actually possible in JsonObject
-    unicorn: (undefined as unknown) as null,
+    unicorn: undefined as unknown as null,
   };
 
   it('flattens a basic object', () => {
