@@ -195,23 +195,21 @@ export async function loadValidatedConfig(
   options?: ConfigLoadingOptions,
   schemaOptions?: SchemaLoadingOptions,
 ): Promise<LoadedConfiguration> {
-  const [
-    { validate, validationFunctionCode, schema },
-    { fullConfig, parsed, ...rest },
-  ] = await Promise.all([
-    loadSchema({
-      directory: options?.directory,
-      fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
-      environmentVariableName: options?.environmentVariableName
-        ? `${options.environmentVariableName}_SCHEMA`
-        : undefined,
-      environmentOverride: options?.environmentOverride,
-      environmentAliases: options?.environmentAliases,
-      environmentSourceNames: options?.environmentSourceNames,
-      ...schemaOptions,
-    }),
-    loadUnvalidatedConfig(options),
-  ]);
+  const [{ validate, validationFunctionCode, schema }, { fullConfig, parsed, ...rest }] =
+    await Promise.all([
+      loadSchema({
+        directory: options?.directory,
+        fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
+        environmentVariableName: options?.environmentVariableName
+          ? `${options.environmentVariableName}_SCHEMA`
+          : undefined,
+        environmentOverride: options?.environmentOverride,
+        environmentAliases: options?.environmentAliases,
+        environmentSourceNames: options?.environmentSourceNames,
+        ...schemaOptions,
+      }),
+      loadUnvalidatedConfig(options),
+    ]);
 
   if (!isObject(fullConfig)) {
     throw new WasNotObject('Configuration was not an object');

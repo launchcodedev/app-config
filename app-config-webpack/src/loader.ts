@@ -12,7 +12,11 @@ const loader = function AppConfigLoader(this: Loader) {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const { noGlobal = false, loading = {}, schemaLoading }: Options = {
+  const {
+    noGlobal = false,
+    loading = {},
+    schemaLoading,
+  }: Options = {
     ...getOptions(this),
     ...parseQuery(this.resourceQuery),
   };
@@ -91,4 +95,5 @@ const loader = function AppConfigLoader(this: Loader) {
 };
 
 export default loader;
-export const regex = /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
+export const regex =
+  /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
