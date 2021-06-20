@@ -323,6 +323,45 @@ describe('$extendsSelf directive', () => {
     });
   });
 
+  it('resolves with select and env option', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $env: {
+          default: 'default',
+          staging: 'staging',
+        },
+      },
+
+      bar: {
+        $envVar: 'APP_CONFIG_ENV',
+      },
+
+      baz: 'default',
+
+      $env: {
+        default: {},
+        qa: {
+          $extendsSelf: {
+            env: 'staging',
+            select: '.',
+          },
+
+          baz: 'qa',
+        },
+      },
+    });
+
+    process.env.APP_CONFIG_ENV = 'qa';
+
+    expect(
+      await source.readToJSON([extendsSelfDirective(), envVarDirective(), envDirective()]),
+    ).toEqual({
+      foo: 'staging',
+      bar: 'staging',
+      baz: 'qa',
+    });
+  });
+
   it('resolves a simple $extendsSelf selector', async () => {
     const source = new LiteralSource({
       foo: {
