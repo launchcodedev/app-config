@@ -5,11 +5,13 @@ import { asEnvOptions, currentEnvironment } from '@app-config/node';
 import type { SchemaLoadingOptions } from '@app-config/schema';
 
 interface Options {
+  readGlobal?: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
 }
 
 export default function appConfigRollup({
+  readGlobal,
   loadingOptions,
   schemaLoadingOptions,
 }: Options = {}): Plugin {
@@ -24,10 +26,49 @@ export default function appConfigRollup({
     },
     async load(id) {
       if (id === '.config-placeholder') {
-        const { parsed: config } = await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
+        const { parsed: config, validationFunctionCode } = await loadValidatedConfig(
+          loadingOptions,
+          schemaLoadingOptions,
+        );
+
+        // TODO: alternative for addDependecy with filePaths
+
+        let generatedText: string;
+
+        if (readGlobal) {
+          generatedText = `
+            const configValue = ${JSON.stringify(config)};
+
+            const globalNamespace = window || globalThis || {};
+
+            // if the global was already defined, use it (and define it if not)
+            const config = globalNamespace._appConfig =
+              (globalNamespace._appConfig || configValue);
+          `;
+        } else {
+          generatedText = `
+            const config = ${JSON.stringify(config)};
+          `;
+        }
+
+        if (validationFunctionCode) {
+          generatedText = `${generatedText}
+            ${/* nest the generated commonjs module here */ ''}
+            function genValidateConfig(){
+              const validateConfigModule = {};
+              (function(module){
+                ${validationFunctionCode()}
+              })(validateConfigModule);
+              return validateConfigModule.exports;
+            }
+
+            ${/* marking as pure allows tree shaking */ ''}
+            export const validateConfig = /*#__PURE__*/ genValidateConfig();
+          `;
+        }
 
         return `
-          const config = ${JSON.stringify(config)};
+          ${generatedText}
 
           export { config };
           export default config;
