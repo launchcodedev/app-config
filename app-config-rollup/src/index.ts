@@ -6,26 +6,31 @@ import type { SchemaLoadingOptions } from '@app-config/schema';
 
 interface Options {
   readGlobal?: boolean;
+  injectValidationFunction?: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
 }
 
+// vite resolves first before passing to the rollup plugin
+const manualImport = /(app-config|app-config-main)\/dist(\/es)?\/index\.js/;
+
 export default function appConfigRollup({
   readGlobal,
+  injectValidationFunction,
   loadingOptions,
   schemaLoadingOptions,
 }: Options = {}): Plugin {
   return {
     name: '@app-config/rollup',
     resolveId(source) {
-      if (packageNameRegex.exec(source)) {
+      if (packageNameRegex.exec(source) || manualImport.exec(source)) {
         return '.config-placeholder';
       }
 
       return null;
     },
     async load(id) {
-      if (id === '.config-placeholder') {
+      if (packageNameRegex.exec(id) || manualImport.exec(id)) {
         const { parsed: config, validationFunctionCode } = await loadValidatedConfig(
           loadingOptions,
           schemaLoadingOptions,
@@ -51,14 +56,16 @@ export default function appConfigRollup({
           `;
         }
 
-        if (validationFunctionCode) {
+        if (injectValidationFunction && validationFunctionCode) {
+          const [code, imports] = validationFunctionCode(true);
+
           generatedText = `${generatedText}
+            ${imports}
+
             ${/* nest the generated commonjs module here */ ''}
             function genValidateConfig(){
               const validateConfigModule = {};
-              (function(module){
-                ${validationFunctionCode()}
-              })(validateConfigModule);
+              (function(module){${code}})(validateConfigModule);
               return validateConfigModule.exports;
             }
 

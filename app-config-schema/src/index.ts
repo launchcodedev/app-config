@@ -40,7 +40,9 @@ export interface Schema {
   schema: JSONSchema;
   validate: Validate;
   validationFunctionCode(): string;
+  validationFunctionCode(esm: true): [string, string];
   validationFunctionModule(): string;
+  validationFunctionModule(esm: true): [string, string];
   validationFunction: ValidateFunction;
 }
 
@@ -156,6 +158,51 @@ export async function loadSchema({
 
   let currentlyParsing: ParsedValue | undefined;
 
+  const validationFunctionCode = ((esm) => {
+    let code = standalone(ajv, validate);
+
+    // resolve imports to absolute paths relative to _this_ package
+    // this allows users of the webpack project not to have ajv as a dependency
+
+    const resolvedAjvPath = join(require.resolve('ajv/package.json'), '..');
+    const resolvedAjvFormatsPath = join(require.resolve('ajv-formats/package.json'), '..');
+
+    code = code.replace(
+      /require\("ajv\/(.+)"\)/g,
+      (_, match) => `require("${join(resolvedAjvPath, match).replace(/\\/g, '\\\\\\\\')}")`,
+    );
+
+    code = code.replace(
+      /require\("ajv-formats\/(.+)"\)/g,
+      (_, match) => `require("${join(resolvedAjvFormatsPath, match).replace(/\\/g, '\\\\\\\\')}")`,
+    );
+
+    if (esm) {
+      return requiresAsImports(code);
+    }
+
+    return code;
+  }) as Schema['validationFunctionCode'];
+
+  const validationFunctionModule = ((esm) => {
+    let code: string;
+    let imports: string = '';
+
+    if (esm) {
+      [imports, code] = schema.validationFunctionCode(true);
+    } else {
+      code = schema.validationFunctionCode();
+    }
+
+    return `${imports}
+      const validateConfigModule = {};
+
+      (function(module){${code}})(validateConfigModule);
+
+      return validateConfigModule.exports;
+    `;
+  }) as Schema['validationFunctionModule'];
+
   const schema: Schema = {
     schema: normalized as JsonObject,
     validate(fullConfig, parsedConfig) {
@@ -173,39 +220,8 @@ export async function loadSchema({
         throw err;
       }
     },
-    validationFunctionCode() {
-      let code = standalone(ajv, validate);
-
-      // resolve imports to absolute paths relative to _this_ package
-      // this allows users of the webpack project not to have ajv as a dependency
-
-      const resolvedAjvPath = join(require.resolve('ajv/package.json'), '..');
-      const resolvedAjvFormatsPath = join(require.resolve('ajv-formats/package.json'), '..');
-
-      code = code.replace(
-        /require\("ajv\/(.+)"\)/g,
-        (_, match) => `require("${join(resolvedAjvPath, match).replace(/\\/g, '\\\\\\\\')}")`,
-      );
-
-      code = code.replace(
-        /require\("ajv-formats\/(.+)"\)/g,
-        (_, match) =>
-          `require("${join(resolvedAjvFormatsPath, match).replace(/\\/g, '\\\\\\\\')}")`,
-      );
-
-      return code;
-    },
-    validationFunctionModule() {
-      return `
-        const validateConfigModule = {};
-
-        (function(module){
-          ${schema.validationFunctionCode()}
-        })(validateConfigModule);
-
-        return validateConfigModule.exports;
-      `;
-    },
+    validationFunctionCode,
+    validationFunctionModule,
     get validationFunction() {
       const fnCode = schema.validationFunctionModule();
 
@@ -300,4 +316,36 @@ function toFileSystemPath(path: string) {
   }
 
   return retPath;
+}
+
+// roughly inspired by https://github.com/jameswomack/replace-require-with-import/blob/master/index.js
+
+// const createStore = require('redux')
+const r1 =
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) +\= +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)/gm;
+// const createStore = require('redux').createStore
+const r2 =
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) +\= +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
+// const { createStore } = require('redux')
+const r3 =
+  /^(let|var|const) +(\{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\}) += +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)/gm;
+// const uri = require('redux').formats.uri
+const r4 =
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
+
+function requiresAsImports(text: string) {
+  const withImports = text
+    .replace(r4, `import * as $7Exports from $4; const { $8 } = $7Exports.$7;`)
+    .replace(r3, `import { $3 } from $5;`)
+    .replace(r2, `import { $7 as $2 } from $4;`)
+    .replace(r1, `import $2 from $4;`);
+
+  const importReg = /import .+;/gm;
+  const imports = importReg.exec(withImports);
+
+  if (imports) {
+    return [withImports.replace(importReg, ''), imports.join('\n')];
+  }
+
+  return [withImports, ''];
 }

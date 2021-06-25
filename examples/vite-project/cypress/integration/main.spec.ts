@@ -22,15 +22,4 @@ describe('Config Loading', () => {
     cy.get('body').should('contain', `"urlProperty": "https://overwritten.com"`);
     cy.get('body').should('contain', `"longStringProperty": "shorter than before"`);
   });
-
-  it('should fail when overriden with an invalid value', () => {
-    cy.setAppConfig({
-      urlProperty: 'https://overwritten.com',
-      longStringProperty: 'short!',
-    });
-
-    cy.visit('/');
-
-    cy.get('body').should('contain', `Config Error: should NOT have fewer than 10 characters`);
-  });
 });

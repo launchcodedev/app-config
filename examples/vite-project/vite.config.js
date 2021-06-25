@@ -1,5 +1,5 @@
-import appConfigRollup from '@app-config/rollup';
+import appConfigVite from '@app-config/vite';
 
 export default {
-  plugins: [appConfigRollup()],
+  plugins: [appConfigVite()],
 };
