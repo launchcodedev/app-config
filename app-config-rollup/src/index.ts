@@ -1,9 +1,15 @@
 import type { Plugin } from 'rollup';
 import { packageNameRegex } from '@app-config/utils';
-import { loadValidatedConfig } from '@app-config/config';
-import { currentEnvironment } from '../../app-config-node/dist';
+import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
+import { asEnvOptions, currentEnvironment } from '@app-config/node';
+import type { SchemaLoadingOptions } from '@app-config/schema';
 
-export default function appConfigRollup(): Plugin {
+interface Options {
+  loadingOptions?: ConfigLoadingOptions;
+  schemaLoadingOptions?: SchemaLoadingOptions;
+}
+
+export default function appConfigRollup({ loadingOptions, schemaLoadingOptions }: Options): Plugin {
   return {
     name: '@app-config/rollup',
     resolveId(source) {
@@ -15,7 +21,7 @@ export default function appConfigRollup(): Plugin {
     },
     async load(id) {
       if (id === '.config-placeholder') {
-        const { parsed: config } = await loadValidatedConfig();
+        const { parsed: config } = await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
 
         return `
           const config = ${JSON.stringify(config)};
@@ -24,7 +30,17 @@ export default function appConfigRollup(): Plugin {
           export default config;
 
           export function currentEnvironment() {
-            return ${JSON.stringify(currentEnvironment()) ?? 'undefined'};
+            return ${
+              JSON.stringify(
+                currentEnvironment(
+                  asEnvOptions(
+                    loadingOptions?.environmentOverride,
+                    loadingOptions?.environmentAliases,
+                    loadingOptions?.environmentSourceNames,
+                  ),
+                ),
+              ) ?? 'undefined'
+            };
           }
         `;
       }
