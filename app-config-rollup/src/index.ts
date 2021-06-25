@@ -9,7 +9,10 @@ interface Options {
   schemaLoadingOptions?: SchemaLoadingOptions;
 }
 
-export default function appConfigRollup({ loadingOptions, schemaLoadingOptions }: Options): Plugin {
+export default function appConfigRollup({
+  loadingOptions,
+  schemaLoadingOptions,
+}: Options = {}): Plugin {
   return {
     name: '@app-config/rollup',
     resolveId(source) {
