@@ -148,6 +148,12 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-webpack/package.json
+    - name: app-config-rollup
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-rollup/package.json
     - name: lcdev-app-config-inject
       uses: JS-DevTools/npm-publish@v1
       with:
