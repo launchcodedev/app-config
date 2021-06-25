@@ -57,5 +57,7 @@ jobs:
           ./app-config-v1-compat/coverage/coverage-final.json,
           ./app-config-vault/coverage/coverage-final.json,
           ./app-config-webpack/coverage/coverage-final.json,
+          ./app-config-rollup/coverage/coverage-final.json,
+          ./app-config-vite/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true

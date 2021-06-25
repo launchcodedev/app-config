@@ -52,6 +52,7 @@ If you are adding anything new or changing behavior, please add applicable tests
 - `@app-config/inject`: runtime injection into HTML files
 - `@app-config/webpack`: webpack plugin
 - `@app-config/rollup`: rollup plugin
+- `@app-config/vite`: vite plugin
 - `@app-config/main`: main config singleton and loading logic
 - `@lcdev/app-config`: alias for `@app-config/main`
 - `@lcdev/app-config-webpack-plugin`: alias for `@app-config/webpack`

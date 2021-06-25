@@ -154,6 +154,12 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-rollup/package.json
+    - name: app-config-vite
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-vite/package.json
     - name: lcdev-app-config-inject
       uses: JS-DevTools/npm-publish@v1
       with:
