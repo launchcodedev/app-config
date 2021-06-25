@@ -2,11 +2,8 @@ type: object
 additionalProperties: false
 
 required:
-  - urlProperty
-  - longStringProperty
+  - stringProperty
 
 properties:
-  urlProperty:
-    type: string
-  longStringProperty:
+  stringProperty:
     type: string

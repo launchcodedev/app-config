@@ -1,3 +1,2 @@
-urlProperty: https://example.com
-longStringProperty: |
+stringProperty: |
   some long string with a " char and '
