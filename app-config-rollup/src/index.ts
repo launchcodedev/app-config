@@ -39,7 +39,7 @@ export default function appConfigRollup({
           generatedText = `
             const configValue = ${JSON.stringify(config)};
 
-            const globalNamespace = window || globalThis || {};
+            const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
             // if the global was already defined, use it (and define it if not)
             const config = globalNamespace._appConfig =

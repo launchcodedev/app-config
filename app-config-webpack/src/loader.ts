@@ -42,7 +42,7 @@ const loader = function AppConfigLoader(this: Loader) {
           generatedText = `
             const configValue = ${config};
 
-            const globalNamespace = window || globalThis || {};
+            const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
             // if the global was already defined, use it (and define it if not)
             const config = globalNamespace.${privateName} =
