@@ -1,5 +1,5 @@
 import appConfigVite from '@app-config/vite';
 
 export default {
-  plugins: [appConfigVite()],
+  plugins: [appConfigVite({ readGlobal: true, injectValidationFunction: true })],
 };

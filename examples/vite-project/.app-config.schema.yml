@@ -8,7 +8,5 @@ required:
 properties:
   urlProperty:
     type: string
-    format: uri
   longStringProperty:
     type: string
-    minLength: 10
