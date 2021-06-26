@@ -1,6 +1,6 @@
 ## v2.6.0
 
-Adds plugins for [vite](vitejs.dev) and [rollup](rollupjs.org)!
+Adds plugins for [vite](https://vitejs.dev) and [rollup](https://rollupjs.org)!
 
 Adds `ac` as an npx alias for `app-config`.
 
