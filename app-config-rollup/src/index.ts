@@ -4,7 +4,7 @@ import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
 import { asEnvOptions, currentEnvironment } from '@app-config/node';
 import type { SchemaLoadingOptions } from '@app-config/schema';
 
-interface Options {
+export interface Options {
   readGlobal?: boolean;
   injectValidationFunction?: boolean;
   loadingOptions?: ConfigLoadingOptions;
@@ -12,31 +12,38 @@ interface Options {
 }
 
 // vite resolves first before passing to the rollup plugin
-const manualImport = /(app-config|app-config-main)\/dist(\/es)?\/index\.js/;
+export const appConfigImportRegex = /(app-config|app-config-main)\/dist(\/es)?\/index\.js/;
 
 export default function appConfigRollup({
   readGlobal,
   injectValidationFunction,
   loadingOptions,
   schemaLoadingOptions,
-}: Options = {}): Plugin {
+}: Options = {}): Plugin & { currentFilePaths?: string[] } {
+  const currentFilePaths: string[] = [];
+
   return {
     name: '@app-config/rollup',
+    currentFilePaths,
     resolveId(source) {
-      if (packageNameRegex.exec(source) || manualImport.exec(source)) {
+      if (packageNameRegex.exec(source) || appConfigImportRegex.exec(source)) {
         return '.config-placeholder';
       }
 
       return null;
     },
     async load(id) {
-      if (packageNameRegex.exec(id) || manualImport.exec(id)) {
-        const { parsed: config, validationFunctionCode } = await loadValidatedConfig(
-          loadingOptions,
-          schemaLoadingOptions,
-        );
+      if (packageNameRegex.exec(id) || appConfigImportRegex.exec(id)) {
+        const {
+          parsed: config,
+          validationFunctionCode,
+          filePaths,
+        } = await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
 
-        // TODO: alternative for addDependecy with filePaths
+        if (filePaths) {
+          currentFilePaths.length = 0;
+          currentFilePaths.push(...filePaths);
+        }
 
         let generatedText: string;
 
