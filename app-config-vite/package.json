@@ -1,7 +1,7 @@
 {
   "name": "@app-config/vite",
   "description": "Vite plugin for @app-config",
-  "version": "2.5.2",
+  "version": "2.6.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -12,7 +12,10 @@
     "type": "git",
     "url": "https://github.com/launchcodedev/app-config.git"
   },
-  "keywords": ["vite-plugin", "rollup-plugin"],
+  "keywords": [
+    "vite-plugin",
+    "rollup-plugin"
+  ],
   "main": "dist/index.js",
   "module": "dist/es/index.js",
   "types": "dist/index.d.ts",
@@ -31,7 +34,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/rollup": "^2.5.2"
+    "@app-config/rollup": "^2.6.0"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

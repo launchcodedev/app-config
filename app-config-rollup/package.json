@@ -1,7 +1,7 @@
 {
   "name": "@app-config/rollup",
   "description": "Rollup plugin that resolves @app-config for you",
-  "version": "2.5.2",
+  "version": "2.6.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -12,7 +12,10 @@
     "type": "git",
     "url": "https://github.com/launchcodedev/app-config.git"
   },
-  "keywords": ["vite-plugin", "rollup-plugin"],
+  "keywords": [
+    "vite-plugin",
+    "rollup-plugin"
+  ],
   "main": "dist/index.js",
   "module": "dist/es/index.js",
   "types": "dist/index.d.ts",
@@ -31,12 +34,11 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^2.5.2",
-    "@app-config/node": "^2.5.2",
-    "@app-config/utils": "^2.5.2"
+    "@app-config/config": "^2.6.0",
+    "@app-config/node": "^2.6.0",
+    "@app-config/utils": "^2.6.0"
   },
-  "peerDependencies": {
-  },
+  "peerDependencies": {},
   "devDependencies": {
     "@app-config/test-utils": "*",
     "rollup": "^2"
