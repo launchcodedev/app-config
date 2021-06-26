@@ -18,7 +18,9 @@
   "scripts": {
     "exec:all": "lerna exec",
     "run:all": "lerna run --stream",
-    "build": "lerna run build",
+    "build": "tsc -b ./app-config-*/tsconfig.json",
+    "build:es": "tsc -b ./app-config-*/tsconfig.es.json",
+    "build:all": "lerna run build",
     "clean": "yarn run:all clean",
     "test": "lerna run test -- --passWithNoTests",
     "lint": "yarn run:all lint",

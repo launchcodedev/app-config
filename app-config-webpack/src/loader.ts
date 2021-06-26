@@ -1,6 +1,7 @@
 import { getOptions, parseQuery } from 'loader-utils';
 import { loadValidatedConfig } from '@app-config/main';
 import { currentEnvironment, asEnvOptions } from '@app-config/node';
+import { packageNameRegex } from '@app-config/utils';
 import type { Options } from './index';
 
 type LoaderContext = Parameters<typeof getOptions>[0];
@@ -41,7 +42,7 @@ const loader = function AppConfigLoader(this: Loader) {
           generatedText = `
             const configValue = ${config};
 
-            const globalNamespace = window || globalThis || {};
+            const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
             // if the global was already defined, use it (and define it if not)
             const config = globalNamespace.${privateName} =
@@ -95,5 +96,4 @@ const loader = function AppConfigLoader(this: Loader) {
 };
 
 export default loader;
-export const regex =
-  /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
+export const regex = packageNameRegex;

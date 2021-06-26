@@ -22,9 +22,15 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - uses: bahmutov/npm-install@v1
     - run: yarn build
+    - run: yarn build:es
+    - run: yarn build:all
     - run: yarn lint
     - run: yarn test --coverage --testTimeout 20000
       env: { CI: 1 }
+
+    # sanity check that the rollup plugin made a file without needing to loadConfig
+    - run: yarn --cwd ./examples/rollup-project start
+
     - uses: codecov/codecov-action@v1
       if: matrix.os == 'ubuntu-latest'
       with:
@@ -53,5 +59,7 @@ jobs:
           ./app-config-v1-compat/coverage/coverage-final.json,
           ./app-config-vault/coverage/coverage-final.json,
           ./app-config-webpack/coverage/coverage-final.json,
+          ./app-config-rollup/coverage/coverage-final.json,
+          ./app-config-vite/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true

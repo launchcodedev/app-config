@@ -4,6 +4,9 @@ export const isBrowser =
 export const isNode = typeof process !== 'undefined' && !isBrowser;
 export const isWindows = isNode && /^win/.test(process.platform);
 
+export const packageNameRegex =
+  /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
+
 export type JsonPrimitive = number | string | boolean | null;
 
 export interface JsonObject {

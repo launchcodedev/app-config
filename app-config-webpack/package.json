@@ -31,6 +31,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/node": "^2.5.2",
+    "@app-config/utils": "^2.5.2",
     "loader-utils": "2"
   },
   "peerDependencies": {
