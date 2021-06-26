@@ -322,16 +322,16 @@ function toFileSystemPath(path: string) {
 
 // const createStore = require('redux')
 const r1 =
-  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) +\= +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)/gm;
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)/gm;
 // const createStore = require('redux').createStore
 const r2 =
-  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) +\= +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
 // const { createStore } = require('redux')
 const r3 =
-  /^(let|var|const) +(\{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\}) += +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)/gm;
+  /^(let|var|const) +(\{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\}) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)/gm;
 // const uri = require('redux').formats.uri
 const r4 =
-  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_.\/]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
 
 function requiresAsImports(text: string) {
   const withImports = text
