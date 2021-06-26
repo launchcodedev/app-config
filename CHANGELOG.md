@@ -1,3 +1,9 @@
+## v2.6.0
+
+Adds plugins for [vite](vitejs.dev) and [rollup](rollupjs.org)!
+
+Adds `ac` as an npx alias for `app-config`.
+
 ## v2.5.2
 
 Adds support for calling `currentEnvironment` when using the Webpack plugin.
