@@ -47,8 +47,8 @@ import {
 } from '@app-config/encryption';
 import { loadSchema, JSONSchema } from '@app-config/schema';
 import { generateTypeFiles } from '@app-config/generate';
-import { validateAllConfigVariants } from './validation';
 import { loadMetaConfigLazy } from '@app-config/meta';
+import { validateAllConfigVariants } from './validation';
 
 enum OptionGroups {
   Options = 'Options:',
