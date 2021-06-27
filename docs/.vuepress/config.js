@@ -48,6 +48,14 @@ module.exports = {
         children: ['/guide/react-native/', '/guide/react-native/example'],
       },
       {
+        title: 'Vite',
+        path: '/guide/vite',
+      },
+      {
+        title: 'Rollup',
+        path: '/guide/rollup',
+      },
+      {
         title: 'Deployment',
         path: '/guide/deployment/',
         children: ['/guide/deployment/', '/guide/deployment/kubernetes'],

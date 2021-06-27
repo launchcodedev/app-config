@@ -15,6 +15,8 @@ jobs:
     - uses: bahmutov/npm-install@v1
 
     - run: yarn build
+    - run: yarn build:es
+    - run: yarn build:all
 
     - name: Cypress dependencies
       uses: cypress-io/github-action@v2
@@ -83,5 +85,14 @@ jobs:
         install: false
         record: true
         start: yarn serve -l 8995 ./dist
+      env:
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+    - uses: cypress-io/github-action@v2
+      with:
+        group: app-config-vite
+        working-directory: examples/vite-project
+        install: false
+        record: true
+        start: yarn serve -l 8996 ./dist
       env:
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}

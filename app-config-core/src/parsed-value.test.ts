@@ -60,13 +60,15 @@ describe('parseValue', () => {
     return false;
   };
 
-  const appendExtension = (suffix: string): ParsingExtension => (value) => {
-    if (typeof value === 'string') {
-      return (parse) => parse(value + suffix);
-    }
+  const appendExtension =
+    (suffix: string): ParsingExtension =>
+    (value) => {
+      if (typeof value === 'string') {
+        return (parse) => parse(value + suffix);
+      }
 
-    return false;
-  };
+      return false;
+    };
 
   const namedAppendExtension = (suffix: string): ParsingExtension => {
     const extension = appendExtension(suffix);

@@ -193,19 +193,17 @@ function selectDefined<T>(...args: (T | null | undefined)[]): T | null {
     if (a !== undefined) return a;
   }
 
-  return (undefined as any) as T;
+  return undefined as any as T;
 }
 
-const validateObject: ValidationFunction<
-  Record<string, any>
-> = validationFunction(({ emptySchema }) => emptySchema().addAdditionalProperties());
+const validateObject: ValidationFunction<Record<string, any>> = validationFunction(
+  ({ emptySchema }) => emptySchema().addAdditionalProperties(),
+);
 
 const validateString: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
   stringSchema(),
 );
 
-const validateStringOrNull: ValidationFunction<
-  string | null
-> = validationFunction(({ fromJsonSchema }) =>
-  fromJsonSchema({ type: ['null', 'string'] } as const),
+const validateStringOrNull: ValidationFunction<string | null> = validationFunction(
+  ({ fromJsonSchema }) => fromJsonSchema({ type: ['null', 'string'] } as const),
 );
