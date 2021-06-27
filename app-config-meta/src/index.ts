@@ -6,7 +6,6 @@ import {
   ParsingExtension,
   FallbackSource,
   FileType,
-  NotFoundError,
   AppConfigError,
   FallbackExhaustedError,
 } from '@app-config/core';
