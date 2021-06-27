@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script>
+      let showConfig = async () => {
+        let config = await window.appConfig.loadValidatedConfig();
+        document.getElementById('config').innerHTML = JSON.stringify(config.fullConfig);
+      }
+
+      showConfig();
+    </script>
+    <title>Hello App Config!</title>
+  </head>
+  <body>
+    <h1>Hello App Config!</h1>
+    <p id="config"></p>
+  </body>
+</html>

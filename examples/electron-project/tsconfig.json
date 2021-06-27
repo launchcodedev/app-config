@@ -8,9 +8,7 @@
       "dom"
     ],  
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"],
-  "references": [
-    { "path": "../app-config-test-utils" }
-  ]
+  "references": [{"path": "../../app-config-electron"}]
 }

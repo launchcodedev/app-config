@@ -1,0 +1,17 @@
+{
+  "name": "electron-project",
+  "version": "0.0.0",
+  "main": "./dist/main.js",
+  "license": "MPL-2.0",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@app-config/electron": "2.6.0"
+  },
+  "devDependencies": {
+    "electron": "^13.1.4"
+  }
+}
