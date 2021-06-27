@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^2.6.0",
+    "@app-config/main": "^2.6.0",
     "electron": "13"
   },
   "devDependencies": {},

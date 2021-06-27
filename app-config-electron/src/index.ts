@@ -1,4 +1,5 @@
 import { WebPreferences } from 'electron';
+import { config } from '@app-config/main';
 import * as path from 'path';
 
 export function addAppConfigPreload(baseWebPreferences?: WebPreferences) {
@@ -11,17 +12,16 @@ export function addAppConfigPreload(baseWebPreferences?: WebPreferences) {
   const userPreload = baseWebPreferences?.preload;
   const userArguments = baseWebPreferences?.additionalArguments;
 
+  const preloadArguments = userArguments || [];
+
+  preloadArguments.push(`--app-config=${JSON.stringify(config)}`);
+
   if (userPreload) {
-    const preloadArgument = `--user-preload=${userPreload}`;
-
-    if (userArguments) {
-      userArguments.push(preloadArgument);
-    }
-
-    webPreferences.additionalArguments = userArguments || [preloadArgument];
+    preloadArguments.push(`--user-preload=${userPreload}`);
   }
 
   webPreferences.preload = path.join(__dirname, 'preloader.js');
+  webPreferences.additionalArguments = preloadArguments;
 
   return webPreferences;
 }

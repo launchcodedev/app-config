@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { addAppConfigPreload } from '@app-config/electron';
+import { loadConfig } from '@app-config/main';
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -12,7 +13,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  createWindow()
+  loadConfig().then(() => createWindow())
 });
 
 app.on('window-all-closed', function () {

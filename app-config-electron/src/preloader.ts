@@ -1,18 +1,28 @@
-import { loadValidatedConfig, loadUnvalidatedConfig } from '@app-config/config';
 import { contextBridge } from 'electron';
 
 let additionalPreload: string | undefined;
+let config;
 
 for (const arg of process.argv) {
   if (arg.startsWith('--user-preload=')) {
     additionalPreload = arg.substr(15);
   }
+
+  if (arg.startsWith('--app-config=')) {
+    try {
+      config = JSON.parse(arg.substr(13));
+    } catch (err) {
+      console.error(`Got invalid JSON from config: ${err}`);
+    }
+  }
 }
 
-contextBridge.exposeInMainWorld('appConfig', {
-  loadUnvalidatedConfig,
-  loadValidatedConfig,
-});
+if (config) {
+  contextBridge.exposeInMainWorld('_appConfig', config);
+  console.log(`📦 %cInjected app-config`, 'color: green; font-weight: bold;');
+} else {
+  console.error('Did not recieve config');
+}
 
 // This seems to be how electron does preload scripts https://github.com/electron/electron/issues/2406 maybe there's a better way?
 /* eslint-disable import/no-dynamic-require, global-require */
