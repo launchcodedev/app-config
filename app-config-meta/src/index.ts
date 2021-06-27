@@ -48,8 +48,10 @@ export interface GenerateFile {
 }
 
 export interface MetaProperties {
-  teamMembers?: TeamMember[];
-  encryptionKeys?: EncryptedSymmetricKey[];
+  teamMembers?: TeamMember[] | Record<string /* environment */, TeamMember[]>;
+  encryptionKeys?:
+    | EncryptedSymmetricKey[]
+    | Record<string /* environment */, EncryptedSymmetricKey[]>;
   generate?: GenerateFile[];
   parsingExtensions?: (ParsingExtensionWithOptions | string)[];
   environmentAliases?: Record<string, string>;

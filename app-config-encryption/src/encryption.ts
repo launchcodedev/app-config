@@ -15,7 +15,13 @@ import {
 } from '@app-config/core';
 import { Json } from '@app-config/utils';
 import { checkTTY, logger } from '@app-config/logging';
-import { promptUser, promptUserWithRetry } from '@app-config/node';
+import {
+  aliasesFor,
+  currentEnvironment,
+  EnvironmentOptions,
+  promptUser,
+  promptUserWithRetry,
+} from '@app-config/node';
 import {
   loadMetaConfig,
   loadMetaConfigLazy,
@@ -278,32 +284,47 @@ export async function decryptSymmetricKey(
   return { revision: encrypted.revision, key: data };
 }
 
-export async function saveNewSymmetricKey(symmetricKey: DecryptedSymmetricKey, teamMembers: Key[]) {
+export async function saveNewSymmetricKey(
+  symmetricKey: DecryptedSymmetricKey,
+  teamMembers: Key[],
+  environmentOptions?: EnvironmentOptions,
+) {
   const encrypted = await encryptSymmetricKey(symmetricKey, teamMembers);
 
   await saveNewMetaFile(({ encryptionKeys = [], ...meta }) => ({
     ...meta,
-    encryptionKeys: [...encryptionKeys, encrypted],
+    encryptionKeys: addForEnvironment(encrypted, encryptionKeys, environmentOptions),
   }));
 }
 
-export async function loadSymmetricKeys(lazy = true): Promise<EncryptedSymmetricKey[]> {
+export async function loadSymmetricKeys(
+  lazy = true,
+  environmentOptions?: EnvironmentOptions,
+): Promise<EncryptedSymmetricKey[]> {
   // flag is here mostly for testing
   const loadMeta = lazy ? loadMetaConfigLazy : loadMetaConfig;
+  const environment = currentEnvironment(environmentOptions);
 
   const {
     value: { encryptionKeys = [] },
   } = await loadMeta();
 
-  return encryptionKeys;
+  const selected = selectForEnvironment(encryptionKeys, environmentOptions);
+
+  logger.verbose(
+    `Found ${selected.length} symmetric keys for environment: ${environment ?? 'none'}`,
+  );
+
+  return selected;
 }
 
 export async function loadSymmetricKey(
   revision: number,
   privateKey: Key,
   lazyMeta = true,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<DecryptedSymmetricKey> {
-  const symmetricKeys = await loadSymmetricKeys(lazyMeta);
+  const symmetricKeys = await loadSymmetricKeys(lazyMeta, environmentOptions);
   const symmetricKey = symmetricKeys.find((k) => k.revision === revision);
 
   if (!symmetricKey) throw new InvalidEncryptionKey(`Could not find symmetric key ${revision}`);
@@ -318,35 +339,48 @@ const symmetricKeys = new Map<number, Promise<DecryptedSymmetricKey>>();
 export async function loadSymmetricKeyLazy(
   revision: number,
   privateKey: Key,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<DecryptedSymmetricKey> {
   if (!symmetricKeys.has(revision)) {
-    symmetricKeys.set(revision, loadSymmetricKey(revision, privateKey, true));
+    symmetricKeys.set(revision, loadSymmetricKey(revision, privateKey, true, environmentOptions));
   }
 
   return symmetricKeys.get(revision)!;
 }
 
-export async function loadLatestSymmetricKey(privateKey: Key): Promise<DecryptedSymmetricKey> {
-  const allKeys = await loadSymmetricKeys(false);
+export async function loadLatestSymmetricKey(
+  privateKey: Key,
+  environmentOptions?: EnvironmentOptions,
+): Promise<DecryptedSymmetricKey> {
+  const allKeys = await loadSymmetricKeys(false, environmentOptions);
 
-  return loadSymmetricKey(latestSymmetricKeyRevision(allKeys), privateKey, false);
+  return loadSymmetricKey(
+    latestSymmetricKeyRevision(allKeys),
+    privateKey,
+    false,
+    environmentOptions,
+  );
 }
 
-export async function loadLatestSymmetricKeyLazy(privateKey: Key): Promise<DecryptedSymmetricKey> {
-  const allKeys = await loadSymmetricKeys();
+export async function loadLatestSymmetricKeyLazy(
+  privateKey: Key,
+  environmentOptions?: EnvironmentOptions,
+): Promise<DecryptedSymmetricKey> {
+  const allKeys = await loadSymmetricKeys(true, environmentOptions);
 
-  return loadSymmetricKeyLazy(latestSymmetricKeyRevision(allKeys), privateKey);
+  return loadSymmetricKeyLazy(latestSymmetricKeyRevision(allKeys), privateKey, environmentOptions);
 }
 
 export async function encryptValue(
   value: Json,
   symmetricKeyOverride?: DecryptedSymmetricKey,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<string> {
   if (!symmetricKeyOverride && shouldUseSecretAgent()) {
-    const client = await retrieveSecretAgent();
+    const client = await retrieveSecretAgent(environmentOptions);
 
     if (client) {
-      const allKeys = await loadSymmetricKeys();
+      const allKeys = await loadSymmetricKeys(true, environmentOptions);
       const latestRevision = latestSymmetricKeyRevision(allKeys);
       const symmetricKey = allKeys.find((k) => k.revision === latestRevision)!;
 
@@ -359,7 +393,7 @@ export async function encryptValue(
   if (symmetricKeyOverride) {
     symmetricKey = symmetricKeyOverride;
   } else {
-    symmetricKey = await loadLatestSymmetricKeyLazy(await loadPrivateKeyLazy());
+    symmetricKey = await loadLatestSymmetricKeyLazy(await loadPrivateKeyLazy(), environmentOptions);
   }
 
   // all encrypted data is JSON encoded
@@ -386,9 +420,10 @@ export async function encryptValue(
 export async function decryptValue(
   text: string,
   symmetricKeyOverride?: DecryptedSymmetricKey,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<Json> {
   if (!symmetricKeyOverride && shouldUseSecretAgent()) {
-    const client = await retrieveSecretAgent();
+    const client = await retrieveSecretAgent(environmentOptions);
 
     if (client) {
       return client.decryptValue(text);
@@ -410,7 +445,11 @@ export async function decryptValue(
       );
     }
 
-    symmetricKey = await loadSymmetricKeyLazy(revisionNumber, await loadPrivateKeyLazy());
+    symmetricKey = await loadSymmetricKeyLazy(
+      revisionNumber,
+      await loadPrivateKeyLazy(),
+      environmentOptions,
+    );
   }
 
   const armored = `-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
@@ -431,13 +470,20 @@ export async function decryptValue(
   return JSON.parse(data) as Json;
 }
 
-export async function loadTeamMembers(): Promise<Key[]> {
+export async function loadTeamMembers(environmentOptions?: EnvironmentOptions): Promise<Key[]> {
+  const environment = currentEnvironment(environmentOptions);
   const {
     value: { teamMembers = [] },
   } = await loadMetaConfig();
 
+  const currentTeamMembers = selectForEnvironment(teamMembers, environmentOptions);
+
+  logger.verbose(
+    `Found ${currentTeamMembers.length} team members for environment: ${environment ?? 'none'}`,
+  );
+
   return Promise.all(
-    teamMembers.map(({ keyName, publicKey }) =>
+    currentTeamMembers.map(({ keyName, publicKey }) =>
       loadKey(publicKey).then((key) => Object.assign(key, { keyName })),
     ),
   );
@@ -445,16 +491,20 @@ export async function loadTeamMembers(): Promise<Key[]> {
 
 let loadedTeamMembers: Promise<Key[]> | undefined;
 
-export async function loadTeamMembersLazy(): Promise<Key[]> {
+export async function loadTeamMembersLazy(environmentOptions?: EnvironmentOptions): Promise<Key[]> {
   if (!loadedTeamMembers) {
-    loadedTeamMembers = loadTeamMembers();
+    loadedTeamMembers = loadTeamMembers(environmentOptions);
   }
 
   return loadedTeamMembers;
 }
 
-export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
-  const teamMembers = await loadTeamMembers();
+export async function trustTeamMember(
+  newTeamMember: Key,
+  privateKey: Key,
+  environmentOptions?: EnvironmentOptions,
+) {
+  const teamMembers = await loadTeamMembers(environmentOptions);
 
   if (newTeamMember.isPrivate()) {
     throw new InvalidEncryptionKey(
@@ -474,7 +524,7 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
   const newTeamMembers = teamMembers.concat(newTeamMember);
 
   const newEncryptionKeys = await reencryptSymmetricKeys(
-    await loadSymmetricKeys(),
+    await loadSymmetricKeys(true, environmentOptions),
     newTeamMembers,
     privateKey,
   );
@@ -486,12 +536,21 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
       keyName: key.keyName ?? null,
       publicKey: key.armor(),
     })),
-    encryptionKeys: newEncryptionKeys,
+    encryptionKeys: addForEnvironment(
+      newEncryptionKeys,
+      meta.encryptionKeys ?? [],
+      environmentOptions,
+      true,
+    ),
   }));
 }
 
-export async function untrustTeamMember(email: string, privateKey: Key) {
-  const teamMembers = await loadTeamMembers();
+export async function untrustTeamMember(
+  email: string,
+  privateKey: Key,
+  environmentOptions?: EnvironmentOptions,
+) {
+  const teamMembers = await loadTeamMembers(environmentOptions);
 
   const removalCandidates = new Set<Key>();
 
@@ -542,7 +601,7 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
   // of course, nothing stops users from having previously copy-pasted secrets, so they should always be rotated when untrusting old users
   // reason being, they had previous access to the actual private symmetric key
   const newEncryptionKeys = await reencryptSymmetricKeys(
-    await loadSymmetricKeys(),
+    await loadSymmetricKeys(true, environmentOptions),
     newTeamMembers,
     privateKey,
   );
@@ -561,7 +620,12 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
       keyName: key.keyName ?? null,
       publicKey: key.armor(),
     })),
-    encryptionKeys: newEncryptionKeys,
+    encryptionKeys: addForEnvironment(
+      newEncryptionKeys,
+      meta.encryptionKeys ?? [],
+      environmentOptions,
+      true,
+    ),
   }));
 }
 
@@ -600,11 +664,11 @@ async function reencryptSymmetricKeys(
   return newEncryptionKeys;
 }
 
-async function retrieveSecretAgent() {
+async function retrieveSecretAgent(environmentOptions?: EnvironmentOptions) {
   let client;
 
   try {
-    client = await connectAgentLazy();
+    client = await connectAgentLazy(undefined, undefined, environmentOptions);
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'error' in err) {
       const { error } = err as { error: { errno: string } };
@@ -631,6 +695,116 @@ async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties
 
   logger.info(`Writing ${writeFilePath} file with new encryption properties`);
   await fs.writeFile(writeFilePath, stringify(writeMeta, writeFileType));
+}
+
+function selectForEnvironment<T>(
+  values: T[] | Record<string, T[]>,
+  environmentOptions: EnvironmentOptions | undefined,
+): T[] {
+  if (Array.isArray(values)) {
+    return values;
+  }
+
+  const environment = currentEnvironment(environmentOptions);
+
+  if (environment === undefined) {
+    if ('none' in values) {
+      return values.none;
+    }
+
+    if ('default' in values) {
+      return values.default;
+    }
+
+    const environments = Array.from(Object.keys(values).values()).join(', ');
+
+    throw new AppConfigError(`No current environment selected, found [${environments}}`);
+  }
+
+  if (environment in values) {
+    return values[environment];
+  }
+
+  if (environmentOptions?.aliases) {
+    for (const alias of aliasesFor(environment, environmentOptions.aliases)) {
+      if (alias in values) {
+        return values[alias];
+      }
+    }
+  }
+
+  const environments = Array.from(Object.keys(values).values()).join(', ');
+
+  throw new AppConfigError(
+    `Current environment was ${environment}, only found [${environments}] when selecting environment-specific encryption options from meta file`,
+  );
+}
+
+function addForEnvironment<T>(
+  add: T | T[],
+  values: T[] | Record<string, T[]>,
+  environmentOptions: EnvironmentOptions | undefined,
+  overwrite = false,
+): T[] | Record<string, T[]> {
+  const addArray = Array.isArray(add) ? add : [add];
+  const addOrReplace = (orig: T[]) => {
+    if (overwrite) {
+      return addArray;
+    }
+
+    return orig.concat(addArray);
+  };
+
+  if (Array.isArray(values)) {
+    return addOrReplace(values);
+  }
+
+  const environment = currentEnvironment(environmentOptions);
+
+  if (environment === undefined) {
+    if ('none' in values) {
+      return {
+        ...values,
+        none: addOrReplace(values.none),
+      };
+    }
+
+    if ('default' in values) {
+      return {
+        ...values,
+        default: addOrReplace(values.default),
+      };
+    }
+
+    const environments = Array.from(Object.keys(values).values()).join(', ');
+
+    throw new AppConfigError(
+      `No current environment selected, found [${environments}] when adding environment-specific encryption options to meta file`,
+    );
+  }
+
+  if (environment in values) {
+    return {
+      ...values,
+      [environment]: addOrReplace(values[environment]),
+    };
+  }
+
+  if (environmentOptions?.aliases) {
+    for (const alias of aliasesFor(environment, environmentOptions.aliases)) {
+      if (alias in values) {
+        return {
+          ...values,
+          [alias]: addOrReplace(values[alias]),
+        };
+      }
+    }
+  }
+
+  return {
+    ...values,
+    [environment]: addArray,
+  };
 }
 
 function decodeTypedArray(buf: ArrayBuffer): string {
