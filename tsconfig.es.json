@@ -4,6 +4,7 @@
   "include": [],
   "exclude": [],
   "references": [
+    { "path": "./tsconfig.json" },
     { "path": "app-config-cli/tsconfig.es.json" },
     { "path": "app-config-config/tsconfig.es.json" },
     { "path": "app-config-core/tsconfig.es.json" },
