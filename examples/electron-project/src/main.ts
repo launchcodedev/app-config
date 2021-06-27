@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { addAppConfigPreload } from '@app-config/electron';
 
-function createWindow () {
+function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,

@@ -1,4 +1,4 @@
-import { WebPreferences } from "electron/main";
+import { WebPreferences } from 'electron';
 import * as path from 'path';
 
 export function addAppConfigPreload(baseWebPreferences?: WebPreferences) {
@@ -15,10 +15,10 @@ export function addAppConfigPreload(baseWebPreferences?: WebPreferences) {
     const preloadArgument = `--user-preload=${userPreload}`;
 
     if (userArguments) {
-      userArguments.push(preloadArgument)
+      userArguments.push(preloadArgument);
     }
 
-    webPreferences.additionalArguments = userArguments ? userArguments : [preloadArgument];
+    webPreferences.additionalArguments = userArguments || [preloadArgument];
   }
 
   webPreferences.preload = path.join(__dirname, 'preloader.js');
