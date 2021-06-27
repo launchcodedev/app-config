@@ -48,6 +48,7 @@ import {
 import { loadSchema, JSONSchema } from '@app-config/schema';
 import { generateTypeFiles } from '@app-config/generate';
 import { validateAllConfigVariants } from './validation';
+import { loadMetaConfigLazy } from '@app-config/meta';
 
 enum OptionGroups {
   Options = 'Options:',
@@ -318,6 +319,21 @@ function fileTypeForFormatOption(option: string): FileType {
   }
 }
 
+async function loadEnvironmentOptions(opts: {
+  environmentOverride?: string;
+  environmentVariableName?: string;
+}) {
+  const {
+    value: { environmentAliases, environmentSourceNames },
+  } = await loadMetaConfigLazy();
+
+  return asEnvOptions(
+    opts.environmentOverride,
+    environmentAliases,
+    opts.environmentVariableName ?? environmentSourceNames,
+  );
+}
+
 export const cli = yargs
   .scriptName('app-config')
   .wrap(Math.max(yargs.terminalWidth() - 5, 80))
@@ -583,11 +599,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
+              const environmentOptions = await loadEnvironmentOptions(opts);
 
               const myKey = await loadPublicKeyLazy();
               const privateKey = await loadPrivateKeyLazy();
@@ -615,11 +627,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
+              const environmentOptions = await loadEnvironmentOptions(opts);
 
               const keys = await loadSymmetricKeys(undefined, environmentOptions);
               const teamMembers = await loadTeamMembersLazy(environmentOptions);
@@ -701,11 +709,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
+              const environmentOptions = await loadEnvironmentOptions(opts);
 
               logger.info('Creating a new trusted CI encryption key');
 
@@ -754,11 +758,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
+              const environmentOptions = await loadEnvironmentOptions(opts);
 
               const key = await loadKey(await readFile(opts.keyPath));
               const privateKey = await loadPrivateKeyLazy();
@@ -792,12 +792,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
-
+              const environmentOptions = await loadEnvironmentOptions(opts);
               const privateKey = await loadPrivateKeyLazy();
 
               // TODO: by default, untrust for all envs?
@@ -828,11 +823,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
+              const environmentOptions = await loadEnvironmentOptions(opts);
 
               shouldUseSecretAgent(opts.agent);
 
@@ -900,11 +891,7 @@ export const cli = yargs
               },
             },
             async (opts) => {
-              const environmentOptions = asEnvOptions(
-                opts.environmentOverride,
-                undefined,
-                opts.environmentVariableName,
-              );
+              const environmentOptions = await loadEnvironmentOptions(opts);
 
               shouldUseSecretAgent(opts.agent);
 
