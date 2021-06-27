@@ -45,7 +45,9 @@ export async function loadSettings(): Promise<Settings> {
 
     return value;
   } catch (error) {
-    if (error instanceof NotFoundError) return {};
+    if (NotFoundError.isNotFoundError(error, path)) {
+      return {};
+    }
 
     throw error;
   }

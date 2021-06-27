@@ -82,7 +82,7 @@ export async function loadUnvalidatedConfig({
     return { parsed, fullConfig: parsed.toJSON() };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
-    if (!(error instanceof NotFoundError)) throw error;
+    if (!NotFoundError.isNotFoundError(error)) throw error;
   }
 
   const meta = await loadMetaConfig({ directory });
@@ -123,7 +123,7 @@ export async function loadUnvalidatedConfig({
       .read(secretsFileExtensions)
       .catch((error) => {
         // NOTE: secrets are optional, so not finding them is normal
-        if (error instanceof NotFoundError) {
+        if (NotFoundError.isNotFoundError(error, join(directory, secretsFileNameBase))) {
           logger.verbose('Did not find secrets file');
           return undefined;
         }
@@ -160,7 +160,7 @@ export async function loadUnvalidatedConfig({
       parsed = ParsedValue.merge(parsed, parsedExtension);
     } catch (error) {
       // having no APP_CONFIG_CI environment variable is normal, and should fall through to reading files
-      if (!(error instanceof NotFoundError)) throw error;
+      if (!NotFoundError.isNotFoundError(error)) throw error;
     }
   }
 
