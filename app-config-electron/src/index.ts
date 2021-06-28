@@ -1,4 +1,4 @@
-import { WebPreferences } from 'electron';
+import type { WebPreferences } from 'electron';
 import { config } from '@app-config/main';
 import * as path from 'path';
 
