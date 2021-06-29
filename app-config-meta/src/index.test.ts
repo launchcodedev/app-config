@@ -160,4 +160,19 @@ describe('meta file loading', () => {
       },
     );
   });
+
+  it('bubbles up and does not ignore a NotFoundError from transitively included files', async () => {
+    await withTempFiles(
+      {
+        '.app-config.meta.yml': `
+          $extends: a-missing-file.yml
+        `,
+      },
+      async (inDir) => {
+        await expect(loadMetaConfig({ directory: inDir('.') })).rejects.toThrow(
+          `File ${inDir('a-missing-file.yml')} not found`,
+        );
+      },
+    );
+  });
 });
