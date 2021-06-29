@@ -1,8 +1,8 @@
 import type { WebPreferences } from 'electron';
-import { config } from '@app-config/main';
+import type { ExportedConfig } from '@app-config/main';
 import * as path from 'path';
 
-export function addAppConfigPreload(baseWebPreferences?: WebPreferences) {
+export function addAppConfigPreload(config: ExportedConfig, baseWebPreferences?: WebPreferences) {
   let webPreferences: WebPreferences = {};
 
   if (baseWebPreferences) {
