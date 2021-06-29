@@ -4,18 +4,16 @@ Easily inject `app-config` values into Electron renderer processes. See `example
 
 ## Usage
 
-### 1. Install `@app-config/main` and `@app-config/electron`
+### 1. Install App Config and the Electron Package
 
 ```shell
-yarn add @app-config/main
-yarn add @app-config/electron
+yarn add @app-config/main @app-config/electron
 ```
 
 Or, if you use NPM.
 
 ```shell
-npm i @app-config/main
-npm i @app-config/electron
+npm i @app-config/main @app-config/electron
 ```
 
 ### 2. Load your config with any options you need in the main Electron process before creating any windows
