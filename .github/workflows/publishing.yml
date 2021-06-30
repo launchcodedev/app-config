@@ -34,6 +34,12 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-cypress/package.json
+    - name: app-config-electron
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-electron/package.json
     - name: app-config-default-extensions
       uses: JS-DevTools/npm-publish@v1
       with:
