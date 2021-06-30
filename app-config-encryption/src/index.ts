@@ -1,6 +1,7 @@
 import type { ParsingExtension } from '@app-config/core';
 import { named } from '@app-config/extension-utils';
 import { logger } from '@app-config/logging';
+import { environmentOptionsFromContext } from '@app-config/node';
 import { DecryptedSymmetricKey, decryptValue } from './encryption';
 
 export * from './encryption';
@@ -12,7 +13,7 @@ export default function encryptedDirective(
   symmetricKey?: DecryptedSymmetricKey,
   shouldShowDeprecationNotice?: true,
 ): ParsingExtension {
-  return named('encryption', (value) => {
+  return named('encryption', (value, _, __, ctx) => {
     if (typeof value === 'string' && value.startsWith('enc:')) {
       return async (parse) => {
         if (shouldShowDeprecationNotice) {
@@ -21,7 +22,8 @@ export default function encryptedDirective(
           );
         }
 
-        const decrypted = await decryptValue(value, symmetricKey);
+        const environmentOptions = environmentOptionsFromContext(ctx);
+        const decrypted = await decryptValue(value, symmetricKey, environmentOptions);
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
       };
