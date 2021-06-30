@@ -63,10 +63,6 @@ new_version app-config-vault
 new_version app-config-webpack
 new_version app-config-rollup
 new_version app-config-vite
-new_version lcdev-app-config
-new_version lcdev-app-config-inject
-new_version lcdev-app-config-webpack-plugin
-new_version lcdev-react-native-app-config-transformer
 
 git commit -m "chore: release v$VERSION"
 git tag v$VERSION

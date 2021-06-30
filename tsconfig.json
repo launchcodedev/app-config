@@ -29,10 +29,6 @@
     { "path": "app-config-v1-compat/tsconfig.json" },
     { "path": "app-config-vault/tsconfig.json" },
     { "path": "app-config-vite/tsconfig.json" },
-    { "path": "app-config-webpack/tsconfig.json" },
-    { "path": "lcdev-app-config/tsconfig.json" },
-    { "path": "lcdev-app-config-inject/tsconfig.json" },
-    { "path": "lcdev-app-config-webpack-plugin/tsconfig.json" },
-    { "path": "lcdev-react-native-app-config-transformer/tsconfig.json" }
+    { "path": "app-config-webpack/tsconfig.json" }
   ]
 }
