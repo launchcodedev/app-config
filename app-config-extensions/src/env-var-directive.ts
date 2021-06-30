@@ -80,16 +80,14 @@ export function envVarDirective(
   );
 }
 
-const validateObject: ValidationFunction<
-  Record<string, any>
-> = validationFunction(({ emptySchema }) => emptySchema().addAdditionalProperties());
+const validateObject: ValidationFunction<Record<string, any>> = validationFunction(
+  ({ emptySchema }) => emptySchema().addAdditionalProperties(),
+);
 
 const validateString: ValidationFunction<string> = validationFunction(({ stringSchema }) =>
   stringSchema(),
 );
 
-const validateStringOrNull: ValidationFunction<
-  string | null
-> = validationFunction(({ fromJsonSchema }) =>
-  fromJsonSchema({ type: ['null', 'string'] } as const),
+const validateStringOrNull: ValidationFunction<string | null> = validationFunction(
+  ({ fromJsonSchema }) => fromJsonSchema({ type: ['null', 'string'] } as const),
 );

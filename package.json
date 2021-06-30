@@ -18,7 +18,10 @@
   "scripts": {
     "exec:all": "lerna exec",
     "run:all": "lerna run --stream",
-    "build": "lerna run build",
+    "build": "yarn build:cjs",
+    "build:es": "tsc -b tsconfig.es.json",
+    "build:cjs": "tsc -b tsconfig.json",
+    "build:all": "lerna run build",
     "clean": "yarn run:all clean",
     "test": "lerna run test -- --passWithNoTests",
     "lint": "yarn run:all lint",

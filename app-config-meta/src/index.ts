@@ -6,8 +6,8 @@ import {
   ParsingExtension,
   FallbackSource,
   FileType,
-  NotFoundError,
   AppConfigError,
+  FallbackExhaustedError,
 } from '@app-config/core';
 import { logger } from '@app-config/logging';
 
@@ -87,9 +87,9 @@ export async function loadMetaConfig({
   }
 
   // we try to find meta find in our CWD, but fallback to the workspace (git repo) root
-  const sources = [new FlexibleFileSource(join(directory, fileNameBase))];
+  const sources = [new FlexibleFileSource(join(resolve(directory), fileNameBase))];
 
-  if (workspaceRoot) {
+  if (workspaceRoot && workspaceRoot !== directory) {
     sources.push(new FlexibleFileSource(join(workspaceRoot, fileNameBase)));
   }
 
@@ -110,12 +110,18 @@ export async function loadMetaConfig({
       value,
     };
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      logger.verbose(
-        `Meta file was not found in ${directory} or workspace root (${workspaceRoot ?? 'none'})`,
-      );
+    if (error instanceof FallbackExhaustedError) {
+      for (const { filepath } of error.errors) {
+        if (sources.some((s) => s.filePath === filepath)) {
+          logger.verbose(
+            `Meta file was not found in ${directory} or workspace root (${
+              workspaceRoot ?? 'none'
+            })`,
+          );
 
-      return { value: {} };
+          return { value: {} };
+        }
+      }
     }
 
     throw error;

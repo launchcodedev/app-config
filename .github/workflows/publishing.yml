@@ -163,6 +163,20 @@ jobs:
         access: public
         package: ./app-config-webpack/package.json
         tag: next
+    - name: app-config-rollup
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-rollup/package.json
+        tag: next
+    - name: app-config-vite
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-vite/package.json
+        tag: next
     - name: lcdev-app-config-inject
       uses: JS-DevTools/npm-publish@v1
       with:

@@ -57,7 +57,7 @@ enum OptionGroups {
 
 type SubcommandOptions<
   Options extends { [name: string]: yargs.Options },
-  PositionalOptions extends { [name: string]: yargs.PositionalOptions }
+  PositionalOptions extends { [name: string]: yargs.PositionalOptions },
 > = {
   name: string | string[];
   description?: string;
@@ -72,7 +72,7 @@ type SubcommandFn<Options extends { [name: string]: yargs.Options }> = (
 
 function subcommand<
   Options extends { [name: string]: yargs.Options },
-  PositionalOptions extends { [name: string]: yargs.PositionalOptions }
+  PositionalOptions extends { [name: string]: yargs.PositionalOptions },
 >(
   desc: SubcommandOptions<Options, PositionalOptions>,
   run: SubcommandFn<Options & PositionalOptions>,

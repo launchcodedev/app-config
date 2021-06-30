@@ -31,6 +31,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/node": "^3.0.0-alpha.4",
+    "@app-config/utils": "^3.0.0-alpha.4",
     "loader-utils": "2"
   },
   "peerDependencies": {
@@ -40,7 +42,6 @@
   },
   "devDependencies": {
     "@app-config/main": "^3.0.0-alpha.4",
-    "@types/loader-utils": "1",
     "@webpack-cli/serve": "1",
     "html-webpack-plugin": "5",
     "webpack": "5"

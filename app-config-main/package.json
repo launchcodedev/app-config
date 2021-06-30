@@ -21,6 +21,7 @@
     "!**/*.test.*"
   ],
   "bin": {
+    "ac": "dist/cli.js",
     "app-config": "dist/cli.js"
   },
   "scripts": {

@@ -101,7 +101,7 @@ export function environmentOptionsFromContext(
   context: ParsingContext,
 ): EnvironmentOptions | undefined {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return (context.environmentOptions as unknown) as EnvironmentOptions;
+  return context.environmentOptions as unknown as EnvironmentOptions;
 }
 
 export function currentEnvFromContext(

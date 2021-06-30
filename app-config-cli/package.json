@@ -21,6 +21,7 @@
     "!**/*.test.*"
   ],
   "bin": {
+    "ac": "dist/index.js",
     "app-config": "dist/index.js",
     "app-config-secret-agent": "dist/start-secret-agent.js"
   },

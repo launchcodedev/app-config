@@ -1,3 +1,17 @@
+## v2.6.1
+
+Ensures that NotFoundErrors aren't ignored when transitive in optional files ([#160](https://github.com/launchcodedev/app-config/issues/160)).
+
+## v2.6.0
+
+Adds plugins for [vite](https://vitejs.dev) and [rollup](https://rollupjs.org)!
+
+Adds `ac` as an npx alias for `app-config`.
+
+## v2.5.2
+
+Adds support for calling `currentEnvironment` when using the Webpack plugin.
+
 ## v2.5.1
 
 Adds `env` option on `$extends` and `$override` directives.

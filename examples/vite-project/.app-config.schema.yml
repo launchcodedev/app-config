@@ -1,0 +1,9 @@
+type: object
+additionalProperties: false
+
+required:
+  - stringProperty
+
+properties:
+  stringProperty:
+    type: string

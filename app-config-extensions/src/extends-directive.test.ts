@@ -259,7 +259,7 @@ describe('$extendsSelf directive', () => {
     await expect(source.read([extendsSelfDirective()])).rejects.toThrow();
   });
 
-  it('fails when $extendsSelf selector is not a string', async () => {
+  it('fails when $extendsSelf selector is invalid object', async () => {
     const source = new LiteralSource({
       foo: {
         $extendsSelf: {},
@@ -267,6 +267,99 @@ describe('$extendsSelf directive', () => {
     });
 
     await expect(source.read([extendsSelfDirective()])).rejects.toThrow();
+  });
+
+  it('resolves with select option', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $extendsSelf: {
+          select: 'bar',
+        },
+      },
+      bar: 42,
+    });
+
+    expect(await source.readToJSON([extendsSelfDirective()])).toEqual({ foo: 42, bar: 42 });
+  });
+
+  it('resolves with select and env option', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $extendsSelf: {
+          select: 'bar',
+          env: 'qa',
+        },
+      },
+      bar: {
+        $substitute: '$APP_CONFIG_ENV',
+      },
+    });
+
+    expect(await source.readToJSON([extendsSelfDirective(), substituteDirective()])).toEqual({
+      foo: 'qa',
+      bar: 'test',
+    });
+  });
+
+  it('resolves with select and env option', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $extendsSelf: {
+          select: 'bar',
+          env: 'qa',
+        },
+      },
+      bar: {
+        $env: {
+          default: 42,
+          qa: 88,
+        },
+      },
+    });
+
+    expect(await source.readToJSON([extendsSelfDirective(), envDirective()])).toEqual({
+      foo: 88,
+      bar: 42,
+    });
+  });
+
+  it('resolves with select and env option', async () => {
+    const source = new LiteralSource({
+      foo: {
+        $env: {
+          default: 'default',
+          staging: 'staging',
+        },
+      },
+
+      bar: {
+        $envVar: 'APP_CONFIG_ENV',
+      },
+
+      baz: 'default',
+
+      $env: {
+        default: {},
+        qa: {
+          $extendsSelf: {
+            env: 'staging',
+            select: '.',
+          },
+
+          baz: 'qa',
+        },
+      },
+    });
+
+    process.env.APP_CONFIG_ENV = 'qa';
+
+    expect(
+      await source.readToJSON([extendsSelfDirective(), envVarDirective(), envDirective()]),
+    ).toEqual({
+      foo: 'staging',
+      bar: 'staging',
+      baz: 'qa',
+    });
   });
 
   it('resolves a simple $extendsSelf selector', async () => {

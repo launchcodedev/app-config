@@ -634,7 +634,7 @@ async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties
 }
 
 function decodeTypedArray(buf: ArrayBuffer): string {
-  return String.fromCharCode.apply(null, (new Uint16Array(buf) as any) as number[]);
+  return String.fromCharCode.apply(null, new Uint16Array(buf) as any as number[]);
 }
 
 function stringAsTypedArray(str: string): Uint16Array {

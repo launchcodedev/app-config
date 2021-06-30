@@ -22,7 +22,7 @@ import {
   defaultEnvExtensions,
   markAllValuesAsSecret,
 } from '@app-config/extensions';
-import { loadSchema, JSONSchema, SchemaLoadingOptions } from '@app-config/schema';
+import { loadSchema, JSONSchema, SchemaLoadingOptions, Schema } from '@app-config/schema';
 import { loadMetaConfig, loadExtraParsingExtensions } from '@app-config/meta';
 
 export interface ConfigLoadingOptions {
@@ -52,7 +52,7 @@ export interface LoadedConfiguration {
   /** if loadValidatedConfig, this is the normalized JSON schema that was used for validation */
   schema?: JSONSchema;
   /** if loadValidatedConfig, this is the raw AJV validation function */
-  validationFunctionCode?(): string;
+  validationFunctionCode?: Schema['validationFunctionCode'];
 }
 
 export async function loadUnvalidatedConfig({
@@ -85,7 +85,7 @@ export async function loadUnvalidatedConfig({
     return { parsed, fullConfig: parsed.toJSON() };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
-    if (!(error instanceof NotFoundError)) throw error;
+    if (!NotFoundError.isNotFoundError(error)) throw error;
   }
 
   const meta = await loadMetaConfig({ directory });
@@ -124,7 +124,7 @@ export async function loadUnvalidatedConfig({
       .read(secretsFileExtensions)
       .catch((error) => {
         // NOTE: secrets are optional, so not finding them is normal
-        if (error instanceof NotFoundError) {
+        if (NotFoundError.isNotFoundError(error, join(directory, secretsFileNameBase))) {
           logger.verbose('Did not find secrets file');
           return undefined;
         }
@@ -161,7 +161,7 @@ export async function loadUnvalidatedConfig({
       parsed = ParsedValue.merge(parsed, parsedExtension);
     } catch (error) {
       // having no APP_CONFIG_CI environment variable is normal, and should fall through to reading files
-      if (!(error instanceof NotFoundError)) throw error;
+      if (!NotFoundError.isNotFoundError(error)) throw error;
     }
   }
 
@@ -196,23 +196,21 @@ export async function loadValidatedConfig(
   options?: ConfigLoadingOptions,
   schemaOptions?: SchemaLoadingOptions,
 ): Promise<LoadedConfiguration> {
-  const [
-    { validate, validationFunctionCode, schema },
-    { fullConfig, parsed, ...rest },
-  ] = await Promise.all([
-    loadSchema({
-      directory: options?.directory,
-      fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
-      environmentVariableName: options?.environmentVariableName
-        ? `${options.environmentVariableName}_SCHEMA`
-        : undefined,
-      environmentOverride: options?.environmentOverride,
-      environmentAliases: options?.environmentAliases,
-      environmentSourceNames: options?.environmentSourceNames,
-      ...schemaOptions,
-    }),
-    loadUnvalidatedConfig(options),
-  ]);
+  const [{ validate, validationFunctionCode, schema }, { fullConfig, parsed, ...rest }] =
+    await Promise.all([
+      loadSchema({
+        directory: options?.directory,
+        fileNameBase: options?.fileNameBase ? `${options.fileNameBase}.schema` : undefined,
+        environmentVariableName: options?.environmentVariableName
+          ? `${options.environmentVariableName}_SCHEMA`
+          : undefined,
+        environmentOverride: options?.environmentOverride,
+        environmentAliases: options?.environmentAliases,
+        environmentSourceNames: options?.environmentSourceNames,
+        ...schemaOptions,
+      }),
+      loadUnvalidatedConfig(options),
+    ]);
 
   if (!isObject(fullConfig)) {
     throw new WasNotObject('Configuration was not an object');
