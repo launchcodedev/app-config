@@ -9,8 +9,8 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@app-config/electron": "2.6.0",
-    "@app-config/main": "2.6.0"
+    "@app-config/electron": "^2.6.0",
+    "@app-config/main": "^2.6.0"
   },
   "devDependencies": {
     "electron": "^13.1.4"
