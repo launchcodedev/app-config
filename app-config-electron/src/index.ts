@@ -22,6 +22,7 @@ export function addAppConfigPreload(config: ExportedConfig, baseWebPreferences?:
 
   webPreferences.preload = path.join(__dirname, 'preloader.js');
   webPreferences.additionalArguments = preloadArguments;
+  webPreferences.contextIsolation = true;
 
   return webPreferences;
 }

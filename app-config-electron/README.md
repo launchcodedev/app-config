@@ -47,3 +47,5 @@ app.whenReady().then(() => {
 They can be found in `window._appConfig` or in `config` if using `@app-config/main` in your web page. It's also available in `config` in the main Electron process.
 
 Your app will need to be restarted to reflect any configuration changes.
+
+Setting `contextIsolation` to `true` in the `browserOptions` of your `BrowserWindow` settings is required for this package to work. We set this for you, but if your app requres `contextIsolation` to be `false` using this package will break your app.
