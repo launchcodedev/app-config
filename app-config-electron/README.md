@@ -1,6 +1,6 @@
 # App Config Electron
 
-Easily inject `app-config` values into Electron renderer processes. See `examples/electron-project` for an example project.
+Easily inject `app-config` values into Electron renderer processes. An example project is provided [here.](https://github.com/launchcodedev/app-config/tree/master/examples/electron-project)
 
 ## Usage
 
