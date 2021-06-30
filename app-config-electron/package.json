@@ -31,8 +31,10 @@
   },
   "dependencies": {
     "@app-config/main": "^2.6.0",
-    "@app-config/logging": "^2.6.0",
-    "electron": "13"
+    "@app-config/logging": "^2.6.0"
+  },
+  "peerDependencies": {
+    "electron": "13 || 12"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",
