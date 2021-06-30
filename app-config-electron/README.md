@@ -42,6 +42,8 @@ app.whenReady().then(() => {
 });
 ```
 
-### 4. Your App Config values are now available under `window._appConfig` or in `config` if using `@app-config/main` in your web page. It's also available in `config` in the main Electron process.
+### 4. Your App Config values are now available!
+
+They can be found in `window._appConfig` or in `config` if using `@app-config/main` in your web page. It's also available in `config` in the main Electron process.
 
 Your app will need to be restarted to reflect any configuration changes.
