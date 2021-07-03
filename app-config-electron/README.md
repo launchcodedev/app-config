@@ -44,7 +44,7 @@ app.whenReady().then(() => {
 
 ### 4. Your App Config values are now available!
 
-They can be found in `window._appConfig` or in `config` if using `@app-config/main` in your web page. This works the same as our Webpack and Vite plugins (when the defualt options are used). It's also available in `config` in the main Electron process.
+They can be found in `window._appConfig` or in `config` if using `@app-config/main` in your web page (when using `@app-config/webpack` with `headerInjection` or `@app-config/vite` with `readGlobal`). It's also available in `config` in the main Electron process.
 
 Your app will need to be restarted to reflect any configuration changes.
 
