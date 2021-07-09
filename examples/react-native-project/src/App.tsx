@@ -1,5 +1,5 @@
 import React from 'react';
-import config from '@app-config/main';
+import { config } from '@app-config/main';
 import { StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -27,5 +27,5 @@ const styles = StyleSheet.create({
     fontSize: 40,
     marginBottom: 20,
     fontWeight: '700',
-  }
+  },
 });

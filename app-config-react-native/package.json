@@ -30,6 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/node": "^2.6.1",
     "semver": "7"
   },
   "peerDependencies": {
