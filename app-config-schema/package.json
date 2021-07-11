@@ -1,7 +1,7 @@
 {
   "name": "@app-config/schema",
   "description": "Schema validation for @app-config",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,19 +30,19 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.6.1",
-    "@app-config/logging": "^2.6.1",
-    "@app-config/node": "^2.6.1",
-    "@app-config/utils": "^2.6.1",
+    "@app-config/core": "^3.0.0-alpha.4",
+    "@app-config/logging": "^3.0.0-alpha.4",
+    "@app-config/node": "^3.0.0-alpha.4",
+    "@app-config/utils": "^3.0.0-alpha.4",
     "@types/json-schema": "7",
-    "ajv": "7",
-    "ajv-formats": "1",
+    "ajv": "8",
+    "ajv-formats": "2",
     "json-schema-ref-parser": "9"
   },
   "devDependencies": {
-    "@app-config/encryption": "^2.6.1",
-    "@app-config/extensions": "^2.6.1",
-    "@app-config/test-utils": "^2.6.1"
+    "@app-config/encryption": "^3.0.0-alpha.4",
+    "@app-config/extensions": "^3.0.0-alpha.4",
+    "@app-config/test-utils": "^3.0.0-alpha.4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

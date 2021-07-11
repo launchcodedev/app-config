@@ -1,18 +1,31 @@
 import { named } from '@app-config/extension-utils';
 import { ParsingExtension } from '@app-config/core';
 
-export { tryDirective } from './try-directive';
-export { ifDirective } from './if-directive';
-export { eqDirective } from './eq-directive';
-export { hiddenDirective } from './hidden-directive';
-export { envDirective } from './env-directive';
-export { extendsDirective, extendsSelfDirective, overrideDirective } from './extends-directive';
-export { timestampDirective } from './timestamp-directive';
+import { tryDirective } from './try-directive';
+import { ifDirective } from './if-directive';
+import { eqDirective } from './eq-directive';
+import { hiddenDirective } from './hidden-directive';
+import { envDirective } from './env-directive';
+import { extendsDirective, extendsSelfDirective, overrideDirective } from './extends-directive';
+import { timestampDirective } from './timestamp-directive';
+import { envVarDirective } from './env-var-directive';
+import { substituteDirective } from './substitute-directive';
+import { parseDirective } from './parse-directive';
 
-export { envVarDirective } from './env-var-directive';
-export { substituteDirective } from './substitute-directive';
-export { substituteDirective as environmentVariableSubstitution } from './substitute-directive';
-export { parseDirective } from './parse-directive';
+export {
+  tryDirective,
+  ifDirective,
+  eqDirective,
+  hiddenDirective,
+  envDirective,
+  extendsDirective,
+  extendsSelfDirective,
+  overrideDirective,
+  timestampDirective,
+  envVarDirective,
+  substituteDirective,
+  parseDirective,
+};
 
 /** Marks all values recursively as fromSecrets, so they do not trigger schema errors */
 export function markAllValuesAsSecret(): ParsingExtension {
@@ -30,4 +43,39 @@ export function unescape$Directives(): ParsingExtension {
 
     return false;
   });
+}
+
+export function defaultExtensions() {
+  return [
+    unescape$Directives(),
+    tryDirective(),
+    ifDirective(),
+    eqDirective(),
+    parseDirective(),
+    hiddenDirective(),
+    envDirective(),
+    envVarDirective(),
+    extendsDirective(),
+    extendsSelfDirective(),
+    overrideDirective(),
+    timestampDirective(),
+    substituteDirective(),
+  ];
+}
+
+export function defaultEnvExtensions() {
+  return [unescape$Directives(), markAllValuesAsSecret()];
+}
+
+export function defaultMetaExtensions() {
+  return [
+    unescape$Directives(),
+    tryDirective(),
+    ifDirective(),
+    eqDirective(),
+    hiddenDirective(),
+    extendsDirective(),
+    extendsSelfDirective(),
+    overrideDirective(),
+  ];
 }

@@ -1,7 +1,7 @@
 {
   "name": "@app-config/core",
   "description": "Core logic for App Config",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,15 +30,15 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/logging": "^2.6.1",
-    "@app-config/utils": "^2.6.1",
+    "@app-config/logging": "^3.0.0-alpha.4",
+    "@app-config/utils": "^3.0.0-alpha.4",
     "@iarna/toml": "3",
     "js-yaml": "^3.13.1",
     "json5": "2",
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.6.1",
+    "@app-config/test-utils": "^3.0.0-alpha.4",
     "@types/js-yaml": "3",
     "@types/lodash.merge": "4"
   },

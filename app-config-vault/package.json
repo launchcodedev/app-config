@@ -1,7 +1,7 @@
 {
   "name": "@app-config/vault",
   "description": "Hashicorp Vault support for App Config",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,16 +30,16 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/extension-utils": "^2.6.1",
+    "@app-config/extension-utils": "^3.0.0-alpha.4",
     "@lcdev/fetch": "^0.1.10",
     "cross-fetch": "3",
     "node-vault": "0.9"
   },
   "peerDependencies": {
-    "@app-config/main": "^2.6.1"
+    "@app-config/main": "^3.0.0-alpha.4"
   },
   "devDependencies": {
-    "@app-config/main": "^2.6.1"
+    "@app-config/main": "^3.0.0-alpha.4"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

@@ -29,72 +29,13 @@ export function substituteDirective(
       validateObject(value, [...parentKeys, key]);
       if (Array.isArray(value)) throw new AppConfigError('$substitute was given an array');
 
-      if (value.$name) {
-        logger.warn(
-          `Detected deprecated use of $name in a $substitute directive. Use 'name' instead.`,
-        );
-      }
-
-      const name = (await parse(selectDefined(value.name, value.$name))).toJSON();
+      const name = (await parse(value.name)).toJSON();
 
       validateString(name, [...parentKeys, key, [InObject, 'name']]);
 
       const parseValue = async (strValue: string | null) => {
-        const parseBool = (await parse(selectDefined(value.parseBool, value.$parseBool))).toJSON();
-
-        if (value.$parseBool) {
-          logger.warn(
-            `Detected deprecated use of $parseBool in a $substitute directive - use $parseBool directive instead`,
-          );
-        }
-
-        if (parseBool) {
-          const parsed =
-            strValue !== null && (strValue.toLowerCase() === 'true' || strValue === '1');
-
-          return parse(parsed, { shouldFlatten: true });
-        }
-
         if (strValue === null) {
           return parse(null, { shouldFlatten: true });
-        }
-
-        const parseInt = (await parse(selectDefined(value.parseInt, value.$parseInt))).toJSON();
-
-        if (value.$parseInt) {
-          logger.warn(
-            `Detected deprecated use of $parseInt in a $substitute directive - use $parseInt directive instead`,
-          );
-        }
-
-        if (parseInt) {
-          const parsed = Number.parseInt(strValue, 10);
-
-          if (Number.isNaN(parsed)) {
-            throw new AppConfigError(`Failed to parseInt(${strValue})`);
-          }
-
-          return parse(parsed, { shouldFlatten: true });
-        }
-
-        if (value.$parseFloat) {
-          logger.warn(
-            `Detected deprecated use of $parseFloat in a $substitute directive - use $parseFloat directive instead`,
-          );
-        }
-
-        const parseFloat = (
-          await parse(selectDefined(value.parseFloat, value.$parseFloat))
-        ).toJSON();
-
-        if (parseFloat) {
-          const parsed = Number.parseFloat(strValue);
-
-          if (Number.isNaN(parsed)) {
-            throw new AppConfigError(`Failed to parseFloat(${strValue})`);
-          }
-
-          return parse(parsed, { shouldFlatten: true });
         }
 
         return parse(strValue, { shouldFlatten: true });
@@ -110,21 +51,9 @@ export function substituteDirective(
         return parseValue(resolvedValue);
       }
 
-      if (value.fallback !== undefined || value.$fallback !== undefined) {
-        const fallback = (await parse(selectDefined(value.fallback, value.$fallback))).toJSON();
-        const allowNull = (await parse(selectDefined(value.allowNull, value.$allowNull))).toJSON();
-
-        if (value.$fallback) {
-          logger.warn(
-            `Detected deprecated use of $fallback in a $substitute directive. Use 'fallback' instead.`,
-          );
-        }
-
-        if (value.$allowNull) {
-          logger.warn(
-            `Detected deprecated use of $allowNull in a $substitute directive. Use 'allowNull' instead.`,
-          );
-        }
+      if (value.fallback !== undefined) {
+        const fallback = (await parse(value.fallback)).toJSON();
+        const allowNull = (await parse(value.allowNull)).toJSON();
 
         if (allowNull) {
           validateStringOrNull(fallback, [...parentKeys, key, [InObject, 'fallback']]);
@@ -186,14 +115,6 @@ function performAllSubstitutions(text: string, envType?: string): string {
   logger.verbose(`Performed $substitute for "${text}" -> "${output}"`);
 
   return output;
-}
-
-function selectDefined<T>(...args: (T | null | undefined)[]): T | null {
-  for (const a of args) {
-    if (a !== undefined) return a;
-  }
-
-  return undefined as any as T;
 }
 
 const validateObject: ValidationFunction<Record<string, any>> = validationFunction(

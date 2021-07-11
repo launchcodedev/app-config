@@ -7,7 +7,6 @@ import {
   defaultAliases,
   EnvironmentAliases,
 } from '@app-config/node';
-import { logger } from '@app-config/logging';
 
 /** Substitutes environment variables */
 export function envVarDirective(
@@ -19,9 +18,6 @@ export function envVarDirective(
     '$envVar',
     forKey('$envVar', (value, key, parentKeys, context) => async (parse) => {
       let name: string;
-      let parseInt = false;
-      let parseFloat = false;
-      let parseBool = false;
 
       if (typeof value === 'string') {
         name = value;
@@ -32,60 +28,12 @@ export function envVarDirective(
         const resolved = (await parse(value.name)).toJSON();
         validateString(resolved, [...parentKeys, key, [InObject, 'name']]);
 
-        parseInt = !!(await parse(value.parseInt)).toJSON();
-        parseFloat = !!(await parse(value.parseFloat)).toJSON();
-        parseBool = !!(await parse(value.parseBool)).toJSON();
         name = resolved;
-
-        if (parseInt) {
-          logger.warn(
-            `Detected use of deprecated of 'parseInt' option in $envVar - use $parseInt directive instead`,
-          );
-        }
-
-        if (parseFloat) {
-          logger.warn(
-            `Detected use of deprecated of 'parseFloat' option in $envVar - use $parseFloat directive instead`,
-          );
-        }
-
-        if (parseBool) {
-          logger.warn(
-            `Detected use of deprecated of 'parseBool' option in $envVar - use $parseBool directive instead`,
-          );
-        }
       }
 
       const parseValue = (strValue: string | null) => {
-        if (parseBool) {
-          const parsed =
-            strValue !== null && (strValue.toLowerCase() === 'true' || strValue === '1');
-
-          return parse(parsed, { shouldFlatten: true });
-        }
-
         if (strValue === null) {
           return parse(null, { shouldFlatten: true });
-        }
-
-        if (parseInt) {
-          const parsed = Number.parseInt(strValue, 10);
-
-          if (Number.isNaN(parsed)) {
-            throw new AppConfigError(`Failed to parseInt(${strValue})`);
-          }
-
-          return parse(parsed, { shouldFlatten: true });
-        }
-
-        if (parseFloat) {
-          const parsed = Number.parseFloat(strValue);
-
-          if (Number.isNaN(parsed)) {
-            throw new AppConfigError(`Failed to parseFloat(${strValue})`);
-          }
-
-          return parse(parsed, { shouldFlatten: true });
         }
 
         return parse(strValue, { shouldFlatten: true });

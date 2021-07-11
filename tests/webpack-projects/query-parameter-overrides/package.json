@@ -10,11 +10,11 @@
     "clean": "rm -rf ./dist"
   },
   "dependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "3.0.0-alpha.4",
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@app-config/webpack": "2",
+    "@app-config/webpack": "3.0.0-alpha.4",
     "@lcdev/tsconfig": "0.2",
     "cross-env": "7",
     "cypress": "6",

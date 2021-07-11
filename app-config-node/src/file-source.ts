@@ -13,10 +13,8 @@ import {
 import { logger } from '@app-config/logging';
 import {
   aliasesFor,
-  asEnvOptions,
   currentEnvFromContext,
   defaultEnvOptions,
-  EnvironmentAliases,
   EnvironmentOptions,
 } from './environment';
 
@@ -54,54 +52,16 @@ export class FlexibleFileSource extends ConfigSource {
   private readonly fileExtensions: string[];
   private readonly environmentOptions: EnvironmentOptions;
 
-  constructor(filePath: string, fileExtensions?: string[], environmentOptions?: EnvironmentOptions);
-
-  /** @deprecated use constructor with environmentOptions instead */
   constructor(
     filePath: string,
-    environmentOverride?: string,
-    environmentAliases?: EnvironmentAliases,
     fileExtensions?: string[],
-    environmentSourceNames?: string[] | string,
-  );
-
-  constructor(
-    filePath: string,
-    environmentOverrideOrFileExtensions?: string | string[],
-    environmentAliasesOrEnvironmentOptions?: EnvironmentAliases | EnvironmentOptions,
-    fileExtensions?: string[],
-    environmentSourceNames?: string[] | string,
+    environmentOptions?: EnvironmentOptions,
   ) {
     super();
 
     this.filePath = filePath;
-    const defaultFileExtensions = ['yml', 'yaml', 'toml', 'json', 'json5'];
-
-    if (
-      (Array.isArray(environmentOverrideOrFileExtensions) ||
-        environmentOverrideOrFileExtensions === undefined) &&
-      (environmentAliasesOrEnvironmentOptions
-        ? 'aliases' in environmentAliasesOrEnvironmentOptions ||
-          'envVarNames' in environmentAliasesOrEnvironmentOptions
-        : true) &&
-      fileExtensions === undefined &&
-      environmentSourceNames === undefined
-    ) {
-      this.fileExtensions = environmentOverrideOrFileExtensions ?? defaultFileExtensions;
-      this.environmentOptions =
-        (environmentAliasesOrEnvironmentOptions as EnvironmentOptions) ?? defaultEnvOptions;
-    } else {
-      logger.warn(
-        `Detected deprecated usage of FlexibleFileSource constructor loading ${filePath}`,
-      );
-
-      this.fileExtensions = fileExtensions ?? defaultFileExtensions;
-      this.environmentOptions = asEnvOptions(
-        environmentOverrideOrFileExtensions as string,
-        environmentAliasesOrEnvironmentOptions as EnvironmentAliases,
-        environmentSourceNames,
-      );
-    }
+    this.fileExtensions = fileExtensions ?? ['yml', 'yaml', 'toml', 'json', 'json5'];
+    this.environmentOptions = environmentOptions ?? defaultEnvOptions;
   }
 
   // share 'resolveSource' so that read() returns a ParsedValue pointed to the FileSource, not FlexibleFileSource

@@ -10,11 +10,11 @@
     "clean": "rm -rf ./dist"
   },
   "dependencies": {
-    "@app-config/main": "2",
-    "@app-config/cypress": "2"
+    "@app-config/main": "3.0.0-alpha.4",
+    "@app-config/cypress": "3.0.0-alpha.4"
   },
   "devDependencies": {
-    "@app-config/webpack": "2",
+    "@app-config/webpack": "3.0.0-alpha.4",
     "@babel/core": "7",
     "@babel/preset-env": "7",
     "@cypress/webpack-preprocessor": "5",

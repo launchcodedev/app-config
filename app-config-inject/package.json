@@ -1,7 +1,7 @@
 {
   "name": "@app-config/inject",
   "description": "Runtime injection of app-config into static HTML files",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -34,10 +34,10 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^2.6.1",
-    "@app-config/logging": "^2.6.1",
-    "@app-config/node": "^2.6.1",
-    "@app-config/schema": "^2.6.1",
+    "@app-config/config": "^3.0.0-alpha.4",
+    "@app-config/logging": "^3.0.0-alpha.4",
+    "@app-config/node": "^3.0.0-alpha.4",
+    "@app-config/schema": "^3.0.0-alpha.4",
     "@types/yargs": "16",
     "node-html-parser": "1",
     "yargs": "16"

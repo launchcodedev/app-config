@@ -1,7 +1,6 @@
 {
   "packages": [
     "app-config-*",
-    "lcdev-*",
     "tests/parsing-extensions/*",
     "tests/webpack-projects/*",
     "examples/*",

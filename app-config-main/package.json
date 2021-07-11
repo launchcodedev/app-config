@@ -1,7 +1,7 @@
 {
   "name": "@app-config/main",
   "description": "Easy to use configuration loader with schema validation",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -35,18 +35,16 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/cli": "^2.6.1",
-    "@app-config/config": "^2.6.1",
-    "@app-config/core": "^2.6.1",
-    "@app-config/default-extensions": "^2.6.1",
-    "@app-config/encryption": "^2.6.1",
-    "@app-config/extensions": "^2.6.1",
-    "@app-config/logging": "^2.6.1",
-    "@app-config/meta": "^2.6.1",
-    "@app-config/node": "^2.6.1",
-    "@app-config/schema": "^2.6.1",
-    "@app-config/utils": "^2.6.1",
-    "ajv": "7"
+    "@app-config/cli": "^3.0.0-alpha.4",
+    "@app-config/config": "^3.0.0-alpha.4",
+    "@app-config/core": "^3.0.0-alpha.4",
+    "@app-config/extensions": "^3.0.0-alpha.4",
+    "@app-config/logging": "^3.0.0-alpha.4",
+    "@app-config/meta": "^3.0.0-alpha.4",
+    "@app-config/node": "^3.0.0-alpha.4",
+    "@app-config/schema": "^3.0.0-alpha.4",
+    "@app-config/utils": "^3.0.0-alpha.4",
+    "ajv": "8"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

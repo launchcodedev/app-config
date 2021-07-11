@@ -1,7 +1,7 @@
 {
   "name": "@app-config/vite",
   "description": "Vite plugin for @app-config",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -34,7 +34,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/rollup": "^2.6.1"
+    "@app-config/rollup": "^3.0.0-alpha.4"
   },
   "devDependencies": {},
   "prettier": "@lcdev/prettier",

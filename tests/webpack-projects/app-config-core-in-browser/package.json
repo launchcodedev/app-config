@@ -10,8 +10,8 @@
     "clean": "rm -rf ./dist"
   },
   "dependencies": {
-    "@app-config/core": "2",
-    "@app-config/utils": "2"
+    "@app-config/core": "3.0.0-alpha.4",
+    "@app-config/utils": "3.0.0-alpha.4"
   },
   "devDependencies": {
     "@lcdev/tsconfig": "0.2",

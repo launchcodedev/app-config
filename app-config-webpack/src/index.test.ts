@@ -131,7 +131,7 @@ describe('frontend-webpack-project example', () => {
           done();
         });
       }),
-    ).rejects.toMatch('config/externalApiUrl should match format "uri"');
+    ).rejects.toMatch('config/externalApiUrl must match format "uri"');
   });
 
   it('uses custom loading options to read a specific environment variable', async () => {

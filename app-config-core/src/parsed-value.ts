@@ -436,12 +436,12 @@ async function parseValueInner(
   }
 
   if (applicableExtension) {
-    const parse = (
-      inner: Json,
-      metadataOverride?: ParsedValueMetadata,
-      sourceOverride?: ConfigSource,
-      extensionsOverride?: ParsingExtension[],
-      contextOverride?: ParsingContext,
+    const parse: Parameters<ParsingExtensionTransform>[0] = (
+      inner,
+      metadataOverride,
+      sourceOverride,
+      extensionsOverride,
+      contextOverride,
     ) =>
       parseValueInner(
         inner,

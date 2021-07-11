@@ -7,25 +7,6 @@ import {
 } from './environment';
 
 describe('currentEnvironment', () => {
-  describe('deprecated currentEnvironment', () => {
-    it('uses environmentSourceNames', () => {
-      process.env.NODE_ENV = 'foo';
-      process.env.FOO = 'bar';
-
-      expect(currentEnvironment(undefined, ['FOO', 'BAR'])).toBe('bar');
-      expect(currentEnvironment(undefined, ['BAR'])).toBe(undefined);
-    });
-
-    it('uses environmentAliases', () => {
-      process.env.FOO = 'bar';
-      process.env.NODE_ENV = 'bar';
-
-      expect(currentEnvironment({}, ['FOO'])).toBe('bar');
-      expect(currentEnvironment({ bar: 'foo' })).toBe('foo');
-      expect(currentEnvironment({ bar: 'foo' }, ['FOO'])).toBe('foo');
-    });
-  });
-
   it('uses envVarNames', () => {
     process.env.NODE_ENV = 'foo';
     process.env.FOO = 'bar';
@@ -49,8 +30,14 @@ describe('currentEnvironment', () => {
 
   it('uses override', () => {
     process.env.NODE_ENV = 'foo';
-    expect(currentEnvironment({})).toBe('foo');
-    expect(currentEnvironment({ override: 'bar' })).toBe('bar');
+    expect(currentEnvironment()).toBe('foo');
+    expect(
+      currentEnvironment({
+        override: 'bar',
+        aliases: defaultAliases,
+        envVarNames: defaultEnvVarNames,
+      }),
+    ).toBe('bar');
   });
 });
 

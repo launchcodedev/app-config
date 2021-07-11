@@ -95,86 +95,6 @@ describe('$envVar directive', () => {
     expect(parsed.toJSON()).toEqual({ foo: null, bar: 'foo' });
   });
 
-  it('parses ints', async () => {
-    process.env.FOO = '11';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseInt: true },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(11);
-  });
-
-  it('fails when int is invalid', async () => {
-    process.env.FOO = 'not a number';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseInt: true },
-    });
-
-    await expect(source.read([envVarDirective()])).rejects.toThrow();
-  });
-
-  it('parses float', async () => {
-    process.env.FOO = '11.2';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseFloat: true },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(11.2);
-  });
-
-  it('fails when float is invalid', async () => {
-    process.env.FOO = 'not a number';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseFloat: true },
-    });
-
-    await expect(source.read([envVarDirective()])).rejects.toThrow();
-  });
-
-  it('parses boolean = true', async () => {
-    process.env.FOO = 'true';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseBool: true },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(true);
-  });
-
-  it('parses boolean = 1', async () => {
-    process.env.FOO = '1';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseBool: true },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(true);
-  });
-
-  it('parses boolean = 0', async () => {
-    process.env.FOO = '0';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseBool: true },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(false);
-  });
-
-  it('parses boolean = false', async () => {
-    process.env.FOO = 'false';
-
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseBool: true },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(false);
-  });
-
   it('doesnt visit fallback if name is defined', async () => {
     const failDirective = forKey('$fail', () => () => {
       throw new Error();
@@ -201,13 +121,5 @@ describe('$envVar directive', () => {
     const parsed = await source.read([envVarDirective()]);
 
     expect(parsed.toJSON()).toEqual({ foo: 'qa' });
-  });
-
-  it('parses boolean from fallback', async () => {
-    const source = new LiteralSource({
-      $envVar: { name: 'FOO', parseBool: true, fallback: 'true' },
-    });
-
-    expect(await source.readToJSON([envVarDirective()])).toEqual(true);
   });
 });

@@ -1,7 +1,7 @@
 {
   "name": "@app-config/extension-utils",
   "description": "Utilities for writing @app-config parsing extensions",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,7 +30,7 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.6.1",
+    "@app-config/core": "^3.0.0-alpha.4",
     "@serafin/schema-builder": "0.14"
   },
   "devDependencies": {},

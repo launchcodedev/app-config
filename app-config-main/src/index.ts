@@ -94,23 +94,6 @@ export default config;
  */
 export const validateConfig: ValidateFunction<ExportedConfig> = null as any; // eslint-disable-line
 
-export { Json } from '@app-config/utils';
-
-export {
-  ParsedValue,
-  ParsedValueMetadata,
-  ParsingExtension,
-  ParsingExtensionTransform,
-  ConfigSource,
-  LiteralSource,
-  CombinedSource,
-  FallbackSource,
-  FileType,
-  stringify,
-  filePathAssumedType,
-  parseRawString,
-} from '@app-config/core';
-
 export { setLogLevel, LogLevel } from '@app-config/logging';
 
 export {
@@ -132,20 +115,10 @@ export {
 } from '@app-config/node';
 
 export {
-  environmentVariableSubstitution,
-  envDirective,
-  extendsDirective,
-  extendsSelfDirective,
-  overrideDirective,
-} from '@app-config/extensions';
-
-export { default as encryptedDirective } from '@app-config/encryption';
-
-export {
   defaultExtensions,
   defaultEnvExtensions,
   defaultMetaExtensions,
-} from '@app-config/default-extensions';
+} from '@app-config/extensions';
 
 /** @hidden Please don't rely on this. */
 export function resetConfigInternal() {

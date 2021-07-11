@@ -12,7 +12,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
-    "@app-config/main": "2",
+    "@app-config/main": "3.0.0-alpha.4",
     "expo": "39",
     "expo-status-bar": "1",
     "expo-yarn-workspaces": "1",
@@ -22,8 +22,8 @@
   },
   "devDependencies": {
     "@babel/core": "7",
-    "@app-config/main": "2",
-    "@app-config/react-native": "2",
+    "@app-config/main": "3.0.0-alpha.4",
+    "@app-config/react-native": "3.0.0-alpha.4",
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-native": "0.63",

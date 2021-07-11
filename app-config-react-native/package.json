@@ -1,7 +1,7 @@
 {
   "name": "@app-config/react-native",
   "description": "React Native Metro transformer that loads your app-config values into bundles statically",
-  "version": "2.6.1",
+  "version": "3.0.0-alpha.4",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -34,11 +34,11 @@
     "semver": "7"
   },
   "peerDependencies": {
-    "@app-config/main": "^2.6.1",
+    "@app-config/main": "^3.0.0-alpha.4",
     "react-native": ">=0.45.0"
   },
   "devDependencies": {
-    "@app-config/main": "^2.6.1",
+    "@app-config/main": "^3.0.0-alpha.4",
     "@types/semver": "7"
   },
   "prettier": "@lcdev/prettier",

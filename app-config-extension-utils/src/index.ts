@@ -5,6 +5,7 @@ import type {
   ParsingExtensionTransform,
 } from '@app-config/core';
 import { parseValue, Root, AppConfigError } from '@app-config/core';
+import { Json } from '@app-config/utils';
 import { SchemaBuilder } from '@serafin/schema-builder';
 
 export function composeExtensions(extensions: ParsingExtension[]): ParsingExtension {
@@ -69,7 +70,7 @@ export function keysToPath(keys: ParsingExtensionKey[]): string {
 
 export class ParsingExtensionInvalidOptions extends AppConfigError {}
 
-export function validateOptions<T>(
+export function validateOptions<T extends Json>(
   builder: (builder: typeof SchemaBuilder) => SchemaBuilder<T>,
   extension: (
     value: T,
