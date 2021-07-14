@@ -61,5 +61,6 @@ jobs:
           ./app-config-webpack/coverage/coverage-final.json,
           ./app-config-rollup/coverage/coverage-final.json,
           ./app-config-vite/coverage/coverage-final.json,
+          ./app-config-electron/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true

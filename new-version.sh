@@ -42,6 +42,7 @@ new_version app-config-config
 new_version app-config-core
 new_version app-config-cypress
 new_version app-config-default-extensions
+new_version app-config-electron
 new_version app-config-encryption
 new_version app-config-exec
 new_version app-config-extension-utils

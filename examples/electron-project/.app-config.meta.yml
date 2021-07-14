@@ -1,0 +1,2 @@
+generate:
+  - file: './src/@types/lcdev__app-config/index.d.ts'

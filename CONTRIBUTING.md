@@ -53,6 +53,7 @@ If you are adding anything new or changing behavior, please add applicable tests
 - `@app-config/webpack`: webpack plugin
 - `@app-config/rollup`: rollup plugin
 - `@app-config/vite`: vite plugin
+- `@app-config/electron`: injects config into Electron renderer processes
 - `@app-config/main`: main config singleton and loading logic
 - `@lcdev/app-config`: alias for `@app-config/main`
 - `@lcdev/app-config-webpack-plugin`: alias for `@app-config/webpack`

@@ -1,0 +1,10 @@
+type: object
+additionalProperties: false
+
+required:
+  - externalApiUrl
+
+properties:
+  externalApiUrl:
+    type: string
+    format: uri
