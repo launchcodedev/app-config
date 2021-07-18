@@ -10,11 +10,11 @@ function createWindow() {
     webPreferences: addAppConfigPreload(config, { preload: process.env.NODE_ENV === 'test' ? path.join(__dirname, 'preload-test.js') : undefined }),
   });
 
-  mainWindow.loadFile('./index.html')
+  mainWindow.loadFile('./index.html');
 }
 
 app.whenReady().then(() => {
-  loadConfig().then(() => createWindow())
+  loadConfig().then(() => createWindow());
 });
 
 app.on('window-all-closed', function () {
