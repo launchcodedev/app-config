@@ -1,9 +1,10 @@
 name: docker-image
 
 on:
-  push:
-    branches: 'master'
-    tags: '*'
+  - pull_request
+  - push:
+      branches: 'master'
+      tags: '*'
 
 jobs:
   publish:
