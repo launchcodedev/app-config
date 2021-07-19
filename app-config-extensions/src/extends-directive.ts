@@ -57,7 +57,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
               environmentOptions,
             })
             .catch((error) => {
-              if (error instanceof NotFoundError && isOptional) {
+              if (isOptional && NotFoundError.isNotFoundError(error, resolvedPath)) {
                 return ParsedValue.literal({});
               }
 

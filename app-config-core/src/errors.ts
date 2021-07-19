@@ -5,7 +5,35 @@ export class AppConfigError extends Error {}
 export class Fallbackable extends AppConfigError {}
 
 /** When a ConfigSource cannot be found */
-export class NotFoundError extends Fallbackable {}
+export class NotFoundError extends Fallbackable {
+  constructor(message?: string, public readonly filepath?: string) {
+    super(message);
+  }
+
+  static isNotFoundError(err: Error | unknown, filepath?: string): err is NotFoundError {
+    if (err instanceof NotFoundError) {
+      if (filepath) {
+        return err.filepath === filepath;
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+}
+
+export class EnvironmentVariableNotFoundError extends NotFoundError {
+  constructor(message?: string, public readonly environmentVariable?: string) {
+    super(message);
+  }
+}
+
+export class FallbackExhaustedError extends NotFoundError {
+  constructor(message: string, public readonly errors: NotFoundError[]) {
+    super(message);
+  }
+}
 
 /** Could not parse a string from a config source */
 export class ParsingError extends AppConfigError {}

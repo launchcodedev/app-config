@@ -1,3 +1,7 @@
+## v2.6.1
+
+Ensures that NotFoundErrors aren't ignored when transitive in optional files ([#160](https://github.com/launchcodedev/app-config/issues/160)).
+
 ## v2.6.0
 
 Adds plugins for [vite](https://vitejs.dev) and [rollup](https://rollupjs.org)!

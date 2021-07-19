@@ -62,7 +62,7 @@ export async function loadSchema({
 
   parsed = await env.read(parsingExtensions).catch((error) => {
     // having no APP_CONFIG_SCHEMA environment variable is normal, and should fall through to reading files
-    if (error instanceof NotFoundError) {
+    if (NotFoundError.isNotFoundError(error)) {
       return undefined;
     }
 
