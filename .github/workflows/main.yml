@@ -22,6 +22,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - uses: bahmutov/npm-install@v1
+    - uses: microsoft/playwright-github-action@v1
     - run: yarn build
     - run: yarn build:es
     - run: yarn build:all
