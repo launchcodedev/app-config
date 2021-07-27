@@ -1,0 +1,44 @@
+{
+  "name": "@app-config/electron",
+  "description": "Exposes app-config values to Electron render processes",
+  "version": "2.6.0",
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Launchcode",
+    "email": "admin@lc.dev",
+    "url": "https://lc.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/launchcodedev/app-config.git"
+  },
+  "main": "dist/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist",
+    "!**/*.tsbuildinfo",
+    "!**/*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "build:es": "tsc -b tsconfig.es.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint src",
+    "fix": "eslint --fix src",
+    "test": "jest",
+    "prepublishOnly": "yarn clean && yarn build && yarn build:es"
+  },
+  "dependencies": {
+    "@app-config/main": "^2.6.0",
+    "@app-config/logging": "^2.6.0"
+  },
+  "peerDependencies": {
+    "electron": "13 || 12 || 11 || 10"
+  },
+  "devDependencies": {},
+  "prettier": "@lcdev/prettier",
+  "jest": {
+    "preset": "@lcdev/jest"
+  }
+}

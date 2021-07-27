@@ -56,6 +56,10 @@ module.exports = {
         path: '/guide/rollup',
       },
       {
+        title: 'Electron',
+        path: '/guide/electron',
+      },
+      {
         title: 'Deployment',
         path: '/guide/deployment/',
         children: ['/guide/deployment/', '/guide/deployment/kubernetes'],
