@@ -9,7 +9,7 @@ jobs:
   # for branches, we only need to check Linux + Node LTS
   # note that we do linting here, but not on Windows / MacOS (no need to)
   linux-and-lts:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
@@ -27,6 +27,7 @@ jobs:
     - run: yarn build:es
     - run: yarn build:all
     - run: yarn lint
+      if: matrix.os == 'ubuntu-latest'
     - run: xvfb-run yarn test --coverage --testTimeout 20000
       env: { CI: 1 }
       if: matrix.os == 'ubuntu-latest'
