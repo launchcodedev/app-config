@@ -27,7 +27,6 @@ jobs:
     - run: yarn build:es
     - run: yarn build:all
     - run: yarn lint
-      if: matrix.os == 'ubuntu-latest'
     - run: xvfb-run yarn test --coverage --testTimeout 20000
       env: { CI: 1 }
       if: matrix.os == 'ubuntu-latest'
