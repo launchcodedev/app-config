@@ -44,9 +44,13 @@ const loader = function AppConfigLoader(this: Loader) {
 
             const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
-            // if the global was already defined, use it (and define it if not)
-            const config = globalNamespace.${privateName} =
-              (globalNamespace.${privateName} || configValue);
+            // if the global was already defined, use it
+            const config = (globalNamespace.${privateName} || configValue);
+
+            // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
+            if (!Object.isFrozen(globalNamespace.${privateName})) {
+              globalNamespace.${privateName} = config;
+            }
 
             export { config };
             export default config;
