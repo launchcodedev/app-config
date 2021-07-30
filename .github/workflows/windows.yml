@@ -23,6 +23,8 @@ jobs:
 
     - run: yarn playwright install-deps chromium
     - run: yarn build
+    - run: yarn build:es
+    - run: yarn build:all
     - run: yarn test --testTimeout 20000
       env: { CI: 1 }
 
