@@ -11,6 +11,8 @@ export interface Options {
   schemaLoadingOptions?: SchemaLoadingOptions;
 }
 
+const privateName = '_appConfig';
+
 // vite resolves first before passing to the rollup plugin
 export const appConfigImportRegex = /(app-config|app-config-main)\/dist(\/es)?\/index\.js/;
 
@@ -53,9 +55,13 @@ export default function appConfigRollup({
 
             const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
-            // if the global was already defined, use it (and define it if not)
-            const config = globalNamespace._appConfig =
-              (globalNamespace._appConfig || configValue);
+            // if the global was already defined, use it
+            const config = (globalNamespace.${privateName} || configValue);
+
+            // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
+            if (!Object.isFrozen(globalNamespace.${privateName})) {
+              globalNamespace.${privateName} = config;
+            }
           `;
         } else {
           generatedText = `

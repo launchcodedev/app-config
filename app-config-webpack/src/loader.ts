@@ -52,7 +52,6 @@ const loader = function AppConfigLoader(this: Loader) {
               globalNamespace.${privateName} = config;
             }
 
-
             export { config };
             export default config;
           `;
