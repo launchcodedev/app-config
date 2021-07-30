@@ -1,3 +1,9 @@
+## v2.7.0
+
+Adds [Electron](https://app-config.dev/guide/electron.html) support!
+
+Supports named export in react native #167.
+
 ## v2.6.1
 
 Ensures that NotFoundErrors aren't ignored when transitive in optional files ([#160](https://github.com/launchcodedev/app-config/issues/160)).
