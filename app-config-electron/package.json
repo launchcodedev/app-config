@@ -1,7 +1,7 @@
 {
   "name": "@app-config/electron",
   "description": "Exposes app-config values to Electron render processes",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,8 +30,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/main": "^2.6.0",
-    "@app-config/logging": "^2.6.0"
+    "@app-config/logging": "^2.6.0",
+    "@app-config/main": "^2.6.0"
   },
   "peerDependencies": {
     "electron": "13 || 12 || 11 || 10"
