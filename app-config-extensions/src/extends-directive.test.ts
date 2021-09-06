@@ -45,6 +45,23 @@ describe('$extends directive', () => {
     );
   });
 
+  it('merges two files with env in extends file and global env override', async () => {
+    await withTempFiles(
+      {
+        'referenced-file.json': `{ "foo": { "$env": { "prod": true, "qa": false } } }`,
+        'test-file.json': `{ "$extends": "./referenced-file.json", "bar": true }`,
+      },
+      async (inDir) => {
+        const source = new FileSource(inDir('test-file.json'));
+        const parsed = await source.read([extendsDirective(), envDirective()], {
+          environmentOptions: { override: 'prod' },
+        });
+
+        expect(parsed.toJSON()).toEqual({ foo: true, bar: true });
+      },
+    );
+  });
+
   it('merges many files (flat)', async () => {
     await withTempFiles(
       {

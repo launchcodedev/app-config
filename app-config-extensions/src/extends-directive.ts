@@ -48,8 +48,11 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
           const environmentOptions = {
             ...environmentOptionsFromContext(context),
-            override: env,
           };
+
+          if (env) {
+            environmentOptions.override = env;
+          }
 
           const parsed = await resolvedSource
             .read(extensions, {
