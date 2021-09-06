@@ -1,3 +1,7 @@
+## v2.7.1
+
+Fixes bug in $extends directive when using specific environments.
+
 ## v2.7.0
 
 Adds [Electron](https://app-config.dev/guide/electron.html) support!
