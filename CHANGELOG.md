@@ -1,3 +1,7 @@
+## v2.7.2
+
+Ensures that `window._appConfig` is always written in webpack and rollup loaders.
+
 ## v2.7.1
 
 Fixes bug in $extends directive when using specific environments.
