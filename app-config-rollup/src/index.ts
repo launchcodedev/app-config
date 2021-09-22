@@ -59,7 +59,10 @@ export default function appConfigRollup({
             const config = (globalNamespace.${privateName} || configValue);
 
             // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
-            if (!Object.isFrozen(globalNamespace.${privateName})) {
+            if (
+              typeof globalNamespace.${privateName} === 'undefined' ||
+              !Object.isFrozen(globalNamespace.${privateName})
+            ) {
               globalNamespace.${privateName} = config;
             }
           `;
