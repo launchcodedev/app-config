@@ -1,7 +1,7 @@
 {
   "name": "@app-config/exec",
   "description": "Generate config by running arbitrary programs",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,13 +30,13 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.7.1",
-    "@app-config/extension-utils": "^2.7.1",
-    "@app-config/node": "^2.7.1",
-    "@app-config/utils": "^2.7.1"
+    "@app-config/core": "^2.7.2",
+    "@app-config/extension-utils": "^2.7.2",
+    "@app-config/node": "^2.7.2",
+    "@app-config/utils": "^2.7.2"
   },
   "devDependencies": {
-    "@app-config/main": "^2.7.1"
+    "@app-config/main": "^2.7.2"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
