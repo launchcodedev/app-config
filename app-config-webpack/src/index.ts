@@ -13,6 +13,7 @@ export interface Options {
   loading?: ConfigLoadingOptions;
   schemaLoading?: SchemaLoadingOptions;
   intercept?: RegExp;
+  injectValidationFunction?: boolean;
 }
 
 export default class AppConfigPlugin {
