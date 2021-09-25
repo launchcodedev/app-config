@@ -1,7 +1,7 @@
 {
   "name": "@app-config/meta",
   "description": "Meta file parsing for @app-config",
-  "version": "2.7.2",
+  "version": "2.8.0",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,15 +30,15 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^2.7.2",
-    "@app-config/default-extensions": "^2.7.2",
-    "@app-config/logging": "^2.7.2",
-    "@app-config/node": "^2.7.2",
-    "@app-config/utils": "^2.7.2",
+    "@app-config/core": "^2.8.0",
+    "@app-config/default-extensions": "^2.8.0",
+    "@app-config/logging": "^2.8.0",
+    "@app-config/node": "^2.8.0",
+    "@app-config/utils": "^2.8.0",
     "fs-extra": "7"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^2.7.2"
+    "@app-config/test-utils": "^2.8.0"
   },
   "prettier": "@lcdev/prettier",
   "jest": {
