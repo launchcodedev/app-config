@@ -82,7 +82,18 @@ export async function loadUnvalidatedConfig({
 
     verifyParsedValue(parsed);
 
-    return { parsed, fullConfig: parsed.toJSON() };
+    return {
+      parsed,
+      fullConfig: parsed.toJSON(),
+      // NOTE: not checking meta values here
+      environment: currentEnvironment(
+        asEnvOptions(
+          environmentOverride,
+          environmentAliasesArg ?? defaultAliases,
+          environmentSourceNamesArg,
+        ),
+      ),
+    };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
     if (!NotFoundError.isNotFoundError(error)) throw error;
