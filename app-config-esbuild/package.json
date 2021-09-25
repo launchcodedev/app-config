@@ -1,6 +1,6 @@
 {
-  "name": "@app-config/rollup",
-  "description": "Rollup plugin that resolves @app-config for you",
+  "name": "@app-config/esbuild",
+  "description": "esbuild module resolution support for @app-config",
   "version": "2.7.2",
   "license": "MPL-2.0",
   "author": {
@@ -12,10 +12,6 @@
     "type": "git",
     "url": "https://github.com/launchcodedev/app-config.git"
   },
-  "keywords": [
-    "vite-plugin",
-    "rollup-plugin"
-  ],
   "main": "dist/index.js",
   "module": "dist/es/index.js",
   "types": "dist/index.d.ts",
@@ -37,10 +33,9 @@
     "@app-config/config": "^2.7.2",
     "@app-config/utils": "^2.7.2"
   },
-  "peerDependencies": {},
   "devDependencies": {
-    "@app-config/test-utils": "*",
-    "rollup": "^2"
+    "@app-config/test-utils": "^2.7.2",
+    "esbuild": "0.13"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

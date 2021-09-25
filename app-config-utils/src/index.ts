@@ -24,3 +24,95 @@ export function isObject(obj: Json): obj is JsonObject {
 export function isPrimitive(obj: Json): obj is JsonPrimitive {
   return !isObject(obj) && !Array.isArray(obj);
 }
+
+export function generateModuleText(
+  fullConfig: Json,
+  {
+    environment,
+    useGlobalNamespace,
+    validationFunctionCode,
+    esmValidationCode,
+  }: {
+    environment: string | undefined;
+    useGlobalNamespace: boolean;
+    validationFunctionCode?(): string;
+    validationFunctionCode?(esm: true): [string, string];
+    esmValidationCode: boolean;
+  },
+): string {
+  const privateName = '_appConfig';
+  const config = JSON.stringify(fullConfig);
+
+  let generatedText: string;
+
+  if (useGlobalNamespace) {
+    generatedText = `
+      const configValue = ${config};
+
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      // if the global was already defined, use it
+      const config = (globalNamespace.${privateName} || configValue);
+
+      // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
+      if (
+        typeof globalNamespace.${privateName} === 'undefined' ||
+        !Object.isFrozen(globalNamespace.${privateName})
+      ) {
+        globalNamespace.${privateName} = config;
+      }
+
+      export { config };
+      export default config;
+    `;
+  } else {
+    generatedText = `
+      const config = ${config};
+
+      export { config };
+      export default config;
+    `;
+  }
+
+  if (validationFunctionCode) {
+    if (esmValidationCode) {
+      const [code, imports] = validationFunctionCode(true);
+
+      generatedText = `${generatedText}
+        ${imports}
+
+        ${/* nest the generated commonjs module here */ ''}
+        function genValidateConfig(){
+          const validateConfigModule = {};
+          (function(module){${code}})(validateConfigModule);
+          return validateConfigModule.exports;
+        }
+
+        ${/* marking as pure allows tree shaking */ ''}
+        export const validateConfig = /*#__PURE__*/ genValidateConfig();
+      `;
+    } else {
+      const code = validationFunctionCode();
+
+      generatedText = `${generatedText}
+        ${/* nest the generated commonjs module here */ ''}
+        function genValidateConfig(){
+          const validateConfigModule = {};
+          (function(module){${code}})(validateConfigModule);
+          return validateConfigModule.exports;
+        }
+
+        ${/* marking as pure always allows tree shaking in webpack when using es modules */ ''}
+        export const validateConfig = /*#__PURE__*/ genValidateConfig();
+      `;
+    }
+  }
+
+  generatedText = `${generatedText}
+    export function currentEnvironment() {
+      return ${environment ? JSON.stringify(environment) : 'undefined'};
+    }
+  `;
+
+  return generatedText;
+}

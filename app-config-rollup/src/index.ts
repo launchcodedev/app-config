@@ -1,26 +1,28 @@
 import type { Plugin } from 'rollup';
-import { packageNameRegex } from '@app-config/utils';
+import { generateModuleText, packageNameRegex } from '@app-config/utils';
 import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
-import { asEnvOptions, currentEnvironment } from '@app-config/node';
 import type { SchemaLoadingOptions } from '@app-config/schema';
 
 export interface Options {
-  readGlobal?: boolean;
-  injectValidationFunction?: boolean;
+  useGlobalNamespace?: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
-}
+  injectValidationFunction?: boolean;
 
-const privateName = '_appConfig';
+  /** @deprecated use useGlobalNamespace instead */
+  readGlobal?: boolean;
+}
 
 // vite resolves first before passing to the rollup plugin
 export const appConfigImportRegex = /(app-config|app-config-main)\/dist(\/es)?\/index\.js/;
 
 export default function appConfigRollup({
-  readGlobal,
-  injectValidationFunction,
+  useGlobalNamespace,
   loadingOptions,
   schemaLoadingOptions,
+  injectValidationFunction,
+
+  readGlobal,
 }: Options = {}): Plugin & { currentFilePaths?: string[] } {
   const currentFilePaths: string[] = [];
 
@@ -36,80 +38,20 @@ export default function appConfigRollup({
     },
     async load(id) {
       if (packageNameRegex.exec(id) || appConfigImportRegex.exec(id)) {
-        const {
-          parsed: config,
-          validationFunctionCode,
-          filePaths,
-        } = await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
+        const { fullConfig, environment, validationFunctionCode, filePaths } =
+          await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
 
         if (filePaths) {
           currentFilePaths.length = 0;
           currentFilePaths.push(...filePaths);
         }
 
-        let generatedText: string;
-
-        if (readGlobal) {
-          generatedText = `
-            const configValue = ${JSON.stringify(config)};
-
-            const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-
-            // if the global was already defined, use it
-            const config = (globalNamespace.${privateName} || configValue);
-
-            // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
-            if (
-              typeof globalNamespace.${privateName} === 'undefined' ||
-              !Object.isFrozen(globalNamespace.${privateName})
-            ) {
-              globalNamespace.${privateName} = config;
-            }
-          `;
-        } else {
-          generatedText = `
-            const config = ${JSON.stringify(config)};
-          `;
-        }
-
-        if (injectValidationFunction && validationFunctionCode) {
-          const [code, imports] = validationFunctionCode(true);
-
-          generatedText = `${generatedText}
-            ${imports}
-
-            ${/* nest the generated commonjs module here */ ''}
-            function genValidateConfig(){
-              const validateConfigModule = {};
-              (function(module){${code}})(validateConfigModule);
-              return validateConfigModule.exports;
-            }
-
-            ${/* marking as pure allows tree shaking */ ''}
-            export const validateConfig = /*#__PURE__*/ genValidateConfig();
-          `;
-        }
-
-        return `
-          ${generatedText}
-
-          export { config };
-          export default config;
-
-          export function currentEnvironment() {
-            return ${
-              JSON.stringify(
-                currentEnvironment(
-                  asEnvOptions(
-                    loadingOptions?.environmentOverride,
-                    loadingOptions?.environmentAliases,
-                    loadingOptions?.environmentSourceNames,
-                  ),
-                ),
-              ) ?? 'undefined'
-            };
-          }
-        `;
+        return generateModuleText(fullConfig, {
+          environment,
+          useGlobalNamespace: useGlobalNamespace ?? readGlobal ?? true,
+          validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+          esmValidationCode: true,
+        });
       }
 
       return null;
