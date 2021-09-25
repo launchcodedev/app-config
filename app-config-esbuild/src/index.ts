@@ -1,4 +1,5 @@
 import type { Plugin } from 'esbuild';
+import path from 'path';
 import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
 import { generateModuleText, packageNameRegex } from '@app-config/utils';
 import type { SchemaLoadingOptions } from '@app-config/schema';
@@ -24,10 +25,8 @@ export const createPlugin = ({
     }));
 
     build.onLoad({ filter: /.*/, namespace: '@app-config/esbuild' }, async () => {
-      const { fullConfig, environment, validationFunctionCode } = await loadValidatedConfig(
-        loadingOptions,
-        schemaLoadingOptions,
-      );
+      const { fullConfig, environment, validationFunctionCode, filePaths } =
+        await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
 
       const code = generateModuleText(fullConfig, {
         environment,
@@ -39,6 +38,8 @@ export const createPlugin = ({
       return {
         loader: 'js',
         contents: code,
+        resolveDir: path.parse(process.cwd()).root,
+        watchFiles: filePaths,
       };
     });
   },

@@ -4,3 +4,4 @@ additionalProperties: false
 properties:
   foo:
     type: string
+    format: uri
