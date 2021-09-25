@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`loads config correctly 1`] = `
+"(()=>{var r={foo:\\"bar\\"},e=(typeof window==\\"undefined\\"?globalThis:window)||{},t=e._appConfig||r;(typeof e._appConfig==\\"undefined\\"||!Object.isFrozen(e._appConfig))&&(e._appConfig=t);var a=t;console.log(a);})();
+"
+`;
+
+exports[`loads currentEnvironment 1`] = `
+"(()=>{var t={foo:\\"bar\\"},e=(typeof window==\\"undefined\\"?globalThis:window)||{},r=e._appConfig||t;(typeof e._appConfig==\\"undefined\\"||!Object.isFrozen(e._appConfig))&&(e._appConfig=r);function o(){return\\"test\\"}console.log(o());})();
+"
+`;
+
+exports[`loads validation function 1`] = `
+"(()=>{var v={foo:\\"bar\\"},n=(typeof window==\\"undefined\\"?globalThis:window)||{},m=n._appConfig||v;(typeof n._appConfig==\\"undefined\\"||!Object.isFrozen(n._appConfig))&&(n._appConfig=m);function P(){let s={};return function(p){\\"use strict\\";p.exports=i,p.exports.default=i;var b={type:\\"object\\",additionalProperties:!1,properties:{foo:{type:\\"string\\"}},$schema:\\"http://json-schema.org/draft-07/schema#\\"};function i(o,t){\\"use strict\\";if(t)var a=t.dataPath,g=t.parentData,h=t.parentDataProperty,y=t.rootData;else var a=\\"\\",g=void 0,h=void 0,y=o;var e=null,r=0;if(o&&typeof o==\\"object\\"&&!Array.isArray(o)){for(var f in o)if(f!==\\"foo\\"){var d={keyword:\\"additionalProperties\\",dataPath:a,schemaPath:\\"#/additionalProperties\\",params:{additionalProperty:f},message:\\"should NOT have additional properties\\"};e===null?e=[d]:e.push(d),r++}if(o.foo!==void 0&&typeof o.foo!=\\"string\\"){var l={keyword:\\"type\\",dataPath:a+\\"/foo\\",schemaPath:\\"#/properties/foo/type\\",params:{type:\\"string\\"},message:\\"should be string\\"};e===null?e=[l]:e.push(l),r++}}else{var c={keyword:\\"type\\",dataPath:a,schemaPath:\\"#/type\\",params:{type:\\"object\\"},message:\\"should be object\\"};e===null?e=[c]:e.push(c),r++}return i.errors=e,r===0}}(s),s.exports}var u=P();u({foo:12});})();
+"
+`;

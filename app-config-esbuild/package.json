@@ -31,10 +31,10 @@
   },
   "dependencies": {
     "@app-config/config": "^2.7.2",
-    "@app-config/node": "^2.7.2",
     "@app-config/utils": "^2.7.2"
   },
   "devDependencies": {
+    "@app-config/test-utils": "^2.7.2",
     "esbuild": "0.13"
   },
   "prettier": "@lcdev/prettier",
