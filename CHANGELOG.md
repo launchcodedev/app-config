@@ -1,3 +1,7 @@
+## v2.8.0
+
+Adds plugin for [esbuild](https://esbuild.github.io)!
+
 ## v2.7.2
 
 Ensures that `window._appConfig` is always written in webpack and rollup loaders.
