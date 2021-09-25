@@ -16,6 +16,7 @@ import {
   EnvironmentAliases,
   EnvironmentSource,
   asEnvOptions,
+  currentEnvironment,
 } from '@app-config/node';
 import { markAllValuesAsSecret } from '@app-config/extensions';
 import { defaultExtensions, defaultEnvExtensions } from '@app-config/default-extensions';
@@ -44,6 +45,8 @@ export interface LoadedConfiguration {
   parsed: ParsedValue;
   parsedSecrets?: ParsedValue;
   parsedNonSecrets?: ParsedValue;
+  /** the current environment that was loaded from given options */
+  environment?: string;
   /** non-exhaustive list of files that were read (useful for reloading in plugins) */
   filePaths?: string[];
   /** if loadValidatedConfig, this is the normalized JSON schema that was used for validation */
@@ -186,6 +189,7 @@ export async function loadUnvalidatedConfig({
     parsed,
     parsedSecrets: secrets,
     parsedNonSecrets: mainConfig.cloneWhere((v) => !v.meta.fromSecrets),
+    environment: currentEnvironment(environmentOptions),
     fullConfig: parsed.toJSON(),
     filePaths: Array.from(filePaths),
   };

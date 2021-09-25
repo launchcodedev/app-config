@@ -1,6 +1,5 @@
 import { getOptions, parseQuery } from 'loader-utils';
-import { loadValidatedConfig } from '@app-config/main';
-import { currentEnvironment, asEnvOptions } from '@app-config/node';
+import { loadValidatedConfig } from '@app-config/config';
 import { generateModuleText, packageNameRegex } from '@app-config/utils';
 import type { Options } from './index';
 
@@ -11,33 +10,29 @@ const loader = function AppConfigLoader(this: Loader) {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const {
-    noGlobal = false,
-    loading = {},
-    schemaLoading,
-    injectValidationFunction = true,
-  }: Options = {
+  const options: Options = {
     ...getOptions(this),
     ...parseQuery(this.resourceQuery),
   };
 
-  loadValidatedConfig(loading, schemaLoading)
-    .then(({ fullConfig, filePaths, validationFunctionCode }) => {
+  const useGlobalNamespace = options.useGlobalNamespace ?? !options.noGlobal;
+  const loadingOptions = options.loadingOptions ?? options.loading ?? {};
+  const schemaLoadingOptions = options.schemaLoadingOptions ?? options.schemaLoading;
+  const injectValidationFunction = options.injectValidationFunction ?? true;
+
+  loadValidatedConfig(loadingOptions, schemaLoadingOptions)
+    .then(({ fullConfig, environment, filePaths, validationFunctionCode }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(filePath));
       }
 
-      const { environmentOverride, environmentAliases, environmentSourceNames } = loading;
-
       callback(
         null,
         generateModuleText(fullConfig, {
-          esm: false,
-          noGlobal,
-          currentEnvironment: currentEnvironment(
-            asEnvOptions(environmentOverride, environmentAliases, environmentSourceNames),
-          ),
+          environment,
+          useGlobalNamespace,
           validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+          esmValidationCode: false,
         }),
       );
     })

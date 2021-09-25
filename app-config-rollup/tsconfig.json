@@ -7,6 +7,7 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "references": [
+    { "path": "../app-config-config" },
     { "path": "../app-config-utils" },
     { "path": "../app-config-test-utils" }
   ]

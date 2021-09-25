@@ -35,7 +35,6 @@
   },
   "dependencies": {
     "@app-config/config": "^2.7.2",
-    "@app-config/node": "^2.7.2",
     "@app-config/utils": "^2.7.2"
   },
   "peerDependencies": {},

@@ -1,24 +1,39 @@
 import type { Plugin } from 'esbuild';
-import { loadValidatedConfig } from '@app-config/config';
-import { currentEnvironment } from '@app-config/node';
+import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
 import { generateModuleText, packageNameRegex } from '@app-config/utils';
+import type { SchemaLoadingOptions } from '@app-config/schema';
 
-const plugin: Plugin = {
-  name: 'app-config',
+export interface Options {
+  useGlobalNamespace?: boolean;
+  loadingOptions?: ConfigLoadingOptions;
+  schemaLoadingOptions?: SchemaLoadingOptions;
+  injectValidationFunction?: boolean;
+}
+
+export const createPlugin = ({
+  useGlobalNamespace = true,
+  loadingOptions,
+  schemaLoadingOptions,
+  injectValidationFunction = true,
+}: Options = {}): Plugin => ({
+  name: '@app-config/esbuild',
   setup(build) {
     build.onResolve({ filter: packageNameRegex }, (args) => ({
       path: args.path,
-      namespace: 'app-config-ns',
+      namespace: '@app-config/esbuild',
     }));
 
-    build.onLoad({ filter: /.*/, namespace: 'app-config-ns' }, async () => {
-      const { fullConfig, validationFunctionCode } = await loadValidatedConfig();
+    build.onLoad({ filter: /.*/, namespace: '@app-config/esbuild' }, async () => {
+      const { fullConfig, environment, validationFunctionCode } = await loadValidatedConfig(
+        loadingOptions,
+        schemaLoadingOptions,
+      );
 
       const code = generateModuleText(fullConfig, {
-        esm: true,
-        noGlobal: false,
-        currentEnvironment: currentEnvironment(),
-        validationFunctionCode,
+        environment,
+        useGlobalNamespace,
+        validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+        esmValidationCode: true,
       });
 
       return {
@@ -27,6 +42,6 @@ const plugin: Plugin = {
       };
     });
   },
-};
+});
 
-export default plugin;
+export default createPlugin;

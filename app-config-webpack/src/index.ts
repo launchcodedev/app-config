@@ -1,7 +1,8 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import { ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
+import type { ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
+
 import { regex } from './loader';
 
 // loader is the filepath, not the export
@@ -9,32 +10,35 @@ const loader = require.resolve('./loader');
 
 export interface Options {
   headerInjection?: boolean;
-  noGlobal?: boolean;
-  loading?: ConfigLoadingOptions;
-  schemaLoading?: SchemaLoadingOptions;
-  intercept?: RegExp;
-  injectValidationFunction?: boolean;
-}
-
-export default class AppConfigPlugin {
-  headerInjection: boolean;
-  noGlobal: boolean;
+  useGlobalNamespace?: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
+  intercept?: RegExp;
+  injectValidationFunction?: boolean;
+
+  /** @deprecated use useGlobalNamespace instead */
+  noGlobal?: boolean;
+  /** @deprecated use loadingOptions instead */
+  loading?: ConfigLoadingOptions;
+  /** @deprecated use schemaLoadingOptions instead */
+  schemaLoading?: SchemaLoadingOptions;
+}
+
+export default class AppConfigPlugin implements Options {
+  headerInjection: boolean;
+  useGlobalNamespace: boolean;
+  loadingOptions?: ConfigLoadingOptions;
+  schemaLoadingOptions?: SchemaLoadingOptions;
+  injectValidationFunction: boolean;
   intercept: RegExp;
 
-  constructor({
-    headerInjection = false,
-    noGlobal = false,
-    loading,
-    schemaLoading,
-    intercept,
-  }: Options = {}) {
-    this.headerInjection = headerInjection;
-    this.noGlobal = noGlobal;
-    this.loadingOptions = loading;
-    this.schemaLoadingOptions = schemaLoading;
-    this.intercept = intercept ?? AppConfigPlugin.regex;
+  constructor(options: Options = {}) {
+    this.headerInjection = options.headerInjection ?? false;
+    this.useGlobalNamespace = options.useGlobalNamespace ?? !options.noGlobal;
+    this.loadingOptions = options.loadingOptions ?? options.loading;
+    this.schemaLoadingOptions = options.schemaLoadingOptions ?? options.schemaLoading;
+    this.injectValidationFunction = options.injectValidationFunction ?? true;
+    this.intercept = options.intercept ?? AppConfigPlugin.regex;
   }
 
   static loader = loader;
@@ -57,9 +61,16 @@ export default class AppConfigPlugin {
 
           if (this.intercept.test(resolve.request)) {
             const queryString = JSON.stringify({
+              headerInjection: this.headerInjection,
+              useGlobalNamespace: this.useGlobalNamespace,
+              loadingOptions: this.loadingOptions,
+              schemaLoadingOptions: this.schemaLoadingOptions,
+              injectValidationFunction: this.injectValidationFunction,
+
+              // deprecated options
+              noGlobal: !this.useGlobalNamespace,
               loading: this.loadingOptions,
               schemaLoading: this.schemaLoadingOptions,
-              noGlobal: this.noGlobal,
             });
 
             // eslint-disable-next-line no-param-reassign

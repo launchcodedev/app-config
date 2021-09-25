@@ -5,6 +5,7 @@
   "private": true,
   "main": "dist/index.js",
   "scripts": {
+    "start": "node ./dist/index",
     "build": "node ./build.js",
     "clean": "rm -rf dist"
   },

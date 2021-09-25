@@ -28,16 +28,16 @@ export function isPrimitive(obj: Json): obj is JsonPrimitive {
 export function generateModuleText(
   fullConfig: Json,
   {
-    esm,
-    noGlobal,
-    currentEnvironment,
+    environment,
+    useGlobalNamespace,
     validationFunctionCode,
+    esmValidationCode,
   }: {
-    esm: boolean;
-    noGlobal: boolean;
-    currentEnvironment: string | undefined;
+    environment: string | undefined;
+    useGlobalNamespace: boolean;
     validationFunctionCode?(): string;
     validationFunctionCode?(esm: true): [string, string];
+    esmValidationCode: boolean;
   },
 ): string {
   const privateName = '_appConfig';
@@ -45,14 +45,7 @@ export function generateModuleText(
 
   let generatedText: string;
 
-  if (noGlobal) {
-    generatedText = `
-      const config = ${config};
-
-      export { config };
-      export default config;
-    `;
-  } else {
+  if (useGlobalNamespace) {
     generatedText = `
       const configValue = ${config};
 
@@ -72,10 +65,17 @@ export function generateModuleText(
       export { config };
       export default config;
     `;
+  } else {
+    generatedText = `
+      const config = ${config};
+
+      export { config };
+      export default config;
+    `;
   }
 
   if (validationFunctionCode) {
-    if (esm) {
+    if (esmValidationCode) {
       const [code, imports] = validationFunctionCode(true);
 
       generatedText = `${generatedText}
@@ -110,7 +110,7 @@ export function generateModuleText(
 
   generatedText = `${generatedText}
     export function currentEnvironment() {
-      return ${currentEnvironment ? JSON.stringify(currentEnvironment) : 'undefined'};
+      return ${environment ? JSON.stringify(environment) : 'undefined'};
     }
   `;
 
