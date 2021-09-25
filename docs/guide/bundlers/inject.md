@@ -7,6 +7,8 @@ title: App Config Inject
 A separate package called `@app-config/inject` exists to configure frontend
 applications at runtime.
 
+This is compatible with any of the existing App Config bundlers (webpack, vite, rollup, etc).
+
 The `app-config-inject` binary parses HTML and injects app-config values at runtime.
 This is useful for frontend applications that need to be configured with deploying.
 In particular, it allows you to have one docker image that can be re-used with
