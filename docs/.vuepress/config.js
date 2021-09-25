@@ -56,6 +56,10 @@ module.exports = {
         path: '/guide/rollup',
       },
       {
+        title: 'esbuild',
+        path: '/guide/esbuild',
+      },
+      {
         title: 'Electron',
         path: '/guide/electron',
       },
