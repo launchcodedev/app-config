@@ -44,13 +44,6 @@ jobs:
         access: public
         package: ./app-config-electron/package.json
         tag: next
-    - name: app-config-default-extensions
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-default-extensions/package.json
-        tag: next
     - name: app-config-encryption
       uses: JS-DevTools/npm-publish@v1
       with:
