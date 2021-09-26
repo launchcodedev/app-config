@@ -140,9 +140,17 @@ export async function loadKey(contents: string | Buffer): Promise<Key> {
   return keys[0];
 }
 
-export async function loadPrivateKey(
-  override: string | Buffer | undefined = process.env.APP_CONFIG_SECRETS_KEY,
-): Promise<Key> {
+export async function loadPrivateKey(override?: string | Buffer): Promise<Key> {
+  if (override === undefined) {
+    if (process.env.APP_CONFIG_SECRETS_KEY) {
+      // eslint-disable-next-line no-param-reassign
+      override = process.env.APP_CONFIG_SECRETS_KEY;
+    } else if (process.env.APP_CONFIG_SECRETS_KEY_FILE) {
+      // eslint-disable-next-line no-param-reassign
+      override = (await fs.readFile(process.env.APP_CONFIG_SECRETS_KEY_FILE)).toString();
+    }
+  }
+
   let key: Key;
 
   if (override) {
@@ -176,9 +184,17 @@ export async function loadPrivateKey(
   return key;
 }
 
-export async function loadPublicKey(
-  override: string | Buffer | undefined = process.env.APP_CONFIG_SECRETS_PUBLIC_KEY,
-): Promise<Key> {
+export async function loadPublicKey(override?: string | Buffer): Promise<Key> {
+  if (override === undefined) {
+    if (process.env.APP_CONFIG_SECRETS_PUBLIC_KEY) {
+      // eslint-disable-next-line no-param-reassign
+      override = process.env.APP_CONFIG_SECRETS_PUBLIC_KEY;
+    } else if (process.env.APP_CONFIG_SECRETS_PUBLIC_KEY_FILE) {
+      // eslint-disable-next-line no-param-reassign
+      override = (await fs.readFile(process.env.APP_CONFIG_SECRETS_PUBLIC_KEY_FILE)).toString();
+    }
+  }
+
   let key: Key;
 
   if (override) {
