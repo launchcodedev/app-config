@@ -1,7 +1,7 @@
 {
   "name": "@app-config/esbuild",
   "description": "esbuild module resolution support for @app-config",
-  "version": "3.0.0-alpha.4",
+  "version": "3.0.0-alpha.5",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,11 +30,11 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^3.0.0-alpha.4",
-    "@app-config/utils": "^3.0.0-alpha.4"
+    "@app-config/config": "^3.0.0-alpha.5",
+    "@app-config/utils": "^3.0.0-alpha.5"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^3.0.0-alpha.4",
+    "@app-config/test-utils": "^3.0.0-alpha.5",
     "esbuild": "0.13"
   },
   "prettier": "@lcdev/prettier",

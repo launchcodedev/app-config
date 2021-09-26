@@ -1,7 +1,7 @@
 {
   "name": "@app-config/electron",
   "description": "Exposes app-config values to Electron render processes",
-  "version": "3.0.0-alpha.4",
+  "version": "3.0.0-alpha.5",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
