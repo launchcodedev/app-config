@@ -1,0 +1,29 @@
+{
+  "name": "electron-project",
+  "version": "0.0.0",
+  "main": "./dist/main.js",
+  "license": "MPL-2.0",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "tsc -b",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@app-config/electron": "^2.6.0",
+    "@app-config/main": "^2.6.0"
+  },
+  "devDependencies": {
+    "electron": "^13.1.4",
+    "playwright": "^1.6.1"
+  },
+  "jest": {
+    "preset": "@lcdev/jest",
+    "testPathIgnorePatterns": [
+      ".yarn-cache",
+      "node_modules",
+      "dist",
+      "cypress"
+    ]
+  }
+}

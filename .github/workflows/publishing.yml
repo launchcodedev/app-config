@@ -37,6 +37,20 @@ jobs:
         access: public
         package: ./app-config-cypress/package.json
         tag: next
+    - name: app-config-electron
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-electron/package.json
+        tag: next
+    - name: app-config-default-extensions
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-default-extensions/package.json
+        tag: next
     - name: app-config-encryption
       uses: JS-DevTools/npm-publish@v1
       with:
@@ -177,26 +191,12 @@ jobs:
         access: public
         package: ./app-config-vite/package.json
         tag: next
-    - name: lcdev-app-config-inject
+    - name: app-config-esbuild
       uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
-        package: ./lcdev-app-config-inject/package.json
-        tag: next
-    - name: lcdev-app-config-webpack-plugin
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-app-config-webpack-plugin/package.json
-        tag: next
-    - name: lcdev-react-native-app-config-transformer
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-react-native-app-config-transformer/package.json
+        package: ./app-config-esbuild/package.json
         tag: next
 
     # Do these last, since they're most commonly used by consumers
@@ -213,11 +213,4 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-main/package.json
-        tag: next
-    - name: lcdev-app-config
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-app-config/package.json
         tag: next

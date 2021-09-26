@@ -1,3 +1,21 @@
+## v2.8.0
+
+Adds plugin for [esbuild](https://esbuild.github.io)!
+
+## v2.7.2
+
+Ensures that `window._appConfig` is always written in webpack and rollup loaders.
+
+## v2.7.1
+
+Fixes bug in $extends directive when using specific environments.
+
+## v2.7.0
+
+Adds [Electron](https://app-config.dev/guide/electron.html) support!
+
+Supports named export in react native #167.
+
 ## v2.6.1
 
 Ensures that NotFoundErrors aren't ignored when transitive in optional files ([#160](https://github.com/launchcodedev/app-config/issues/160)).

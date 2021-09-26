@@ -10,6 +10,7 @@
     { "path": "app-config-core/tsconfig.es.json" },
     { "path": "app-config-cypress/tsconfig.es.json" },
     { "path": "app-config-encryption/tsconfig.es.json" },
+    { "path": "app-config-esbuild/tsconfig.es.json" },
     { "path": "app-config-exec/tsconfig.es.json" },
     { "path": "app-config-extensions/tsconfig.es.json" },
     { "path": "app-config-extension-utils/tsconfig.es.json" },

@@ -2,7 +2,7 @@ import { join, relative, resolve } from 'path';
 import Ajv, { ValidateFunction, _ as ajvTemplate } from 'ajv';
 import standalone from 'ajv/dist/standalone';
 import addFormats from 'ajv-formats';
-import RefParser, { JSONSchema, bundle } from 'json-schema-ref-parser';
+import RefParser, { bundle, JSONSchema } from 'json-schema-ref-parser';
 import { isObject, isWindows, JsonObject } from '@app-config/utils';
 import {
   parseRawString,
@@ -278,7 +278,8 @@ async function normalizeSchema(schema: JsonObject, directory: string): Promise<J
     },
   };
 
-  const normalized = await bundle(schema, options);
+  // @ts-ignore
+  const normalized = await bundle.apply(RefParser, [schema, options]);
 
   return normalized;
 }

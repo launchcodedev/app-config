@@ -41,7 +41,9 @@ new_version app-config-cli
 new_version app-config-config
 new_version app-config-core
 new_version app-config-cypress
+new_version app-config-electron
 new_version app-config-encryption
+new_version app-config-esbuild
 new_version app-config-exec
 new_version app-config-extension-utils
 new_version app-config-extensions
@@ -54,15 +56,15 @@ new_version app-config-main
 new_version app-config-meta
 new_version app-config-node
 new_version app-config-react-native
+new_version app-config-rollup
 new_version app-config-schema
 new_version app-config-settings
 new_version app-config-test-utils
 new_version app-config-utils
 new_version app-config-v1-compat
 new_version app-config-vault
-new_version app-config-webpack
-new_version app-config-rollup
 new_version app-config-vite
+new_version app-config-webpack
 
 git commit -m "chore: release v$VERSION"
 git tag v$VERSION

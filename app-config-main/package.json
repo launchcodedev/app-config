@@ -38,6 +38,7 @@
     "@app-config/cli": "^3.0.0-alpha.4",
     "@app-config/config": "^3.0.0-alpha.4",
     "@app-config/core": "^3.0.0-alpha.4",
+    "@app-config/encryption": "^3.0.0-alpha.4",
     "@app-config/extensions": "^3.0.0-alpha.4",
     "@app-config/logging": "^3.0.0-alpha.4",
     "@app-config/meta": "^3.0.0-alpha.4",

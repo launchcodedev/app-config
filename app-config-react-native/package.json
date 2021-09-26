@@ -30,14 +30,15 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
+    "@app-config/node": "^3.0.0-alpha.4",
     "semver": "7"
   },
   "peerDependencies": {
-    "@app-config/main": "^3.0.0-alpha.4",
+    "@app-config/config": "^3.0.0-alpha.4",
+    "@app-config/utils": "^3.0.0-alpha.4",
     "react-native": ">=0.45.0"
   },
   "devDependencies": {
-    "@app-config/main": "^3.0.0-alpha.4",
     "@types/semver": "7"
   },
   "prettier": "@lcdev/prettier",

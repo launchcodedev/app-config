@@ -16,6 +16,7 @@ import {
   EnvironmentAliases,
   EnvironmentSource,
   asEnvOptions,
+  currentEnvironment,
 } from '@app-config/node';
 import {
   defaultExtensions,
@@ -47,6 +48,8 @@ export interface LoadedConfiguration {
   parsed: ParsedValue;
   parsedSecrets?: ParsedValue;
   parsedNonSecrets?: ParsedValue;
+  /** the current environment that was loaded from given options */
+  environment?: string;
   /** non-exhaustive list of files that were read (useful for reloading in plugins) */
   filePaths?: string[];
   /** if loadValidatedConfig, this is the normalized JSON schema that was used for validation */
@@ -82,7 +85,18 @@ export async function loadUnvalidatedConfig({
 
     verifyParsedValue(parsed);
 
-    return { parsed, fullConfig: parsed.toJSON() };
+    return {
+      parsed,
+      fullConfig: parsed.toJSON(),
+      // NOTE: not checking meta values here
+      environment: currentEnvironment(
+        asEnvOptions(
+          environmentOverride,
+          environmentAliasesArg ?? defaultAliases,
+          environmentSourceNamesArg,
+        ),
+      ),
+    };
   } catch (error) {
     // having no APP_CONFIG environment variable is normal, and should fall through to reading files
     if (!NotFoundError.isNotFoundError(error)) throw error;
@@ -187,6 +201,7 @@ export async function loadUnvalidatedConfig({
     parsed,
     parsedSecrets: secrets,
     parsedNonSecrets: mainConfig.cloneWhere((v) => !v.meta.fromSecrets),
+    environment: currentEnvironment(environmentOptions),
     fullConfig: parsed.toJSON(),
     filePaths: Array.from(filePaths),
   };
