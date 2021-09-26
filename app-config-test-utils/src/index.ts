@@ -34,10 +34,15 @@ export async function withTempFiles(
     await callback((filename) => join(folder, filename), folder);
   } finally {
     await remove(folder).catch((error) => {
+      // eslint-disable-next-line no-console
       console.warn(error);
 
       // we'll just ignore this, it's spurious in CI
-      if (isWindows && error.code !== 'EBUSY') {
+      if (
+        isWindows &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.code !== 'EBUSY'
+      ) {
         throw error;
       }
     });

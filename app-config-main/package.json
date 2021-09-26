@@ -48,7 +48,9 @@
     "@app-config/utils": "^2.8.0",
     "ajv": "7"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@app-config/test-utils": "^2.8.0"
+  },
   "prettier": "@lcdev/prettier",
   "jest": {
     "preset": "@lcdev/jest",

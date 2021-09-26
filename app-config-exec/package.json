@@ -36,7 +36,8 @@
     "@app-config/utils": "^2.8.0"
   },
   "devDependencies": {
-    "@app-config/main": "^2.8.0"
+    "@app-config/main": "^2.8.0",
+    "@app-config/test-utils": "^2.8.0"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

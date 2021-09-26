@@ -33,7 +33,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
         return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
       },
-      (value, _, __, context) => async (_, __, source, extensions) => {
+      (value, _, __, context) => async (_, ___, source, extensions) => {
         const retrieveFile = async (
           filepath: string,
           subselector?: string,
