@@ -43,7 +43,7 @@ export async function validateAllConfigVariants({
 
   await Promise.all(
     appConfigFiles.map(async (filename) => {
-      const parsed = await new FileSource(filename).read();
+      const parsed = await new FileSource(filename).read(undefined, { environmentAliases });
 
       parsed.visitAll((value) => {
         const obj = value.asObject();

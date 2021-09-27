@@ -47,7 +47,6 @@ jobs:
           ./app-config-config/coverage/coverage-final.json,
           ./app-config-core/coverage/coverage-final.json,
           ./app-config-cypress/coverage/coverage-final.json,
-          ./app-config-default-extensions/coverage/coverage-final.json,
           ./app-config-encryption/coverage/coverage-final.json,
           ./app-config-exec/coverage/coverage-final.json,
           ./app-config-extension-utils/coverage/coverage-final.json,

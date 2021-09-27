@@ -55,7 +55,7 @@ it('fails when config is incorrect', () =>
           write: false,
         }),
       ).rejects.toThrow(
-        'error: [plugin: @app-config/esbuild] Config is invalid: config should NOT have additional properties',
+        'error: [plugin: @app-config/esbuild] Config is invalid: config must NOT have additional properties',
       );
     },
   ));

@@ -43,7 +43,6 @@ If you are adding anything new or changing behavior, please add applicable tests
 - `@app-config/git`: `$git` parsing extension
 - `@app-config/v1-compat`: v1 version compatibility extension
 - `@app-config/extensions`: common parsing extensions
-- `@app-config/default-extensions`: all default parsing extensions
 - `@app-config/generate`: code generation
 - `@app-config/config`: config loading
 - `@app-config/meta`: meta file loading

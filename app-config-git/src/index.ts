@@ -1,14 +1,12 @@
 import simpleGit from 'simple-git';
 import { ParsingExtension, AppConfigError, Fallbackable } from '@app-config/core';
 import { named, forKey, validateOptions } from '@app-config/extension-utils';
-import { logger } from '@app-config/logging';
 
 class GitError extends Fallbackable {}
 
 /** Access to the git branch and commit ref */
 export default function gitRefDirectives(
   getStatus: typeof gitStatus = gitStatus,
-  shouldShowDeprecationNotice?: true,
 ): ParsingExtension {
   return named(
     '$git',
@@ -17,12 +15,6 @@ export default function gitRefDirectives(
       validateOptions(
         (SchemaBuilder) => SchemaBuilder.stringSchema(),
         (value) => async (parse) => {
-          if (shouldShowDeprecationNotice) {
-            logger.warn(
-              'Detected deprecated use of @app-config/git parsing extension. Please install @app-config/git and add it to your meta file "parsingExtensions".',
-            );
-          }
-
           switch (value) {
             case 'commit':
               return getStatus().then(({ commitRef }) => parse(commitRef, { shouldFlatten: true }));

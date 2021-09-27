@@ -128,11 +128,11 @@ export async function loadSchema({
       message: 'should not be present in non-secret files (and not encrypted)',
     },
     validate(value: boolean, _data, _parentSchema, ctx): boolean {
-      const { dataPath } = ctx ?? {};
+      const { instancePath } = ctx ?? {};
 
-      if (!dataPath || !value) return true;
+      if (!instancePath || !value) return true;
 
-      const [, ...key] = dataPath.split('/');
+      const [, ...key] = instancePath.split('/');
 
       // check that any properties marked as secret were from secrets file
       const found = currentlyParsing?.property(key);
