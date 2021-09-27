@@ -1,7 +1,7 @@
 {
   "name": "@app-config/v1-compat",
   "description": "Version 1 compatibility layer for @app-config",
-  "version": "3.0.0-alpha.5",
+  "version": "3.0.0-alpha.6",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,16 +30,16 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/core": "^3.0.0-alpha.5",
-    "@app-config/extension-utils": "^3.0.0-alpha.5",
-    "@app-config/logging": "^3.0.0-alpha.5",
-    "@app-config/node": "^3.0.0-alpha.5",
-    "@app-config/utils": "^3.0.0-alpha.5",
+    "@app-config/core": "^3.0.0-alpha.6",
+    "@app-config/extension-utils": "^3.0.0-alpha.6",
+    "@app-config/logging": "^3.0.0-alpha.6",
+    "@app-config/node": "^3.0.0-alpha.6",
+    "@app-config/utils": "^3.0.0-alpha.6",
     "fs-extra": "7"
   },
   "devDependencies": {
-    "@app-config/extensions": "^3.0.0-alpha.5",
-    "@app-config/test-utils": "^3.0.0-alpha.5"
+    "@app-config/extensions": "^3.0.0-alpha.6",
+    "@app-config/test-utils": "^3.0.0-alpha.6"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

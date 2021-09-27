@@ -1,7 +1,7 @@
 {
   "name": "@app-config/generate",
   "description": "Code generation for @app-config",
-  "version": "3.0.0-alpha.5",
+  "version": "3.0.0-alpha.6",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -30,9 +30,9 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/logging": "^3.0.0-alpha.5",
-    "@app-config/meta": "^3.0.0-alpha.5",
-    "@app-config/schema": "^3.0.0-alpha.5",
+    "@app-config/logging": "^3.0.0-alpha.6",
+    "@app-config/meta": "^3.0.0-alpha.6",
+    "@app-config/schema": "^3.0.0-alpha.6",
     "@types/readable-stream": "2",
     "@types/urijs": "1",
     "common-tags": "1",
@@ -41,7 +41,7 @@
     "quicktype-core": "6.0.70"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^3.0.0-alpha.5"
+    "@app-config/test-utils": "^3.0.0-alpha.6"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

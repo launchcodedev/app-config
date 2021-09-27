@@ -1,7 +1,7 @@
 {
   "name": "@app-config/cli",
   "description": "CLI for @app-config",
-  "version": "3.0.0-alpha.5",
+  "version": "3.0.0-alpha.6",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -36,14 +36,14 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^3.0.0-alpha.5",
-    "@app-config/core": "^3.0.0-alpha.5",
-    "@app-config/encryption": "^3.0.0-alpha.5",
-    "@app-config/generate": "^3.0.0-alpha.5",
-    "@app-config/logging": "^3.0.0-alpha.5",
-    "@app-config/node": "^3.0.0-alpha.5",
-    "@app-config/schema": "^3.0.0-alpha.5",
-    "@app-config/utils": "^3.0.0-alpha.5",
+    "@app-config/config": "^3.0.0-alpha.6",
+    "@app-config/core": "^3.0.0-alpha.6",
+    "@app-config/encryption": "^3.0.0-alpha.6",
+    "@app-config/generate": "^3.0.0-alpha.6",
+    "@app-config/logging": "^3.0.0-alpha.6",
+    "@app-config/node": "^3.0.0-alpha.6",
+    "@app-config/schema": "^3.0.0-alpha.6",
+    "@app-config/utils": "^3.0.0-alpha.6",
     "ajv": "8",
     "clipboardy": "2",
     "common-tags": "1",
@@ -53,7 +53,7 @@
     "yargs": "16"
   },
   "devDependencies": {
-    "@app-config/test-utils": "^3.0.0-alpha.5",
+    "@app-config/test-utils": "^3.0.0-alpha.6",
     "@types/common-tags": "1",
     "@types/fs-extra": "9"
   },
