@@ -1,3 +1,9 @@
+## v2.8.1
+
+Adds support for injecting `currentEnvironment` from `@app-config/inject`.
+
+Adds support for reading `APP_CONFIG_SECRETS_KEY_FILE`.
+
 ## v2.8.0
 
 Adds plugin for [esbuild](https://esbuild.github.io)!
