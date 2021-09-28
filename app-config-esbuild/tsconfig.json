@@ -8,6 +8,7 @@
   "exclude": ["node_modules"],
   "references": [
     { "path": "../app-config-config" },
+    { "path": "../app-config-schema" },
     { "path": "../app-config-node" },
     { "path": "../app-config-utils" },
     { "path": "../app-config-test-utils" }

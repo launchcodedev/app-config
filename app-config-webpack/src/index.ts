@@ -15,6 +15,7 @@ export interface Options {
   schemaLoadingOptions?: SchemaLoadingOptions;
   intercept?: RegExp;
   injectValidationFunction?: boolean;
+  doNotLoadConfig?: boolean;
 
   /** @deprecated use useGlobalNamespace instead */
   noGlobal?: boolean;
@@ -30,6 +31,7 @@ export default class AppConfigPlugin implements Options {
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
   injectValidationFunction: boolean;
+  doNotLoadConfig: boolean;
   intercept: RegExp;
 
   constructor(options: Options = {}) {
@@ -38,6 +40,7 @@ export default class AppConfigPlugin implements Options {
     this.loadingOptions = options.loadingOptions ?? options.loading;
     this.schemaLoadingOptions = options.schemaLoadingOptions ?? options.schemaLoading;
     this.injectValidationFunction = options.injectValidationFunction ?? true;
+    this.doNotLoadConfig = options.doNotLoadConfig ?? false;
     this.intercept = options.intercept ?? AppConfigPlugin.regex;
   }
 
@@ -66,6 +69,7 @@ export default class AppConfigPlugin implements Options {
               loadingOptions: this.loadingOptions,
               schemaLoadingOptions: this.schemaLoadingOptions,
               injectValidationFunction: this.injectValidationFunction,
+              doNotLoadConfig: this.doNotLoadConfig,
 
               // deprecated options
               noGlobal: !this.useGlobalNamespace,

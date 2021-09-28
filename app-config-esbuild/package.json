@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@app-config/config": "^2.8.1",
+    "@app-config/schema": "^2.8.1",
     "@app-config/utils": "^2.8.1"
   },
   "devDependencies": {

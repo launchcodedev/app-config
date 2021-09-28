@@ -1,6 +1,7 @@
 import { getOptions, parseQuery } from 'loader-utils';
 import { loadValidatedConfig } from '@app-config/config';
 import { generateModuleText, packageNameRegex } from '@app-config/utils';
+import { loadSchema } from '@app-config/schema';
 import type { Options } from './index';
 
 type LoaderContext = Parameters<typeof getOptions>[0];
@@ -19,6 +20,29 @@ const loader = function AppConfigLoader(this: Loader) {
   const loadingOptions = options.loadingOptions ?? options.loading ?? {};
   const schemaLoadingOptions = options.schemaLoadingOptions ?? options.schemaLoading;
   const injectValidationFunction = options.injectValidationFunction ?? true;
+  const doNotLoadConfig = options.doNotLoadConfig ?? false;
+
+  if (doNotLoadConfig) {
+    loadSchema(schemaLoadingOptions)
+      .then(({ validationFunctionCode }) => {
+        callback(
+          null,
+          generateModuleText('no-config', {
+            environment: undefined,
+            useGlobalNamespace: true,
+            validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+            esmValidationCode: false,
+          }),
+        );
+      })
+      .catch((err) => {
+        this.emitWarning(new Error(`There was an error when trying to load @app-config`));
+
+        callback(err);
+      });
+
+    return;
+  }
 
   loadValidatedConfig(loadingOptions, schemaLoadingOptions)
     .then(({ fullConfig, environment, filePaths, validationFunctionCode }) => {
