@@ -2,23 +2,21 @@
 
 exports[`generateModuleText creates config module 1`] = `
 "
-    const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-  
       const config = {\\"foo\\":\\"bar\\"};
 
       export { config };
       export default config;
     
-    export function currentEnvironment() {
-      return globalNamespace._appConfigEnvironment || \\"test\\";
-    }
-  "
+      export function currentEnvironment() {
+        return \\"test\\";
+      }
+    "
 `;
 
 exports[`generateModuleText creates config module with esm validation function 1`] = `
 "
-    const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-  
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
       const configValue = {\\"foo\\":\\"bar\\"};
 
       // if the global was already defined, use it
@@ -47,16 +45,16 @@ exports[`generateModuleText creates config module with esm validation function 1
         
         export const validateConfig = /*#__PURE__*/ genValidateConfig();
       
-    export function currentEnvironment() {
-      return globalNamespace._appConfigEnvironment || \\"test\\";
-    }
-  "
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
 `;
 
 exports[`generateModuleText creates config module with global namespace 1`] = `
 "
-    const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-  
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
       const configValue = {\\"foo\\":\\"bar\\"};
 
       // if the global was already defined, use it
@@ -73,16 +71,16 @@ exports[`generateModuleText creates config module with global namespace 1`] = `
       export { config };
       export default config;
     
-    export function currentEnvironment() {
-      return globalNamespace._appConfigEnvironment || \\"test\\";
-    }
-  "
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
 `;
 
 exports[`generateModuleText creates config module with validation function 1`] = `
 "
-    const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-  
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
       const configValue = {\\"foo\\":\\"bar\\"};
 
       // if the global was already defined, use it
@@ -111,8 +109,8 @@ exports[`generateModuleText creates config module with validation function 1`] =
         
         export const validateConfig = /*#__PURE__*/ genValidateConfig();
       
-    export function currentEnvironment() {
-      return globalNamespace._appConfigEnvironment || \\"test\\";
-    }
-  "
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
 `;

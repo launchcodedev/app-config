@@ -44,12 +44,12 @@ export function generateModuleText(
   const privateEnvName = '_appConfigEnvironment';
   const config = JSON.stringify(fullConfig);
 
-  let generatedText = `
-    const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-  `;
+  let generatedText = '';
 
   if (useGlobalNamespace) {
     generatedText += `
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
       const configValue = ${config};
 
       // if the global was already defined, use it
@@ -111,11 +111,19 @@ export function generateModuleText(
 
   const environmentString = environment ? JSON.stringify(environment) : 'undefined';
 
-  generatedText += `
-    export function currentEnvironment() {
-      return globalNamespace.${privateEnvName} || ${environmentString};
-    }
-  `;
+  if (useGlobalNamespace) {
+    generatedText += `
+      export function currentEnvironment() {
+        return globalNamespace.${privateEnvName} || ${environmentString};
+      }
+    `;
+  } else {
+    generatedText += `
+      export function currentEnvironment() {
+        return ${environmentString};
+      }
+    `;
+  }
 
   return generatedText;
 }
