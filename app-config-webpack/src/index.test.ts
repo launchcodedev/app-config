@@ -88,7 +88,7 @@ describe('frontend-webpack-project example', () => {
           ),
         ).toBe(true);
 
-        expect(modules.some(({ source }) => source?.includes('_appConfig'))).toBe(false);
+        expect(modules.some(({ source }) => source?.includes('_appConfig '))).toBe(false);
 
         done();
       });
@@ -175,7 +175,11 @@ describe('frontend-webpack-project example', () => {
         expect(
           modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
         ).toBe(true);
-        expect(modules.some(({ source }) => source?.includes('return "test";'))).toBe(true);
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('return globalNamespace._appConfigEnvironment || "test";'),
+          ),
+        ).toBe(true);
 
         done();
       });
@@ -198,7 +202,11 @@ describe('frontend-webpack-project example', () => {
         expect(
           modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
         ).toBe(true);
-        expect(modules.some(({ source }) => source?.includes('return "foobar";'))).toBe(true);
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('return globalNamespace._appConfigEnvironment || "foobar";'),
+          ),
+        ).toBe(true);
 
         done();
       });
@@ -223,7 +231,11 @@ describe('frontend-webpack-project example', () => {
           expect(
             modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
           ).toBe(true);
-          expect(modules.some(({ source }) => source?.includes('return "foobar";'))).toBe(true);
+          expect(
+            modules.some(({ source }) =>
+              source?.includes('return globalNamespace._appConfigEnvironment || "foobar";'),
+            ),
+          ).toBe(true);
 
           done();
         },

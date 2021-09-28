@@ -41,15 +41,16 @@ export function generateModuleText(
   },
 ): string {
   const privateName = '_appConfig';
+  const privateEnvName = '_appConfigEnvironment';
   const config = JSON.stringify(fullConfig);
 
-  let generatedText: string;
+  let generatedText = `
+    const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+  `;
 
   if (useGlobalNamespace) {
-    generatedText = `
+    generatedText += `
       const configValue = ${config};
-
-      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
       // if the global was already defined, use it
       const config = (globalNamespace.${privateName} || configValue);
@@ -66,7 +67,7 @@ export function generateModuleText(
       export default config;
     `;
   } else {
-    generatedText = `
+    generatedText += `
       const config = ${config};
 
       export { config };
@@ -78,7 +79,7 @@ export function generateModuleText(
     if (esmValidationCode) {
       const [code, imports] = validationFunctionCode(true);
 
-      generatedText = `${generatedText}
+      generatedText += `
         ${imports}
 
         ${/* nest the generated commonjs module here */ ''}
@@ -94,7 +95,7 @@ export function generateModuleText(
     } else {
       const code = validationFunctionCode();
 
-      generatedText = `${generatedText}
+      generatedText += `
         ${/* nest the generated commonjs module here */ ''}
         function genValidateConfig(){
           const validateConfigModule = {};
@@ -108,9 +109,11 @@ export function generateModuleText(
     }
   }
 
-  generatedText = `${generatedText}
+  const environmentString = environment ? JSON.stringify(environment) : 'undefined';
+
+  generatedText += `
     export function currentEnvironment() {
-      return ${environment ? JSON.stringify(environment) : 'undefined'};
+      return globalNamespace.${privateEnvName} || ${environmentString};
     }
   `;
 
