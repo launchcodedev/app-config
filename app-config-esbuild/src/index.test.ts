@@ -151,3 +151,37 @@ it('loads with doNotLoadConfig', () =>
       expect(res.outputFiles[0].text).toMatchSnapshot();
     },
   ));
+
+it('loads with doNotLoadConfig and no validation function', () =>
+  withTempFiles(
+    {
+      '.app-config.schema.yml': `
+        type: object
+        additionalProperties: false
+        properties:
+          foo: { type: string }
+      `,
+      'a.js': `
+        import { config } from '@app-config/main';
+
+        console.log(config);
+      `,
+    },
+    async (inDir) => {
+      const res = await build({
+        entryPoints: [inDir('a.js')],
+        plugins: [
+          createPlugin({
+            schemaLoadingOptions: { directory: inDir('.') },
+            doNotLoadConfig: true,
+            injectValidationFunction: false,
+          }),
+        ],
+        bundle: true,
+        minify: true,
+        write: false,
+      });
+
+      expect(res.outputFiles[0].text).toMatchSnapshot();
+    },
+  ));
