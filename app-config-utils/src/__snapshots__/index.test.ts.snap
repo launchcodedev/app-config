@@ -13,6 +13,25 @@ exports[`generateModuleText creates config module 1`] = `
     "
 `;
 
+exports[`generateModuleText creates config module with doNotLoadConfig 1`] = `
+"
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      const config = globalNamespace._appConfig;
+
+      if (typeof config === 'undefined') {
+        throw new Error('Config is not loaded in _appConfig');
+      }
+
+      export { config };
+      export default config;
+    
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
+`;
+
 exports[`generateModuleText creates config module with esm validation function 1`] = `
 "
       const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};

@@ -59,6 +59,17 @@ describe('generateModuleText', () => {
     ).toMatchSnapshot();
   });
 
+  it('creates config module with doNotLoadConfig', () => {
+    expect(
+      generateModuleText('no-config', {
+        environment: 'test',
+        useGlobalNamespace: true,
+        esmValidationCode: false,
+        validationFunctionCode: undefined,
+      }),
+    ).toMatchSnapshot();
+  });
+
   it('creates config module with validation function', () => {
     expect(
       generateModuleText(
