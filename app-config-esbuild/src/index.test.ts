@@ -122,7 +122,7 @@ it('loads currentEnvironment', () =>
     },
   ));
 
-it('loads with doNotLoadConfig', () =>
+it('loads with noBundledConfig', () =>
   withTempFiles(
     {
       '.app-config.schema.yml': `
@@ -141,7 +141,7 @@ it('loads with doNotLoadConfig', () =>
       const res = await build({
         entryPoints: [inDir('a.js')],
         plugins: [
-          createPlugin({ schemaLoadingOptions: { directory: inDir('.') }, doNotLoadConfig: true }),
+          createPlugin({ schemaLoadingOptions: { directory: inDir('.') }, noBundledConfig: true }),
         ],
         bundle: true,
         minify: true,
@@ -152,7 +152,7 @@ it('loads with doNotLoadConfig', () =>
     },
   ));
 
-it('loads with doNotLoadConfig and no validation function', () =>
+it('loads with noBundledConfig and no validation function', () =>
   withTempFiles(
     {
       '.app-config.schema.yml': `
@@ -173,7 +173,7 @@ it('loads with doNotLoadConfig and no validation function', () =>
         plugins: [
           createPlugin({
             schemaLoadingOptions: { directory: inDir('.') },
-            doNotLoadConfig: true,
+            noBundledConfig: true,
             injectValidationFunction: false,
           }),
         ],

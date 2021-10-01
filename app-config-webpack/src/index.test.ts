@@ -285,12 +285,12 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
-  it('builds the project with doNotLoadConfig', async () => {
+  it('builds the project with noBundledConfig', async () => {
     process.env.APP_CONFIG = 'null';
     process.env.APP_CONFIG_ENV = 'test';
 
     await new Promise<void>((done, reject) => {
-      webpack([createOptions({ doNotLoadConfig: true })], (err, stats) => {
+      webpack([createOptions({ noBundledConfig: true })], (err, stats) => {
         if (err) return reject(err);
         if (!stats) return reject(new Error('no stats'));
         if (stats.hasErrors()) reject(stats.toString());

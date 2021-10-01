@@ -9,7 +9,7 @@ export interface Options {
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
   injectValidationFunction?: boolean;
-  doNotLoadConfig?: boolean;
+  noBundledConfig?: boolean;
 }
 
 export const createPlugin = ({
@@ -17,7 +17,7 @@ export const createPlugin = ({
   loadingOptions,
   schemaLoadingOptions,
   injectValidationFunction = true,
-  doNotLoadConfig = false,
+  noBundledConfig = false,
 }: Options = {}): Plugin => ({
   name: '@app-config/esbuild',
   setup(build) {
@@ -27,7 +27,7 @@ export const createPlugin = ({
     }));
 
     build.onLoad({ filter: /.*/, namespace: '@app-config/esbuild' }, async () => {
-      if (doNotLoadConfig) {
+      if (noBundledConfig) {
         const { validationFunctionCode } = await loadSchema(schemaLoadingOptions);
 
         const code = generateModuleText('no-config', {

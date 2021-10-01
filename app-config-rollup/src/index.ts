@@ -8,7 +8,7 @@ export interface Options {
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
   injectValidationFunction?: boolean;
-  doNotLoadConfig?: boolean;
+  noBundledConfig?: boolean;
 
   /** @deprecated use useGlobalNamespace instead */
   readGlobal?: boolean;
@@ -22,7 +22,7 @@ export default function appConfigRollup({
   loadingOptions,
   schemaLoadingOptions,
   injectValidationFunction,
-  doNotLoadConfig = false,
+  noBundledConfig = false,
 
   readGlobal,
 }: Options = {}): Plugin & { currentFilePaths?: string[] } {
@@ -40,7 +40,7 @@ export default function appConfigRollup({
     },
     async load(id) {
       if (packageNameRegex.exec(id) || appConfigImportRegex.exec(id)) {
-        if (doNotLoadConfig) {
+        if (noBundledConfig) {
           const { validationFunctionCode } = await loadSchema(schemaLoadingOptions);
 
           return generateModuleText('no-config', {

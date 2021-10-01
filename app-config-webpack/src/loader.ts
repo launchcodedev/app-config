@@ -20,9 +20,9 @@ const loader = function AppConfigLoader(this: Loader) {
   const loadingOptions = options.loadingOptions ?? options.loading ?? {};
   const schemaLoadingOptions = options.schemaLoadingOptions ?? options.schemaLoading;
   const injectValidationFunction = options.injectValidationFunction ?? true;
-  const doNotLoadConfig = options.doNotLoadConfig ?? false;
+  const noBundledConfig = options.noBundledConfig ?? false;
 
-  if (doNotLoadConfig) {
+  if (noBundledConfig) {
     loadSchema(schemaLoadingOptions)
       .then(({ validationFunctionCode }) => {
         callback(

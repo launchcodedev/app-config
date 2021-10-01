@@ -59,7 +59,7 @@ describe('generateModuleText', () => {
     ).toMatchSnapshot();
   });
 
-  it('creates config module with doNotLoadConfig', () => {
+  it('creates config module with noBundledConfig', () => {
     expect(
       generateModuleText('no-config', {
         environment: 'test',
