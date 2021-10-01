@@ -61,7 +61,7 @@ describe('generateModuleText', () => {
 
   it('creates config module with noBundledConfig', () => {
     expect(
-      generateModuleText('no-config', {
+      generateModuleText(undefined, {
         environment: 'test',
         useGlobalNamespace: true,
         esmValidationCode: false,

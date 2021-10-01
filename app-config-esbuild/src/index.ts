@@ -30,7 +30,7 @@ export const createPlugin = ({
       if (noBundledConfig) {
         const { validationFunctionCode } = await loadSchema(schemaLoadingOptions);
 
-        const code = generateModuleText('no-config', {
+        const code = generateModuleText(undefined, {
           environment: undefined,
           useGlobalNamespace: true,
           validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,

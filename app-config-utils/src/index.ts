@@ -26,7 +26,7 @@ export function isPrimitive(obj: Json): obj is JsonPrimitive {
 }
 
 export function generateModuleText(
-  fullConfig: Json | 'no-config',
+  fullConfig: Json | undefined,
   {
     environment,
     useGlobalNamespace,
@@ -45,7 +45,7 @@ export function generateModuleText(
 
   let generatedText = '';
 
-  if (fullConfig === 'no-config') {
+  if (fullConfig === undefined) {
     generatedText += `
       const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 

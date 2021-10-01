@@ -43,7 +43,7 @@ export default function appConfigRollup({
         if (noBundledConfig) {
           const { validationFunctionCode } = await loadSchema(schemaLoadingOptions);
 
-          return generateModuleText('no-config', {
+          return generateModuleText(undefined, {
             environment: undefined,
             useGlobalNamespace: true,
             validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,

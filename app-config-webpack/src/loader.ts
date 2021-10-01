@@ -27,7 +27,7 @@ const loader = function AppConfigLoader(this: Loader) {
       .then(({ validationFunctionCode }) => {
         callback(
           null,
-          generateModuleText('no-config', {
+          generateModuleText(undefined, {
             environment: undefined,
             useGlobalNamespace: true,
             validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
