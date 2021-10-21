@@ -14,8 +14,8 @@
     "@app-config/main": "^2.6.0"
   },
   "devDependencies": {
-    "electron": "^13.1.4",
-    "playwright": "^1.6.1"
+    "electron": "^15.2.0",
+    "playwright": "^1.16.0"
   },
   "jest": {
     "preset": "@lcdev/jest",
