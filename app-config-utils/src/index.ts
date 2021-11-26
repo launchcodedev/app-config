@@ -7,6 +7,9 @@ export const isWindows = isNode && /^win/.test(process.platform);
 export const packageNameRegex =
   /(^@(lcdev|servall)\/app-config)|(^@app-config\/main)|(\.?app-config(\.\w+)?\.(toml|yml|yaml|json|json5))|(\.config-placeholder)/;
 
+export const appConfigImportRegex =
+  /(app-config|app-config-main|@app-config\/main)\/dist(\/es)?\/index\.js/;
+
 export type JsonPrimitive = number | string | boolean | null;
 
 export interface JsonObject {

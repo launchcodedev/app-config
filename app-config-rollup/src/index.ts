@@ -1,5 +1,5 @@
 import type { Plugin } from 'rollup';
-import { generateModuleText, packageNameRegex } from '@app-config/utils';
+import { appConfigImportRegex, generateModuleText, packageNameRegex } from '@app-config/utils';
 import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
 import type { SchemaLoadingOptions } from '@app-config/schema';
 
@@ -12,10 +12,6 @@ export interface Options {
   /** @deprecated use useGlobalNamespace instead */
   readGlobal?: boolean;
 }
-
-// vite resolves first before passing to the rollup plugin
-export const appConfigImportRegex =
-  /(app-config|app-config-main|@app-config\/main)\/dist(\/es)?\/index\.js/;
 
 export default function appConfigRollup(
   options: Options = {},
