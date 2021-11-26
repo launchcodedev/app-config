@@ -40,6 +40,7 @@
   "peerDependencies": {},
   "devDependencies": {
     "@app-config/test-utils": "*",
+    "@rollup/plugin-commonjs": "21",
     "rollup": "^2"
   },
   "prettier": "@lcdev/prettier",

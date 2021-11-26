@@ -49,10 +49,10 @@ function shouldTransform(id: string) {
 
 async function loadConfig(
   {
-    useGlobalNamespace,
     loadingOptions,
     schemaLoadingOptions,
-    injectValidationFunction,
+    injectValidationFunction = true,
+    useGlobalNamespace,
     readGlobal,
   }: Options,
   currentFilePaths: string[],
