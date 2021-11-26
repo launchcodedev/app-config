@@ -14,47 +14,68 @@ export interface Options {
 }
 
 // vite resolves first before passing to the rollup plugin
-export const appConfigImportRegex = /(app-config|app-config-main)\/dist(\/es)?\/index\.js/;
+export const appConfigImportRegex =
+  /(app-config|app-config-main|@app-config\/main)\/dist(\/es)?\/index\.js/;
 
-export default function appConfigRollup({
-  useGlobalNamespace,
-  loadingOptions,
-  schemaLoadingOptions,
-  injectValidationFunction,
-
-  readGlobal,
-}: Options = {}): Plugin & { currentFilePaths?: string[] } {
+export default function appConfigRollup(
+  options: Options = {},
+): Plugin & { currentFilePaths?: string[] } {
   const currentFilePaths: string[] = [];
 
   return {
     name: '@app-config/rollup',
     currentFilePaths,
-    resolveId(source) {
-      if (packageNameRegex.exec(source) || appConfigImportRegex.exec(source)) {
-        return '.config-placeholder';
+    resolveId(id) {
+      if (shouldTransform(id)) {
+        return { id, moduleSideEffects: false, external: false };
       }
-
-      return null;
     },
     async load(id) {
-      if (packageNameRegex.exec(id) || appConfigImportRegex.exec(id)) {
-        const { fullConfig, environment, validationFunctionCode, filePaths } =
-          await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
-
-        if (filePaths) {
-          currentFilePaths.length = 0;
-          currentFilePaths.push(...filePaths);
-        }
-
-        return generateModuleText(fullConfig, {
-          environment,
-          useGlobalNamespace: useGlobalNamespace ?? readGlobal ?? true,
-          validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
-          esmValidationCode: true,
-        });
+      if (shouldTransform(id)) {
+        return loadConfig(options, currentFilePaths);
       }
-
-      return null;
     },
+    async transform(_, id) {
+      if (shouldTransform(id)) {
+        return loadConfig(options, currentFilePaths);
+      }
+    },
+  };
+}
+
+function shouldTransform(id: string) {
+  return !!packageNameRegex.exec(id) || !!appConfigImportRegex.exec(id);
+}
+
+async function loadConfig(
+  {
+    useGlobalNamespace,
+    loadingOptions,
+    schemaLoadingOptions,
+    injectValidationFunction,
+    readGlobal,
+  }: Options,
+  currentFilePaths: string[],
+) {
+  const { fullConfig, environment, validationFunctionCode, filePaths } = await loadValidatedConfig(
+    loadingOptions,
+    schemaLoadingOptions,
+  );
+
+  if (filePaths) {
+    currentFilePaths.splice(0);
+    currentFilePaths.push(...filePaths);
+  }
+
+  const code = generateModuleText(fullConfig, {
+    environment,
+    useGlobalNamespace: useGlobalNamespace ?? readGlobal ?? true,
+    validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+    esmValidationCode: true,
+  });
+
+  return {
+    code,
+    moduleSideEffects: false,
   };
 }
