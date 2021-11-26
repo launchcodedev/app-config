@@ -336,9 +336,18 @@ const r4 =
 
 function requiresAsImports(text: string) {
   const withImports = text
-    .replace(r4, `import * as $7Exports from $4; const { $8 } = $7Exports.$7;`)
+    // const format0 = require('ajv-formats').formats.uri
+    // import { formats } from 'ajv-formats';
+    // const { uri: format0 } = formats;
+    .replace(r4, `import { $7 } from $4; const { $8: $2 } = $7;`)
+    // const { formats } = require('ajv-formats');
+    // import { formats } from 'ajv-formats';
     .replace(r3, `import { $3 } from $5;`)
+    // const f = require('ajv-formats').formats;
+    // import { formats as f } from 'ajv-formats';
     .replace(r2, `import { $7 as $2 } from $4;`)
+    // const formats = require('ajv-formats');
+    // import formats from 'ajv-formats';
     .replace(r1, `import $2 from $4;`);
 
   const importReg = /import .+;/gm;
