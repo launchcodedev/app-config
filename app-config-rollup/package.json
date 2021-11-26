@@ -1,7 +1,7 @@
 {
   "name": "@app-config/rollup",
   "description": "Rollup plugin that resolves @app-config for you",
-  "version": "2.8.1",
+  "version": "2.8.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -34,8 +34,8 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^2.8.1",
-    "@app-config/utils": "^2.8.1"
+    "@app-config/config": "^2.8.2",
+    "@app-config/utils": "^2.8.2"
   },
   "peerDependencies": {},
   "devDependencies": {
