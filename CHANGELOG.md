@@ -1,3 +1,7 @@
+## v2.8.2
+
+Some bug fixes and improvements for Rollup, ESBuild and Vite plugins.
+
 ## v2.8.1
 
 Adds support for injecting `currentEnvironment` from `@app-config/inject`.

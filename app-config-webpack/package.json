@@ -1,7 +1,7 @@
 {
   "name": "@app-config/webpack",
   "description": "Webpack plugin that loads your app-config values into bundles statically",
-  "version": "2.8.1",
+  "version": "2.8.2",
   "license": "MPL-2.0",
   "author": {
     "name": "Launchcode",
@@ -31,18 +31,18 @@
     "prepublishOnly": "yarn clean && yarn build && yarn build:es"
   },
   "dependencies": {
-    "@app-config/config": "^2.8.1",
-    "@app-config/schema": "^2.8.1",
-    "@app-config/utils": "^2.8.1",
+    "@app-config/config": "^2.8.2",
+    "@app-config/schema": "^2.8.2",
+    "@app-config/utils": "^2.8.2",
     "loader-utils": "2"
   },
   "peerDependencies": {
-    "@app-config/main": "^2.8.1",
+    "@app-config/main": "^2.8.2",
     "html-webpack-plugin": "4 || 5",
     "webpack": "4 || 5"
   },
   "devDependencies": {
-    "@app-config/main": "^2.8.1",
+    "@app-config/main": "^2.8.2",
     "@types/loader-utils": "1",
     "@webpack-cli/serve": "1",
     "html-webpack-plugin": "5",

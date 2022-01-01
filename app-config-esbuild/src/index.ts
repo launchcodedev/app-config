@@ -1,7 +1,7 @@
 import type { Plugin } from 'esbuild';
 import path from 'path';
 import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
-import { generateModuleText, packageNameRegex } from '@app-config/utils';
+import { appConfigImportRegex, generateModuleText, packageNameRegex } from '@app-config/utils';
 import { loadSchema, SchemaLoadingOptions } from '@app-config/schema';
 
 export interface Options {
@@ -22,6 +22,11 @@ export const createPlugin = ({
   name: '@app-config/esbuild',
   setup(build) {
     build.onResolve({ filter: packageNameRegex }, (args) => ({
+      path: args.path,
+      namespace: '@app-config/esbuild',
+    }));
+
+    build.onResolve({ filter: appConfigImportRegex }, (args) => ({
       path: args.path,
       namespace: '@app-config/esbuild',
     }));

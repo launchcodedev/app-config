@@ -323,22 +323,31 @@ function toFileSystemPath(path: string) {
 
 // const createStore = require('redux')
 const r1 =
-  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)/gm;
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_.:/\\]+('|"))\)/gm;
 // const createStore = require('redux').createStore
 const r2 =
-  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_.:/\\]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
 // const { createStore } = require('redux')
 const r3 =
-  /^(let|var|const) +(\{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\}) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)/gm;
+  /^(let|var|const) +(\{\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\}) += +(require)\((('|")[a-zA-Z0-9-_.:/\\]+('|"))\)/gm;
 // const uri = require('redux').formats.uri
 const r4 =
-  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_./]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
+  /^(let|var|const) +([a-zA-Z_$][a-zA-Z0-9_$]*) += +(require)\((('|")[a-zA-Z0-9-_.:/\\]+('|"))\)\.([a-zA-Z][a-zA-Z0-9]+)\.([a-zA-Z][a-zA-Z0-9]+)/gm;
 
 function requiresAsImports(text: string) {
   const withImports = text
-    .replace(r4, `import * as $7Exports from $4; const { $8 } = $7Exports.$7;`)
+    // const format0 = require('ajv-formats').formats.uri
+    // import { formats } from 'ajv-formats';
+    // const { uri: format0 } = formats;
+    .replace(r4, `import { $7 } from $4; const { $8: $2 } = $7;`)
+    // const { formats } = require('ajv-formats');
+    // import { formats } from 'ajv-formats';
     .replace(r3, `import { $3 } from $5;`)
+    // const f = require('ajv-formats').formats;
+    // import { formats as f } from 'ajv-formats';
     .replace(r2, `import { $7 as $2 } from $4;`)
+    // const formats = require('ajv-formats');
+    // import formats from 'ajv-formats';
     .replace(r1, `import $2 from $4;`);
 
   const importReg = /import .+;/gm;
