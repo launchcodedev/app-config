@@ -1,13 +1,14 @@
 import type { Plugin } from 'rollup';
 import { appConfigImportRegex, generateModuleText, packageNameRegex } from '@app-config/utils';
 import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
-import type { SchemaLoadingOptions } from '@app-config/schema';
+import { loadSchema, SchemaLoadingOptions } from '@app-config/schema';
 
 export interface Options {
   useGlobalNamespace?: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
   injectValidationFunction?: boolean;
+  noBundledConfig?: boolean;
 
   /** @deprecated use useGlobalNamespace instead */
   readGlobal?: boolean;
@@ -48,11 +49,23 @@ async function loadConfig(
     loadingOptions,
     schemaLoadingOptions,
     injectValidationFunction = true,
+    noBundledConfig,
     useGlobalNamespace,
     readGlobal,
   }: Options,
   currentFilePaths: string[],
 ) {
+  if (noBundledConfig) {
+    const { validationFunctionCode } = await loadSchema(schemaLoadingOptions);
+
+    return generateModuleText(undefined, {
+      environment: undefined,
+      useGlobalNamespace: true,
+      validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+      esmValidationCode: true,
+    });
+  }
+
   const { fullConfig, environment, validationFunctionCode, filePaths } = await loadValidatedConfig(
     loadingOptions,
     schemaLoadingOptions,

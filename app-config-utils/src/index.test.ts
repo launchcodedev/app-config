@@ -59,6 +59,17 @@ describe('generateModuleText', () => {
     ).toMatchSnapshot();
   });
 
+  it('creates config module with noBundledConfig', () => {
+    expect(
+      generateModuleText(undefined, {
+        environment: 'test',
+        useGlobalNamespace: true,
+        esmValidationCode: false,
+        validationFunctionCode: undefined,
+      }),
+    ).toMatchSnapshot();
+  });
+
   it('creates config module with validation function', () => {
     expect(
       generateModuleText(

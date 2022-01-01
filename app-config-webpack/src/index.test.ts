@@ -284,6 +284,28 @@ describe('frontend-webpack-project example', () => {
       });
     });
   });
+
+  it('builds the project with noBundledConfig', async () => {
+    process.env.APP_CONFIG = 'null';
+    process.env.APP_CONFIG_ENV = 'test';
+
+    await new Promise<void>((done, reject) => {
+      webpack([createOptions({ noBundledConfig: true })], (err, stats) => {
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
+        if (stats.hasErrors()) reject(stats.toString());
+
+        const { children } = stats.toJson({ source: true });
+        const [{ modules = [] }] = children || [];
+
+        expect(
+          modules.some(({ source }) => source?.includes('Config is not loaded in _appConfig')),
+        ).toBe(true);
+
+        done();
+      });
+    });
+  });
 });
 
 describe('regex', () => {

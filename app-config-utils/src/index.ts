@@ -29,7 +29,7 @@ export function isPrimitive(obj: Json): obj is JsonPrimitive {
 }
 
 export function generateModuleText(
-  fullConfig: Json,
+  fullConfig: Json | undefined,
   {
     environment,
     useGlobalNamespace,
@@ -45,11 +45,25 @@ export function generateModuleText(
 ): string {
   const privateName = '_appConfig';
   const privateEnvName = '_appConfigEnvironment';
-  const config = JSON.stringify(fullConfig);
 
   let generatedText = '';
 
-  if (useGlobalNamespace) {
+  if (fullConfig === undefined) {
+    generatedText += `
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      const config = globalNamespace.${privateName};
+
+      if (typeof config === 'undefined') {
+        throw new Error('Config is not loaded in ${privateName}');
+      }
+
+      export { config };
+      export default config;
+    `;
+  } else if (useGlobalNamespace) {
+    const config = JSON.stringify(fullConfig);
+
     generatedText += `
       const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
 
@@ -70,6 +84,8 @@ export function generateModuleText(
       export default config;
     `;
   } else {
+    const config = JSON.stringify(fullConfig);
+
     generatedText += `
       const config = ${config};
 

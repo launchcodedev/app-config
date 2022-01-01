@@ -2,13 +2,14 @@ import type { Plugin } from 'esbuild';
 import path from 'path';
 import { ConfigLoadingOptions, loadValidatedConfig } from '@app-config/config';
 import { appConfigImportRegex, generateModuleText, packageNameRegex } from '@app-config/utils';
-import type { SchemaLoadingOptions } from '@app-config/schema';
+import { loadSchema, SchemaLoadingOptions } from '@app-config/schema';
 
 export interface Options {
   useGlobalNamespace?: boolean;
   loadingOptions?: ConfigLoadingOptions;
   schemaLoadingOptions?: SchemaLoadingOptions;
   injectValidationFunction?: boolean;
+  noBundledConfig?: boolean;
 }
 
 export const createPlugin = ({
@@ -16,6 +17,7 @@ export const createPlugin = ({
   loadingOptions,
   schemaLoadingOptions,
   injectValidationFunction = true,
+  noBundledConfig = false,
 }: Options = {}): Plugin => ({
   name: '@app-config/esbuild',
   setup(build) {
@@ -30,6 +32,24 @@ export const createPlugin = ({
     }));
 
     build.onLoad({ filter: /.*/, namespace: '@app-config/esbuild' }, async () => {
+      if (noBundledConfig) {
+        const { validationFunctionCode } = await loadSchema(schemaLoadingOptions);
+
+        const code = generateModuleText(undefined, {
+          environment: undefined,
+          useGlobalNamespace: true,
+          validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+          esmValidationCode: true,
+        });
+
+        return {
+          loader: 'js',
+          contents: code,
+          resolveDir: path.parse(process.cwd()).root,
+          watchFiles: [],
+        };
+      }
+
       const { fullConfig, environment, validationFunctionCode, filePaths } =
         await loadValidatedConfig(loadingOptions, schemaLoadingOptions);
 

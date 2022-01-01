@@ -121,3 +121,67 @@ it('loads currentEnvironment', () =>
       expect(res.outputFiles[0].text).toMatchSnapshot();
     },
   ));
+
+it('loads with noBundledConfig', () =>
+  withTempFiles(
+    {
+      '.app-config.schema.yml': `
+        type: object
+        additionalProperties: false
+        properties:
+          foo: { type: string }
+      `,
+      'a.js': `
+        import { config, validateConfig } from '@app-config/main';
+
+        validateConfig(config);
+      `,
+    },
+    async (inDir) => {
+      const res = await build({
+        entryPoints: [inDir('a.js')],
+        plugins: [
+          createPlugin({ schemaLoadingOptions: { directory: inDir('.') }, noBundledConfig: true }),
+        ],
+        bundle: true,
+        minify: true,
+        write: false,
+      });
+
+      expect(res.outputFiles[0].text).toMatchSnapshot();
+    },
+  ));
+
+it('loads with noBundledConfig and no validation function', () =>
+  withTempFiles(
+    {
+      '.app-config.schema.yml': `
+        type: object
+        additionalProperties: false
+        properties:
+          foo: { type: string }
+      `,
+      'a.js': `
+        import { config } from '@app-config/main';
+
+        console.log(config);
+      `,
+    },
+    async (inDir) => {
+      const res = await build({
+        entryPoints: [inDir('a.js')],
+        plugins: [
+          createPlugin({
+            schemaLoadingOptions: { directory: inDir('.') },
+            noBundledConfig: true,
+            injectValidationFunction: false,
+          }),
+        ],
+        bundle: true,
+        minify: true,
+        write: false,
+      });
+
+      expect(res.outputFiles[0].text).toMatchSnapshot();
+    },
+  ));
