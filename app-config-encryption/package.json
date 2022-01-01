@@ -44,7 +44,7 @@
     "openpgp": "^4.3.0",
     "selfsigned": "1",
     "text-encoding-utf-8": "1",
-    "ws": "7"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@app-config/test-utils": "^2.8.2",
