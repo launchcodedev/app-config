@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+import HtmlWebpackPlugin, { HtmlTagObject } from 'html-webpack-plugin';
 import type { ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
 
 import { regex } from './loader';
@@ -91,7 +91,9 @@ export default class AppConfigPlugin implements Options {
         'AppConfigPlugin',
         async ({ headTags, ...html }) => {
           // remove placeholder <script id="app-config"></script> if it exists
-          const newTags = headTags.filter(({ attributes }) => attributes.id !== 'app-config');
+          const newTags: HtmlTagObject[] = headTags.filter(
+            ({ attributes }) => attributes.id !== 'app-config',
+          );
 
           newTags.push({
             tagName: 'script',

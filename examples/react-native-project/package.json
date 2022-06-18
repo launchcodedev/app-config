@@ -27,6 +27,6 @@
     "@lcdev/tsconfig": "0.1",
     "@types/react": "16",
     "@types/react-native": "0.63",
-    "typescript": "3"
+    "typescript": "4"
   }
 }
