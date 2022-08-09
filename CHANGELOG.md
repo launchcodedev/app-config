@@ -1,3 +1,7 @@
+## v2.8.5
+
+Fixes #205
+
 ## v2.8.3
 
 Adds `noBundledConfig` option to Webpack, esbuild, vite and rollup plugins - useful if you always use `@app-config/inject`.
