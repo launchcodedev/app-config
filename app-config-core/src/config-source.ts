@@ -1,7 +1,7 @@
 import { extname } from 'path';
 import { parse as parseTOML, stringify as stringifyTOML } from '@iarna/toml';
 import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
-import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
+import JSON5 from 'json5';
 import { Json, JsonObject } from '@app-config/utils';
 import { logger } from '@app-config/logging';
 import { ParsedValue, ParsingContext, ParsingExtension } from './parsed-value';
@@ -197,7 +197,7 @@ export function stringify(config: Json, fileType: FileType, minimal: boolean = f
     case FileType.JSON:
       return JSON.stringify(config, null, minimal ? 0 : 2);
     case FileType.JSON5:
-      return stringifyJSON5(config, null, minimal ? 0 : 2);
+      return JSON5.stringify(config, null, minimal ? 0 : 2);
     case FileType.TOML:
       return stringifyTOML(config as any);
     case FileType.YAML:
@@ -247,7 +247,7 @@ export async function parseRawString(contents: string, fileType: FileType): Prom
     case FileType.TOML:
       return parseTOML(contents) as JsonObject;
     case FileType.JSON5:
-      return parseJSON5(contents);
+      return JSON5.parse(contents);
     default:
       throw new BadFileType(`Unsupported FileType '${fileType as string}'`);
   }
