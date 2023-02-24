@@ -1,5 +1,5 @@
 import { resolve, join } from 'path';
-import webpack from 'webpack';
+import webpack, { Compiler } from 'webpack';
 import HtmlPlugin from 'html-webpack-plugin';
 import AppConfigPlugin, { regex, loader, Options } from './index';
 
@@ -44,6 +44,37 @@ describe('frontend-webpack-project example', () => {
 
         done();
       });
+    });
+  });
+
+  it('should throw an error if html-webpack-plugin is not available and headerInjection is true', () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
+    jest.isolateModules(async () => {
+      jest.mock('html-webpack-plugin', () => {
+        throw new Error('html-webpack-plugin not found');
+      });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      try {
+        await new Promise<void>((done, reject) => {
+          webpack([createOptions({ headerInjection: true })], (err, stats) => {
+            if (err) return reject(err);
+            if (!stats) return reject(new Error('no stats'));
+            if (stats.hasErrors()) reject(stats.toString());
+            done();
+          });
+        });
+      } catch (err) {
+        expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
+        expect(consoleErrorSpy).toHaveBeenCalledWith('html-webpack-plugin not found');
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to resolve html-webpack-plugin');
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.',
+        );
+      } finally {
+        consoleErrorSpy.mockRestore();
+      }
     });
   });
 

@@ -1,6 +1,5 @@
 import { join } from 'path';
 import { Compiler } from 'webpack';
-import HtmlWebpackPlugin, { HtmlTagObject } from 'html-webpack-plugin';
 import type { ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
 
 import { regex } from './loader';
@@ -87,28 +86,35 @@ export default class AppConfigPlugin implements Options {
 
   injectHead(compiler: Compiler) {
     compiler.hooks.compilation.tap('AppConfigPlugin', (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
-        'AppConfigPlugin',
-        async ({ headTags, ...html }) => {
-          // remove placeholder <script id="app-config"></script> if it exists
-          const newTags: HtmlTagObject[] = headTags.filter(
-            ({ attributes }) => attributes.id !== 'app-config',
-          );
+      import('html-webpack-plugin').then((module) => {
+        const HtmlWebpackPlugin = module.default;
+        HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
+          'AppConfigPlugin',
+          async ({ headTags, ...html }) => {
+            // remove placeholder <script id="app-config"></script> if it exists
+            const newTags = headTags.filter(
+              ({ attributes }) => attributes.id !== 'app-config',
+            );
 
-          newTags.push({
-            tagName: 'script',
-            attributes: { id: 'app-config', type: 'text/javascript' },
-            innerHTML: ``,
-            voidTag: false,
-            meta: {},
-          });
+            newTags.push({
+              tagName: 'script',
+              attributes: { id: 'app-config', type: 'text/javascript' },
+              innerHTML: ``,
+              voidTag: false,
+              meta: {},
+            });
 
-          return {
-            ...html,
-            headTags: newTags,
-          };
-        },
-      );
+            return {
+              ...html,
+              headTags: newTags,
+            };
+          },
+        );
+      }).catch((error) => {
+        console.error(error.message);
+        console.error('Failed to resolve html-webpack-plugin');
+        console.error('Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.');
+      });
     });
   }
 }
