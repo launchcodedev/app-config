@@ -18,7 +18,8 @@ export default function appConfigVite(options: Options = {}): Plugin {
 
     async load(id) {
       // @ts-ignore
-      const result = await plugin.load!.call(this, id);
+      // eslint-disable-next-line
+      const result: unknown = await plugin.load!.call(this, id);
 
       watcher?.add(plugin.currentFilePaths ?? []);
 
