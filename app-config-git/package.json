@@ -33,7 +33,7 @@
     "@app-config/core": "^2.8.6",
     "@app-config/extension-utils": "^2.8.6",
     "@app-config/logging": "^2.8.6",
-    "simple-git": "2"
+    "simple-git": "3"
   },
   "devDependencies": {
     "@app-config/test-utils": "^2.8.6"
