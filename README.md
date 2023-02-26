@@ -10,7 +10,7 @@
     <img alt="npm" src="https://img.shields.io/npm/v/@app-config/main.svg?style=flat-square"/>
   </a>
   <a href="https://github.com/launchcodedev/app-config/actions">
-    <img alt="Build Status" src="https://img.shields.io/github/workflow/status/launchcodedev/app-config/main?style=flat-square"/>
+    <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/launchcodedev/app-config/main.yml?style=flat-square"/>
   </a>
   <a href="https://dashboard.cypress.io/projects/fm6zcy/runs">
     <img alt="Cypress.io Status" src="https://img.shields.io/endpoint?url=https://dashboard.cypress.io/badge/simple/fm6zcy/master&style=flat-square&logo=cypress"/>

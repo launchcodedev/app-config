@@ -17,7 +17,9 @@ export default function appConfigVite(options: Options = {}): Plugin {
     },
 
     async load(id) {
-      const result = await plugin.load!.call(this, id);
+      // @ts-ignore
+      // eslint-disable-next-line
+      const result: unknown = await plugin.load!.call(this, id);
 
       watcher?.add(plugin.currentFilePaths ?? []);
 
@@ -31,5 +33,5 @@ export default function appConfigVite(options: Options = {}): Plugin {
         return [];
       }
     },
-  };
+  } as Plugin;
 }
