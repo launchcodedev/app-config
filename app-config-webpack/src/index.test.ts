@@ -1,6 +1,7 @@
 import { resolve, join } from 'path';
-import webpack, { Compiler } from 'webpack';
+import webpack from 'webpack';
 import HtmlPlugin from 'html-webpack-plugin';
+import { logger, LogLevel } from '@app-config/logging';
 import AppConfigPlugin, { regex, loader, Options } from './index';
 
 const examplesDir = resolve(__dirname, '../../examples');
@@ -54,7 +55,9 @@ describe('frontend-webpack-project example', () => {
         throw new Error('html-webpack-plugin not found');
       });
 
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const writeMsg = jest.fn();
+      logger.setWriter(writeMsg);
+      logger.setLevel(LogLevel.Verbose);
 
       try {
         await new Promise<void>((done, reject) => {
@@ -66,14 +69,16 @@ describe('frontend-webpack-project example', () => {
           });
         });
       } catch (err) {
-        expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
-        expect(consoleErrorSpy).toHaveBeenCalledWith('html-webpack-plugin not found');
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to resolve html-webpack-plugin');
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          'Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.',
+        expect(writeMsg).toHaveBeenCalledTimes(3);
+        expect(writeMsg).toHaveBeenCalledWith(
+          '[app-config][ERROR] html-webpack-plugin not found\n',
         );
-      } finally {
-        consoleErrorSpy.mockRestore();
+        expect(writeMsg).toHaveBeenCalledWith(
+          '[app-config][ERROR] Failed to resolve html-webpack-plugin\n',
+        );
+        expect(writeMsg).toHaveBeenCalledWith(
+          '[app-config][ERROR] Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.\n',
+        );
       }
     });
   });

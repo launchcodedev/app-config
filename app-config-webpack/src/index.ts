@@ -2,6 +2,7 @@ import { join } from 'path';
 import { Compiler } from 'webpack';
 import type { ConfigLoadingOptions, SchemaLoadingOptions } from '@app-config/main';
 import type { HtmlTagObject } from 'html-webpack-plugin';
+import { logger } from '@app-config/logging';
 
 import { regex } from './loader';
 
@@ -114,10 +115,10 @@ export default class AppConfigPlugin implements Options {
             },
           );
         })
-        .catch((error) => {
-          console.error(error.message);
-          console.error('Failed to resolve html-webpack-plugin');
-          console.error(
+        .catch((error: Error) => {
+          logger.error(error.message);
+          logger.error('Failed to resolve html-webpack-plugin');
+          logger.error(
             'Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.',
           );
         });
