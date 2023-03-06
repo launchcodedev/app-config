@@ -99,7 +99,6 @@ export default class AppConfigPlugin implements Options {
                 ({ attributes }) => attributes.id !== 'app-config',
               );
 
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               newTags.push({
                 tagName: 'script',
                 attributes: { id: 'app-config', type: 'text/javascript' },
@@ -110,7 +109,6 @@ export default class AppConfigPlugin implements Options {
 
               return {
                 ...html,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 headTags: newTags,
               };
             },
