@@ -86,35 +86,40 @@ export default class AppConfigPlugin implements Options {
 
   injectHead(compiler: Compiler) {
     compiler.hooks.compilation.tap('AppConfigPlugin', (compilation) => {
-      import('html-webpack-plugin').then((module) => {
-        const HtmlWebpackPlugin = module.default;
-        HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
-          'AppConfigPlugin',
-          async ({ headTags, ...html }) => {
-            // remove placeholder <script id="app-config"></script> if it exists
-            const newTags = headTags.filter(
-              ({ attributes }) => attributes.id !== 'app-config',
-            );
+      import('html-webpack-plugin')
+        .then((module) => {
+          const HtmlWebpackPlugin = module.default;
 
-            newTags.push({
-              tagName: 'script',
-              attributes: { id: 'app-config', type: 'text/javascript' },
-              innerHTML: ``,
-              voidTag: false,
-              meta: {},
-            });
+          HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(
+            'AppConfigPlugin',
+            async ({ headTags, ...html }) => {
+              // remove placeholder <script id="app-config"></script> if it exists
+              const newTags = headTags.filter(({ attributes }) => attributes.id !== 'app-config');
 
-            return {
-              ...html,
-              headTags: newTags,
-            };
-          },
-        );
-      }).catch((error) => {
-        console.error(error.message);
-        console.error('Failed to resolve html-webpack-plugin');
-        console.error('Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.');
-      });
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+              newTags.push({
+                tagName: 'script',
+                attributes: { id: 'app-config', type: 'text/javascript' },
+                innerHTML: ``,
+                voidTag: false,
+                meta: {},
+              });
+
+              return {
+                ...html,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                headTags: newTags,
+              };
+            },
+          );
+        })
+        .catch((error) => {
+          console.error(error.message);
+          console.error('Failed to resolve html-webpack-plugin');
+          console.error(
+            'Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.',
+          );
+        });
     });
   }
 }
