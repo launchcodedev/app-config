@@ -4,6 +4,7 @@ import { SecretsRequireTTYError } from '@app-config/core';
 import { loadMetaConfig } from '@app-config/meta';
 import { withTempFiles, mockedStdin } from '@app-config/test-utils';
 
+import { defaultEnvOptions } from '@app-config/node';
 import {
   initializeKeys,
   initializeKeysManually,
@@ -99,6 +100,77 @@ describe('User Keys', () => {
 
       await deleteLocalKeys(dirs);
     });
+  });
+});
+
+const createKeys = async () => {
+  const { privateKeyArmored, publicKeyArmored } = await initializeKeysManually({
+    name: 'Tester',
+    email: 'test@example.com',
+  });
+
+  return {
+    privateKey: await loadPrivateKey(privateKeyArmored),
+    publicKey: await loadPublicKey(publicKeyArmored),
+    privateKeyArmored,
+    publicKeyArmored,
+  };
+};
+
+describe('User keys from environment', () => {
+  it('loads user keys from environment', async () => {
+    const keys = await createKeys();
+
+    process.env.APP_CONFIG_SECRETS_PUBLIC_KEY = keys.publicKeyArmored;
+    process.env.APP_CONFIG_SECRETS_KEY = keys.privateKeyArmored;
+
+    const privateKey = await loadPrivateKey();
+    const publicKey = await loadPublicKey();
+
+    expect(privateKey.getFingerprint()).toEqual(keys.privateKey.getFingerprint());
+    expect(publicKey.getFingerprint()).toEqual(keys.publicKey.getFingerprint());
+  });
+
+  it('loads environment user keys from environment', async () => {
+    const keys = await createKeys();
+
+    process.env.APP_CONFIG_SECRETS_PUBLIC_KEY_PRODUCTION = keys.publicKeyArmored;
+    process.env.APP_CONFIG_SECRETS_KEY_PRODUCTION = keys.privateKeyArmored;
+    process.env.APP_CONFIG_ENV = 'prod';
+
+    const privateKey = await loadPrivateKey(undefined, defaultEnvOptions);
+    const publicKey = await loadPublicKey(undefined, defaultEnvOptions);
+
+    expect(privateKey.getFingerprint()).toEqual(keys.privateKey.getFingerprint());
+    expect(publicKey.getFingerprint()).toEqual(keys.publicKey.getFingerprint());
+  });
+
+  it('loads aliased environment user keys from environment', async () => {
+    const keys = await createKeys();
+
+    process.env.APP_CONFIG_SECRETS_PUBLIC_KEY_PROD = keys.publicKeyArmored;
+    process.env.APP_CONFIG_SECRETS_KEY_PROD = keys.privateKeyArmored;
+    process.env.APP_CONFIG_ENV = 'prod';
+
+    const privateKey = await loadPrivateKey(undefined, defaultEnvOptions);
+    const publicKey = await loadPublicKey(undefined, defaultEnvOptions);
+
+    expect(privateKey.getFingerprint()).toEqual(keys.privateKey.getFingerprint());
+    expect(publicKey.getFingerprint()).toEqual(keys.publicKey.getFingerprint());
+  });
+
+  it('falls back to key with no environment', async () => {
+    const keys = await createKeys();
+
+    process.env.APP_CONFIG_SECRETS_PUBLIC_KEY = keys.publicKeyArmored;
+    process.env.APP_CONFIG_SECRETS_KEY = keys.privateKeyArmored;
+    process.env.APP_CONFIG_ENV = 'prod';
+
+    const privateKey = await loadPrivateKey(undefined, defaultEnvOptions);
+    const publicKey = await loadPublicKey(undefined, defaultEnvOptions);
+
+    expect(privateKey.getFingerprint()).toEqual(keys.privateKey.getFingerprint());
+    expect(publicKey.getFingerprint()).toEqual(keys.publicKey.getFingerprint());
   });
 });
 

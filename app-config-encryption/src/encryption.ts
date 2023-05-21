@@ -156,7 +156,7 @@ export async function loadPrivateKey(
   if (override) {
     overrideKey = override;
   } else {
-    overrideKey = getKeyFromEnv('public', environmentOptions);
+    overrideKey = getKeyFromEnv('private', environmentOptions);
   }
 
   if (overrideKey) {
@@ -242,6 +242,11 @@ function getKeyFromEnv(keyType: 'private' | 'public', envOptions?: EnvironmentOp
         break;
       }
     }
+  }
+
+  // if we didn't find a key with an environment, fallback on one without if it exists
+  if (!key) {
+    key = process.env[envVarPrefix];
   }
 
   return key;
