@@ -147,12 +147,20 @@ export async function loadKey(contents: string | Buffer): Promise<Key> {
 }
 
 export async function loadPrivateKey(
-  override: string | Buffer | undefined = process.env.APP_CONFIG_SECRETS_KEY,
+  override: string | Buffer | undefined = undefined,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<Key> {
   let key: Key;
+  let overrideKey;
 
   if (override) {
-    key = await loadKey(override);
+    overrideKey = override;
+  } else {
+    overrideKey = getKeyFromEnv('public', environmentOptions);
+  }
+
+  if (overrideKey) {
+    key = await loadKey(overrideKey);
   } else {
     if (process.env.CI) {
       logger.info('Warning! Trying to load encryption keys from home folder in a CI environment');
@@ -183,12 +191,20 @@ export async function loadPrivateKey(
 }
 
 export async function loadPublicKey(
-  override: string | Buffer | undefined = process.env.APP_CONFIG_SECRETS_PUBLIC_KEY,
+  override: string | Buffer | undefined = undefined,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<Key> {
   let key: Key;
+  let overrideKey;
 
   if (override) {
-    key = await loadKey(override);
+    overrideKey = override;
+  } else {
+    overrideKey = getKeyFromEnv('public', environmentOptions);
+  }
+
+  if (overrideKey) {
+    key = await loadKey(overrideKey);
   } else {
     if (process.env.CI) {
       logger.warn('Warning! Trying to load encryption keys from home folder in a CI environment');
@@ -203,17 +219,47 @@ export async function loadPublicKey(
   return key;
 }
 
+function getKeyFromEnv(keyType: 'private' | 'public', envOptions?: EnvironmentOptions) {
+  const env = currentEnvironment(envOptions);
+
+  const envVarPrefix =
+    keyType === 'private' ? 'APP_CONFIG_SECRETS_KEY' : 'APP_CONFIG_SECRETS_PUBLIC_KEY';
+
+  if (!envOptions || !env) {
+    return process.env[envVarPrefix];
+  }
+
+  let key = process.env[`${envVarPrefix}_${env.toUpperCase()}`];
+
+  // try an alias if we didn't find the key first try
+  if (!key) {
+    const aliases = aliasesFor(env, envOptions.aliases);
+
+    for (const alias of aliases) {
+      key = process.env[`${envVarPrefix}_${alias.toUpperCase()}`];
+
+      if (key) {
+        break;
+      }
+    }
+  }
+
+  return key;
+}
+
 let loadedPrivateKey: Promise<Key> | undefined;
 
-export async function loadPrivateKeyLazy(): Promise<Key> {
+export async function loadPrivateKeyLazy(environmentOptions?: EnvironmentOptions): Promise<Key> {
   if (!loadedPrivateKey) {
     logger.verbose('Loading local private key');
 
     if (checkTTY()) {
       // help the end user, if they haven't initialized their local keys yet
-      loadedPrivateKey = initializeLocalKeys().then(() => loadPrivateKey());
+      loadedPrivateKey = initializeLocalKeys().then(() =>
+        loadPrivateKey(undefined, environmentOptions),
+      );
     } else {
-      loadedPrivateKey = loadPrivateKey();
+      loadedPrivateKey = loadPrivateKey(undefined, environmentOptions);
     }
   }
 
@@ -222,15 +268,17 @@ export async function loadPrivateKeyLazy(): Promise<Key> {
 
 let loadedPublicKey: Promise<Key> | undefined;
 
-export async function loadPublicKeyLazy(): Promise<Key> {
+export async function loadPublicKeyLazy(environmentOptions?: EnvironmentOptions): Promise<Key> {
   if (!loadedPublicKey) {
     logger.verbose('Loading local public key');
 
     if (checkTTY()) {
       // help the end user, if they haven't initialized their local keys yet
-      loadedPublicKey = initializeLocalKeys().then(() => loadPublicKey());
+      loadedPublicKey = initializeLocalKeys().then(() =>
+        loadPublicKey(undefined, environmentOptions),
+      );
     } else {
-      loadedPublicKey = loadPublicKey();
+      loadedPublicKey = loadPublicKey(undefined, environmentOptions);
     }
   }
 
@@ -393,7 +441,10 @@ export async function encryptValue(
   if (symmetricKeyOverride) {
     symmetricKey = symmetricKeyOverride;
   } else {
-    symmetricKey = await loadLatestSymmetricKeyLazy(await loadPrivateKeyLazy(), environmentOptions);
+    symmetricKey = await loadLatestSymmetricKeyLazy(
+      await loadPrivateKeyLazy(environmentOptions),
+      environmentOptions,
+    );
   }
 
   // all encrypted data is JSON encoded
@@ -447,7 +498,7 @@ export async function decryptValue(
 
     symmetricKey = await loadSymmetricKeyLazy(
       revisionNumber,
-      await loadPrivateKeyLazy(),
+      await loadPrivateKeyLazy(environmentOptions),
       environmentOptions,
     );
   }

@@ -601,8 +601,8 @@ export const cli = yargs
             async (opts) => {
               const environmentOptions = await loadEnvironmentOptions(opts);
 
-              const myKey = await loadPublicKeyLazy();
-              const privateKey = await loadPrivateKeyLazy();
+              const myKey = await loadPublicKeyLazy(environmentOptions);
+              const privateKey = await loadPrivateKeyLazy(environmentOptions);
 
               // we trust ourselves, essentially
               await trustTeamMember(myKey, privateKey, environmentOptions);
@@ -717,7 +717,7 @@ export const cli = yargs
 
               await trustTeamMember(
                 await loadKey(publicKeyArmored),
-                await loadPrivateKeyLazy(),
+                await loadPrivateKeyLazy(environmentOptions),
                 environmentOptions,
               );
 
@@ -761,7 +761,7 @@ export const cli = yargs
               const environmentOptions = await loadEnvironmentOptions(opts);
 
               const key = await loadKey(await readFile(opts.keyPath));
-              const privateKey = await loadPrivateKeyLazy();
+              const privateKey = await loadPrivateKeyLazy(environmentOptions);
               await trustTeamMember(key, privateKey, environmentOptions);
 
               logger.info(`Trusted ${key.getUserIds().join(', ')}`);
@@ -793,7 +793,7 @@ export const cli = yargs
             },
             async (opts) => {
               const environmentOptions = await loadEnvironmentOptions(opts);
-              const privateKey = await loadPrivateKeyLazy();
+              const privateKey = await loadPrivateKeyLazy(environmentOptions);
 
               // TODO: by default, untrust for all envs?
               await untrustTeamMember(opts.email, privateKey, environmentOptions);
@@ -828,7 +828,7 @@ export const cli = yargs
               shouldUseSecretAgent(opts.agent);
 
               // load these right away, so user unlocks asap
-              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy();
+              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy(environmentOptions);
 
               let { secretValue }: { secretValue?: Json } = opts;
 
@@ -896,7 +896,7 @@ export const cli = yargs
               shouldUseSecretAgent(opts.agent);
 
               // load these right away, so user unlocks asap
-              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy();
+              if (!shouldUseSecretAgent()) await loadPrivateKeyLazy(environmentOptions);
 
               let { encryptedText } = opts;
 
