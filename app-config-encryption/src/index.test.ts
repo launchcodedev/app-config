@@ -4,7 +4,7 @@ import encryptedDirective from './index';
 
 describe('encryptedDirective', () => {
   it('loads an encrypted value', async () => {
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
 
     const source = new LiteralSource({
       foo: await encryptValue('foobar', symmetricKey),
@@ -16,7 +16,7 @@ describe('encryptedDirective', () => {
   });
 
   it('loads an array of encrypted values', async () => {
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
 
     const source = new LiteralSource({
       foo: [

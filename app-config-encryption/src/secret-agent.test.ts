@@ -28,7 +28,7 @@ describe('Decryption', () => {
     });
 
     const privateKey = await loadPrivateKey(privateKeyArmored);
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedSymmetricKey = await encryptSymmetricKey(symmetricKey, [privateKey]);
 
     const port = await getPort();
@@ -84,7 +84,7 @@ describe('Unix Sockets', () => {
     });
 
     const privateKey = await loadPrivateKey(privateKeyArmored);
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedSymmetricKey = await encryptSymmetricKey(symmetricKey, [privateKey]);
 
     const socket = resolve('./temporary-socket-file');

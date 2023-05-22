@@ -27,7 +27,7 @@ export interface TeamMember {
 }
 
 export interface EncryptedSymmetricKey {
-  revision: number;
+  revision: string;
   key: string;
 }
 

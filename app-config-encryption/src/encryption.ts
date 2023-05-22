@@ -293,11 +293,11 @@ export async function loadPublicKeyLazy(environmentOptions?: EnvironmentOptions)
 export { EncryptedSymmetricKey };
 
 export interface DecryptedSymmetricKey {
-  revision: number;
+  revision: string;
   key: Uint8Array;
 }
 
-export async function generateSymmetricKey(revision: number): Promise<DecryptedSymmetricKey> {
+export async function generateSymmetricKey(revision: string): Promise<DecryptedSymmetricKey> {
   // eslint-disable-next-line @typescript-eslint/await-thenable
   const rawPassword = await crypto.random.getRandomBytes(2048);
   const passwordWithRevision = encodeRevisionInPassword(rawPassword, revision);
@@ -372,7 +372,7 @@ export async function loadSymmetricKeys(
 }
 
 export async function loadSymmetricKey(
-  revision: number,
+  revision: string,
   privateKey: Key,
   lazyMeta = true,
   environmentOptions?: EnvironmentOptions,
@@ -387,10 +387,10 @@ export async function loadSymmetricKey(
   return decryptSymmetricKey(symmetricKey, privateKey);
 }
 
-const symmetricKeys = new Map<number, Promise<DecryptedSymmetricKey>>();
+const symmetricKeys = new Map<string, Promise<DecryptedSymmetricKey>>();
 
 export async function loadSymmetricKeyLazy(
-  revision: number,
+  revision: string,
   privateKey: Key,
   environmentOptions?: EnvironmentOptions,
 ): Promise<DecryptedSymmetricKey> {
@@ -493,16 +493,8 @@ export async function decryptValue(
   if (symmetricKeyOverride) {
     symmetricKey = symmetricKeyOverride;
   } else {
-    const revisionNumber = parseFloat(revision);
-
-    if (Number.isNaN(revisionNumber)) {
-      throw new AppConfigError(
-        `Encrypted value was invalid, revision was not a number (${revision})`,
-      );
-    }
-
     symmetricKey = await loadSymmetricKeyLazy(
-      revisionNumber,
+      revision,
       await loadPrivateKeyLazy(environmentOptions),
       environmentOptions,
     );
@@ -583,6 +575,7 @@ export async function trustTeamMember(
     await loadSymmetricKeys(true, environmentOptions),
     newTeamMembers,
     privateKey,
+    environmentOptions,
   );
 
   await saveNewMetaFile((meta) => ({
@@ -606,6 +599,8 @@ export async function untrustTeamMember(
   privateKey: Key,
   environmentOptions?: EnvironmentOptions,
 ) {
+  const environment = currentEnvironment(environmentOptions);
+
   const teamMembers = await loadTeamMembers(environmentOptions);
 
   const removalCandidates = new Set<Key>();
@@ -660,10 +655,22 @@ export async function untrustTeamMember(
     await loadSymmetricKeys(true, environmentOptions),
     newTeamMembers,
     privateKey,
+    environmentOptions,
   );
 
+  const latestRevision = latestSymmetricKeyRevision(newEncryptionKeys);
+  const newRevisionNumber = getRevisionNumber(latestRevision) + 1;
+
+  let newRevision;
+
+  if (environment) {
+    newRevision = `${environment}-${newRevisionNumber}`;
+  } else {
+    newRevision = `${newRevisionNumber}`;
+  }
+
   const newLatestEncryptionKey = await encryptSymmetricKey(
-    await generateSymmetricKey(latestSymmetricKeyRevision(newEncryptionKeys) + 1),
+    await generateSymmetricKey(newRevision),
     newTeamMembers,
   );
 
@@ -685,10 +692,32 @@ export async function untrustTeamMember(
   }));
 }
 
+export function getRevisionNumber(revision: string) {
+  const regex = /^(?:\w*-)?(?<revisionNumber>\d*)$/;
+
+  const match = regex.exec(revision)?.groups?.revisionNumber;
+
+  if (!match) {
+    throw new AppConfigError(
+      `Encryption revision is invalid. Got "${revision}" but expected a number or <Environment Name>-<Revision Number>"`,
+    );
+  }
+
+  const revisionNumber = parseFloat(match);
+
+  if (Number.isNaN(revisionNumber)) {
+    throw new AppConfigError(
+      `Encryption revision is invalid. Got "${revision}" but expected a number or <Environment Name>-<Revision Number>"`,
+    );
+  }
+
+  return revisionNumber;
+}
+
 export function latestSymmetricKeyRevision(
   keys: (EncryptedSymmetricKey | DecryptedSymmetricKey)[],
-): number {
-  keys.sort((a, b) => a.revision - b.revision);
+): string {
+  keys.sort((a, b) => getRevisionNumber(a.revision) - getRevisionNumber(b.revision));
 
   if (keys.length === 0) throw new InvalidEncryptionKey('No symmetric keys were found');
 
@@ -699,11 +728,22 @@ async function reencryptSymmetricKeys(
   previousSymmetricKeys: EncryptedSymmetricKey[],
   newTeamMembers: Key[],
   privateKey: Key,
+  environmentOptions?: EnvironmentOptions,
 ): Promise<EncryptedSymmetricKey[]> {
   const newEncryptionKeys: EncryptedSymmetricKey[] = [];
 
   if (previousSymmetricKeys.length === 0) {
-    const initialKey = await generateSymmetricKey(1);
+    let newRevision = '1';
+
+    if (environmentOptions) {
+      const env = currentEnvironment(environmentOptions);
+
+      if (env) {
+        newRevision = `${env}-1`;
+      }
+    }
+
+    const initialKey = await generateSymmetricKey(newRevision);
     const encrypted = await encryptSymmetricKey(initialKey, newTeamMembers);
 
     newEncryptionKeys.push(encrypted);
@@ -879,8 +919,8 @@ function stringAsTypedArray(str: string): Uint16Array {
   return bufView;
 }
 
-function encodeRevisionInPassword(password: Uint8Array, revision: number): Uint8Array {
-  const revisionBytes = stringAsTypedArray(revision.toString());
+function encodeRevisionInPassword(password: Uint8Array, revision: string): Uint8Array {
+  const revisionBytes = stringAsTypedArray(revision);
   const passwordWithRevision = new Uint8Array(password.length + revisionBytes.length + 1);
 
   // first byte is the revision length, next N bytes is the revision as a string
@@ -891,12 +931,12 @@ function encodeRevisionInPassword(password: Uint8Array, revision: number): Uint8
   return passwordWithRevision;
 }
 
-function verifyEncodedRevision(password: Uint8Array, expectedRevision: number) {
+function verifyEncodedRevision(password: Uint8Array, expectedRevision: string) {
   const revisionBytesLength = password[0];
   const revisionBytes = password.slice(1, 1 + revisionBytesLength);
   const revision = decodeTypedArray(revisionBytes);
 
-  if (parseFloat(revision) !== expectedRevision) {
+  if (revision !== expectedRevision) {
     throw new EncryptionEncoding(oneLine`
       We detected tampering in the encryption key, revision ${expectedRevision}!
       This error occurs when the revision in the 'encryptionKeys' does not match the one that was embedded into the key.

@@ -22,6 +22,7 @@ import {
   loadTeamMembers,
   trustTeamMember,
   untrustTeamMember,
+  getRevisionNumber,
 } from './encryption';
 
 describe('User Keys', () => {
@@ -185,25 +186,25 @@ const createKey = async () => {
 
 describe('Symmetric Keys', () => {
   it('generates a plain symmetric key', async () => {
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
 
-    expect(symmetricKey.revision).toBe(1);
+    expect(symmetricKey.revision).toBe('1');
     expect(symmetricKey.key).toBeInstanceOf(Uint8Array);
     expect(symmetricKey.key.length).toBeGreaterThan(2048);
   });
 
   it('encrypts and decrypts a symmetric key', async () => {
     const privateKey = await createKey();
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedKey = await encryptSymmetricKey(symmetricKey, [privateKey]);
 
-    expect(encryptedKey.revision).toBe(1);
+    expect(encryptedKey.revision).toBe('1');
     expect(typeof encryptedKey.key).toBe('string');
     expect(encryptedKey.key.length).toBeGreaterThan(0);
 
     const decryptedKey = await decryptSymmetricKey(encryptedKey, privateKey);
 
-    expect(decryptedKey.revision).toBe(1);
+    expect(decryptedKey.revision).toBe('1');
     expect(decryptedKey.key).toEqual(symmetricKey.key);
   });
 
@@ -211,7 +212,7 @@ describe('Symmetric Keys', () => {
     const privateKey = await createKey();
     const someoneElsesKey = await createKey();
 
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedKey = await encryptSymmetricKey(symmetricKey, [someoneElsesKey]);
 
     await expect(decryptSymmetricKey(encryptedKey, privateKey)).rejects.toThrow();
@@ -221,7 +222,7 @@ describe('Symmetric Keys', () => {
     const privateKey = await createKey();
     const someoneElsesKey = await createKey();
 
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedKey = await encryptSymmetricKey(symmetricKey, [privateKey, someoneElsesKey]);
 
     await expect(decryptSymmetricKey(encryptedKey, privateKey)).resolves.toEqual(symmetricKey);
@@ -232,7 +233,7 @@ describe('Symmetric Keys', () => {
     const privateKey = await createKey();
     const someoneElsesKey = await createKey();
 
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedKey = await encryptSymmetricKey(symmetricKey, [privateKey]);
     const decryptedKey = await decryptSymmetricKey(encryptedKey, privateKey);
     const encryptedKey2 = await encryptSymmetricKey(decryptedKey, [privateKey, someoneElsesKey]);
@@ -244,7 +245,7 @@ describe('Symmetric Keys', () => {
 
   it('validates encoded revision number in keys', async () => {
     const privateKey = await createKey();
-    const symmetricKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
     const encryptedKey = await encryptSymmetricKey(symmetricKey, [privateKey]);
 
     // really go out of our way to mess with the key - this usually results in integrity check failures either way
@@ -261,7 +262,7 @@ describe('Value Encryption', () => {
     const values = ['hello world', 42.42, null, true, { message: 'hello world', nested: {} }];
 
     for (const value of values) {
-      const symmetricKey = await generateSymmetricKey(1);
+      const symmetricKey = await generateSymmetricKey('1');
       const encrypted = await encryptValue(value, symmetricKey);
       const decrypted = await decryptValue(encrypted, symmetricKey);
 
@@ -273,8 +274,8 @@ describe('Value Encryption', () => {
 
   it('cannot decrypt a value with the wrong key', async () => {
     const value = 'hello world';
-    const symmetricKey = await generateSymmetricKey(1);
-    const wrongKey = await generateSymmetricKey(1);
+    const symmetricKey = await generateSymmetricKey('1');
+    const wrongKey = await generateSymmetricKey('1');
     const encrypted = await encryptValue(value, symmetricKey);
 
     await expect(decryptValue(encrypted, wrongKey)).rejects.toThrow();
@@ -377,8 +378,11 @@ describe('E2E Encrypted Repo', () => {
 
       // just for test coverage, create a new symmetric key
       const latestSymmetricKey = await loadLatestSymmetricKey(privateKey);
+
+      const newRevisionNumber = getRevisionNumber(latestSymmetricKey.revision) + 1;
+
       await saveNewSymmetricKey(
-        await generateSymmetricKey(latestSymmetricKey.revision + 1),
+        await generateSymmetricKey(newRevisionNumber.toString()),
         await loadTeamMembers(),
       );
 

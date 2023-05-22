@@ -139,15 +139,8 @@ export async function connectAgent(
       keepAlive();
 
       const revision = text.split(':')[1];
-      const revisionNumber = parseFloat(revision);
 
-      if (Number.isNaN(revisionNumber)) {
-        throw new AppConfigError(
-          `Encrypted value was invalid, revision was not a number (${revision})`,
-        );
-      }
-
-      const symmetricKey = await loadEncryptedKey(revisionNumber, environmentOptions);
+      const symmetricKey = await loadEncryptedKey(revision, environmentOptions);
       const decrypted = await client.Decrypt({ text, symmetricKey });
 
       keepAlive();
@@ -248,7 +241,7 @@ export async function getAgentPortOrSocket(
 }
 
 async function loadSymmetricKey(
-  revision: number,
+  revision: string,
   environmentOptions?: EnvironmentOptions,
 ): Promise<EncryptedSymmetricKey> {
   const symmetricKeys = await loadSymmetricKeys(true, environmentOptions);
