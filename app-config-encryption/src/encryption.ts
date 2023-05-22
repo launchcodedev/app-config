@@ -552,7 +552,14 @@ export async function trustTeamMember(
   privateKey: Key,
   environmentOptions?: EnvironmentOptions,
 ) {
-  const teamMembers = await loadTeamMembers(environmentOptions);
+  let teamMembers: Key[] = [];
+
+  try {
+    teamMembers = await loadTeamMembers(environmentOptions);
+  } catch {
+    // if this throws it's just because members for the selected env weren't found
+    // if the env wasn't found just add it
+  }
 
   if (newTeamMember.isPrivate()) {
     throw new InvalidEncryptionKey(
@@ -571,8 +578,17 @@ export async function trustTeamMember(
 
   const newTeamMembers = teamMembers.concat(newTeamMember);
 
+  let currentKeys: EncryptedSymmetricKey[] = [];
+
+  try {
+    currentKeys = await loadSymmetricKeys(true, environmentOptions);
+  } catch {
+    // if this throws it's just because keys for the selected env weren't found
+    // if the env wasn't found just add it
+  }
+
   const newEncryptionKeys = await reencryptSymmetricKeys(
-    await loadSymmetricKeys(true, environmentOptions),
+    currentKeys,
     newTeamMembers,
     privateKey,
     environmentOptions,
@@ -580,14 +596,19 @@ export async function trustTeamMember(
 
   await saveNewMetaFile((meta) => ({
     ...meta,
-    teamMembers: newTeamMembers.map((key) => ({
-      userId: key.getUserIds()[0],
-      keyName: key.keyName ?? null,
-      publicKey: key.armor(),
-    })),
+    teamMembers: addForEnvironment(
+      newTeamMembers.map((key) => ({
+        userId: key.getUserIds()[0],
+        keyName: key.keyName ?? null,
+        publicKey: key.armor(),
+      })),
+      meta.teamMembers ?? {},
+      environmentOptions,
+      true,
+    ),
     encryptionKeys: addForEnvironment(
       newEncryptionKeys,
-      meta.encryptionKeys ?? [],
+      meta.encryptionKeys ?? {},
       environmentOptions,
       true,
     ),
@@ -678,14 +699,19 @@ export async function untrustTeamMember(
 
   await saveNewMetaFile((meta) => ({
     ...meta,
-    teamMembers: newTeamMembers.map((key) => ({
-      userId: key.getUserIds()[0],
-      keyName: key.keyName ?? null,
-      publicKey: key.armor(),
-    })),
+    teamMembers: addForEnvironment(
+      newTeamMembers.map((key) => ({
+        userId: key.getUserIds()[0],
+        keyName: key.keyName ?? null,
+        publicKey: key.armor(),
+      })),
+      meta.teamMembers ?? {},
+      environmentOptions,
+      true,
+    ),
     encryptionKeys: addForEnvironment(
       newEncryptionKeys,
-      meta.encryptionKeys ?? [],
+      meta.encryptionKeys ?? {},
       environmentOptions,
       true,
     ),
@@ -693,7 +719,7 @@ export async function untrustTeamMember(
 }
 
 export function getRevisionNumber(revision: string) {
-  const regex = /^(?:\w*-)?(?<revisionNumber>\d*)$/;
+  const regex = /^(?:\w*-)?(?<revisionNumber>\d+)$/;
 
   const match = regex.exec(revision)?.groups?.revisionNumber;
 
@@ -851,11 +877,17 @@ function addForEnvironment<T>(
     return orig.concat(addArray);
   };
 
+  const environment = currentEnvironment(environmentOptions);
+
+  if (Array.isArray(values) && environment) {
+    throw new AppConfigError(
+      'An environment was specified when adding a key but your meta file is not setup to use per environment keys',
+    );
+  }
+
   if (Array.isArray(values)) {
     return addOrReplace(values);
   }
-
-  const environment = currentEnvironment(environmentOptions);
 
   if (environment === undefined) {
     if ('none' in values) {
@@ -865,18 +897,10 @@ function addForEnvironment<T>(
       };
     }
 
-    if ('default' in values) {
-      return {
-        ...values,
-        default: addOrReplace(values.default),
-      };
-    }
-
-    const environments = Array.from(Object.keys(values).values()).join(', ');
-
-    throw new AppConfigError(
-      `No current environment selected, found [${environments}] when adding environment-specific encryption options to meta file`,
-    );
+    return {
+      ...values,
+      default: addOrReplace(values.default),
+    };
   }
 
   if (environment in values) {
