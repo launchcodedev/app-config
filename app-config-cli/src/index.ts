@@ -16,7 +16,7 @@ import {
   FailedToSelectSubObject,
   EmptyStdinOrPromptResponse,
 } from '@app-config/core';
-import { promptUser, consumeStdin, asEnvOptions } from '@app-config/node';
+import { promptUser, consumeStdin, asEnvOptions, currentEnvironment } from '@app-config/node';
 import { checkTTY, LogLevel, logger } from '@app-config/logging';
 import {
   LoadedConfiguration,
@@ -628,16 +628,19 @@ export const cli = yargs
             },
             async (opts) => {
               const environmentOptions = await loadEnvironmentOptions(opts);
+              const environment = currentEnvironment(environmentOptions);
 
               const keys = await loadSymmetricKeys(undefined, environmentOptions);
               const teamMembers = await loadTeamMembersLazy(environmentOptions);
 
-              let revision: number;
+              let revision: string;
 
               if (keys.length > 0) {
-                revision = latestSymmetricKeyRevision(keys) + 1;
+                revision = latestSymmetricKeyRevision(keys);
+              } else if (environment) {
+                revision = `${environment}-1`;
               } else {
-                revision = 1;
+                revision = '1';
               }
 
               await saveNewSymmetricKey(
