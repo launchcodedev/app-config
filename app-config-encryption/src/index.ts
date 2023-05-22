@@ -1,4 +1,4 @@
-import type { ParsingExtension } from '@app-config/core';
+import { AppConfigError, ParsingExtension } from '@app-config/core';
 import { named } from '@app-config/extension-utils';
 import { logger } from '@app-config/logging';
 import { environmentOptionsFromContext } from '@app-config/node';
@@ -22,8 +22,28 @@ export default function encryptedDirective(
           );
         }
 
+        // we override the environment with what's specified in the key revision
+        // so you can use the same key for multiple environments
+
+        const revision = value.split(':')[1];
+
+        if (!revision) {
+          throw new AppConfigError(`Could not find key revision in encrypted value`);
+        }
+
+        const envRegex = /^(?:(?<env>\w*)-)?(?:\d+)$/;
+        const env = envRegex.exec(revision)?.groups?.env;
         const environmentOptions = environmentOptionsFromContext(ctx);
-        const decrypted = await decryptValue(value, symmetricKey, environmentOptions);
+
+        if (env && environmentOptions) {
+          environmentOptions.override = env;
+        }
+
+        const decrypted = await decryptValue(
+          value,
+          symmetricKey,
+          env ? environmentOptions : undefined,
+        );
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
       };
