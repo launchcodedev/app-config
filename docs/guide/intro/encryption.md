@@ -213,4 +213,5 @@ encryptionKeys:
     - revision: 1
       key: '...'
 ```
-To create a new encryption environment use the `init-key` CLI subcommand while setting one of the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`) with the new encryption environment.
+
+To create a new encryption environment use the `init-repo` CLI subcommand while setting one of the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`) with the new encryption environment.

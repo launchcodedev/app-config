@@ -101,6 +101,9 @@ export async function loadMetaConfig({
     const parsed = await source.read(defaultMetaExtensions());
     const value = parsed.toJSON() as MetaProperties;
 
+    // normalize all revisions to be strings even if they're numbers
+    normalizeMetaEncryptionKeyRevisions(value);
+
     const fileSources = parsed.sources.filter((s) => s instanceof FileSource) as FileSource[];
     const [{ filePath, fileType }] = fileSources.filter((s) => s.filePath.includes(fileNameBase));
 
@@ -122,6 +125,26 @@ export async function loadMetaConfig({
 
     throw error;
   }
+}
+
+function normalizeMetaEncryptionKeyRevisions(meta: MetaProperties): MetaProperties {
+  const stringifyRevision = (keys: EncryptedSymmetricKey[]) => {
+    for (const key of keys) {
+      if (typeof key.revision !== 'string') {
+        key.revision = (key.revision as number).toString();
+      }
+    }
+  };
+
+  if (Array.isArray(meta.encryptionKeys)) {
+    stringifyRevision(meta.encryptionKeys);
+  } else if (meta.encryptionKeys) {
+    for (const env of Object.keys(meta.encryptionKeys)) {
+      stringifyRevision(meta.encryptionKeys[env]);
+    }
+  }
+
+  return meta;
 }
 
 let metaConfig: Promise<MetaConfiguration> | undefined;

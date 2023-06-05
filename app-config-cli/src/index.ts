@@ -44,6 +44,7 @@ import {
   shouldUseSecretAgent,
   startAgent,
   disconnectAgents,
+  getRevisionNumber,
 } from '@app-config/encryption';
 import { loadSchema, JSONSchema } from '@app-config/schema';
 import { generateTypeFiles } from '@app-config/generate';
@@ -595,7 +596,6 @@ export const cli = yargs
               ],
               options: {
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
@@ -623,7 +623,6 @@ export const cli = yargs
               ],
               options: {
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
@@ -636,7 +635,14 @@ export const cli = yargs
               let revision: string;
 
               if (keys.length > 0) {
-                revision = latestSymmetricKeyRevision(keys);
+                const latestRevison = latestSymmetricKeyRevision(keys);
+                const revNumber = getRevisionNumber(latestRevison);
+
+                if (environment) {
+                  revision = `${environment}-${revNumber + 1}`;
+                } else {
+                  revision = `${revNumber + 1}`;
+                }
               } else if (environment) {
                 revision = `${environment}-1`;
               } else {
@@ -708,7 +714,6 @@ export const cli = yargs
                 'Creates an encryption key that can be used without a passphrase (useful for CI)',
               options: {
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
@@ -757,7 +762,6 @@ export const cli = yargs
               },
               options: {
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
@@ -791,7 +795,6 @@ export const cli = yargs
               },
               options: {
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
@@ -822,7 +825,6 @@ export const cli = yargs
                 clipboard: clipboardOption,
                 agent: secretAgentOption,
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
@@ -890,7 +892,6 @@ export const cli = yargs
                 clipboard: clipboardOption,
                 agent: secretAgentOption,
                 environmentOverride: environmentOverrideOption,
-                environmentVariableName: environmentVariableNameOption,
               },
             },
             async (opts) => {
