@@ -13,7 +13,7 @@ export default function encryptedDirective(
   symmetricKey?: DecryptedSymmetricKey,
   shouldShowDeprecationNotice?: true,
 ): ParsingExtension {
-  return named('encryption', (value, _, __, ctx) => {
+  return named('encryption', (value) => {
     if (typeof value === 'string' && value.startsWith('enc:')) {
       return async (parse) => {
         if (shouldShowDeprecationNotice) {
@@ -22,28 +22,9 @@ export default function encryptedDirective(
           );
         }
 
-        // we override the environment with what's specified in the key revision
-        // so you can use the same key for multiple environments
-
-        const revision = value.split(':')[1];
-
-        if (!revision) {
-          throw new AppConfigError(`Could not find key revision in encrypted value`);
-        }
-
-        const envRegex = /^(?:(?<env>\w*)-)?(?:\d+)$/;
-        const env = envRegex.exec(revision)?.groups?.env;
-        const environmentOptions = environmentOptionsFromContext(ctx);
-
-        if (env && environmentOptions) {
-          environmentOptions.override = env;
-        }
-
-        const decrypted = await decryptValue(
-          value,
-          symmetricKey,
-          env ? environmentOptions : undefined,
-        );
+        // we don't need to pass the environment here - we use the key revision
+        // to determine which symmetric key to use
+        const decrypted = await decryptValue(value, symmetricKey);
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });
       };

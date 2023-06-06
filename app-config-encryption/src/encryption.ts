@@ -362,13 +362,17 @@ export async function loadSymmetricKeys(
     value: { encryptionKeys = [] },
   } = await loadMeta();
 
-  const selected = selectForEnvironment(encryptionKeys, environmentOptions);
+  if (environmentOptions) {
+    const selected = selectForEnvironment(encryptionKeys, environmentOptions);
 
-  logger.verbose(
-    `Found ${selected.length} symmetric keys for environment: ${environment ?? 'none'}`,
-  );
+    logger.verbose(
+      `Found ${selected.length} symmetric keys for environment: ${environment ?? 'none'}`,
+    );
 
-  return selected;
+    return selected;
+  }
+
+  return selectAll(encryptionKeys);
 }
 
 export async function loadSymmetricKey(
@@ -817,6 +821,20 @@ async function saveNewMetaFile(mutate: (props: MetaProperties) => MetaProperties
 
   logger.info(`Writing ${writeFilePath} file with new encryption properties`);
   await fs.writeFile(writeFilePath, stringify(writeMeta, writeFileType));
+}
+
+function selectAll<T>(values: T[] | Record<string, T[]>): T[] {
+  if (Array.isArray(values)) {
+    return values;
+  }
+
+  const allValues: T[] = [];
+
+  for (const key of Object.keys(values)) {
+    allValues.push(...values[key]);
+  }
+
+  return allValues;
 }
 
 function selectForEnvironment<T>(
