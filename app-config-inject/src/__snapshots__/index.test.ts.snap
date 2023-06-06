@@ -8,7 +8,7 @@ exports[`injectHtml adds app-config to an empty script tag 1`] = `
             <meta charset=\\"utf-8\\">
             <title>Webpack App</title>
             <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1\\">
-            <script id=\\"app-config\\">window._appConfig={\\"foo\\":42}</script>
+            <script id=\\"app-config\\">window._appConfig={\\"foo\\":42}, window._appConfigEnvironment=\\"test\\"</script>
           </head>
           <body><script src=\\"/main.js\\"></script></body>
         </html>
@@ -23,7 +23,7 @@ exports[`injectHtml adds app-config to an existing script tag 1`] = `
             <meta charset=\\"utf-8\\">
             <title>Webpack App</title>
             <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1\\">
-            <script id=\\"app-config\\">window._appConfig={\\"foo\\":88}</script>
+            <script id=\\"app-config\\">window._appConfig={\\"foo\\":88}, window._appConfigEnvironment=\\"test\\"</script>
           </head>
           <body><script src=\\"/main.js\\"></script></body>
         </html>
@@ -38,7 +38,7 @@ exports[`injectHtml uses provided loadConfig options 1`] = `
             <meta charset=\\"utf-8\\">
             <title>Webpack App</title>
             <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1\\">
-            <script id=\\"app-config\\">window._appConfig={\\"foo\\":true}</script>
+            <script id=\\"app-config\\">window._appConfig={\\"foo\\":true}, window._appConfigEnvironment=\\"test\\"</script>
           </head>
           <body><script src=\\"/main.js\\"></script></body>
         </html>
@@ -53,7 +53,7 @@ exports[`injectHtml validates provided app-config 1`] = `
           <meta charset=\\"utf-8\\">
           <title>Webpack App</title>
           <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1\\">
-          <script id=\\"app-config\\">window._appConfig={}</script>
+          <script id=\\"app-config\\">window._appConfig={}, window._appConfigEnvironment=\\"test\\"</script>
         </head>
         <body><script src=\\"/main.js\\"></script></body>
       </html>

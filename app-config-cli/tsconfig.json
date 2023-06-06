@@ -10,6 +10,8 @@
     { "path": "../app-config-core" },
     { "path": "../app-config-config" },
     { "path": "../app-config-node" },
-    { "path": "../app-config-generate" }
+    { "path": "../app-config-generate" },
+    { "path": "../app-config-utils" },
+    { "path": "../app-config-test-utils" }
   ]
 }

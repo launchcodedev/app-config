@@ -4,7 +4,7 @@ import * as yargs from 'yargs';
 import execa from 'execa';
 import clipboardy from 'clipboardy';
 import { outputFile, readFile } from 'fs-extra';
-import { resolve } from 'json-schema-ref-parser';
+import RefParser, { resolve } from 'json-schema-ref-parser';
 import { stripIndents } from 'common-tags';
 import { Json, JsonObject } from '@app-config/utils';
 import {
@@ -259,7 +259,8 @@ async function loadConfigWithOptions({
   }
 
   if (select) {
-    jsonConfig = (await resolve(jsonConfig)).get(select) as JsonObject;
+    // @ts-ignore
+    jsonConfig = (await resolve.apply(RefParser, [jsonConfig])).get(select) as JsonObject;
 
     if (jsonConfig === undefined) {
       throw new FailedToSelectSubObject(`Failed to select property ${select}`);
@@ -491,7 +492,8 @@ export const cli = yargs
         let toPrint: Json;
 
         if (opts.select) {
-          const refs = await resolve(schema);
+          // @ts-ignore
+          const refs = await resolve.apply(RefParser, [schema]);
 
           toPrint = refs.get(opts.select);
 

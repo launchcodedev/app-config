@@ -1,8 +1,10 @@
 name: cypress
 
 on:
+  pull_request:
+      branches: '**'
   push:
-    branches: '**'
+      branches: '**'
 
 jobs:
   all:

@@ -38,9 +38,17 @@ module.exports = {
         children: ['/guide/node/', '/guide/node/example', '/guide/node/api-reference'],
       },
       {
-        title: 'Webpack',
-        path: '/guide/webpack/',
-        children: ['/guide/webpack/', '/guide/webpack/inject', '/guide/webpack/example'],
+        title: 'Bundlers',
+        path: '/guide/bundlers',
+        children: [
+          '/guide/bundlers/',
+          '/guide/bundlers/webpack',
+          '/guide/bundlers/inject',
+          '/guide/bundlers/webpack-example',
+          '/guide/bundlers/rollup',
+          '/guide/bundlers/vite',
+          '/guide/bundlers/esbuild',
+        ],
       },
       {
         title: 'React Native',
@@ -48,12 +56,8 @@ module.exports = {
         children: ['/guide/react-native/', '/guide/react-native/example'],
       },
       {
-        title: 'Vite',
-        path: '/guide/vite',
-      },
-      {
-        title: 'Rollup',
-        path: '/guide/rollup',
+        title: 'Electron',
+        path: '/guide/electron',
       },
       {
         title: 'Deployment',

@@ -18,8 +18,9 @@
   "scripts": {
     "exec:all": "lerna exec",
     "run:all": "lerna run --stream",
-    "build": "tsc -b ./app-config-*/tsconfig.json",
-    "build:es": "tsc -b ./app-config-*/tsconfig.es.json",
+    "build": "yarn build:cjs",
+    "build:es": "tsc -b tsconfig.es.json",
+    "build:cjs": "tsc -b tsconfig.json",
     "build:all": "lerna run build",
     "clean": "yarn run:all clean",
     "test": "lerna run test -- --passWithNoTests",
@@ -55,5 +56,8 @@
     "extends": [
       "@lcdev/commitlint"
     ]
+  },
+  "volta": {
+    "node": "16.15.0"
   }
 }

@@ -1,11 +1,17 @@
 import { extname } from 'path';
 import { parse as parseTOML, stringify as stringifyTOML } from '@iarna/toml';
 import { safeLoad as parseYAML, safeDump as stringifyYAML } from 'js-yaml';
-import { parse as parseJSON5, stringify as stringifyJSON5 } from 'json5';
+import JSON5 from 'json5';
 import { Json, JsonObject } from '@app-config/utils';
 import { logger } from '@app-config/logging';
 import { ParsedValue, ParsingContext, ParsingExtension } from './parsed-value';
-import { AppConfigError, NotFoundError, ParsingError, BadFileType } from './errors';
+import {
+  AppConfigError,
+  NotFoundError,
+  ParsingError,
+  BadFileType,
+  FallbackExhaustedError,
+} from './errors';
 
 /**
  * File formats that app-config supports.
@@ -22,6 +28,8 @@ export enum FileType {
 
 /** Base class for "sources", which are strategies to read configuration (eg. files, environment variables) */
 export abstract class ConfigSource {
+  public readonly filePath?: string;
+
   /** Only method that is *required* for all ConfigSources, which is built on in readValue, read, and readToJSON */
   protected abstract readContents(): Promise<[string, FileType]>;
 
@@ -122,6 +130,8 @@ export class FallbackSource extends ConfigSource {
 
   // override because readContents uses it (which is backwards from super class)
   async readValue(): Promise<Json> {
+    const errors: NotFoundError[] = [];
+
     // take the first value that comes back without an error
     for (const source of this.sources) {
       try {
@@ -130,7 +140,14 @@ export class FallbackSource extends ConfigSource {
 
         return value;
       } catch (error) {
-        if (error instanceof NotFoundError) {
+        if (source.filePath) {
+          // special case for ConfigSource with `filePath`, only accept a NotFoundError for it's filePath
+          if (NotFoundError.isNotFoundError(error, source.filePath)) {
+            errors.push(error);
+            continue;
+          }
+        } else if (NotFoundError.isNotFoundError(error)) {
+          errors.push(error);
           continue;
         }
 
@@ -138,11 +155,13 @@ export class FallbackSource extends ConfigSource {
       }
     }
 
-    throw new NotFoundError('FallbackSource found no valid ConfigSource');
+    throw new FallbackExhaustedError('FallbackSource found no valid ConfigSource', errors);
   }
 
   // override so that ParsedValue is directly from the originating ConfigSource
   async read(extensions?: ParsingExtension[], context?: ParsingContext): Promise<ParsedValue> {
+    const errors: NotFoundError[] = [];
+
     // take the first value that comes back without an error
     for (const source of this.sources) {
       try {
@@ -151,7 +170,14 @@ export class FallbackSource extends ConfigSource {
 
         return value;
       } catch (error) {
-        if (error instanceof NotFoundError) {
+        if (source.filePath) {
+          // special case for ConfigSource with `filePath`, only accept a NotFoundError for it's filePath
+          if (NotFoundError.isNotFoundError(error, source.filePath)) {
+            errors.push(error);
+            continue;
+          }
+        } else if (NotFoundError.isNotFoundError(error)) {
+          errors.push(error);
           continue;
         }
 
@@ -159,7 +185,7 @@ export class FallbackSource extends ConfigSource {
       }
     }
 
-    throw new NotFoundError('FallbackSource found no valid ConfigSource');
+    throw new FallbackExhaustedError('FallbackSource found no valid ConfigSource', errors);
   }
 }
 
@@ -171,7 +197,7 @@ export function stringify(config: Json, fileType: FileType, minimal: boolean = f
     case FileType.JSON:
       return JSON.stringify(config, null, minimal ? 0 : 2);
     case FileType.JSON5:
-      return stringifyJSON5(config, null, minimal ? 0 : 2);
+      return JSON5.stringify(config, null, minimal ? 0 : 2);
     case FileType.TOML:
       return stringifyTOML(config as any);
     case FileType.YAML:
@@ -221,7 +247,7 @@ export async function parseRawString(contents: string, fileType: FileType): Prom
     case FileType.TOML:
       return parseTOML(contents) as JsonObject;
     case FileType.JSON5:
-      return parseJSON5(contents);
+      return JSON5.parse(contents);
     default:
       throw new BadFileType(`Unsupported FileType '${fileType as string}'`);
   }

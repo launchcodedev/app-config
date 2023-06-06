@@ -11,6 +11,8 @@
     { "path": "../app-config-test-utils" },
     { "path": "../app-config-core" },
     { "path": "../app-config-node" },
-    { "path": "../app-config-cli" }
+    { "path": "../app-config-cli" },
+    { "path": "../app-config-utils" },
+    { "path": "../app-config-test-utils" }
   ]
 }

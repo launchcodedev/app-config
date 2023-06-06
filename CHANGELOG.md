@@ -1,3 +1,43 @@
+## v2.8.5
+
+Fixes #205
+
+## v2.8.3
+
+Adds `noBundledConfig` option to Webpack, esbuild, vite and rollup plugins - useful if you always use `@app-config/inject`.
+
+## v2.8.2
+
+Some bug fixes and improvements for Rollup, ESBuild and Vite plugins.
+
+## v2.8.1
+
+Adds support for injecting `currentEnvironment` from `@app-config/inject`.
+
+Adds support for reading `APP_CONFIG_SECRETS_KEY_FILE`.
+
+## v2.8.0
+
+Adds plugin for [esbuild](https://esbuild.github.io)!
+
+## v2.7.2
+
+Ensures that `window._appConfig` is always written in webpack and rollup loaders.
+
+## v2.7.1
+
+Fixes bug in $extends directive when using specific environments.
+
+## v2.7.0
+
+Adds [Electron](https://app-config.dev/guide/electron.html) support!
+
+Supports named export in react native #167.
+
+## v2.6.1
+
+Ensures that NotFoundErrors aren't ignored when transitive in optional files ([#160](https://github.com/launchcodedev/app-config/issues/160)).
+
 ## v2.6.0
 
 Adds plugins for [vite](https://vitejs.dev) and [rollup](https://rollupjs.org)!

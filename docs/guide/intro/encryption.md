@@ -113,6 +113,11 @@ This key (public + private) can be added as protected environment variables in y
 - `APP_CONFIG_SECRETS_KEY`
 - `APP_CONFIG_SECRETS_PUBLIC_KEY`
 
+Or, in files referenced by:
+
+- `APP_CONFIG_SECRETS_KEY_FILE`
+- `APP_CONFIG_SECRETS_PUBLIC_KEY_FILE`
+
 The CLI will output both of these with instructions.
 
 To use different keys for different secret environments suffix the environment variable names with the name of the environment.

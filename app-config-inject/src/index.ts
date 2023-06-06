@@ -5,6 +5,7 @@ import {
   ConfigLoadingOptions,
 } from '@app-config/config';
 import { SchemaLoadingOptions } from '@app-config/schema';
+import type { Json } from '@app-config/utils';
 
 export { cli } from './cli';
 
@@ -26,15 +27,21 @@ export async function injectHtml(
     throw new Error('No <script id="app-config"> was found in the given HTML!');
   }
 
-  let config;
+  let config: Json;
+  let environment: string | undefined;
 
   if (validate) {
-    ({ fullConfig: config } = await loadValidatedConfig(configOptions, schemaOptions));
+    ({ fullConfig: config, environment } = await loadValidatedConfig(configOptions, schemaOptions));
   } else {
-    ({ fullConfig: config } = await loadUnvalidatedConfig(configOptions));
+    ({ fullConfig: config, environment } = await loadUnvalidatedConfig(configOptions));
   }
 
-  scriptTag.set_content(`window._appConfig=${JSON.stringify(config)}`);
+  const configString = JSON.stringify(config);
+  const environmentString = environment ? JSON.stringify(environment) : 'undefined';
+
+  scriptTag.set_content(
+    `window._appConfig=${configString}, window._appConfigEnvironment=${environmentString}`,
+  );
 
   return parsed.toString();
 }

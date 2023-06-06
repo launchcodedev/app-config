@@ -1,92 +1,64 @@
 import { getOptions, parseQuery } from 'loader-utils';
-import { loadValidatedConfig } from '@app-config/main';
-import { currentEnvironment, asEnvOptions } from '@app-config/node';
-import { packageNameRegex } from '@app-config/utils';
+import { loadValidatedConfig } from '@app-config/config';
+import { generateModuleText, packageNameRegex } from '@app-config/utils';
+import { loadSchema } from '@app-config/schema';
 import type { Options } from './index';
 
 type LoaderContext = Parameters<typeof getOptions>[0];
 interface Loader extends LoaderContext {}
 
-const privateName = '_appConfig';
-
 const loader = function AppConfigLoader(this: Loader) {
   if (this.cacheable) this.cacheable();
 
   const callback = this.async()!;
-  const {
-    noGlobal = false,
-    loading = {},
-    schemaLoading,
-  }: Options = {
+  const options: Options = {
     ...getOptions(this),
     ...parseQuery(this.resourceQuery),
   };
 
-  loadValidatedConfig(loading, schemaLoading)
-    .then(({ fullConfig, filePaths, validationFunctionCode }) => {
+  const useGlobalNamespace = options.useGlobalNamespace ?? !options.noGlobal;
+  const loadingOptions = options.loadingOptions ?? options.loading ?? {};
+  const schemaLoadingOptions = options.schemaLoadingOptions ?? options.schemaLoading;
+  const injectValidationFunction = options.injectValidationFunction ?? true;
+  const noBundledConfig = options.noBundledConfig ?? false;
+
+  if (noBundledConfig) {
+    loadSchema(schemaLoadingOptions)
+      .then(({ validationFunctionCode }) => {
+        callback(
+          null,
+          generateModuleText(undefined, {
+            environment: undefined,
+            useGlobalNamespace: true,
+            validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+            esmValidationCode: false,
+          }),
+        );
+      })
+      .catch((err) => {
+        this.emitWarning(new Error(`There was an error when trying to load @app-config`));
+
+        callback(err);
+      });
+
+    return;
+  }
+
+  loadValidatedConfig(loadingOptions, schemaLoadingOptions)
+    .then(({ fullConfig, environment, filePaths, validationFunctionCode }) => {
       if (filePaths) {
         filePaths.forEach((filePath) => this.addDependency(filePath));
       }
 
-      const generateText = (config: string) => {
-        let generatedText: string;
-
-        if (noGlobal) {
-          generatedText = `
-            const config = ${config};
-
-            export { config };
-            export default config;
-          `;
-        } else {
-          generatedText = `
-            const configValue = ${config};
-
-            const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
-
-            // if the global was already defined, use it (and define it if not)
-            const config = globalNamespace.${privateName} =
-              (globalNamespace.${privateName} || configValue);
-
-            export { config };
-            export default config;
-          `;
-        }
-
-        if (validationFunctionCode) {
-          generatedText = `${generatedText}
-            ${/* nest the generated commonjs module here */ ''}
-            function genValidateConfig(){
-              const validateConfigModule = {};
-              (function(module){
-                ${validationFunctionCode()}
-              })(validateConfigModule);
-              return validateConfigModule.exports;
-            }
-
-            ${/* marking as pure always allows tree shaking in webpack when using es modules */ ''}
-            export const validateConfig = /*#__PURE__*/ genValidateConfig();
-          `;
-        }
-
-        const { environmentOverride, environmentAliases, environmentSourceNames } = loading;
-
-        generatedText = `${generatedText}
-          export function currentEnvironment() {
-            return ${
-              JSON.stringify(
-                currentEnvironment(
-                  asEnvOptions(environmentOverride, environmentAliases, environmentSourceNames),
-                ),
-              ) ?? 'undefined'
-            };
-          }
-        `;
-
-        return generatedText;
-      };
-
-      return callback(null, generateText(JSON.stringify(fullConfig)));
+      callback(
+        null,
+        generateModuleText(fullConfig, {
+          environment,
+          useGlobalNamespace,
+          validationFunctionCode: injectValidationFunction ? validationFunctionCode : undefined,
+          esmValidationCode: false,
+        }),
+      );
     })
     .catch((err) => {
       this.emitWarning(new Error(`There was an error when trying to load @app-config`));

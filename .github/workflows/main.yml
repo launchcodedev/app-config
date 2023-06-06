@@ -1,14 +1,16 @@
 name: main
 
 on:
+  pull_request:
+      branches: '**'
   push:
-    branches: '**'
+      branches: '**'
 
 jobs:
   # for branches, we only need to check Linux + Node LTS
   # note that we do linting here, but not on Windows / MacOS (no need to)
   linux-and-lts:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
@@ -21,15 +23,21 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - uses: bahmutov/npm-install@v1
+    - run: yarn playwright install-deps chromium
     - run: yarn build
     - run: yarn build:es
     - run: yarn build:all
     - run: yarn lint
+    - run: xvfb-run yarn test --coverage --testTimeout 20000
+      env: { CI: 1 }
+      if: matrix.os == 'ubuntu-latest'
     - run: yarn test --coverage --testTimeout 20000
       env: { CI: 1 }
+      if: matrix.os != 'ubuntu-latest'
 
-    # sanity check that the rollup plugin made a file without needing to loadConfig
+    # sanity check that plugins made a file without needing to loadConfig
     - run: yarn --cwd ./examples/rollup-project start
+    - run: yarn --cwd ./examples/esbuild-project start
 
     - uses: codecov/codecov-action@v1
       if: matrix.os == 'ubuntu-latest'
@@ -61,5 +69,6 @@ jobs:
           ./app-config-webpack/coverage/coverage-final.json,
           ./app-config-rollup/coverage/coverage-final.json,
           ./app-config-vite/coverage/coverage-final.json,
+          ./app-config-electron/coverage/coverage-final.json,
         fail_ci_if_error: true
         verbose: true

@@ -1,0 +1,135 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`generateModuleText creates config module 1`] = `
+"
+      const config = {\\"foo\\":\\"bar\\"};
+
+      export { config };
+      export default config;
+    
+      export function currentEnvironment() {
+        return \\"test\\";
+      }
+    "
+`;
+
+exports[`generateModuleText creates config module with esm validation function 1`] = `
+"
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      const configValue = {\\"foo\\":\\"bar\\"};
+
+      // if the global was already defined, use it
+      const config = (globalNamespace._appConfig || configValue);
+
+      // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
+      if (
+        typeof globalNamespace._appConfig === 'undefined' ||
+        !Object.isFrozen(globalNamespace._appConfig)
+      ) {
+        globalNamespace._appConfig = config;
+      }
+
+      export { config };
+      export default config;
+    
+        const foo = 'bar';
+
+        
+        function genValidateConfig(){
+          const validateConfigModule = {};
+          (function(module){import foo from \\"bar\\";})(validateConfigModule);
+          return validateConfigModule.exports;
+        }
+
+        
+        export const validateConfig = /*#__PURE__*/ genValidateConfig();
+      
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
+`;
+
+exports[`generateModuleText creates config module with global namespace 1`] = `
+"
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      const configValue = {\\"foo\\":\\"bar\\"};
+
+      // if the global was already defined, use it
+      const config = (globalNamespace._appConfig || configValue);
+
+      // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
+      if (
+        typeof globalNamespace._appConfig === 'undefined' ||
+        !Object.isFrozen(globalNamespace._appConfig)
+      ) {
+        globalNamespace._appConfig = config;
+      }
+
+      export { config };
+      export default config;
+    
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
+`;
+
+exports[`generateModuleText creates config module with noBundledConfig 1`] = `
+"
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      const config = globalNamespace._appConfig;
+
+      if (typeof config === 'undefined') {
+        throw new Error('Config is not loaded in _appConfig');
+      }
+
+      export { config };
+      export default config;
+    
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
+`;
+
+exports[`generateModuleText creates config module with validation function 1`] = `
+"
+      const globalNamespace = (typeof window === 'undefined' ? globalThis : window) || {};
+
+      const configValue = {\\"foo\\":\\"bar\\"};
+
+      // if the global was already defined, use it
+      const config = (globalNamespace._appConfig || configValue);
+
+      // if the global is frozen then it was set by electron and we can't change it, but we'll set it if we can
+      if (
+        typeof globalNamespace._appConfig === 'undefined' ||
+        !Object.isFrozen(globalNamespace._appConfig)
+      ) {
+        globalNamespace._appConfig = config;
+      }
+
+      export { config };
+      export default config;
+    
+        
+        function genValidateConfig(){
+          const validateConfigModule = {};
+          (function(module){
+              const foo = 'bar';
+            })(validateConfigModule);
+          return validateConfigModule.exports;
+        }
+
+        
+        export const validateConfig = /*#__PURE__*/ genValidateConfig();
+      
+      export function currentEnvironment() {
+        return globalNamespace._appConfigEnvironment || \\"test\\";
+      }
+    "
+`;

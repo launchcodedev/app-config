@@ -1,4 +1,6 @@
-import { loadValidatedConfig } from '@app-config/main';
+import { loadValidatedConfig } from '@app-config/config';
+import { currentEnvironment } from '@app-config/node';
+import { generateModuleText } from '@app-config/utils';
 import { relative } from 'path';
 import { Transformer, upstreamTransformer } from './upstream-transformer';
 
@@ -23,7 +25,12 @@ export const transform: Transformer['transform'] = async ({ src, filename, optio
   // Parse config and overwrite app-config's entry point with exported config JSON
   const { fullConfig } = await loadValidatedConfig();
 
-  const modifiedSrc = `module.exports = ${JSON.stringify(fullConfig)};`;
+  const modifiedSrc = generateModuleText(fullConfig, {
+    environment: currentEnvironment(),
+    useGlobalNamespace: false,
+    validationFunctionCode: undefined,
+    esmValidationCode: false,
+  });
 
   return upstreamTransformer.transform({ src: modifiedSrc, filename, options });
 };

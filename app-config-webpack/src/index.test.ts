@@ -1,6 +1,7 @@
 import { resolve, join } from 'path';
 import webpack from 'webpack';
 import HtmlPlugin from 'html-webpack-plugin';
+import { logger, LogLevel } from '@app-config/logging';
 import AppConfigPlugin, { regex, loader, Options } from './index';
 
 const examplesDir = resolve(__dirname, '../../examples');
@@ -47,6 +48,41 @@ describe('frontend-webpack-project example', () => {
     });
   });
 
+  it('should throw an error if html-webpack-plugin is not available and headerInjection is true', () => {
+    process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
+    jest.isolateModules(async () => {
+      jest.mock('html-webpack-plugin', () => {
+        throw new Error('html-webpack-plugin not found');
+      });
+
+      const writeMsg = jest.fn();
+      logger.setWriter(writeMsg);
+      logger.setLevel(LogLevel.Verbose);
+
+      try {
+        await new Promise<void>((done, reject) => {
+          webpack([createOptions({ headerInjection: true })], (err, stats) => {
+            if (err) return reject(err);
+            if (!stats) return reject(new Error('no stats'));
+            if (stats.hasErrors()) reject(stats.toString());
+            done();
+          });
+        });
+      } catch (err) {
+        expect(writeMsg).toHaveBeenCalledTimes(3);
+        expect(writeMsg).toHaveBeenCalledWith(
+          '[app-config][ERROR] html-webpack-plugin not found\n',
+        );
+        expect(writeMsg).toHaveBeenCalledWith(
+          '[app-config][ERROR] Failed to resolve html-webpack-plugin\n',
+        );
+        expect(writeMsg).toHaveBeenCalledWith(
+          '[app-config][ERROR] Either include the module in your dependencies and enable the webpack plugin, or set headerInjection to false in your configuration.\n',
+        );
+      }
+    });
+  });
+
   it('reads environment variable for app-config', async () => {
     process.env.APP_CONFIG = JSON.stringify({ externalApiUrl: 'https://localhost:3999' });
 
@@ -88,7 +124,7 @@ describe('frontend-webpack-project example', () => {
           ),
         ).toBe(true);
 
-        expect(modules.some(({ source }) => source?.includes('_appConfig'))).toBe(false);
+        expect(modules.some(({ source }) => source?.includes('_appConfig '))).toBe(false);
 
         done();
       });
@@ -175,7 +211,11 @@ describe('frontend-webpack-project example', () => {
         expect(
           modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
         ).toBe(true);
-        expect(modules.some(({ source }) => source?.includes('return "test";'))).toBe(true);
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('return globalNamespace._appConfigEnvironment || "test";'),
+          ),
+        ).toBe(true);
 
         done();
       });
@@ -198,7 +238,11 @@ describe('frontend-webpack-project example', () => {
         expect(
           modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
         ).toBe(true);
-        expect(modules.some(({ source }) => source?.includes('return "foobar";'))).toBe(true);
+        expect(
+          modules.some(({ source }) =>
+            source?.includes('return globalNamespace._appConfigEnvironment || "foobar";'),
+          ),
+        ).toBe(true);
 
         done();
       });
@@ -223,7 +267,11 @@ describe('frontend-webpack-project example', () => {
           expect(
             modules.some(({ source }) => source?.includes('export function currentEnvironment()')),
           ).toBe(true);
-          expect(modules.some(({ source }) => source?.includes('return "foobar";'))).toBe(true);
+          expect(
+            modules.some(({ source }) =>
+              source?.includes('return globalNamespace._appConfigEnvironment || "foobar";'),
+            ),
+          ).toBe(true);
 
           done();
         },
@@ -267,6 +315,28 @@ describe('frontend-webpack-project example', () => {
         const [{ modules = [] }] = children || [];
 
         expect(modules.some(({ source }) => source?.includes('validateConfig'))).toBe(false);
+
+        done();
+      });
+    });
+  });
+
+  it('builds the project with noBundledConfig', async () => {
+    process.env.APP_CONFIG = 'null';
+    process.env.APP_CONFIG_ENV = 'test';
+
+    await new Promise<void>((done, reject) => {
+      webpack([createOptions({ noBundledConfig: true })], (err, stats) => {
+        if (err) return reject(err);
+        if (!stats) return reject(new Error('no stats'));
+        if (stats.hasErrors()) reject(stats.toString());
+
+        const { children } = stats.toJson({ source: true });
+        const [{ modules = [] }] = children || [];
+
+        expect(
+          modules.some(({ source }) => source?.includes('Config is not loaded in _appConfig')),
+        ).toBe(true);
 
         done();
       });

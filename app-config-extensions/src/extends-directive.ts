@@ -33,7 +33,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
         return SchemaBuilder.oneOf(reference, SchemaBuilder.arraySchema(reference));
       },
-      (value, _, __, context) => async (_, __, source, extensions) => {
+      (value, _, __, context) => async (_, ___, source, extensions) => {
         const retrieveFile = async (
           filepath: string,
           subselector?: string,
@@ -48,8 +48,11 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
 
           const environmentOptions = {
             ...environmentOptionsFromContext(context),
-            override: env,
           };
+
+          if (env) {
+            environmentOptions.override = env;
+          }
 
           const parsed = await resolvedSource
             .read(extensions, {
@@ -57,7 +60,7 @@ function fileReferenceDirective(keyName: string, meta: ParsedValueMetadata): Par
               environmentOptions,
             })
             .catch((error) => {
-              if (error instanceof NotFoundError && isOptional) {
+              if (isOptional && NotFoundError.isNotFoundError(error, resolvedPath)) {
                 return ParsedValue.literal({});
               }
 

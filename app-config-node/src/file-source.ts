@@ -40,7 +40,7 @@ export class FileSource extends ConfigSource {
       return [content.toString('utf-8'), this.fileType];
     } catch (err: unknown) {
       if (err && typeof err === 'object' && (err as { code?: string | number }).code === 'ENOENT') {
-        throw new NotFoundError(`File ${this.filePath} not found`);
+        throw new NotFoundError(`File ${this.filePath} not found`, this.filePath);
       }
 
       throw err;
@@ -50,7 +50,7 @@ export class FileSource extends ConfigSource {
 
 /** Read configuration from a file, found via "glob-like" search (any file format, with support for environment specific files) */
 export class FlexibleFileSource extends ConfigSource {
-  private readonly filePath: string;
+  public readonly filePath: string;
   private readonly fileExtensions: string[];
   private readonly environmentOptions: EnvironmentOptions;
 
@@ -138,6 +138,7 @@ export class FlexibleFileSource extends ConfigSource {
 
     throw new NotFoundError(
       `FlexibleFileSource could not find file with ${this.filePath}.{yml|yaml|toml|json|json5}`,
+      this.filePath,
     );
   }
 
