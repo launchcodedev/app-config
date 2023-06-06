@@ -896,6 +896,7 @@ export const cli = yargs
             },
             async (opts) => {
               const environmentOptions = await loadEnvironmentOptions(opts);
+              const environment = currentEnvironment(environmentOptions);
 
               shouldUseSecretAgent(opts.agent);
 
@@ -924,7 +925,12 @@ export const cli = yargs
                 throw new EmptyStdinOrPromptResponse('Failed to read from stdin or prompt');
               }
 
-              const decrypted = await decryptValue(encryptedText, undefined, environmentOptions);
+              // only use an environment if one was provided - otherwise just find the key to use based on the revision
+              const decrypted = await decryptValue(
+                encryptedText,
+                undefined,
+                environment ? environmentOptions : undefined,
+              );
 
               process.stdout.write(JSON.stringify(decrypted));
               process.stdout.write('\n');
