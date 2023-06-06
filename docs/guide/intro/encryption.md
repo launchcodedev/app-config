@@ -214,4 +214,6 @@ encryptionKeys:
       key: '...'
 ```
 
-To create a new encryption environment use the `init-repo` CLI subcommand while setting one of the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`) with the new encryption environment.
+To create a new encryption environment use the `init-repo` CLI subcommand while setting one of the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`) with the new encryption environment. You can then use the normal App Config secret CLI commands while specifying the environment to trust and untrust users and encrypt and decrypt secrets for that specific environment.
+
+It's also possible to reuse encryption keys across environments since App Config secret environments and config environments are not linked. For example, you may have 3 config environments like prod, QA, and staging but only 2 encryption environments prod and QA. The production environment likely has more strict access requirements than staging and QA which may have the same users trusted on them. This allows you to trust a user once on the shared QA/staging encryption environment which will allow them to decrypt secrets used on staging and QA.
