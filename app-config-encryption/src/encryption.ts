@@ -156,7 +156,7 @@ export async function loadPrivateKey(
   if (override) {
     overrideKey = override;
   } else {
-    overrideKey = getKeyFromEnv('private', environmentOptions);
+    overrideKey = await getKeyFromEnv('private', environmentOptions);
   }
 
   if (overrideKey) {
@@ -200,7 +200,7 @@ export async function loadPublicKey(
   if (override) {
     overrideKey = override;
   } else {
-    overrideKey = getKeyFromEnv('public', environmentOptions);
+    overrideKey = await getKeyFromEnv('public', environmentOptions);
   }
 
   if (overrideKey) {
@@ -219,7 +219,7 @@ export async function loadPublicKey(
   return key;
 }
 
-function getKeyFromEnv(keyType: 'private' | 'public', envOptions?: EnvironmentOptions) {
+async function getKeyFromEnv(keyType: 'private' | 'public', envOptions?: EnvironmentOptions) {
   const env = currentEnvironment(envOptions);
 
   const envVarPrefix =
@@ -231,22 +231,53 @@ function getKeyFromEnv(keyType: 'private' | 'public', envOptions?: EnvironmentOp
 
   let key = process.env[`${envVarPrefix}_${env.toUpperCase()}`];
 
-  // try an alias if we didn't find the key first try
-  if (!key) {
+  const tryAliases = (envVarName: (alias: string) => string) => {
     const aliases = aliasesFor(env, envOptions.aliases);
 
     for (const alias of aliases) {
-      key = process.env[`${envVarPrefix}_${alias.toUpperCase()}`];
+      const val = process.env[envVarName(alias.toUpperCase())];
 
-      if (key) {
-        break;
+      if (val) {
+        return val;
       }
+    }
+  };
+
+  // try an alias if we didn't find the key first try
+  if (!key) {
+    key = tryAliases((alias) => `${envVarPrefix}_${alias}`);
+  }
+
+  // see if a file was specified for the environment
+  if (!key) {
+    const file = process.env[`${envVarPrefix}_${env.toUpperCase()}_FILE`];
+
+    if (file) {
+      key = (await fs.readFile(file)).toString();
+    }
+  }
+
+  // try an env alias if we don't have the key from a file
+  if (!key) {
+    const file = tryAliases((alias) => `${envVarPrefix}_${alias}_FILE`);
+
+    if (file) {
+      key = (await fs.readFile(file)).toString();
     }
   }
 
   // if we didn't find a key with an environment, fallback on one without if it exists
   if (!key) {
     key = process.env[envVarPrefix];
+  }
+
+  // if a key still wasn't found try read from a file specified
+  if (!key) {
+    const file = process.env[`${envVarPrefix}_FILE`];
+
+    if (file) {
+      key = (await fs.readFile(file)).toString();
+    }
   }
 
   return key;
