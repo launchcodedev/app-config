@@ -1,5 +1,6 @@
 export { FileSource, FlexibleFileSource, resolveFilepath } from './file-source';
 export {
+  aliasesFor,
   asEnvOptions,
   environmentOptionsFromContext,
   currentEnvironment,

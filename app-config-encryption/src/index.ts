@@ -1,4 +1,4 @@
-import type { ParsingExtension } from '@app-config/core';
+import { ParsingExtension } from '@app-config/core';
 import { named } from '@app-config/extension-utils';
 import { logger } from '@app-config/logging';
 import { DecryptedSymmetricKey, decryptValue } from './encryption';
@@ -21,6 +21,8 @@ export default function encryptedDirective(
           );
         }
 
+        // we don't need to pass the environment here - we use the key revision
+        // to determine which symmetric key to use
         const decrypted = await decryptValue(value, symmetricKey);
 
         return parse(decrypted, { fromSecrets: true, parsedFromEncryptedValue: true });

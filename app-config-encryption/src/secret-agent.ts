@@ -6,6 +6,7 @@ import { AppConfigError } from '@app-config/core';
 import { Json } from '@app-config/utils';
 import { logger } from '@app-config/logging';
 import { loadSettingsLazy, saveSettings } from '@app-config/settings';
+import type { EnvironmentOptions } from '@app-config/node';
 
 import {
   Key,
@@ -81,6 +82,7 @@ export async function connectAgent(
   closeTimeoutMs = Infinity,
   socketOrPortOverride?: number | string,
   loadEncryptedKey: typeof loadSymmetricKey = loadSymmetricKey,
+  environmentOptions?: EnvironmentOptions,
 ) {
   let client: Client;
 
@@ -137,15 +139,8 @@ export async function connectAgent(
       keepAlive();
 
       const revision = text.split(':')[1];
-      const revisionNumber = parseFloat(revision);
 
-      if (Number.isNaN(revisionNumber)) {
-        throw new AppConfigError(
-          `Encrypted value was invalid, revision was not a number (${revision})`,
-        );
-      }
-
-      const symmetricKey = await loadEncryptedKey(revisionNumber);
+      const symmetricKey = await loadEncryptedKey(revision, environmentOptions);
       const decrypted = await client.Decrypt({ text, symmetricKey });
 
       keepAlive();
@@ -169,11 +164,12 @@ const clients = new Map<number | string, ReturnType<typeof connectAgent>>();
 export async function connectAgentLazy(
   closeTimeoutMs = 500,
   socketOrPortOverride?: number | string,
+  environmentOptions?: EnvironmentOptions,
 ): ReturnType<typeof connectAgent> {
   const socketOrPort = await getAgentPortOrSocket(socketOrPortOverride);
 
   if (!clients.has(socketOrPort)) {
-    const connection = connectAgent(closeTimeoutMs, socketOrPort);
+    const connection = connectAgent(closeTimeoutMs, socketOrPort, undefined, environmentOptions);
 
     clients.set(socketOrPort, connection);
 
@@ -244,8 +240,11 @@ export async function getAgentPortOrSocket(
   return defaultPort;
 }
 
-async function loadSymmetricKey(revision: number): Promise<EncryptedSymmetricKey> {
-  const symmetricKeys = await loadSymmetricKeys(true);
+async function loadSymmetricKey(
+  revision: string,
+  environmentOptions?: EnvironmentOptions,
+): Promise<EncryptedSymmetricKey> {
+  const symmetricKeys = await loadSymmetricKeys(true, environmentOptions);
   const symmetricKey = symmetricKeys.find((k) => k.revision === revision);
 
   if (!symmetricKey) throw new AppConfigError(`Could not find symmetric key ${revision}`);

@@ -488,7 +488,7 @@ describe('Validation', () => {
         },
         async (inDir) => {
           const { validate } = await loadSchema({ directory: inDir('.') });
-          const symmetricKey = await generateSymmetricKey(1);
+          const symmetricKey = await generateSymmetricKey('1');
 
           const parsed = await ParsedValue.parseLiteral(
             {
@@ -515,7 +515,7 @@ describe('Validation', () => {
         },
         async (inDir) => {
           const { validate } = await loadSchema({ directory: inDir('.') });
-          const symmetricKey = await generateSymmetricKey(1);
+          const symmetricKey = await generateSymmetricKey('1');
 
           const parsed = await ParsedValue.parseLiteral(
             [
@@ -542,7 +542,7 @@ describe('Validation', () => {
         },
         async (inDir) => {
           const { validate } = await loadSchema({ directory: inDir('.') });
-          const symmetricKey = await generateSymmetricKey(1);
+          const symmetricKey = await generateSymmetricKey('1');
 
           const parsed = await ParsedValue.parseLiteral(
             [
@@ -573,7 +573,7 @@ describe('Validation', () => {
         },
         async (inDir) => {
           const { validate } = await loadSchema({ directory: inDir('.') });
-          const symmetricKey = await generateSymmetricKey(1);
+          const symmetricKey = await generateSymmetricKey('1');
 
           const parsed = await ParsedValue.parseLiteral(
             {

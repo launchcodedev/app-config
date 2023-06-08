@@ -80,6 +80,9 @@ npx @app-config/cli secret trust ./my-key
 This will re-sign all encryption keys of the current repository with their public
 key. This gives them access to any previously encrypted secrets as well.
 
+To specify an encryption environment to trust the user on, set the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`).
+If no environment is specified, the user will be trusted on the `default` environment.
+
 ## Untrusting Users
 
 You can untrust users as well. Please rotate secrets if they are a security concern.
@@ -91,6 +94,11 @@ npx @app-config/cli secret untrust somebody@example.com
 
 This does not require re-encrypting any secrets. Any new encrypted values will use a
 new key that `somebody@example.com` never had access to.
+
+To specify an encryption environment to untrust the user on, set the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`).
+If no environment is specified, the user will be untrusted on the `default` environment.
+
+To completely untrust a user from your project you must untrust them from all encryption environments they were trusted on.
 
 ::: warning
 While the above is true, be wary of how the timeline of events interacts with version control.
@@ -112,13 +120,20 @@ Or, in files referenced by:
 
 The CLI will output both of these with instructions.
 
+To use different keys for different secret environments suffix the environment variable names with the name of the environment.
+For example - to specify the keys that will be used in an environment called `production` use these environment variables:
+
+- `APP_CONFIG_SECRETS_KEY_PRODUCTION`
+- `APP_CONFIG_SECRETS_PUBLIC_KEY_PRODUCTION`
+
 ## Implementation Details
 
-- We store a list of team members public keys in meta files
-- We store a list of 'encryptionKeys' (symmetric keys) in meta files
+- We store a list of team members public keys per encryption environment in meta files
+- We store a list of 'encryptionKeys' (symmetric keys) per encryption environment in meta files
   - Keys are symmetric, but are themselves stored in encrypted form (encrypted by team members' public keys, which allows any team member to decrypt it)
   - Once the key is given to somebody, they can always decrypt secrets that were encrypted with it
   - Keys have 'revision' numbers, so we can use the latest one (revision is embedded into the password itself, to prevent tampering in the YAML)
+  - The encryption environment is included in the revision to determine which symmetric key set to use to decrypt the secret
   - By keeping revisions, we can untrust a user without having to re-encrypt every secret made before
     - You'd likely still want to rotate most passwords, but doing so automatically (dumping out YAML files everywhere) would be extremely difficult to do right
     - The secrets are already compromised, so manual intervention is needed regardless
@@ -153,6 +168,29 @@ It serves no logical roles, it's simply there as metadata for you to identify wh
 
 ```yaml
 teamMembers:
+  default:
+    - userId: Joel Gallant <joel@joelgallant.io>
+      keyName: Desktop
+      publicKey: '...'
+    - userId: Joel Gallant <joel@joelgallant.io>
+      keyName: Laptop
+      publicKey: '...'
+encryptionKeys:
+  default:
+    - revision: 1
+      key: '...'
+```
+
+## Multiple Environments
+
+It can be useful to have different levels of trust on the same repository. For example, it may make sense for your project to have fewer people able to decrypt the secrets used on production then the secrets for a QA environment.
+
+To add secret environments to an existing project just move your existing `teamMembers` and `encryptionKeys` values under a `default` property.
+
+For example:
+
+```yaml
+teamMembers:
   - userId: Joel Gallant <joel@joelgallant.io>
     keyName: Desktop
     publicKey: '...'
@@ -163,3 +201,24 @@ encryptionKeys:
   - revision: 1
     key: '...'
 ```
+
+Becomes
+
+```yaml
+teamMembers:
+  default:
+    - userId: Joel Gallant <joel@joelgallant.io>
+      keyName: Desktop
+      publicKey: '...'
+    - userId: Joel Gallant <joel@joelgallant.io>
+      keyName: Laptop
+      publicKey: '...'
+encryptionKeys:
+  default:
+    - revision: 1
+      key: '...'
+```
+
+To create a new encryption environment use the `init-repo` CLI subcommand while setting one of the standard App-Config environment variables (`ENV`, `NODE_ENV`, or `APP_CONFIG_ENV`) with the new encryption environment. You can then use the normal App Config secret CLI commands while specifying the environment to trust and untrust users and encrypt and decrypt secrets for that specific environment.
+
+It's also possible to reuse encryption keys across environments since App Config secret environments and config environments are not linked. For example, you may have 3 config environments like prod, QA, and staging but only 2 encryption environments prod and QA. The production environment likely has more strict access requirements than staging and QA which may have the same users trusted on them. This allows you to trust a user once on the shared QA/staging encryption environment which will allow them to decrypt secrets used on staging and QA.
