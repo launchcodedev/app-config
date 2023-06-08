@@ -778,7 +778,22 @@ export function getRevisionNumber(revision: string) {
 export function latestSymmetricKeyRevision(
   keys: (EncryptedSymmetricKey | DecryptedSymmetricKey)[],
 ): string {
-  keys.sort((a, b) => getRevisionNumber(a.revision) - getRevisionNumber(b.revision));
+  keys.sort((a, b) => {
+    // sort the default keys first
+    // this is ok because if we have an environment the keys should be filtered by env first
+    let aRevNum = getRevisionNumber(a.revision);
+    let bRevNum = getRevisionNumber(b.revision);
+
+    if (!a.revision.includes('-')) {
+      aRevNum += 1000;
+    }
+
+    if (!b.revision.includes('-')) {
+      bRevNum += 1000;
+    }
+
+    return aRevNum - bRevNum;
+  });
 
   if (keys.length === 0) throw new InvalidEncryptionKey('No symmetric keys were found');
 
