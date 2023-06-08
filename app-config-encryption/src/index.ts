@@ -1,7 +1,6 @@
-import { AppConfigError, ParsingExtension } from '@app-config/core';
+import { ParsingExtension } from '@app-config/core';
 import { named } from '@app-config/extension-utils';
 import { logger } from '@app-config/logging';
-import { environmentOptionsFromContext } from '@app-config/node';
 import { DecryptedSymmetricKey, decryptValue } from './encryption';
 
 export * from './encryption';
