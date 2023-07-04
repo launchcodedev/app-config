@@ -562,7 +562,7 @@ export const cli = yargs
               }
 
               process.stdout.write(`\nYour app-config key was set up in ${keyDirs.keychain}\n\n`);
-              process.stdout.write(initialized.publicKeyArmored);
+              process.stdout.write(initialized.publicKey);
               process.stdout.write('\n');
             },
           ),
@@ -676,10 +676,10 @@ export const cli = yargs
             async () => {
               logger.info('Creating a new trusted CI encryption key');
 
-              const { privateKeyArmored, publicKeyArmored } = await initializeKeys(false);
-              await trustTeamMember(await loadKey(publicKeyArmored), await loadPrivateKeyLazy());
+              const { privateKey, publicKey } = await initializeKeys(false);
+              await trustTeamMember(await loadKey(publicKey), await loadPrivateKeyLazy());
 
-              process.stdout.write(`\n${publicKeyArmored}\n\n${privateKeyArmored}\n\n`);
+              process.stdout.write(`\n${publicKey}\n\n${privateKey}\n\n`);
 
               process.stdout.write(
                 stripIndents`
@@ -716,7 +716,7 @@ export const cli = yargs
               const privateKey = await loadPrivateKeyLazy();
               await trustTeamMember(key, privateKey);
 
-              logger.info(`Trusted ${key.getUserIds().join(', ')}`);
+              logger.info(`Trusted ${key.getUserIDs().join(', ')}`);
             },
           ),
         )

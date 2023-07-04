@@ -2,7 +2,6 @@ import { join, resolve } from 'path';
 import * as fs from 'fs-extra';
 import * as pgp from 'openpgp';
 import { inspect } from 'util';
-import { generateKey, encrypt, decrypt, message, crypto } from 'openpgp';
 import { oneLine } from 'common-tags';
 import {
   stringify,
@@ -24,8 +23,11 @@ import {
 } from '@app-config/meta';
 import { settingsDirectory } from '@app-config/settings';
 import { connectAgentLazy, shouldUseSecretAgent } from './secret-agent';
+import * as crypto from "crypto";
 
-export type Key = pgp.key.Key & { keyName?: string };
+export type Key = pgp.Key & { keyName?: string };
+export type PrivateKey = pgp.PrivateKey & { keyName?: string };
+export type PublicKey = pgp.PublicKey & { keyName?: string };
 
 export const keyDirs = {
   get keychain() {
@@ -47,8 +49,8 @@ export const keyDirs = {
 };
 
 interface UserKeys {
-  privateKeyArmored: string;
-  publicKeyArmored: string;
+  privateKey: string;
+  publicKey: string;
   revocationCertificate: string;
 }
 
@@ -65,15 +67,15 @@ export async function initializeKeysManually(options: {
     logger.verbose(`Initializing a key without a passphrase for ${email}`);
   }
 
-  const { privateKeyArmored, publicKeyArmored, revocationCertificate } = await generateKey({
+  const { privateKey, publicKey, revocationCertificate } = await pgp.generateKey({
     curve: 'ed25519',
-    userIds: [{ name, email }],
+    userIDs: [{ name, email }],
     passphrase,
   });
 
   return {
-    privateKeyArmored,
-    publicKeyArmored,
+    privateKey,
+    publicKey,
     revocationCertificate,
   };
 }
@@ -104,7 +106,7 @@ export async function initializeLocalKeys(keys?: UserKeys, dirs: typeof keyDirs 
 
   logger.info('Initializing your encryption keys');
 
-  const { privateKeyArmored, publicKeyArmored, revocationCertificate } =
+  const { privateKey, publicKey, revocationCertificate } =
     keys ?? (await initializeKeys());
 
   const prevUmask = process.umask(0o077);
@@ -115,8 +117,8 @@ export async function initializeLocalKeys(keys?: UserKeys, dirs: typeof keyDirs 
     process.umask(0o177);
 
     await Promise.all([
-      fs.writeFile(dirs.privateKey, privateKeyArmored),
-      fs.writeFile(dirs.publicKey, publicKeyArmored),
+      fs.writeFile(dirs.privateKey, privateKey),
+      fs.writeFile(dirs.publicKey, publicKey),
       fs.writeFile(dirs.revocationCert, revocationCertificate),
     ]);
 
@@ -125,22 +127,22 @@ export async function initializeLocalKeys(keys?: UserKeys, dirs: typeof keyDirs 
     process.umask(prevUmask);
   }
 
-  return { publicKeyArmored };
+  return { publicKey };
 }
 
 export async function deleteLocalKeys(dirs: typeof keyDirs = keyDirs) {
   await fs.remove(dirs.keychain);
 }
 
-export async function loadKey(contents: string | Buffer): Promise<Key> {
-  const { err, keys } = await pgp.key.readArmored(contents);
-
-  if (err) throw err[0];
-
-  return keys[0];
+export async function loadKey(contents: string | Uint8Array): Promise<PrivateKey> {
+  if (typeof contents === 'string') {
+    return await pgp.readPrivateKey({armoredKey: contents});
+  } else {
+    return await pgp.readPrivateKey({binaryKey: contents});
+  }
 }
 
-export async function loadPrivateKey(override?: string | Buffer): Promise<Key> {
+export async function loadPrivateKey(override?: string | Buffer): Promise<PrivateKey> {
   if (override === undefined) {
     if (process.env.APP_CONFIG_SECRETS_KEY) {
       // eslint-disable-next-line no-param-reassign
@@ -151,7 +153,7 @@ export async function loadPrivateKey(override?: string | Buffer): Promise<Key> {
     }
   }
 
-  let key: Key;
+  let key: PrivateKey;
 
   if (override) {
     key = await loadKey(override);
@@ -173,7 +175,10 @@ export async function loadPrivateKey(override?: string | Buffer): Promise<Key> {
     await promptUserWithRetry<string>(
       { message: 'Your Passphrase', type: 'password' },
       async (passphrase) => {
-        return key.decrypt(passphrase).then(
+        return pgp.decryptKey({
+          privateKey: key,
+          passphrase
+        }).then(
           () => true,
           (error: Error) => error,
         );
@@ -213,9 +218,9 @@ export async function loadPublicKey(override?: string | Buffer): Promise<Key> {
   return key;
 }
 
-let loadedPrivateKey: Promise<Key> | undefined;
+let loadedPrivateKey: Promise<PrivateKey> | undefined;
 
-export async function loadPrivateKeyLazy(): Promise<Key> {
+export async function loadPrivateKeyLazy(): Promise<PrivateKey> {
   if (!loadedPrivateKey) {
     logger.verbose('Loading local private key');
 
@@ -254,9 +259,33 @@ export interface DecryptedSymmetricKey {
   key: Uint8Array;
 }
 
+const getNodeCrypto = function() {
+  return require('crypto');
+};
+
+const nodeCrypto = getNodeCrypto();
+
+/**
+ * Retrieve secure random byte array of the specified length
+ * @param {Integer} length - Length in bytes to generate
+ * @returns {Uint8Array} Random byte array.
+ */
+function getRandomBytes(length: number) {
+  const buf = new Uint8Array(length);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(buf);
+  } else if (nodeCrypto) {
+    const bytes = nodeCrypto.randomBytes(buf.length);
+    buf.set(bytes);
+  } else {
+    throw new Error('No secure random number generator available.');
+  }
+  return buf;
+}
+
 export async function generateSymmetricKey(revision: number): Promise<DecryptedSymmetricKey> {
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  const rawPassword = await crypto.random.getRandomBytes(2048);
+  const rawPassword = await getRandomBytes(2048);
   const passwordWithRevision = encodeRevisionInPassword(rawPassword, revision);
 
   return { revision, key: passwordWithRevision };
@@ -264,28 +293,29 @@ export async function generateSymmetricKey(revision: number): Promise<DecryptedS
 
 export async function encryptSymmetricKey(
   decrypted: DecryptedSymmetricKey,
-  teamMembers: Key[],
+  teamMembers: PublicKey[],
 ): Promise<EncryptedSymmetricKey> {
   if (teamMembers.length === 0) {
     throw new AppConfigError('Cannot create a symmetric key with no teamMembers');
   }
 
-  const { data: key } = await encrypt({
-    message: message.fromBinary(decrypted.key),
-    publicKeys: [...teamMembers],
+  const key = await pgp.encrypt({
+    message: await pgp.createMessage({ binary: decrypted.key }),
+    encryptionKeys: [...teamMembers],
   });
 
+  // @ts-ignore
   return { revision: decrypted.revision, key };
 }
 
 export async function decryptSymmetricKey(
   encrypted: EncryptedSymmetricKey,
-  privateKey: Key,
+  privateKey: PrivateKey,
 ): Promise<DecryptedSymmetricKey> {
-  const decrypted = await decrypt({
-    format: 'binary',
-    message: await message.readArmored(encrypted.key),
-    privateKeys: [privateKey],
+  const decrypted = await pgp.decrypt({
+    // @ts-ignore
+    message: await pgp.createMessage({ binary: encrypted.key }),
+    decryptionKeys: [privateKey],
   });
 
   const { data } = decrypted as { data: Uint8Array };
@@ -316,7 +346,7 @@ export async function loadSymmetricKeys(lazy = true): Promise<EncryptedSymmetric
 
 export async function loadSymmetricKey(
   revision: number,
-  privateKey: Key,
+  privateKey: PrivateKey,
   lazyMeta = true,
 ): Promise<DecryptedSymmetricKey> {
   const symmetricKeys = await loadSymmetricKeys(lazyMeta);
@@ -333,7 +363,7 @@ const symmetricKeys = new Map<number, Promise<DecryptedSymmetricKey>>();
 
 export async function loadSymmetricKeyLazy(
   revision: number,
-  privateKey: Key,
+  privateKey: PrivateKey,
 ): Promise<DecryptedSymmetricKey> {
   if (!symmetricKeys.has(revision)) {
     symmetricKeys.set(revision, loadSymmetricKey(revision, privateKey, true));
@@ -342,13 +372,13 @@ export async function loadSymmetricKeyLazy(
   return symmetricKeys.get(revision)!;
 }
 
-export async function loadLatestSymmetricKey(privateKey: Key): Promise<DecryptedSymmetricKey> {
+export async function loadLatestSymmetricKey(privateKey: PrivateKey): Promise<DecryptedSymmetricKey> {
   const allKeys = await loadSymmetricKeys(false);
 
   return loadSymmetricKey(latestSymmetricKeyRevision(allKeys), privateKey, false);
 }
 
-export async function loadLatestSymmetricKeyLazy(privateKey: Key): Promise<DecryptedSymmetricKey> {
+export async function loadLatestSymmetricKeyLazy(privateKey: PrivateKey): Promise<DecryptedSymmetricKey> {
   const allKeys = await loadSymmetricKeys();
 
   return loadSymmetricKeyLazy(latestSymmetricKeyRevision(allKeys), privateKey);
@@ -381,9 +411,9 @@ export async function encryptValue(
   // all encrypted data is JSON encoded
   const text = JSON.stringify(value);
 
-  const { data } = await encrypt({
-    message: message.fromText(text),
-    passwords: [symmetricKey.key],
+  const data = await pgp.encrypt({
+    message: await pgp.createMessage({ text }),
+    passwords: [symmetricKey.key as any], // openpgp does accept non-string passwords, ts is wrong
   });
 
   // we take out the base64 encoded portion, so that secrets are nice and short, easy to copy-paste
@@ -431,9 +461,9 @@ export async function decryptValue(
 
   const armored = `-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js VERSION\n\n${base64}\n-----END PGP PUBLIC KEY BLOCK-----`;
 
-  const decrypted = await decrypt({
+  const decrypted = await pgp.decrypt({
     format: 'utf8',
-    message: await message.readArmored(armored),
+    message: await pgp.createMessage({ text: armored }),
     passwords: [symmetricKey.key as any], // openpgp does accept non-string passwords, ts is wrong
   });
 
@@ -447,7 +477,7 @@ export async function decryptValue(
   return JSON.parse(data) as Json;
 }
 
-export async function loadTeamMembers(): Promise<Key[]> {
+export async function loadTeamMembers(): Promise<PublicKey[]> {
   const {
     value: { teamMembers = [] },
   } = await loadMetaConfig();
@@ -469,7 +499,7 @@ export async function loadTeamMembersLazy(): Promise<Key[]> {
   return loadedTeamMembers;
 }
 
-export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
+export async function trustTeamMember(newTeamMember: Key, privateKey: PrivateKey) {
   const teamMembers = await loadTeamMembers();
 
   if (newTeamMember.isPrivate()) {
@@ -478,11 +508,11 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
     );
   }
 
-  const newUserId = newTeamMember.getUserIds().join('');
-  const foundDuplicate = teamMembers.find((k) => k.getUserIds().join('') === newUserId);
+  const newUserId = newTeamMember.getUserIDs().join('');
+  const foundDuplicate = teamMembers.find((k) => k.getUserIDs().join('') === newUserId);
 
   if (foundDuplicate) {
-    const userIds = foundDuplicate.getUserIds().join(', ');
+    const userIds = foundDuplicate.getUserIDs().join(', ');
 
     logger.warn(`The team member '${userIds}' was already trusted. Adding anyways.`);
   }
@@ -498,7 +528,7 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
   await saveNewMetaFile((meta) => ({
     ...meta,
     teamMembers: newTeamMembers.map((key) => ({
-      userId: key.getUserIds()[0],
+      userId: key.getUserIDs()[0],
       keyName: key.keyName ?? null,
       publicKey: key.armor(),
     })),
@@ -506,13 +536,13 @@ export async function trustTeamMember(newTeamMember: Key, privateKey: Key) {
   }));
 }
 
-export async function untrustTeamMember(email: string, privateKey: Key) {
+export async function untrustTeamMember(email: string, privateKey: PrivateKey) {
   const teamMembers = await loadTeamMembers();
 
   const removalCandidates = new Set<Key>();
 
   for (const teamMember of teamMembers) {
-    if (teamMember.getUserIds().some((u) => u.includes(`<${email}>`))) {
+    if (teamMember.getUserIDs().some((u) => u.includes(`<${email}>`))) {
       removalCandidates.add(teamMember);
     }
   }
@@ -535,7 +565,7 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
   }
 
   for (const teamMember of removeTeamMembers) {
-    logger.warn(`Removing trust from ${teamMember.getUserIds().join(', ')}`);
+    logger.warn(`Removing trust from ${teamMember.getUserIDs().join(', ')}`);
   }
 
   const newTeamMembers = teamMembers.filter(
@@ -573,7 +603,7 @@ export async function untrustTeamMember(email: string, privateKey: Key) {
   await saveNewMetaFile((meta) => ({
     ...meta,
     teamMembers: newTeamMembers.map((key) => ({
-      userId: key.getUserIds()[0],
+      userId: key.getUserIDs()[0],
       keyName: key.keyName ?? null,
       publicKey: key.armor(),
     })),
@@ -594,7 +624,7 @@ export function latestSymmetricKeyRevision(
 async function reencryptSymmetricKeys(
   previousSymmetricKeys: EncryptedSymmetricKey[],
   newTeamMembers: Key[],
-  privateKey: Key,
+  privateKey: PrivateKey,
 ): Promise<EncryptedSymmetricKey[]> {
   const newEncryptionKeys: EncryptedSymmetricKey[] = [];
 

@@ -9,6 +9,7 @@ import { loadSettingsLazy, saveSettings } from '@app-config/settings';
 
 import {
   Key,
+  PrivateKey,
   decryptValue,
   encryptValue,
   loadSymmetricKeys,
@@ -28,9 +29,9 @@ export type Client = typeof common.Connection;
 
 export async function startAgent(
   socketOrPortOverride?: number | string,
-  privateKeyOverride?: Key,
+  privateKeyOverride?: PrivateKey,
 ): Promise<Server> {
-  let privateKey: Key;
+  let privateKey: PrivateKey;
 
   if (privateKeyOverride) {
     privateKey = privateKeyOverride;
