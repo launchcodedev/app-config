@@ -25,24 +25,24 @@ import {
 
 describe('User Keys', () => {
   it('initialize keys without passphrase', async () => {
-    const { privateKeyArmored, publicKeyArmored } = await initializeKeysManually({
+    const { privateKey, publicKey } = await initializeKeysManually({
       name: 'Tester',
       email: 'test@example.com',
     });
 
-    await loadPublicKey(publicKeyArmored);
-    await loadPrivateKey(privateKeyArmored);
+    await loadPublicKey(publicKey);
+    await loadPrivateKey(privateKey);
   });
 
   it('initialize keys with passphrase', async () => {
-    const { privateKeyArmored, publicKeyArmored } = await initializeKeysManually({
+    const { privateKey, publicKey } = await initializeKeysManually({
       name: 'Tester',
       email: 'test@example.com',
       passphrase: 'Secret!',
     });
 
-    await loadPublicKey(publicKeyArmored);
-    await expect(loadPrivateKey(privateKeyArmored)).rejects.toBeInstanceOf(SecretsRequireTTYError);
+    await loadPublicKey(publicKey);
+    await expect(loadPrivateKey(privateKey)).rejects.toBeInstanceOf(SecretsRequireTTYError);
   });
 
   it('initializes keys with a passphrase from stdin', async () => {
@@ -52,21 +52,21 @@ describe('User Keys', () => {
         .then(() => send('$ecure!'))
         .catch(() => {});
 
-      const { privateKeyArmored, publicKeyArmored } = await initializeKeys();
+      const { privateKey, publicKey } = await initializeKeys();
 
-      await loadPublicKey(publicKeyArmored);
+      await loadPublicKey(publicKey);
 
       send('$ecure!').catch(() => {});
 
-      await loadPrivateKey(privateKeyArmored);
+      await loadPrivateKey(privateKey);
     });
   });
 
   it('initializes keys into a directory', async () => {
     await withTempFiles({}, async (inDir) => {
       const keys = {
-        privateKeyArmored: 'privateKeyArmored',
-        publicKeyArmored: 'publicKeyArmored',
+        privateKey: 'privateKeyArmored',
+        publicKey: 'publicKeyArmored',
         revocationCertificate: 'revocationCertificate',
       };
 
@@ -103,7 +103,7 @@ describe('User Keys', () => {
 });
 
 const createKey = async () => {
-  const { privateKeyArmored } = await initializeKeysManually({
+  const { privateKey: privateKeyArmored } = await initializeKeysManually({
     name: 'Tester',
     email: 'test@example.com',
   });
@@ -230,7 +230,7 @@ describe('E2E Encrypted Repo', () => {
       };
 
       expect(await initializeLocalKeys(keys, dirs)).toEqual({
-        publicKeyArmored: keys.publicKeyArmored,
+        publicKeyArmored: keys.publicKey,
       });
 
       const publicKey = await loadPublicKey();
@@ -254,8 +254,8 @@ describe('E2E Encrypted Repo', () => {
         email: 'teammate@example.com',
       });
 
-      const teammatePublicKey = await loadPublicKey(teammateKeys.publicKeyArmored);
-      const teammatePrivateKey = await loadPrivateKey(teammateKeys.privateKeyArmored);
+      const teammatePublicKey = await loadPublicKey(teammateKeys.publicKey);
+      const teammatePrivateKey = await loadPrivateKey(teammateKeys.privateKey);
 
       await trustTeamMember(teammatePublicKey, privateKey);
 

@@ -22,7 +22,7 @@ jest.setTimeout(30000);
 
 describe('Decryption', () => {
   it('decrypts and encrypts values', async () => {
-    const { privateKeyArmored } = await initializeKeysManually({
+    const { privateKey: privateKeyArmored } = await initializeKeysManually({
       name: 'Test',
       email: 'test@example.com',
     });
@@ -78,7 +78,7 @@ describe('Unix Sockets', () => {
   it('connects using unix socket', async () => {
     if (isWindows) return;
 
-    const { privateKeyArmored } = await initializeKeysManually({
+    const { privateKey: privateKeyArmored } = await initializeKeysManually({
       name: 'Test',
       email: 'test@example.com',
     });
