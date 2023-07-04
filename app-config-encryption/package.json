@@ -38,16 +38,16 @@
     "@app-config/settings": "^2.8.7",
     "@app-config/utils": "^2.8.7",
     "@lcdev/ws-rpc": "0.4",
-    "@types/openpgp": "4",
     "common-tags": "1",
     "fs-extra": "7",
-    "openpgp": "^4.3.0",
+    "openpgp": "^5.9.0",
     "selfsigned": "2",
     "text-encoding-utf-8": "1",
     "ws": "^7.4.6"
   },
   "devDependencies": {
     "@app-config/test-utils": "^2.8.7",
+    "@openpgp/web-stream-tools": "^0.0.13",
     "get-port": "5"
   },
   "prettier": "@lcdev/prettier",
