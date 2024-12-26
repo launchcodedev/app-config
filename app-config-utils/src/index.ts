@@ -58,7 +58,11 @@ export function generateModuleText(
         throw new Error('Config is not loaded in ${privateName}');
       }
 
-      export { config };
+      function loadConfig() {
+        return new Promise(resolve => {resolve(config)})
+      }
+
+      export { config, loadConfig };
       export default config;
     `;
   } else if (useGlobalNamespace) {
@@ -80,7 +84,11 @@ export function generateModuleText(
         globalNamespace.${privateName} = config;
       }
 
-      export { config };
+      function loadConfig() {
+        return new Promise(resolve => {resolve(config)})
+      }
+
+      export { config, loadConfig };
       export default config;
     `;
   } else {
@@ -89,7 +97,11 @@ export function generateModuleText(
     generatedText += `
       const config = ${config};
 
-      export { config };
+      function loadConfig() {
+        return new Promise(resolve => {resolve(config)})
+      }
+
+      export { config, loadConfig };
       export default config;
     `;
   }
