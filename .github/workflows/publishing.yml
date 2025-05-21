@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
-        node-version: 14.x
+        node-version: 18.x
 
     - run: yarn install
 
@@ -148,6 +148,12 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
         access: public
         package: ./app-config-vault/package.json
+    - name: app-config-aws-secrets-manager
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        access: public
+        package: ./app-config-aws-secrets-manager/package.json
     - name: app-config-webpack
       uses: JS-DevTools/npm-publish@v1
       with:
