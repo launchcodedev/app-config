@@ -37,7 +37,7 @@
     "@app-config/rollup": "^2.9.0-beta.1"
   },
   "devDependencies": {
-    "vite": "2"
+    "vite": "6"
   },
   "prettier": "@lcdev/prettier",
   "jest": {

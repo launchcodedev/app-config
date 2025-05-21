@@ -20,7 +20,7 @@
     "html-webpack-plugin": "4",
     "serve": "11",
     "ts-loader": "8",
-    "typescript": "4",
+    "typescript": "5",
     "webpack": "4",
     "webpack-cli": "3",
     "webpack-dev-server": "^3.2"

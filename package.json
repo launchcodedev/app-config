@@ -44,7 +44,10 @@
     "jest": "26",
     "lerna": "3",
     "prettier": "2",
-    "typescript": "4"
+    "typescript": "5"
+  },
+  "resolutions": {
+    "**/@types/markdown-it": "14"
   },
   "prettier": "@lcdev/prettier",
   "husky": {

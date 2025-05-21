@@ -1022,7 +1022,7 @@ function encodeRevisionInPassword(password: Uint8Array, revision: string): Uint8
 function verifyEncodedRevision(password: Uint8Array, expectedRevision: string) {
   const revisionBytesLength = password[0];
   const revisionBytes = password.slice(1, 1 + revisionBytesLength);
-  const revision = decodeTypedArray(revisionBytes);
+  const revision = decodeTypedArray(revisionBytes.buffer);
 
   if (revision !== expectedRevision) {
     throw new EncryptionEncoding(oneLine`

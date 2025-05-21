@@ -3,11 +3,10 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "lib": ["dom"]
+    "lib": ["dom"],
+    "paths": { "rollup/parseAst": ["../node_modules/rollup/dist/parseAst"] }
   },
   "include": ["src"],
   "exclude": ["node_modules"],
-  "references": [
-    { "path": "../app-config-rollup" }
-  ]
+  "references": [{ "path": "../app-config-rollup" }]
 }

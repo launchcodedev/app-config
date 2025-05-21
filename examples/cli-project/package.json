@@ -14,6 +14,6 @@
   },
   "devDependencies": {
     "@lcdev/tsconfig": "0.2",
-    "typescript": "4"
+    "typescript": "5"
   }
 }
