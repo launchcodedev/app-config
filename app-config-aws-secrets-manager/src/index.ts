@@ -1,6 +1,7 @@
 import type { ParsingExtension, Json } from '@app-config/main';
 import { named, forKey, validateOptions } from '@app-config/extension-utils';
 import { SecretsManager } from '@aws-sdk/client-secrets-manager';
+import { markAllValuesAsSecret } from '@app-config/extensions';
 
 function awsSecretsManagerParsingExtension(): ParsingExtension {
   return named(
@@ -32,7 +33,7 @@ function awsSecretsManagerParsingExtension(): ParsingExtension {
               }
             }
 
-            return parse(value, { shouldFlatten: true });
+            return parse(value, { shouldFlatten: true }, undefined, [markAllValuesAsSecret()]);
           },
       ),
     ),

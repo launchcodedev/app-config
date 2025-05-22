@@ -37,6 +37,7 @@ new_version() {
   cd $prev
 }
 
+new_version app-config-aws-secrets-manager
 new_version app-config-cli
 new_version app-config-config
 new_version app-config-core
