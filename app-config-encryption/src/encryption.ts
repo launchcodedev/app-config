@@ -991,7 +991,7 @@ function addForEnvironment<T>(
   };
 }
 
-function decodeTypedArray(buf: ArrayBuffer): string {
+function decodeTypedArray(buf: ArrayLike<number>): string {
   return String.fromCharCode.apply(null, new Uint16Array(buf) as any as number[]);
 }
 
@@ -1022,7 +1022,7 @@ function encodeRevisionInPassword(password: Uint8Array, revision: string): Uint8
 function verifyEncodedRevision(password: Uint8Array, expectedRevision: string) {
   const revisionBytesLength = password[0];
   const revisionBytes = password.slice(1, 1 + revisionBytesLength);
-  const revision = decodeTypedArray(revisionBytes.buffer);
+  const revision = decodeTypedArray(revisionBytes);
 
   if (revision !== expectedRevision) {
     throw new EncryptionEncoding(oneLine`
