@@ -7,212 +7,130 @@ on:
 jobs:
   app-config:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
       with:
-        node-version: 18.x
+        node-version: 22.x
+        registry-url: https://registry.npmjs.org
 
+    - run: npm install -g npm@latest
     - run: yarn install
 
+    # Prereleases (e.g. 2.9.0-beta.4) publish under their identifier (beta), stable versions under latest
+    - name: dist-tag
+      run: |
+        version=$(node -p "require('./app-config-main/package.json').version")
+        if [[ "$version" == *-* ]]; then
+          prerelease="${version#*-}"
+          tag="${prerelease%%.*}"
+        else
+          tag=latest
+        fi
+        echo "Publishing $version with tag $tag"
+        echo "NPM_DIST_TAG=$tag" >> "$GITHUB_ENV"
+
     - name: app-config-config
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-config/package.json
+      working-directory: ./app-config-config
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-core
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-core/package.json
+      working-directory: ./app-config-core
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-cypress
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-cypress/package.json
+      working-directory: ./app-config-cypress
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-electron
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-electron/package.json
+      working-directory: ./app-config-electron
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-default-extensions
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-default-extensions/package.json
+      working-directory: ./app-config-default-extensions
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-encryption
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-encryption/package.json
+      working-directory: ./app-config-encryption
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-exec
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-exec/package.json
+      working-directory: ./app-config-exec
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-extension-utils
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-extension-utils/package.json
+      working-directory: ./app-config-extension-utils
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-extensions
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-extensions/package.json
+      working-directory: ./app-config-extensions
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-generate
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-generate/package.json
+      working-directory: ./app-config-generate
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-git
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-git/package.json
+      working-directory: ./app-config-git
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-inject
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-inject/package.json
+      working-directory: ./app-config-inject
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-js
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-js/package.json
+      working-directory: ./app-config-js
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-logging
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-logging/package.json
+      working-directory: ./app-config-logging
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-meta
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-meta/package.json
+      working-directory: ./app-config-meta
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-node
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-node/package.json
+      working-directory: ./app-config-node
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-react-native
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-react-native/package.json
+      working-directory: ./app-config-react-native
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-schema
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-schema/package.json
+      working-directory: ./app-config-schema
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-settings
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-settings/package.json
+      working-directory: ./app-config-settings
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-utils
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-utils/package.json
+      working-directory: ./app-config-utils
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-v1-compat
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-v1-compat/package.json
+      working-directory: ./app-config-v1-compat
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-vault
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-vault/package.json
+      working-directory: ./app-config-vault
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-aws-secrets-manager
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-aws-secrets-manager/package.json
+      working-directory: ./app-config-aws-secrets-manager
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-webpack
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-webpack/package.json
+      working-directory: ./app-config-webpack
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-rollup
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-rollup/package.json
+      working-directory: ./app-config-rollup
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-vite
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-vite/package.json
+      working-directory: ./app-config-vite
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-esbuild
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-esbuild/package.json
+      working-directory: ./app-config-esbuild
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: lcdev-app-config-inject
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-app-config-inject/package.json
+      working-directory: ./lcdev-app-config-inject
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: lcdev-app-config-webpack-plugin
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-app-config-webpack-plugin/package.json
+      working-directory: ./lcdev-app-config-webpack-plugin
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: lcdev-react-native-app-config-transformer
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-react-native-app-config-transformer/package.json
+      working-directory: ./lcdev-react-native-app-config-transformer
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
 
     # Do these last, since they're most commonly used by consumers
     - name: app-config-cli
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-cli/package.json
+      working-directory: ./app-config-cli
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: app-config-main
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./app-config-main/package.json
+      working-directory: ./app-config-main
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
     - name: lcdev-app-config
-      uses: JS-DevTools/npm-publish@v1
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
-        access: public
-        package: ./lcdev-app-config/package.json
+      working-directory: ./lcdev-app-config
+      run: npm stage publish --access public --tag "$NPM_DIST_TAG"
